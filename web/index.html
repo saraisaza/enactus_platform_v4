@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Plataforma educativa de Enactus Colombia">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Enactus Colombia">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+
+  <title>Enactus Colombia</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Splash de carga: logo Enactus con pulso suave sobre fondo oscuro -->
+  <style>
+    #enactus-splash {
+      position: fixed;
+      inset: 0;
+      background: #111315;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+    #enactus-splash img {
+      height: 110px;
+      animation: enactus-pulse 1.6s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(244, 196, 48, 0.35));
+    }
+    #enactus-splash .bar {
+      width: 160px;
+      height: 3px;
+      border-radius: 3px;
+      background: #22262b;
+      overflow: hidden;
+    }
+    #enactus-splash .bar::after {
+      content: "";
+      display: block;
+      width: 40%;
+      height: 100%;
+      border-radius: 3px;
+      background: #f4c430;
+      animation: enactus-slide 1.2s ease-in-out infinite;
+    }
+    @keyframes enactus-pulse {
+      0%, 100% { transform: scale(1);    opacity: 1; }
+      50%      { transform: scale(1.06); opacity: 0.85; }
+    }
+    @keyframes enactus-slide {
+      0%   { margin-left: -40%; }
+      100% { margin-left: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="enactus-splash">
+    <img src="mainlogo.png" alt="Enactus Colombia">
+    <div class="bar"></div>
+  </div>
+
+  <script>
+    // Quita el splash cuando Flutter pinta su primer frame
+    window.addEventListener('flutter-first-frame', function () {
+      var splash = document.getElementById('enactus-splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function () { splash.remove(); }, 400);
+      }
+    });
+  </script>
+
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+# Despliegue automático de la web Flutter a GitHub Pages.
+# Se ejecuta en cada push a main (o manualmente desde la pestaña Actions).
+#
+# Requisito único (una sola vez): en GitHub → Settings → Pages →
+# "Build and deployment" → Source: **GitHub Actions**.
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Dependencias
+        run: flutter pub get
+
+      # base-href debe coincidir con el nombre del repositorio,
+      # porque la página vive en saraisaza.github.io/enactus_platform_v2/
+      - name: Compilar web
+        run: flutter build web --release --base-href /enactus_platform_v2/
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

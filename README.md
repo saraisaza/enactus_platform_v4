@@ -1,9 +1,5 @@
 # Plataforma Educativa Enactus Colombia
 
-Plataforma tipo Platzi para Enactus Colombia: conecta **estudiantes, mentores,
-asesores académicos, empresas, donantes y administradores**. Funciona 100 % en
-local (videos y base de datos locales) con una arquitectura lista para migrar
-a AWS.
 
 Es una **página web Flutter** (Flutter Web). Hoy corre 100 % local; más
 adelante se desplegará en AWS y también se distribuirá como app.

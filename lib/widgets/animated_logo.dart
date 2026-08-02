@@ -54,7 +54,7 @@ class _AnimatedLogoState extends State<AnimatedLogo> {
                 height: widget.height,
                 errorBuilder: (_, __, ___) => Text(
                   'ENACTUS',
-                  style: TextStyle(
+                  style: knockoutHeading(
                     color: _hover ? AppColors.goldBright : AppColors.gold,
                     fontWeight: FontWeight.w900,
                     fontSize: widget.height * 0.42,

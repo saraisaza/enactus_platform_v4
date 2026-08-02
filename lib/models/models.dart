@@ -21,11 +21,17 @@ class AppUser {
   String cedula;
 
   /// Campos por rol:
-  /// - student: university, career, groupId, courseIds (List), companyId, donorId
+  /// - student: university, career, groupId, courseIds (List), companyId,
+  ///   donorId, labIds (List, laboratorios asignados — cada uno con su
+  ///   propia Ruta de Impacto)
+  /// - lxd: canGradeOpenLearning (bool), canGradeEnactus (bool)
   /// - mentor: company, position, specialty, languages, availability,
-  ///   experience, interests, labId
+  ///   experience, interests (el laboratorio asignado vive en
+  ///   Laboratory.mentorIds, no aquí: un mentor puede compartir estudiantes
+  ///   con otros mentores del mismo laboratorio)
   /// - advisor: university
-  /// - company: companyName, sponsoredLabId
+  /// - company: companyName (sus laboratorios se derivan de los cursos de
+  ///   sus LXD — ver [DataProvider.labsForCompany] — no de un campo aquí)
   /// - donor: impactCode
   Map<String, dynamic> extra;
 
@@ -44,6 +50,37 @@ class AppUser {
       List<String>.from(extra['courseIds'] as List? ?? const []);
   set courseIds(List<String> v) => extra['courseIds'] = v;
 
+  /// Laboratorios asignados a un estudiante (cada uno con su propia Ruta
+  /// de Impacto, independiente de los demás).
+  List<String> get labIds =>
+      List<String>.from(extra['labIds'] as List? ?? const []);
+  set labIds(List<String> v) => extra['labIds'] = v;
+
+  /// Tipo de estudiante: define si ve Laboratorios/Ruta de Impacto
+  /// (Enactus) o solo sus cursos asignados (Open Learning). Lo define el
+  /// Admin al crear la cuenta.
+  String get studentType =>
+      (extra['studentType'] as String?) ?? StudentType.enactus;
+  set studentType(String v) => extra['studentType'] = v;
+
+  /// Permiso de calificar de un LXD, controlado por Admin y separado por
+  /// contexto: activo por defecto en Open Learning (el LXD es el docente),
+  /// desactivado por defecto en Enactus.
+  bool get canGradeOpenLearning =>
+      (extra['canGradeOpenLearning'] as bool?) ?? true;
+  set canGradeOpenLearning(bool v) => extra['canGradeOpenLearning'] = v;
+
+  bool get canGradeEnactus => (extra['canGradeEnactus'] as bool?) ?? false;
+  set canGradeEnactus(bool v) => extra['canGradeEnactus'] = v;
+
+  /// Cursos que este Mentor tiene asignados para revisar específicamente
+  /// (los asigna Admin o la empresa aliada de su laboratorio). Si está
+  /// vacío, revisa todos los cursos de los laboratorios donde está
+  /// asignado — ver [DataProvider.reviewableCoursesForMentor].
+  List<String> get reviewCourseIds =>
+      List<String>.from(extra['reviewCourseIds'] as List? ?? const []);
+  set reviewCourseIds(List<String> v) => extra['reviewCourseIds'] = v;
+
   String get university => (extra['university'] as String?) ?? '';
   String get career => (extra['career'] as String?) ?? '';
   String? get groupId => extra['groupId'] as String?;
@@ -51,7 +88,6 @@ class AppUser {
   String? get donorId => extra['donorId'] as String?;
   String? get labId => extra['labId'] as String?;
   String get companyName => (extra['companyName'] as String?) ?? '';
-  String? get sponsoredLabId => extra['sponsoredLabId'] as String?;
   String get impactCode => (extra['impactCode'] as String?) ?? '';
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +111,23 @@ class AppUser {
         cedula: (j['cedula'] as String?) ?? '',
         extra: Map<String, dynamic>.from(j['extra'] as Map? ?? {}),
       );
+}
+
+/// Tipo de cuenta de estudiante (lo asigna el Admin al crearla).
+class StudentType {
+  /// Estudiante Enactus: ve Laboratorios y su Ruta de Impacto.
+  static const enactus = 'enactus';
+
+  /// Estudiante de Open Learning (externo): solo ve y completa los cursos
+  /// que se le asignaron directamente. Sin laboratorios, fases ni módulos.
+  static const openLearning = 'open_learning';
+
+  static const all = [enactus, openLearning];
+
+  static String label(String type) => switch (type) {
+        openLearning => 'Open Learning',
+        _ => 'Enactus',
+      };
 }
 
 // ---------------------------------------------------------------------------
@@ -178,34 +231,247 @@ class Laboratory {
   String name;
   String description;
   String objectives;
-  String mentorId; // mentor encargado
+  List<String> mentorIds; // mentores encargados (pueden compartir estudiantes)
   String sponsorCompanyId; // empresa patrocinadora (opcional)
+
+  /// Ruta de Impacto de este laboratorio: siempre 3 fases. Si no vienen
+  /// definidas (laboratorio nuevo o migrado desde antes de la Ruta de
+  /// Impacto) se generan 3 fases vacías por defecto, autocurativo: basta
+  /// con guardar el laboratorio una vez editado para que persistan.
+  List<Phase> phases;
 
   Laboratory({
     required this.id,
     required this.name,
     this.description = '',
     this.objectives = '',
-    this.mentorId = '',
+    List<String>? mentorIds,
     this.sponsorCompanyId = '',
-  });
+    List<Phase>? phases,
+  })  : mentorIds = mentorIds ?? [],
+        phases = (phases == null || phases.isEmpty)
+            ? _defaultPhases()
+            : phases;
+
+  static List<Phase> _defaultPhases() => [
+        Phase(id: 'phase_1', order: 1, title: 'Fase 1'),
+        Phase(id: 'phase_2', order: 2, title: 'Fase 2'),
+        Phase(id: 'phase_3', order: 3, title: 'Fase 3'),
+      ];
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'description': description,
         'objectives': objectives,
-        'mentorId': mentorId,
+        'mentorIds': mentorIds,
         'sponsorCompanyId': sponsorCompanyId,
+        'phases': phases.map((p) => p.toJson()).toList(),
       };
 
-  factory Laboratory.fromJson(Map<String, dynamic> j) => Laboratory(
+  factory Laboratory.fromJson(Map<String, dynamic> j) {
+    // Compatibilidad con datos previos a "varios mentores por laboratorio":
+    // si solo existe el antiguo `mentorId` (String), se envuelve en lista.
+    final legacyMentorId = j['mentorId'] as String?;
+    final mentorIds = j['mentorIds'] != null
+        ? List<String>.from(j['mentorIds'] as List)
+        : (legacyMentorId == null || legacyMentorId.isEmpty
+            ? <String>[]
+            : [legacyMentorId]);
+    return Laboratory(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      description: (j['description'] as String?) ?? '',
+      objectives: (j['objectives'] as String?) ?? '',
+      mentorIds: mentorIds,
+      sponsorCompanyId: (j['sponsorCompanyId'] as String?) ?? '',
+      phases: (j['phases'] as List? ?? const [])
+          .map((e) => Phase.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Ruta de Impacto: fases, objetivos y módulos dentro de un laboratorio
+// ---------------------------------------------------------------------------
+
+/// Categoría de un objetivo de fase.
+class ObjectiveCategory {
+  static const entrepreneurship = 'Emprendimiento';
+  static const business = 'Empresarial';
+  static const all = [entrepreneurship, business];
+}
+
+/// Objetivo de una fase. Se marca completado cuando el estudiante completa
+/// el 100% de TODOS los cursos en [sourceCourseIds] (no basta con uno solo).
+/// Lo definen Admin, Mentor y LXD; se prellenan al asignar un curso del LXD
+/// a un módulo de la fase, tomando los objetivos propios de ese curso.
+class Objective {
+  final String id;
+  String category; // ObjectiveCategory.entrepreneurship | .business
+  String text;
+  List<String> sourceCourseIds;
+
+  Objective({
+    required this.id,
+    this.category = ObjectiveCategory.entrepreneurship,
+    this.text = '',
+    List<String>? sourceCourseIds,
+  }) : sourceCourseIds = sourceCourseIds ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category': category,
+        'text': text,
+        'sourceCourseIds': sourceCourseIds,
+      };
+
+  factory Objective.fromJson(Map<String, dynamic> j) => Objective(
         id: j['id'] as String,
-        name: j['name'] as String,
+        category:
+            (j['category'] as String?) ?? ObjectiveCategory.entrepreneurship,
+        text: (j['text'] as String?) ?? '',
+        sourceCourseIds:
+            List<String>.from(j['sourceCourseIds'] as List? ?? const []),
+      );
+}
+
+/// Módulo dentro de una fase de la Ruta de Impacto. No confundir con
+/// [CourseModule] (que agrupa lecciones DENTRO de un curso): un [RutaModule]
+/// agrupa entregas/lecturas propias + varios cursos completos asignados.
+/// El último módulo de cada fase es el "módulo de mentoría"
+/// ([isMentorshipModule]): en vez de contenido, muestra el botón para
+/// unirse a la reunión con el Mentor.
+class RutaModule {
+  final String id;
+  int order;
+  String title;
+  bool isMentorshipModule;
+  List<String> courseIds; // cursos del LXD asignados a este módulo
+  List<Lesson> ownLessons; // entregas y lecturas propias del módulo
+
+  RutaModule({
+    required this.id,
+    this.order = 1,
+    this.title = '',
+    this.isMentorshipModule = false,
+    List<String>? courseIds,
+    List<Lesson>? ownLessons,
+  })  : courseIds = courseIds ?? [],
+        ownLessons = ownLessons ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'order': order,
+        'title': title,
+        'isMentorshipModule': isMentorshipModule,
+        'courseIds': courseIds,
+        'ownLessons': ownLessons.map((l) => l.toJson()).toList(),
+      };
+
+  factory RutaModule.fromJson(Map<String, dynamic> j) => RutaModule(
+        id: j['id'] as String,
+        order: (j['order'] as num?)?.toInt() ?? 1,
+        title: (j['title'] as String?) ?? '',
+        isMentorshipModule: (j['isMentorshipModule'] as bool?) ?? false,
+        courseIds: List<String>.from(j['courseIds'] as List? ?? const []),
+        ownLessons: (j['ownLessons'] as List? ?? const [])
+            .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+/// Fase de la Ruta de Impacto. Fase 1 (order == 1) siempre desbloqueada;
+/// las siguientes requieren que la anterior esté completa
+/// (ver [DataProvider.isPhaseUnlocked]).
+class Phase {
+  final String id;
+  int order;
+  String title;
+  String description;
+  String deadline; // ISO date o vacío — la pone el Admin, ver DataProvider.checkPhaseDeadlineAlerts
+  List<Objective> objectives;
+  List<RutaModule> modules;
+
+  Phase({
+    required this.id,
+    this.order = 1,
+    this.title = '',
+    this.description = '',
+    this.deadline = '',
+    List<Objective>? objectives,
+    List<RutaModule>? modules,
+  })  : objectives = objectives ?? [],
+        modules = modules ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'order': order,
+        'title': title,
+        'description': description,
+        'deadline': deadline,
+        'objectives': objectives.map((o) => o.toJson()).toList(),
+        'modules': modules.map((m) => m.toJson()).toList(),
+      };
+
+  factory Phase.fromJson(Map<String, dynamic> j) => Phase(
+        id: j['id'] as String,
+        order: (j['order'] as num?)?.toInt() ?? 1,
+        title: (j['title'] as String?) ?? '',
         description: (j['description'] as String?) ?? '',
-        objectives: (j['objectives'] as String?) ?? '',
-        mentorId: (j['mentorId'] as String?) ?? '',
-        sponsorCompanyId: (j['sponsorCompanyId'] as String?) ?? '',
+        deadline: (j['deadline'] as String?) ?? '',
+        objectives: (j['objectives'] as List? ?? const [])
+            .map((e) =>
+                Objective.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        modules: (j['modules'] as List? ?? const [])
+            .map((e) =>
+                RutaModule.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+/// Estado de [Phase.deadline] respecto a hoy, para un estudiante puntual
+/// (una fase ya completada nunca está "atrasada" aunque haya pasado la
+/// fecha). Lo calcula [DataProvider.phaseDeadlineStatus].
+enum DeadlineStatus { none, onTrack, approaching, overdue }
+
+/// Progreso de un estudiante en la Ruta de Impacto de UN laboratorio
+/// (un estudiante en varios laboratorios tiene una Ruta independiente por
+/// cada uno). El desbloqueo de fases y el completado de módulos/objetivos
+/// se derivan de esto + del progreso de los cursos vinculados
+/// (ver métodos de Ruta de Impacto en [DataProvider]).
+class RutaProgress {
+  final String id; // '$studentId::$labId'
+  final String studentId;
+  final String labId;
+  List<String> completedOwnLessonIds; // entregas/lecturas propias de módulos
+  DateTime? updatedAt;
+
+  RutaProgress({
+    required this.studentId,
+    required this.labId,
+    List<String>? completedOwnLessonIds,
+    this.updatedAt,
+  })  : id = '$studentId::$labId',
+        completedOwnLessonIds = completedOwnLessonIds ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'studentId': studentId,
+        'labId': labId,
+        'completedOwnLessonIds': completedOwnLessonIds,
+        'updatedAt': updatedAt?.toIso8601String(),
+      };
+
+  factory RutaProgress.fromJson(Map<String, dynamic> j) => RutaProgress(
+        studentId: j['studentId'] as String,
+        labId: j['labId'] as String,
+        completedOwnLessonIds:
+            List<String>.from(j['completedOwnLessonIds'] as List? ?? const []),
+        updatedAt: j['updatedAt'] == null
+            ? null
+            : DateTime.tryParse(j['updatedAt'] as String),
       );
 }
 
@@ -394,11 +660,15 @@ class Course {
   String fullDescription;
   String coverImagePath;
   String introVideoPath;
-  String labId; // vacío para RUTA NATIONAL EXPO
-  String mentorId; // mentor creador
+  String labId; // vacío para RUTA NATIONAL EXPO (legado) o para Open Learning
+  String creatorId; // LXD que creó el curso
   List<CourseModule> modules;
-  bool isRutaExpo;
-  String projectId; // solo para RUTA NATIONAL EXPO
+  bool isRutaExpo; // legado: ya no se usa para crear rutas nuevas
+  String projectId; // legado, solo para RUTA NATIONAL EXPO
+
+  /// Curso de Open Learning: se asigna directo a estudiantes, sin
+  /// laboratorio, fases ni Ruta de Impacto.
+  bool isOpenLearning;
 
   // Categorización y pedagogía
   String level; // Básico | Intermedio | Avanzado
@@ -407,6 +677,12 @@ class Course {
   String status; // Borrador | Publicado | Archivado
   List<String> tags;
   List<String> objectives;
+
+  /// Objetivos del curso por categoría: al asignar este curso a un módulo
+  /// de una fase, se prellenan como objetivos de esa fase
+  /// (ver [Objective] y sección 5.4 de la Ruta de Impacto).
+  List<String> entrepreneurshipObjectives;
+  List<String> businessObjectives;
   List<String> competencies;
   List<String> learningOutcomes;
   List<String> prerequisiteCourseIds;
@@ -414,9 +690,7 @@ class Course {
 
   // Certificado
   bool generatesCertificate;
-  String certificateName;
   int certifiedHours;
-  String certificateSigner;
 
   // Restricciones y patrocinio
   String openDate; // ISO o vacío
@@ -434,24 +708,25 @@ class Course {
     this.coverImagePath = '',
     this.introVideoPath = '',
     this.labId = '',
-    this.mentorId = '',
+    this.creatorId = '',
     List<CourseModule>? modules,
     this.isRutaExpo = false,
     this.projectId = '',
+    this.isOpenLearning = false,
     this.level = 'Básico',
     this.estimatedHours = 0,
     this.language = 'Español',
     this.status = 'Publicado',
     List<String>? tags,
     List<String>? objectives,
+    List<String>? entrepreneurshipObjectives,
+    List<String>? businessObjectives,
     List<String>? competencies,
     List<String>? learningOutcomes,
     List<String>? prerequisiteCourseIds,
     List<String>? ods,
     this.generatesCertificate = false,
-    this.certificateName = '',
     this.certifiedHours = 0,
-    this.certificateSigner = '',
     this.openDate = '',
     this.closeDate = '',
     this.maxStudents = 0,
@@ -460,6 +735,8 @@ class Course {
   })  : modules = modules ?? [],
         tags = tags ?? [],
         objectives = objectives ?? [],
+        entrepreneurshipObjectives = entrepreneurshipObjectives ?? [],
+        businessObjectives = businessObjectives ?? [],
         competencies = competencies ?? [],
         learningOutcomes = learningOutcomes ?? [],
         prerequisiteCourseIds = prerequisiteCourseIds ?? [],
@@ -479,24 +756,25 @@ class Course {
         'coverImagePath': coverImagePath,
         'introVideoPath': introVideoPath,
         'labId': labId,
-        'mentorId': mentorId,
+        'creatorId': creatorId,
         'modules': modules.map((m) => m.toJson()).toList(),
         'isRutaExpo': isRutaExpo,
         'projectId': projectId,
+        'isOpenLearning': isOpenLearning,
         'level': level,
         'estimatedHours': estimatedHours,
         'language': language,
         'status': status,
         'tags': tags,
         'objectives': objectives,
+        'entrepreneurshipObjectives': entrepreneurshipObjectives,
+        'businessObjectives': businessObjectives,
         'competencies': competencies,
         'learningOutcomes': learningOutcomes,
         'prerequisiteCourseIds': prerequisiteCourseIds,
         'ods': ods,
         'generatesCertificate': generatesCertificate,
-        'certificateName': certificateName,
         'certifiedHours': certifiedHours,
-        'certificateSigner': certificateSigner,
         'openDate': openDate,
         'closeDate': closeDate,
         'maxStudents': maxStudents,
@@ -513,13 +791,17 @@ class Course {
         coverImagePath: (j['coverImagePath'] as String?) ?? '',
         introVideoPath: (j['introVideoPath'] as String?) ?? '',
         labId: (j['labId'] as String?) ?? '',
-        mentorId: (j['mentorId'] as String?) ?? '',
+        // Compatibilidad: los cursos guardados antes del rename Mentor→LXD
+        // usan la clave antigua `mentorId` para el creador.
+        creatorId:
+            (j['creatorId'] as String?) ?? (j['mentorId'] as String?) ?? '',
         modules: (j['modules'] as List? ?? const [])
             .map((e) =>
                 CourseModule.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
         isRutaExpo: (j['isRutaExpo'] as bool?) ?? false,
         projectId: (j['projectId'] as String?) ?? '',
+        isOpenLearning: (j['isOpenLearning'] as bool?) ?? false,
         level: (j['level'] as String?) ?? 'Básico',
         estimatedHours: (j['estimatedHours'] as num?)?.toInt() ?? 0,
         language: (j['language'] as String?) ?? 'Español',
@@ -527,6 +809,10 @@ class Course {
         tags: List<String>.from(j['tags'] as List? ?? const []),
         objectives:
             List<String>.from(j['objectives'] as List? ?? const []),
+        entrepreneurshipObjectives: List<String>.from(
+            j['entrepreneurshipObjectives'] as List? ?? const []),
+        businessObjectives:
+            List<String>.from(j['businessObjectives'] as List? ?? const []),
         competencies:
             List<String>.from(j['competencies'] as List? ?? const []),
         learningOutcomes:
@@ -536,9 +822,7 @@ class Course {
         ods: List<String>.from(j['ods'] as List? ?? const []),
         generatesCertificate:
             (j['generatesCertificate'] as bool?) ?? false,
-        certificateName: (j['certificateName'] as String?) ?? '',
         certifiedHours: (j['certifiedHours'] as num?)?.toInt() ?? 0,
-        certificateSigner: (j['certificateSigner'] as String?) ?? '',
         openDate: (j['openDate'] as String?) ?? '',
         closeDate: (j['closeDate'] as String?) ?? '',
         maxStudents: (j['maxStudents'] as num?)?.toInt() ?? 0,
@@ -585,10 +869,14 @@ class Progress {
       );
 }
 
-/// Entrega de un estudiante (individual) o de un grupo (RUTA NATIONAL EXPO).
+/// Entrega de un estudiante (individual) o de un grupo (legado, RUTA
+/// NATIONAL EXPO). [courseId] identifica una actividad de curso;
+/// [rutaModuleId] identifica una entrega propia de un módulo de la Ruta de
+/// Impacto (ver [RutaModule]) — son mutuamente excluyentes.
 class Submission {
   final String id;
   final String courseId;
+  final String rutaModuleId;
   final String studentId; // vacío si es grupal
   final String groupId; // vacío si es individual
   final String lessonId; // actividad/encuesta asociada (vacío = entrega libre)
@@ -603,7 +891,8 @@ class Submission {
 
   Submission({
     required this.id,
-    required this.courseId,
+    this.courseId = '',
+    this.rutaModuleId = '',
     this.studentId = '',
     this.groupId = '',
     this.lessonId = '',
@@ -618,6 +907,7 @@ class Submission {
   Map<String, dynamic> toJson() => {
         'id': id,
         'courseId': courseId,
+        'rutaModuleId': rutaModuleId,
         'studentId': studentId,
         'groupId': groupId,
         'lessonId': lessonId,
@@ -631,7 +921,8 @@ class Submission {
 
   factory Submission.fromJson(Map<String, dynamic> j) => Submission(
         id: j['id'] as String,
-        courseId: j['courseId'] as String,
+        courseId: (j['courseId'] as String?) ?? '',
+        rutaModuleId: (j['rutaModuleId'] as String?) ?? '',
         studentId: (j['studentId'] as String?) ?? '',
         groupId: (j['groupId'] as String?) ?? '',
         lessonId: (j['lessonId'] as String?) ?? '',
@@ -644,14 +935,18 @@ class Submission {
       );
 }
 
+/// Certificado por completar la Ruta de Impacto de un laboratorio
+/// (ya no existe certificado por curso individual). Lo emite quien tenga
+/// el permiso de calificar activo en ese contexto
+/// (ver [AppUser.canGradeEnactus] / [AppUser.canGradeOpenLearning]).
 class Certificate {
   final String id;
   final String code;
   final String studentId;
   final String studentName;
-  final String courseId;
-  final String courseName;
-  final String mentorName;
+  final String labId;
+  final String labName;
+  final String issuerName;
   final int hours; // horas certificadas (0 = no mostrar)
   final DateTime date;
 
@@ -660,9 +955,9 @@ class Certificate {
     required this.code,
     required this.studentId,
     required this.studentName,
-    required this.courseId,
-    required this.courseName,
-    required this.mentorName,
+    required this.labId,
+    required this.labName,
+    required this.issuerName,
     this.hours = 0,
     DateTime? date,
   }) : date = date ?? DateTime.now();
@@ -672,9 +967,9 @@ class Certificate {
         'code': code,
         'studentId': studentId,
         'studentName': studentName,
-        'courseId': courseId,
-        'courseName': courseName,
-        'mentorName': mentorName,
+        'labId': labId,
+        'labName': labName,
+        'issuerName': issuerName,
         'hours': hours,
         'date': date.toIso8601String(),
       };
@@ -684,9 +979,14 @@ class Certificate {
         code: j['code'] as String,
         studentId: j['studentId'] as String,
         studentName: j['studentName'] as String,
-        courseId: j['courseId'] as String,
-        courseName: j['courseName'] as String,
-        mentorName: j['mentorName'] as String,
+        // Compatibilidad con certificados por curso (legado, previos a
+        // "certificado por Ruta de Impacto").
+        labId: (j['labId'] as String?) ?? (j['courseId'] as String?) ?? '',
+        labName:
+            (j['labName'] as String?) ?? (j['courseName'] as String?) ?? '',
+        issuerName: (j['issuerName'] as String?) ??
+            (j['mentorName'] as String?) ??
+            '',
         hours: (j['hours'] as num?)?.toInt() ?? 0,
         date: DateTime.parse(j['date'] as String),
       );
@@ -795,6 +1095,42 @@ class AppNotification {
 }
 
 // ---------------------------------------------------------------------------
+// Foro de la comunidad Enactus
+// ---------------------------------------------------------------------------
+
+/// Publicación del foro: el único espacio de la plataforma que NO está
+/// aislado por laboratorio, universidad o empresa — lo comparten Admin,
+/// Super Admin, Asesores y estudiantes Enactus (ver
+/// [DataProvider.canAccessForum]).
+class ForumPost {
+  final String id;
+  final String authorId;
+  String body;
+  final DateTime date;
+
+  ForumPost({
+    required this.id,
+    required this.authorId,
+    required this.body,
+    DateTime? date,
+  }) : date = date ?? DateTime.now();
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'authorId': authorId,
+        'body': body,
+        'date': date.toIso8601String(),
+      };
+
+  factory ForumPost.fromJson(Map<String, dynamic> j) => ForumPost(
+        id: j['id'] as String,
+        authorId: j['authorId'] as String,
+        body: (j['body'] as String?) ?? '',
+        date: DateTime.tryParse(j['date'] as String? ?? '') ?? DateTime.now(),
+      );
+}
+
+// ---------------------------------------------------------------------------
 // Contenido editable de la página principal
 // ---------------------------------------------------------------------------
 
@@ -804,6 +1140,12 @@ class SiteContent {
   String bannerText;
   String aboutText;
 
+  /// Link genérico de videollamada para los módulos de mentoría (Ruta de
+  /// Impacto) y las reuniones LXD↔estudiante de Open Learning. Por ahora es
+  /// un solo link fijo editable por Admin, sin integración real con un
+  /// proveedor de meetings.
+  String meetingLink;
+
   SiteContent({
     this.heroTitle = 'Enactus Colombia',
     this.heroSubtitle =
@@ -812,6 +1154,7 @@ class SiteContent {
     this.aboutText =
         'Conectamos estudiantes, mentores, universidades, empresas y donantes '
         'para crear proyectos de impacto social en toda Colombia.',
+    this.meetingLink = 'https://meet.google.com/enactus-mentoria',
   });
 
   Map<String, dynamic> toJson() => {
@@ -819,6 +1162,7 @@ class SiteContent {
         'heroSubtitle': heroSubtitle,
         'bannerText': bannerText,
         'aboutText': aboutText,
+        'meetingLink': meetingLink,
       };
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
@@ -826,5 +1170,7 @@ class SiteContent {
         heroSubtitle: (j['heroSubtitle'] as String?) ?? '',
         bannerText: (j['bannerText'] as String?) ?? '',
         aboutText: (j['aboutText'] as String?) ?? '',
+        meetingLink: (j['meetingLink'] as String?) ??
+            'https://meet.google.com/enactus-mentoria',
       );
 }

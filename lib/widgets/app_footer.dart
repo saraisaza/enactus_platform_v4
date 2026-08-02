@@ -4,9 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import 'animated_logo.dart';
+import 'common.dart';
 
 /// Footer institucional presente en todas las pantallas.
-/// Hairline dorado superior, logo animado, tagline y redes sociales.
+/// Borde tricolor superior (bandera de Colombia), logo animado, tagline y
+/// redes sociales.
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
 
@@ -24,21 +26,10 @@ class AppFooter extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Hairline dorado que se desvanece hacia los bordes
-          Container(
-            height: 2,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.gold.withValues(alpha: 0),
-                  AppColors.gold.withValues(alpha: 0.85),
-                  AppColors.gold.withValues(alpha: 0),
-                ],
-              ),
-            ),
-          ),
+          // Borde tricolor de la bandera de Colombia, izquierda a derecha
+          const ColombiaFlagBar(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+            padding: const EdgeInsets.fromLTRB(28, 18, 4, 18),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -47,11 +38,11 @@ class AppFooter extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const AnimatedLogo(height: 56),
+                    const AnimatedLogo(height: 95),
                     const SizedBox(width: 18),
                     Container(
                       width: 1,
-                      height: 44,
+                      height: 75,
                       color: Colors.white.withValues(alpha: 0.12),
                     ),
                     const SizedBox(width: 18),
@@ -76,24 +67,27 @@ class AppFooter extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    _SocialButton(
-                        icon: Icons.facebook,
-                        label: 'Facebook',
-                        url: SocialLinks.facebook),
-                    SizedBox(width: 10),
-                    _SocialButton(
-                        icon: Icons.camera_alt_outlined,
-                        label: 'Instagram',
-                        url: SocialLinks.instagram),
-                    SizedBox(width: 10),
-                    _SocialButton(
-                        icon: Icons.business_center_outlined,
-                        label: 'LinkedIn',
-                        url: SocialLinks.linkedin),
-                  ],
+                Transform.translate(
+                  offset: const Offset(100, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      _SocialButton(
+                          icon: Icons.facebook,
+                          label: 'Facebook',
+                          url: SocialLinks.facebook),
+                      SizedBox(width: 10),
+                      _SocialButton(
+                          icon: Icons.camera_alt_outlined,
+                          label: 'Instagram',
+                          url: SocialLinks.instagram),
+                      SizedBox(width: 10),
+                      _SocialButton(
+                          icon: Icons.business_center_outlined,
+                          label: 'LinkedIn',
+                          url: SocialLinks.linkedin),
+                    ],
+                  ),
                 ),
               ],
             ),

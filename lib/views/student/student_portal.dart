@@ -7,19 +7,31 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/forum_view.dart';
+import '../shared/projects_directory_view.dart';
 import 'course_detail_view.dart';
-import 'ruta_expo_view.dart';
+import 'ruta_impacto_view.dart' show LabsView, RutaImpactoShortcut;
 
+/// Portal del estudiante. Un estudiante Enactus ve Laboratorios y su Ruta
+/// de Impacto; uno de Open Learning solo ve y completa sus cursos
+/// asignados (sin laboratorios, fases ni módulos).
 class StudentPortal extends StatelessWidget {
   const StudentPortal({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final student = context.watch<AuthProvider>().currentUser!;
+    final isEnactus = student.studentType == StudentType.enactus;
+
     return PortalShell(
-      portalTitle: 'Portal Estudiante',
+      // Mismo portal para estudiante y alumni (ver Roles.isStudentLike):
+      // solo cambia el título visible, según lo pidió el usuario ("que se
+      // llame alumni").
+      portalTitle: 'Portal ${Roles.label(student.role)}',
       tabs: [
         PortalTab(
             label: 'Dashboard',
@@ -29,10 +41,24 @@ class StudentPortal extends StatelessWidget {
             label: 'Mis Cursos',
             icon: Icons.school_outlined,
             builder: (_) => const _StudentCourses()),
-        PortalTab(
-            label: 'RUTA NATIONAL EXPO',
-            icon: Icons.emoji_events_outlined,
-            builder: (_) => const RutaExpoView()),
+        if (isEnactus) ...[
+          PortalTab(
+              label: 'Laboratorios',
+              icon: Icons.science_outlined,
+              builder: (_) => const LabsView()),
+          PortalTab(
+              label: 'Ruta de Impacto',
+              icon: Icons.emoji_events_outlined,
+              builder: (_) => const RutaImpactoShortcut()),
+          PortalTab(
+              label: 'Directorio de Proyectos',
+              icon: Icons.explore_outlined,
+              builder: (_) => const ProjectsDirectoryView()),
+          PortalTab(
+              label: 'Foro',
+              icon: Icons.forum_outlined,
+              builder: (_) => const ForumView()),
+        ],
         PortalTab(
             label: 'Certificados',
             icon: Icons.workspace_premium_outlined,
@@ -66,16 +92,8 @@ class _StudentDashboard extends StatelessWidget {
     final pendingTasks = <String>[];
     for (final c in courses) {
       final progress = data.courseProgress(student.id, c);
-      if (progress < 1.0 && !c.isRutaExpo) {
+      if (progress < 1.0) {
         pendingTasks.add('Continuar "${c.name}"');
-      }
-    }
-    if (group != null) {
-      final checklist = data.checklistFor(group.id);
-      for (final item in checklist.items) {
-        if (item['done'] != true) {
-          pendingTasks.add('EXPO: ${item['label']}');
-        }
       }
     }
 
@@ -108,9 +126,7 @@ class _StudentDashboard extends StatelessWidget {
                     data: [
                       for (final course in courses)
                         (
-                          label: course.isRutaExpo
-                              ? 'EXPO'
-                              : course.name.split(' ').take(2).join(' '),
+                          label: course.name.split(' ').take(2).join(' '),
                           value:
                               data.courseProgress(student.id, course) * 100,
                         ),
@@ -210,8 +226,8 @@ class _CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final lab = data.labById(course.labId);
-    final mentor =
-        course.mentorId.isEmpty ? null : data.userById(course.mentorId);
+    final creator =
+        course.creatorId.isEmpty ? null : data.userById(course.creatorId);
     final progress = data.courseProgress(studentId, course);
     final done = data
         .progressFor(studentId, course.id)
@@ -226,7 +242,7 @@ class _CourseCard extends StatelessWidget {
         );
 
     // Al pasar el mouse: la tarjeta se eleva, el borde pasa a amarillo y
-    // aparece el detalle (mentor, duración, avance) con el botón Continuar.
+    // aparece el detalle (LXD, duración, avance) con el botón Continuar.
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hover) => GestureDetector(
@@ -313,7 +329,7 @@ class _CourseCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            '${mentor != null ? 'Mentor: ${mentor.name} · ' : ''}'
+                            '${creator != null ? 'Docente: ${creator.name} · ' : ''}'
                             '~$durationMin min',
                             style: const TextStyle(
                                 color: AppColors.textSecondary,
@@ -359,7 +375,7 @@ class _StudentCertificates extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Certificados',
-      subtitle: 'Certificados emitidos por tus mentores',
+      subtitle: 'Certificados emitidos por tus LXD al completar una Ruta de Impacto',
       children: [
         if (certs.isEmpty)
           const EmptyState(
@@ -406,12 +422,12 @@ class _StudentCertificates extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(cert.courseName,
+                                Text('Ruta de Impacto · ${cert.labName}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.w700)),
                                 Text(
                                   'Emitido el ${DateFormat('d MMM yyyy').format(cert.date)} · '
-                                  'Mentor: ${cert.mentorName} · Código: ${cert.code}',
+                                  'Por: ${cert.issuerName} · Código: ${cert.code}',
                                   style: const TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 12),
@@ -494,22 +510,15 @@ class _StudentProfile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: AppColors.gold,
-                    child: Text(student.name[0].toUpperCase(),
-                        style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF1A1400))),
-                  ),
+                  InitialsAvatar(student.name,
+                      large: true, radius: 30, fontSize: 26),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(student.name,
                           style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w800)),
+                              fontSize: 20, fontWeight: FontWeight.w700)),
                       Text(student.email,
                           style: const TextStyle(
                               color: AppColors.textMuted, fontSize: 13)),

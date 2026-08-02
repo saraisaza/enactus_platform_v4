@@ -48,7 +48,7 @@ class CourseTrackingView extends StatelessWidget {
                         child: Text(course.name,
                             style: const TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: AppColors.gold)),
                       ),
                       StatusChip(

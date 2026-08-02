@@ -24,6 +24,8 @@ class DbService {
     'content',
     'session',
     'mentor_notes',
+    'ruta_progress',
+    'forum_posts',
   ];
 
   static Future<void> init() async {

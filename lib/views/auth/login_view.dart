@@ -55,16 +55,19 @@ class _LoginViewState extends State<LoginView> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: Column(
+                    // Scrollable: si el contenido no cabe en el alto
+                    // disponible (pantallas bajas, error visible, cambios de
+                    // fuente) se desplaza en vez de desbordar.
+                    child: SingleChildScrollView(
+                      child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Center(child: AnimatedLogo(height: 84)),
                         const SizedBox(height: 20),
-                        const Text('Bienvenido de nuevo',
+                        Text('Bienvenido de nuevo'.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.w800)),
+                            style: knockoutHeading(fontSize: 26)),
                         const SizedBox(height: 6),
                         const Text(
                           'Ingresa con la cuenta creada por tu administrador',
@@ -129,6 +132,7 @@ class _LoginViewState extends State<LoginView> {
                           child: const Text('← Volver al inicio'),
                         ),
                       ],
+                    ),
                     ),
                   ),
                     ),

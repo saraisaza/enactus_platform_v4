@@ -133,6 +133,39 @@ class HoverCard extends StatelessWidget {
   }
 }
 
+/// Círculo con la inicial del nombre en mayúscula: el mismo patrón se
+/// repetía copiado en cada lista de personas de la plataforma (equipos,
+/// foro, BuscaTalento, perfiles...). [large] usa los colores/tamaño de
+/// encabezado de perfil; [radius] permite ajustar el tamaño exacto sin
+/// duplicar el resto del widget.
+class InitialsAvatar extends StatelessWidget {
+  final String name;
+  final bool large;
+  final double? radius;
+  final double? fontSize;
+  const InitialsAvatar(this.name,
+      {super.key, this.large = false, this.radius, this.fontSize});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.isEmpty ? '?' : name[0].toUpperCase();
+    return CircleAvatar(
+      radius: radius ?? (large ? 26 : null),
+      backgroundColor: large ? AppColors.gold : AppColors.slate,
+      child: Text(
+        initial,
+        style: large
+            ? TextStyle(
+                fontSize: fontSize ?? 19,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1400))
+            : const TextStyle(
+                color: AppColors.gold, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
 /// Tile de estadística: número héroe con contador animado + etiqueta.
 /// [detail] agrega un tooltip con el desglose al pasar el mouse.
 /// [trend] muestra una línea secundaria (p. ej. "↑ +18 este mes").
@@ -196,8 +229,8 @@ class _AnimatedValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final match = RegExp(r'^(\d+)(.*)$').firstMatch(value);
-    const style = TextStyle(
-        fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary);
+    final style = knockoutHeading(
+        fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.textPrimary);
     if (match == null) return Text(value, style: style);
     final number = int.parse(match.group(1)!);
     final suffix = match.group(2)!;
@@ -312,7 +345,33 @@ class EmptyState extends StatelessWidget {
   }
 }
 
-/// Título de sección dentro de una pestaña.
+/// Título de sección dentro de una pestaña (Knockout, mayúsculas). Espaciado
+/// arriba/abajo fijo: al ser el único widget de encabezado de sección de
+/// toda la app, mantenerlo centralizado aquí es lo que garantiza que ese
+/// espaciado quede consistente sitio-wide sin repetirlo en cada vista.
+/// Borde delgado tricolor (amarillo, azul, rojo) que evoca la bandera de
+/// Colombia, izquierda a derecha. Usado como acento superior en header/footer.
+class ColombiaFlagBar extends StatelessWidget {
+  final double height;
+  const ColombiaFlagBar({super.key, this.height = 4});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(flex: 2, child: ColoredBox(color: AppColors.colombiaYellow)),
+          Expanded(child: ColoredBox(color: AppColors.colombiaBlue)),
+          Expanded(child: ColoredBox(color: AppColors.colombiaRed)),
+        ],
+      ),
+    );
+  }
+}
+
 class SectionTitle extends StatelessWidget {
   final String text;
   const SectionTitle(this.text, {super.key});
@@ -320,11 +379,11 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 10),
-      child: Text(text,
-          style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+      padding: const EdgeInsets.only(top: 24, bottom: 12),
+      child: Text(text.toUpperCase(),
+          style: knockoutHeading(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary)),
     );
   }
@@ -358,6 +417,30 @@ class StatusChip extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Insignia del estado de una fase de la Ruta de Impacto para un
+/// estudiante: completa, en curso o bloqueada. Se usa en los portales de
+/// Mentor y Asesor para mostrar en qué fase/laboratorio va cada estudiante.
+class PhaseBadge extends StatelessWidget {
+  final String label;
+  final bool complete;
+  final bool unlocked;
+  const PhaseBadge(
+      {super.key,
+      required this.label,
+      required this.complete,
+      required this.unlocked});
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, icon) = complete
+        ? (AppColors.statusGood, Icons.check_circle)
+        : unlocked
+            ? (AppColors.statusWarning, Icons.hourglass_empty)
+            : (AppColors.textMuted, Icons.lock_outline);
+    return StatusChip(label: label, color: color, icon: icon);
   }
 }
 

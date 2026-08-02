@@ -32,7 +32,7 @@ class NotFoundView extends StatelessWidget {
                       '404',
                       style: TextStyle(
                         fontSize: 72,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.gold,
                         height: 1,
                       ),

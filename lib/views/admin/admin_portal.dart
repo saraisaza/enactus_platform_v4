@@ -9,6 +9,7 @@ import '../../utils/constants.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/forum_view.dart';
 import 'admin_backup.dart';
 import 'admin_management.dart';
 
@@ -43,11 +44,18 @@ class AdminPortal extends StatelessWidget {
             label: 'Asignaciones',
             icon: Icons.assignment_ind_outlined,
             builder: (_) => const AdminAssignments()),
-        if (isSuperAdmin)
-          PortalTab(
-              label: 'Laboratorios',
-              icon: Icons.science_outlined,
-              builder: (_) => const AdminLabs()),
+        PortalTab(
+            label: 'Foro',
+            icon: Icons.forum_outlined,
+            builder: (_) => const ForumView()),
+        PortalTab(
+            label: 'Laboratorios',
+            icon: Icons.science_outlined,
+            builder: (_) => const AdminLabs()),
+        PortalTab(
+            label: 'Cursos',
+            icon: Icons.video_library_outlined,
+            builder: (_) => const AdminCourses()),
         PortalTab(
             label: 'Evidencias donantes',
             icon: Icons.volunteer_activism_outlined,
@@ -75,7 +83,10 @@ class AdminDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final students = data.usersByRole(Roles.student);
+    // Estudiantes y Alumni cuentan igual (ver Roles.isStudentLike): si no,
+    // este dashboard quedaría en desacuerdo con Usuarios, Asignaciones y
+    // cualquier otra vista que ya los cuenta juntos.
+    final students = data.studentsAndAlumni;
     final universities = students.map((s) => s.university).toSet()
       ..remove('');
 
@@ -207,7 +218,7 @@ class _ImpactMetrics extends StatelessWidget {
           icon: Icons.insights_outlined,
           message:
               'Configura competencias, ODS y horas en los cursos (constructor '
-              'del mentor) para ver métricas de impacto formativo.');
+              'del LXD) para ver métricas de impacto formativo.');
     }
 
     return Column(
@@ -346,6 +357,8 @@ class _AdminUsersState extends State<AdminUsers> {
     final creatableRoles = [
       if (widget.isSuperAdmin) Roles.admin,
       Roles.student,
+      Roles.alumni,
+      Roles.lxd,
       Roles.mentor,
       Roles.advisor,
       Roles.company,
@@ -356,7 +369,7 @@ class _AdminUsersState extends State<AdminUsers> {
       title: 'Usuarios',
       subtitle: widget.isSuperAdmin
           ? 'Crea y elimina cualquier tipo de cuenta (incluidos admins)'
-          : 'Crea cuentas de estudiantes, mentores, asesores, empresas y donantes',
+          : 'Crea cuentas de estudiantes, LXD, mentores, asesores, empresas y donantes',
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.person_add, size: 18),
@@ -459,14 +472,33 @@ class _AdminUsersState extends State<AdminUsers> {
     return true;
   }
 
-  String _detail(DataProvider data, AppUser u) => switch (u.role) {
-        Roles.student => u.university,
-        Roles.mentor => data.labById(u.labId)?.name ?? '',
-        Roles.advisor => u.university,
-        Roles.company => data.labById(u.sponsoredLabId)?.name ?? '',
-        Roles.donor => u.impactCode,
-        _ => '',
-      };
+  String _detail(DataProvider data, AppUser u) {
+    if (Roles.isStudentLike(u.role)) {
+      if (u.studentType == StudentType.openLearning) {
+        return StudentType.label(u.studentType);
+      }
+      final labNames = data.labsForStudent(u).map((l) => l.name).join(', ');
+      return '${StudentType.label(u.studentType)} · ${u.university} · '
+          '${labNames.isEmpty ? 'sin laboratorio' : labNames}';
+    }
+    return switch (u.role) {
+      Roles.lxd => 'Califica: ${_gradingContexts(u)}'
+          '${u.companyId == null ? '' : ' · ${data.userById(u.companyId!)?.companyName ?? ''}'}',
+      Roles.mentor => data.labsForMentor(u).map((l) => l.name).join(', '),
+      Roles.advisor => u.university,
+      Roles.company => data.labsForCompany(u.id).map((l) => l.name).join(', '),
+      Roles.donor => u.impactCode,
+      _ => '',
+    };
+  }
+
+  String _gradingContexts(AppUser lxd) {
+    final contexts = [
+      if (lxd.canGradeOpenLearning) 'Open Learning',
+      if (lxd.canGradeEnactus) 'Enactus',
+    ];
+    return contexts.isEmpty ? 'ninguno' : contexts.join(', ');
+  }
 }
 
 /// Diálogo de creación/edición de usuario con campos según el rol.
@@ -483,7 +515,7 @@ Future<void> showUserDialog(
       TextEditingController(text: user?.university ?? '');
   final careerCtrl = TextEditingController(text: user?.career ?? '');
   final companyCtrl = TextEditingController(
-      text: user?.role == Roles.mentor
+      text: user?.role == Roles.lxd
           ? (user?.extra['company'] as String? ?? '')
           : (user?.companyName ?? ''));
   final positionCtrl =
@@ -502,7 +534,13 @@ Future<void> showUserDialog(
       text: user?.impactCode ??
           'ENACTUS-${DateTime.now().year}-${1000 + DateTime.now().millisecond * 9}');
   var role = user?.role ?? creatableRoles.first;
-  String? labId = user?.labId ?? user?.sponsoredLabId;
+  var canGradeOpenLearning = user?.canGradeOpenLearning ?? true;
+  var canGradeEnactus = user?.canGradeEnactus ?? false;
+  var studentType = user?.studentType ?? StudentType.enactus;
+  String? alliedCompanyId =
+      (user?.role == Roles.lxd || user?.role == Roles.mentor)
+          ? user?.companyId
+          : null;
 
   await showDialog<void>(
     context: context,
@@ -547,8 +585,28 @@ Future<void> showUserDialog(
                     controller: phoneCtrl,
                     decoration:
                         const InputDecoration(labelText: 'Teléfono')),
-                // Campos según el rol
-                if (role == Roles.student) ...[
+                // Campos según el rol (alumni usa los mismos que estudiante:
+                // ver Roles.isStudentLike)
+                if (Roles.isStudentLike(role)) ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: studentType,
+                    decoration: const InputDecoration(
+                        labelText: 'Tipo de estudiante'),
+                    items: [
+                      for (final t in StudentType.all)
+                        DropdownMenuItem(
+                            value: t, child: Text(StudentType.label(t))),
+                    ],
+                    onChanged: (v) => setState(() => studentType = v!),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                      studentType == StudentType.openLearning
+                          ? 'Solo ve y completa los cursos que le asignes. Sin laboratorios ni Ruta de Impacto.'
+                          : 'Ve Laboratorios y su Ruta de Impacto (se asignan desde "Asignaciones").',
+                      style: const TextStyle(
+                          fontSize: 11.5, color: AppColors.textMuted)),
                   const SizedBox(height: 12),
                   TextField(
                       controller: cedulaCtrl,
@@ -565,23 +623,28 @@ Future<void> showUserDialog(
                       decoration:
                           const InputDecoration(labelText: 'Carrera')),
                 ],
-                if (role == Roles.mentor) ...[
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: labId,
-                    decoration:
-                        const InputDecoration(labelText: 'Laboratorio'),
-                    items: [
-                      for (final l in data.labs)
-                        DropdownMenuItem(value: l.id, child: Text(l.name)),
-                    ],
-                    onChanged: (v) => setState(() => labId = v),
-                  ),
+                if (role == Roles.lxd) ...[
                   const SizedBox(height: 12),
                   TextField(
                       controller: companyCtrl,
                       decoration:
                           const InputDecoration(labelText: 'Empresa')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: alliedCompanyId,
+                    decoration: const InputDecoration(
+                        labelText: 'Empresa aliada (opcional)',
+                        helperText:
+                            'Si este LXD es de una empresa aliada, sus cursos quedan atribuidos a ella.'),
+                    items: [
+                      const DropdownMenuItem(
+                          value: null, child: Text('Ninguna (LXD de Enactus)')),
+                      for (final c in data.usersByRole(Roles.company))
+                        DropdownMenuItem(
+                            value: c.id, child: Text(c.companyName)),
+                    ],
+                    onChanged: (v) => setState(() => alliedCompanyId = v),
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                       controller: positionCtrl,
@@ -612,6 +675,57 @@ Future<void> showUserDialog(
                       controller: interestsCtrl,
                       decoration:
                           const InputDecoration(labelText: 'Intereses')),
+                  const SizedBox(height: 14),
+                  const Text('Permiso de calificar',
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.textMuted)),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Open Learning',
+                        style: TextStyle(fontSize: 14)),
+                    subtitle: const Text('Activado por defecto: es el docente que califica',
+                        style: TextStyle(fontSize: 12)),
+                    value: canGradeOpenLearning,
+                    activeThumbColor: AppColors.gold,
+                    onChanged: (v) =>
+                        setState(() => canGradeOpenLearning = v),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Enactus',
+                        style: TextStyle(fontSize: 14)),
+                    subtitle: const Text('Desactivado por defecto: en Enactus no califica',
+                        style: TextStyle(fontSize: 12)),
+                    value: canGradeEnactus,
+                    activeThumbColor: AppColors.gold,
+                    onChanged: (v) => setState(() => canGradeEnactus = v),
+                  ),
+                ],
+                if (role == Roles.mentor) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                      'El laboratorio se asigna desde la pestaña "Laboratorios" '
+                      '(un laboratorio puede tener varios mentores). Los cursos '
+                      'específicos a revisar se asignan desde ahí o desde el '
+                      'portal de la empresa aliada.',
+                      style: TextStyle(
+                          fontSize: 12.5, color: AppColors.textMuted)),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: alliedCompanyId,
+                    decoration: const InputDecoration(
+                        labelText: 'Empresa aliada (opcional)',
+                        helperText:
+                            'Si este Mentor es de una empresa aliada, queda atribuido a ella.'),
+                    items: [
+                      const DropdownMenuItem(
+                          value: null, child: Text('Ninguna (Mentor de Enactus)')),
+                      for (final c in data.usersByRole(Roles.company))
+                        DropdownMenuItem(
+                            value: c.id, child: Text(c.companyName)),
+                    ],
+                    onChanged: (v) => setState(() => alliedCompanyId = v),
+                  ),
                 ],
                 if (role == Roles.advisor) ...[
                   const SizedBox(height: 12),
@@ -626,19 +740,19 @@ Future<void> showUserDialog(
                       controller: companyCtrl,
                       decoration: const InputDecoration(
                           labelText: 'Nombre de la empresa')),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: labId,
-                    decoration: const InputDecoration(
-                        labelText: 'Laboratorio patrocinado (opcional)'),
-                    items: [
-                      const DropdownMenuItem(
-                          value: '', child: Text('Ninguno')),
-                      for (final l in data.labs)
-                        DropdownMenuItem(value: l.id, child: Text(l.name)),
-                    ],
-                    onChanged: (v) => setState(() => labId = v),
-                  ),
+                  if (user != null) ...[
+                    const SizedBox(height: 10),
+                    Builder(builder: (_) {
+                      final labNames = data
+                          .labsForCompany(user.id)
+                          .map((l) => l.name)
+                          .join(', ');
+                      return Text(
+                          'Laboratorios: ${labNames.isEmpty ? 'ninguno todavía — se activan cuando alguno de sus LXD vincula un curso a un laboratorio' : labNames}',
+                          style: const TextStyle(
+                              fontSize: 12, color: AppColors.textMuted));
+                    }),
+                  ],
                 ],
                 if (role == Roles.donor) ...[
                   const SizedBox(height: 12),
@@ -665,24 +779,40 @@ Future<void> showUserDialog(
               final extra =
                   Map<String, dynamic>.from(user?.extra ?? {});
               switch (role) {
-                case Roles.student:
+                case Roles.student || Roles.alumni:
                   extra['university'] = universityCtrl.text.trim();
                   extra['career'] = careerCtrl.text.trim();
-                case Roles.mentor:
-                  extra['labId'] = labId;
+                  extra['studentType'] = studentType;
+                  // Open Learning no tiene laboratorios ni patrocinio: si el
+                  // tipo cambia aquí (y no solo desde "Asignaciones"), hay
+                  // que limpiarlos también para no dejar datos fantasma
+                  // (mismo criterio que AdminAssignments._assign).
+                  if (studentType == StudentType.openLearning) {
+                    extra['labIds'] = <String>[];
+                    extra['companyId'] = null;
+                    extra['donorId'] = null;
+                  }
+                case Roles.lxd:
                   extra['company'] = companyCtrl.text.trim();
+                  extra['companyId'] = alliedCompanyId;
                   extra['position'] = positionCtrl.text.trim();
                   extra['specialty'] = specialtyCtrl.text.trim();
                   extra['languages'] = languagesCtrl.text.trim();
                   extra['availability'] = availabilityCtrl.text.trim();
                   extra['experience'] = experienceCtrl.text.trim();
                   extra['interests'] = interestsCtrl.text.trim();
+                  extra['canGradeOpenLearning'] = canGradeOpenLearning;
+                  extra['canGradeEnactus'] = canGradeEnactus;
+                case Roles.mentor:
+                  extra['companyId'] = alliedCompanyId;
+                  if (alliedCompanyId != null) {
+                    extra['company'] =
+                        data.userById(alliedCompanyId!)?.companyName ?? '';
+                  }
                 case Roles.advisor:
                   extra['university'] = universityCtrl.text.trim();
                 case Roles.company:
                   extra['companyName'] = companyCtrl.text.trim();
-                  extra['sponsoredLabId'] =
-                      (labId ?? '').isEmpty ? null : labId;
                 case Roles.donor:
                   extra['impactCode'] = impactCodeCtrl.text.trim();
               }
@@ -724,6 +854,7 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
   late TextEditingController _subtitle;
   late TextEditingController _banner;
   late TextEditingController _about;
+  late TextEditingController _meetingLink;
 
   @override
   void initState() {
@@ -733,6 +864,7 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
     _subtitle = TextEditingController(text: content.heroSubtitle);
     _banner = TextEditingController(text: content.bannerText);
     _about = TextEditingController(text: content.aboutText);
+    _meetingLink = TextEditingController(text: content.meetingLink);
   }
 
   @override
@@ -766,6 +898,13 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                   maxLines: 3,
                   decoration: const InputDecoration(
                       labelText: 'Texto "Sobre nosotros"')),
+              const SizedBox(height: 14),
+              TextField(
+                  controller: _meetingLink,
+                  decoration: const InputDecoration(
+                      labelText: 'Link de videollamada (módulos de mentoría)',
+                      helperText:
+                          'Un solo link genérico por ahora: no hay integración real con un proveedor de meetings.')),
               const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerRight,
@@ -779,6 +918,9 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                             heroSubtitle: _subtitle.text.trim(),
                             bannerText: _banner.text.trim(),
                             aboutText: _about.text.trim(),
+                            meetingLink: _meetingLink.text.trim().isEmpty
+                                ? SiteContent().meetingLink
+                                : _meetingLink.text.trim(),
                           ),
                         );
                     if (context.mounted) {

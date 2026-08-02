@@ -5,11 +5,16 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/forum_view.dart';
+import '../shared/projects_directory_view.dart';
 
-/// Portal del Asesor Académico: solo ve estudiantes de SU universidad.
+/// Portal del Asesor Académico: ve el progreso completo (cursos, fases y
+/// laboratorios) de los estudiantes de SU universidad, y crea/edita los
+/// proyectos de sus equipos.
 class AdvisorPortal extends StatelessWidget {
   const AdvisorPortal({super.key});
 
@@ -26,6 +31,18 @@ class AdvisorPortal extends StatelessWidget {
             label: 'Seguimiento Estudiantes',
             icon: Icons.person_search_outlined,
             builder: (_) => const _AdvisorStudents()),
+        PortalTab(
+            label: 'Proyectos',
+            icon: Icons.lightbulb_outline,
+            builder: (_) => const _AdvisorProjects()),
+        PortalTab(
+            label: 'Directorio de Proyectos',
+            icon: Icons.explore_outlined,
+            builder: (_) => const ProjectsDirectoryView()),
+        PortalTab(
+            label: 'Foro',
+            icon: Icons.forum_outlined,
+            builder: (_) => const ForumView()),
       ],
     );
   }
@@ -43,10 +60,7 @@ class _AdvisorDashboard extends StatelessWidget {
         .where((g) => g.university == advisor.university)
         .toList();
     final projectIds = myGroups.map((g) => g.projectId).toSet();
-    final expoTeams = myGroups.where((g) {
-      final p = data.projectById(g.projectId);
-      return p?.expoEnabled ?? false;
-    }).length;
+    final activeLabs = students.expand((s) => s.labIds).toSet().length;
     final avgProgress = students.isEmpty
         ? 0.0
         : students.fold<double>(
@@ -71,9 +85,9 @@ class _AdvisorDashboard extends StatelessWidget {
               label: 'Avance promedio',
               icon: Icons.trending_up),
           StatTile(
-              value: '$expoTeams',
-              label: 'Equipos en National Expo',
-              icon: Icons.emoji_events_outlined),
+              value: '$activeLabs',
+              label: 'Laboratorios activos',
+              icon: Icons.science_outlined),
         ]),
         const SizedBox(height: 16),
         ChartCard(
@@ -212,8 +226,7 @@ class _StudentRow extends StatelessWidget {
         group == null ? null : data.projectById(group.projectId);
     final progress = data.overallProgress(student);
     final atRisk = progress < 0.3;
-    final expoSubmissions =
-        group == null ? 0 : data.submissionsForGroup(group.id).length;
+    final labs = data.labsForStudent(student);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -223,13 +236,7 @@ class _StudentRow extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: AppColors.slate,
-                  child: Text(student.name[0],
-                      style: const TextStyle(
-                          color: AppColors.gold,
-                          fontWeight: FontWeight.w700)),
-                ),
+                InitialsAvatar(student.name),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -241,8 +248,7 @@ class _StudentRow extends StatelessWidget {
                       Text(
                         '${student.career} · '
                         'Proyecto: ${project?.name ?? '—'} · '
-                        'Etapa: ${project?.stage ?? '—'} · '
-                        'Entregas EXPO del equipo: $expoSubmissions',
+                        'Etapa: ${project?.stage ?? '—'}',
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 12),
                       ),
@@ -287,7 +293,7 @@ class _StudentRow extends StatelessWidget {
                     SizedBox(
                       width: 120,
                       child: Text(
-                        c.isRutaExpo ? 'RUTA EXPO' : c.name,
+                        c.name,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontSize: 11, color: AppColors.textMuted),
@@ -301,6 +307,256 @@ class _StudentRow extends StatelessWidget {
                   ],
                 ),
               ),
+            // Ruta de Impacto: fase por laboratorio
+            if (labs.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              for (final lab in labs)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        child: Text(lab.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 11, color: AppColors.textMuted)),
+                      ),
+                      Wrap(
+                        spacing: 6,
+                        children: [
+                          for (var i = 0; i < lab.phases.length; i++)
+                            PhaseBadge(
+                              label: 'Fase ${i + 1}',
+                              complete: data.isPhaseComplete(
+                                  student.id, lab.id, lab.phases[i]),
+                              unlocked: data.isPhaseUnlocked(
+                                  student.id, lab.id, lab, i),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Proyectos: el Asesor crea y edita los proyectos de los equipos de su
+// universidad (Admin conserva su propia vista global de todos los
+// proyectos, en la pestaña "Proyectos" de su portal).
+// ---------------------------------------------------------------------------
+
+class _AdvisorProjects extends StatelessWidget {
+  const _AdvisorProjects();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final advisor = context.watch<AuthProvider>().currentUser!;
+    final myGroups =
+        data.groups.where((g) => g.university == advisor.university).toList();
+    final projectIds = myGroups.map((g) => g.projectId).toSet();
+    final projects = data.projects.where((p) => projectIds.contains(p.id)).toList();
+
+    return TabBody(
+      title: 'Proyectos',
+      subtitle: 'Proyectos de los equipos de ${advisor.university}',
+      actions: [
+        ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('Nuevo proyecto'),
+          onPressed: () => _editProject(context, null),
+        ),
+      ],
+      children: [
+        if (projects.isEmpty)
+          const EmptyState(
+              icon: Icons.lightbulb_outline,
+              message:
+                  'Aún no hay proyectos. Créalos aquí y luego vincúlalos a un equipo desde "Grupos" (Admin).')
+        else
+          ...projects.map((p) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: HoverCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(p.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16)),
+                          ),
+                          StatusChip(
+                              label: p.stage,
+                              color: AppColors.gold,
+                              icon: Icons.flag_outlined),
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            color: AppColors.gold,
+                            onPressed: () => _editProject(context, p),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(p.description,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: 8),
+                      Text('Problema: ${p.problem}',
+                          style: const TextStyle(fontSize: 13)),
+                      Text('Solución: ${p.solution}',
+                          style: const TextStyle(fontSize: 13)),
+                      Text('Comunidad: ${p.community}',
+                          style: const TextStyle(fontSize: 13)),
+                      Text('Indicadores: ${p.impactIndicators}',
+                          style: const TextStyle(fontSize: 13)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final o in p.ods)
+                            Chip(
+                                label: Text(o,
+                                    style: const TextStyle(fontSize: 11))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )),
+      ],
+    );
+  }
+
+  Future<void> _editProject(BuildContext context, Project? project) async {
+    final data = context.read<DataProvider>();
+    final nameCtrl = TextEditingController(text: project?.name ?? '');
+    final descCtrl = TextEditingController(text: project?.description ?? '');
+    final problemCtrl = TextEditingController(text: project?.problem ?? '');
+    final solutionCtrl = TextEditingController(text: project?.solution ?? '');
+    final communityCtrl =
+        TextEditingController(text: project?.community ?? '');
+    final indicatorsCtrl =
+        TextEditingController(text: project?.impactIndicators ?? '');
+    var stage = project?.stage ?? projectStages.first;
+    final selectedOds = {...(project?.ods ?? <String>[])};
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(project == null ? 'Nuevo proyecto' : 'Editar proyecto',
+              style: const TextStyle(fontSize: 18)),
+          content: SizedBox(
+            width: 540,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                      controller: nameCtrl,
+                      decoration:
+                          const InputDecoration(labelText: 'Nombre')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: descCtrl,
+                      maxLines: 2,
+                      decoration:
+                          const InputDecoration(labelText: 'Descripción')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: problemCtrl,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                          labelText: 'Problema que resuelve')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: solutionCtrl,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                          labelText: 'Solución propuesta')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: communityCtrl,
+                      decoration: const InputDecoration(
+                          labelText: 'Comunidad beneficiada')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: indicatorsCtrl,
+                      decoration: const InputDecoration(
+                          labelText: 'Indicadores de impacto')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: stage,
+                    decoration:
+                        const InputDecoration(labelText: 'Etapa actual'),
+                    items: [
+                      for (final s in projectStages)
+                        DropdownMenuItem(value: s, child: Text(s)),
+                    ],
+                    onChanged: (v) => setState(() => stage = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('ODS relacionados',
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.textMuted)),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final o in odsList)
+                        FilterChip(
+                          label: Text(o.split(':').first,
+                              style: const TextStyle(fontSize: 11)),
+                          tooltip: o,
+                          selected: selectedOds.contains(o),
+                          selectedColor:
+                              AppColors.gold.withValues(alpha: 0.25),
+                          onSelected: (sel) => setState(() =>
+                              sel ? selectedOds.add(o) : selectedOds.remove(o)),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final saved = Project(
+                  id: project?.id ?? data.newId('prj'),
+                  name: nameCtrl.text.trim(),
+                  description: descCtrl.text.trim(),
+                  problem: problemCtrl.text.trim(),
+                  solution: solutionCtrl.text.trim(),
+                  community: communityCtrl.text.trim(),
+                  ods: selectedOds.toList(),
+                  stage: stage,
+                  impactIndicators: indicatorsCtrl.text.trim(),
+                  expoEnabled: project?.expoEnabled ?? false,
+                );
+                await data.saveProject(saved);
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Guardar'),
+            ),
           ],
         ),
       ),

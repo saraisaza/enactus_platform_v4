@@ -8,6 +8,7 @@ import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import 'animated_logo.dart';
+import 'common.dart';
 
 /// Header con logo, buscador global, campana de notificaciones y avatar
 /// con menú desplegable.
@@ -16,52 +17,61 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? portalTitle;
   const AppHeader({super.key, this.portalTitle});
 
+  static const _flagBarHeight = 4.0;
+
   @override
-  Size get preferredSize => const Size.fromHeight(108);
+  Size get preferredSize => const Size.fromHeight(160 + _flagBarHeight);
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
 
-    return Container(
-      height: 108,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: Row(
-        children: [
-          AnimatedLogo(
-            height: 90,
-            onTap: () => Navigator.of(context)
-                .pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const ColombiaFlagBar(height: _flagBarHeight),
+        Container(
+          height: 160,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
-          const SizedBox(width: 16),
-          if (portalTitle != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.slate,
-                borderRadius: BorderRadius.circular(6),
+          child: Row(
+            children: [
+              AnimatedLogo(
+                height: 135,
+                onTap: () => Navigator.of(context)
+                    .pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
               ),
-              child: Text(portalTitle!,
-                  style: const TextStyle(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13)),
-            ),
-          const Spacer(),
-          if (user != null) ...[
-            const _GlobalSearch(),
-            const SizedBox(width: 12),
-            _NotificationBell(userId: user.id),
-            const SizedBox(width: 10),
-            _AvatarMenu(user: user),
-          ],
-        ],
-      ),
+              const SizedBox(width: 16),
+              if (portalTitle != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.slate,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(portalTitle!,
+                      style: const TextStyle(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
+                ),
+              const Spacer(),
+              if (user != null) ...[
+                const _GlobalSearch(),
+                const SizedBox(width: 12),
+                _NotificationBell(userId: user.id),
+                const SizedBox(width: 10),
+                _AvatarMenu(user: user),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -109,16 +119,28 @@ class _GlobalSearchState extends State<_GlobalSearch> {
     final q = query.toLowerCase().trim();
     if (q.isEmpty) return const [];
     final hits = <_SearchHit>[];
-    for (final u in data.usersByRole(Roles.student)) {
+    for (final u in data.studentsAndAlumni) {
       if (u.name.toLowerCase().contains(q)) {
-        hits.add(_SearchHit('Estudiante', u.name,
+        hits.add(_SearchHit(Roles.label(u.role), u.name,
             '${u.university} · ${u.career}', Icons.school_outlined));
+      }
+    }
+    for (final u in data.usersByRole(Roles.lxd)) {
+      if (u.name.toLowerCase().contains(q)) {
+        final courseCount =
+            data.courses.where((c) => c.creatorId == u.id).length;
+        hits.add(_SearchHit(
+            'LXD', u.name, '$courseCount cursos creados', Icons.school_outlined));
       }
     }
     for (final u in data.usersByRole(Roles.mentor)) {
       if (u.name.toLowerCase().contains(q)) {
-        hits.add(_SearchHit('Mentor', u.name,
-            data.labById(u.labId)?.name ?? '', Icons.psychology_outlined));
+        final labNames = data
+            .labsForMentor(u)
+            .map((l) => l.name)
+            .join(', ');
+        hits.add(_SearchHit('Mentor', u.name, labNames,
+            Icons.psychology_outlined));
       }
     }
     for (final c in data.courses) {
@@ -133,15 +155,13 @@ class _GlobalSearchState extends State<_GlobalSearch> {
             'Proyecto', p.name, 'Etapa: ${p.stage}', Icons.lightbulb_outline));
       }
     }
-    final universities = data
-        .usersByRole(Roles.student)
+    final universities = data.studentsAndAlumni
         .map((s) => s.university)
         .where((u) => u.isNotEmpty)
         .toSet();
     for (final u in universities) {
       if (u.toLowerCase().contains(q)) {
-        final count = data
-            .usersByRole(Roles.student)
+        final count = data.studentsAndAlumni
             .where((s) => s.university == u)
             .length;
         hits.add(_SearchHit('Universidad', u, '$count estudiantes',
@@ -150,8 +170,10 @@ class _GlobalSearchState extends State<_GlobalSearch> {
     }
     for (final c in data.usersByRole(Roles.company)) {
       if (c.companyName.toLowerCase().contains(q)) {
+        final labNames =
+            data.labsForCompany(c.id).map((l) => l.name).join(', ');
         hits.add(_SearchHit('Empresa', c.companyName,
-            data.labById(c.sponsoredLabId)?.name ?? 'Aliado corporativo',
+            labNames.isEmpty ? 'Aliado corporativo' : labNames,
             Icons.business_outlined));
       }
     }
@@ -326,7 +348,7 @@ class _AvatarMenu extends StatelessWidget {
             backgroundColor: AppColors.gold,
             child: Text(user.name[0].toUpperCase(),
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w800)),
+                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(user.name, style: const TextStyle(fontSize: 18))),
@@ -381,7 +403,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                     ? widget.user.name[0].toUpperCase()
                     : '?',
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w800),
+                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -454,7 +476,7 @@ class _NotificationBell extends StatelessWidget {
                     style: const TextStyle(
                         color: Color(0xFF1A1400),
                         fontSize: 10,
-                        fontWeight: FontWeight.w800)),
+                        fontWeight: FontWeight.w700)),
               ),
             ),
           ),

@@ -5,17 +5,55 @@ class Roles {
   static const superAdmin = 'superadmin';
   static const admin = 'admin';
   static const student = 'student';
+
+  /// Egresado Enactus: cuenta idéntica a la de estudiante en accesos y
+  /// permisos (mismo portal, mismos datos, mismas pestañas) — solo cambia
+  /// la etiqueta visible ("Alumni" en vez de "Estudiante"). Ver
+  /// [isStudentLike], que es la forma correcta de preguntar "¿esto es un
+  /// estudiante (o su equivalente egresado)?" en el resto del código.
+  static const alumni = 'alumni';
+
+  /// LXD (Learning Experience Designer): antes se llamaba "mentor". Crea
+  /// cursos completos (Enactus y Open Learning) y los asigna opcionalmente
+  /// a un laboratorio. Las cuentas que antes tenían el rol "mentor" se
+  /// migraron automáticamente a "lxd" (ver migration_service.dart).
+  static const lxd = 'lxd';
+
+  /// Mentor: rol nuevo, sin relación con el "mentor" anterior (ahora LXD).
+  /// No crea cursos: revisa la Ruta de Impacto y las entregas de sus
+  /// estudiantes/laboratorio, y se une a la reunión del módulo de
+  /// mentoría. Las cuentas las crea el Admin manualmente.
   static const mentor = 'mentor';
+
   static const advisor = 'advisor';
   static const company = 'company';
   static const donor = 'donor';
 
-  static const all = [superAdmin, admin, student, mentor, advisor, company, donor];
+  static const all = [
+    superAdmin,
+    admin,
+    lxd,
+    advisor,
+    company,
+    donor,
+    student,
+    alumni,
+    mentor,
+  ];
+
+  /// Un Alumni tiene exactamente los mismos accesos y permisos que un
+  /// estudiante (mismo portal, mismas consultas de laboratorios/cursos/
+  /// entregas/certificados/foro/BuscaTalento): en cualquier lugar del
+  /// código donde antes solo importaba `role == Roles.student`, debe
+  /// preguntarse esto en su lugar.
+  static bool isStudentLike(String role) => role == student || role == alumni;
 
   static String label(String role) => switch (role) {
         superAdmin => 'Super Admin',
         admin => 'Administrador',
         student => 'Estudiante',
+        alumni => 'Alumni',
+        lxd => 'LXD',
         mentor => 'Mentor',
         advisor => 'Asesor Académico',
         company => 'Empresa',
@@ -28,6 +66,8 @@ class AppRoutes {
   static const landing = '/';
   static const login = '/login';
   static const student = '/student';
+  static const alumni = '/alumni';
+  static const lxd = '/lxd';
   static const mentor = '/mentor';
   static const admin = '/admin';
   static const superAdmin = '/superadmin';
@@ -39,6 +79,8 @@ class AppRoutes {
         Roles.superAdmin => superAdmin,
         Roles.admin => admin,
         Roles.student => student,
+        Roles.alumni => alumni,
+        Roles.lxd => lxd,
         Roles.mentor => mentor,
         Roles.advisor => advisor,
         Roles.company => company,

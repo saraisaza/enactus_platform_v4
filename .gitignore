@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Obsidian vault / Claude Code plugin config (local knowledge base, not app code)
+/Enactus V3/
+/.claude/
+
+# Backup of the unpatched licensed Knockout font file (not for distribution)
+/font_backups/
+
+# graphify knowledge-graph cache (generated, regenerate with `graphify update .`)
+/graphify-out/

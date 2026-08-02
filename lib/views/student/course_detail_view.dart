@@ -11,7 +11,7 @@ import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/common.dart';
 import '../../widgets/video_player_dialog.dart';
-import '../mentor/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
+import '../lxd/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
 
 /// Detalle de un curso para el estudiante: módulos y lecciones de todos los
 /// tipos (video, PDF, recurso, enlace, quiz, actividad, encuesta), progreso
@@ -63,7 +63,7 @@ class CourseDetailView extends StatelessWidget {
                                   Text(course.name,
                                       style: const TextStyle(
                                           fontSize: 22,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w700,
                                           color: AppColors.gold)),
                                   if (course.subtitle.isNotEmpty)
                                     Text(course.subtitle,
@@ -882,10 +882,6 @@ Future<void> submitActivity(BuildContext context, Course course,
                 comment: commentCtrl.text.trim(),
                 filePath: files.join(' | '),
               ));
-              if (course.mentorId.isNotEmpty) {
-                await data.notify(course.mentorId, 'Nueva entrega',
-                    '${student.name} entregó "${lesson.title}" en ${course.name}.');
-              }
               if (ctx.mounted) Navigator.pop(ctx);
               if (context.mounted) {
                 showSuccessCheck(context, 'Actividad entregada ✓');
@@ -1054,10 +1050,6 @@ class _SubmissionsSection extends StatelessWidget {
                   comment: commentCtrl.text.trim(),
                   filePath: filePath,
                 ));
-                if (course.mentorId.isNotEmpty) {
-                  await data.notify(course.mentorId, 'Nueva entrega',
-                      '${student.name} envió "${taskCtrl.text.trim()}" en ${course.name}.');
-                }
                 if (ctx.mounted) Navigator.pop(ctx);
                 if (context.mounted) {
                   showSuccessCheck(context, 'Entrega enviada ✓');

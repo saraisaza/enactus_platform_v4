@@ -65,17 +65,17 @@ class SeedService {
         role: 'admin',
         phone: '3001234567',
       ),
-      // --- Mentores ---
+      // --- LXD (antes "Mentor"): crean y son dueños de los cursos ---
       AppUser(
-        id: 'men1',
+        id: 'lxd1',
         name: 'Carlos Rodríguez',
-        email: 'mentor.ia@enactus.co',
-        password: 'Mentor123',
-        role: 'mentor',
+        email: 'lxd.ia@enactus.co',
+        password: 'Lxd123',
+        role: 'lxd',
         phone: '3109876543',
         extra: {
-          'labId': 'lab_ia',
           'company': 'Bancolombia',
+          'companyId': 'emp1',
           'position': 'Líder de Ciencia de Datos',
           'specialty': 'Inteligencia Artificial',
           'languages': 'Español, Inglés',
@@ -85,13 +85,12 @@ class SeedService {
         },
       ),
       AppUser(
-        id: 'men2',
+        id: 'lxd2',
         name: 'Ana María Torres',
-        email: 'mentor.agua@enactus.co',
-        password: 'Mentor123',
-        role: 'mentor',
+        email: 'lxd.agua@enactus.co',
+        password: 'Lxd123',
+        role: 'lxd',
         extra: {
-          'labId': 'lab_agua',
           'company': 'EPM',
           'position': 'Ingeniera Ambiental Senior',
           'specialty': 'Gestión hídrica',
@@ -99,6 +98,37 @@ class SeedService {
           'availability': 'Lunes 5-7 pm',
           'experience': '8 años en proyectos de saneamiento',
           'interests': 'Sostenibilidad, comunidades rurales',
+        },
+      ),
+      // Segundo LXD de Bancolombia: una empresa puede tener varios LXD
+      // creando cursos en laboratorios distintos a la vez (no solo uno).
+      AppUser(
+        id: 'lxd3',
+        name: 'Sofía Ramírez',
+        email: 'lxd.impacto@enactus.co',
+        password: 'Lxd123',
+        role: 'lxd',
+        extra: {
+          'companyId': 'emp1',
+          'company': 'Bancolombia',
+          'position': 'Especialista en Medición de Impacto',
+          'specialty': 'Teoría de cambio e indicadores sociales',
+          'languages': 'Español, Inglés',
+          'availability': 'Miércoles 4-6 pm',
+          'experience': '6 años en evaluación de impacto social',
+          'interests': 'Medición de impacto, datos para el desarrollo',
+        },
+      ),
+      // --- Mentor (rol nuevo): revisa Ruta de Impacto y entregas ---
+      AppUser(
+        id: 'ment1',
+        name: 'Daniela Herrera',
+        email: 'mentor.ia@enactus.co',
+        password: 'Mentor123',
+        role: 'mentor',
+        extra: {
+          'companyId': 'emp1',
+          'company': 'Bancolombia',
         },
       ),
       // --- Asesor académico ---
@@ -117,7 +147,7 @@ class SeedService {
         email: 'empresa@bancolombia.com',
         password: 'Empresa123',
         role: 'company',
-        extra: {'companyName': 'Bancolombia', 'sponsoredLabId': 'lab_ia'},
+        extra: {'companyName': 'Bancolombia'},
       ),
       // --- Donante ---
       AppUser(
@@ -144,6 +174,10 @@ class SeedService {
           'courseIds': ['crs_expo_p1', 'crs_ia_1', 'crs_impacto_1'],
           'companyId': 'emp1',
           'donorId': 'don1',
+          // Varios laboratorios: cada uno con su propia Ruta de Impacto,
+          // y sus cursos se ven automáticamente (no hace falta asignarlos
+          // aparte).
+          'labIds': ['lab_ia', 'lab_impacto'],
         },
       ),
       AppUser(
@@ -153,12 +187,14 @@ class SeedService {
         password: 'Est123',
         role: 'student',
         cedula: '1020202020',
+        phone: '3162223344',
         extra: {
           'university': 'Universidad de los Andes',
           'career': 'Administración',
           'groupId': 'grp1',
           'courseIds': ['crs_expo_p1', 'crs_emprend_1'],
           'companyId': 'emp1',
+          'labIds': ['lab_emprendimiento'],
         },
       ),
       AppUser(
@@ -168,12 +204,14 @@ class SeedService {
         password: 'Est123',
         role: 'student',
         cedula: '1030303030',
+        phone: '3173334455',
         extra: {
           'university': 'Universidad Nacional',
           'career': 'Ingeniería Ambiental',
           'groupId': 'grp2',
           'courseIds': ['crs_expo_p2', 'crs_agua_1', 'crs_agri_1'],
           'donorId': 'don1',
+          'labIds': ['lab_agua', 'lab_agricultura'],
         },
       ),
       AppUser(
@@ -183,11 +221,47 @@ class SeedService {
         password: 'Est123',
         role: 'student',
         cedula: '1040404040',
+        phone: '3184445566',
         extra: {
           'university': 'Universidad Nacional',
           'career': 'Ingeniería Eléctrica',
           'groupId': 'grp2',
           'courseIds': ['crs_expo_p2', 'crs_energia_1'],
+          'labIds': ['lab_energia'],
+        },
+      ),
+      // --- Estudiante de Open Learning (externo, pagó el curso) ---
+      AppUser(
+        id: 'est_ol1',
+        name: 'Camila Rivas',
+        email: 'camila.rivas@gmail.com',
+        password: 'Est123',
+        role: 'student',
+        extra: {
+          'studentType': StudentType.openLearning,
+          'courseIds': ['crs_ol_marketing'],
+        },
+      ),
+      // --- Alumni (egresada Enactus): mismo acceso que un estudiante, ver
+      // Roles.isStudentLike. Mismos laboratorios/empresa/donante que est1
+      // para poder comparar lado a lado que se ve igual en cada portal.
+      AppUser(
+        id: 'alum1',
+        name: 'Juliana Restrepo',
+        email: 'alumni1@uniandes.edu.co',
+        password: 'Alumni123',
+        role: 'alumni',
+        cedula: '1050505050',
+        phone: '3195556677',
+        extra: {
+          'university': 'Universidad de los Andes',
+          'career': 'Ingeniería Industrial',
+          'studentType': StudentType.enactus,
+          'groupId': 'grp1',
+          'courseIds': ['crs_expo_p1', 'crs_ia_1', 'crs_impacto_1'],
+          'companyId': 'emp1',
+          'donorId': 'don1',
+          'labIds': ['lab_ia', 'lab_impacto'],
         },
       ),
     ];
@@ -201,15 +275,84 @@ class SeedService {
         name: 'Laboratorio IA y Tecnología',
         description: 'Inteligencia artificial y desarrollo tecnológico aplicado a impacto social.',
         objectives: 'Formar en fundamentos de IA, datos y desarrollo de soluciones digitales.',
-        mentorId: 'men1',
+        mentorIds: ['ment1'],
         sponsorCompanyId: 'emp1',
+        phases: [
+          Phase(
+            id: 'lab_ia_fase1',
+            order: 1,
+            title: 'Fase 1: Fundamentos',
+            description:
+                'Introducción a la inteligencia artificial y su aplicación a proyectos sociales.',
+            // Demo: fecha ya vencida, para que se vea la alerta de "vencida"
+            // en vivo sin tener que esperar semanas.
+            deadline: '2026-07-01',
+            objectives: [
+              Objective(
+                id: 'lab_ia_fase1_obj1',
+                category: ObjectiveCategory.entrepreneurship,
+                text: 'Identificar oportunidades de IA en proyectos sociales',
+                sourceCourseIds: ['crs_ia_1'],
+              ),
+              Objective(
+                id: 'lab_ia_fase1_obj2',
+                category: ObjectiveCategory.business,
+                text:
+                    'Comprender los fundamentos de la IA y el aprendizaje automático',
+                sourceCourseIds: ['crs_ia_1'],
+              ),
+            ],
+            modules: [
+              RutaModule(
+                id: 'lab_ia_fase1_mod1',
+                order: 1,
+                title: 'Módulo 1: Introducción a la IA',
+                courseIds: ['crs_ia_1'],
+                ownLessons: [
+                  Lesson(
+                    id: 'lab_ia_fase1_mod1_lect1',
+                    title: 'Guía de la Fase 1',
+                    type: LessonType.pdf,
+                    resourcePath:
+                        'lab_ia_tecnologia/ruta_impacto/guia_fase1.pdf',
+                  ),
+                ],
+              ),
+              RutaModule(
+                id: 'lab_ia_fase1_mod2',
+                order: 2,
+                title: 'Módulo 2: Mentoría',
+                isMentorshipModule: true,
+                // El módulo de mentoría necesita al menos un elemento propio
+                // para poder completarse (un módulo vacío nunca cuenta como
+                // completo) — esta es la confirmación de asistencia.
+                ownLessons: [
+                  Lesson(
+                    id: 'lab_ia_fase1_mod2_asistencia',
+                    title: 'Confirmar asistencia a la reunión',
+                    type: LessonType.activity,
+                    description:
+                        'Después de tu reunión con el Mentor, confirma aquí que asististe.',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Demo: fecha próxima a vencer (dentro de la ventana de aviso),
+          // para que se vea la alerta de "próxima a vencer" en vivo.
+          Phase(
+              id: 'lab_ia_fase2',
+              order: 2,
+              title: 'Fase 2',
+              deadline: '2026-08-02'),
+          Phase(id: 'lab_ia_fase3', order: 3, title: 'Fase 3'),
+        ],
       ),
       Laboratory(
         id: 'lab_agua',
         name: 'Laboratorio Agua',
         description: 'Gestión hídrica, saneamiento y acceso a agua potable.',
         objectives: 'Diseñar soluciones de acceso y calidad de agua para comunidades.',
-        mentorId: 'men2',
       ),
       Laboratory(
         id: 'lab_energia',
@@ -282,7 +425,9 @@ class SeedService {
         projectId: 'prj1',
         university: 'Universidad de los Andes',
         advisorId: 'adv1',
-        studentIds: ['est1', 'est2'],
+        // alum1 (Alumni) queda en su equipo original: mismo acceso que
+        // cualquier estudiante del grupo (ver Roles.isStudentLike).
+        studentIds: ['est1', 'est2', 'alum1'],
       ),
       Group(
         id: 'grp2',
@@ -360,7 +505,7 @@ class SeedService {
         name: 'Gestión Hídrica Comunitaria',
         description: 'Acceso, calidad y gobernanza del agua.',
         labId: 'lab_agua',
-        mentorId: 'men2',
+        creatorId: 'lxd2',
         modules: [
           CourseModule(id: 'mag1', title: 'Módulo 1: Diagnóstico', lessons: [
             video('lag1', 'Diagnóstico hídrico local',
@@ -391,6 +536,7 @@ class SeedService {
         name: 'Medición de Impacto Social',
         description: 'Teoría de cambio e indicadores de impacto.',
         labId: 'lab_impacto',
+        creatorId: 'lxd3',
         modules: [
           CourseModule(id: 'mim1', title: 'Módulo 1: Teoría de cambio', lessons: [
             video('lim1', 'Construyendo la teoría de cambio',
@@ -428,6 +574,24 @@ class SeedService {
           ]),
         ],
       ),
+      // --- Open Learning (externo, sin laboratorio ni Ruta de Impacto) ---
+      Course(
+        id: 'crs_ol_marketing',
+        name: 'Marketing Digital para Emprendedores',
+        description: 'Fundamentos de marketing digital aplicado a negocios sociales.',
+        creatorId: 'lxd1',
+        isOpenLearning: true,
+        level: 'Básico',
+        estimatedHours: 6,
+        modules: [
+          CourseModule(id: 'mol1', title: 'Módulo 1: Fundamentos', lessons: [
+            video('lol1', 'Introducción al marketing digital',
+                'open_learning/marketing_digital/leccion_1.mp4'),
+            pdf('lol2', 'Plantilla de plan de marketing',
+                'open_learning/marketing_digital/plantilla.pdf'),
+          ]),
+        ],
+      ),
     ];
     for (final c in courses) {
       await db.put('courses', c.id, c.toJson());
@@ -448,7 +612,7 @@ class SeedService {
           'aplicarla a proyectos de impacto social: datos, modelos y '
           'casos reales de comunidades colombianas.',
       labId: 'lab_ia',
-      mentorId: 'men1',
+      creatorId: 'lxd1',
       level: 'Intermedio',
       estimatedHours: 8,
       tags: ['IA', 'Innovación', 'Tecnología'],
@@ -465,7 +629,6 @@ class SeedService {
         'ODS 9: Industria, innovación e infraestructura',
       ],
       generatesCertificate: true,
-      certificateName: 'Certificado en Fundamentos de IA Social',
       certifiedHours: 8,
       modules: [
         CourseModule(id: 'mia1', title: 'Módulo 1: Fundamentos', lessons: [
@@ -577,6 +740,10 @@ class SeedService {
       Progress(studentId: 'est2', courseId: 'crs_emprend_1', completedLessonIds: ['lem1']),
       Progress(studentId: 'est3', courseId: 'crs_agua_1', completedLessonIds: ['lag1', 'lag2', 'lag3']),
       Progress(studentId: 'est4', courseId: 'crs_energia_1', completedLessonIds: []),
+      // alum1 (Alumni) con el mismo avance que est1 en sus mismos
+      // laboratorios, para verificar que se ve y se cuenta igual.
+      Progress(studentId: 'alum1', courseId: 'crs_ia_1', completedLessonIds: ['lia1', 'lia2']),
+      Progress(studentId: 'alum1', courseId: 'crs_impacto_1', completedLessonIds: ['lim1']),
     ];
     for (final p in progress) {
       await db.put('progress', p.id, p.toJson());
@@ -660,7 +827,7 @@ class SeedService {
       ),
       AppNotification(
         id: 'not2',
-        userId: 'men1',
+        userId: 'lxd1',
         title: 'Nueva entrega pendiente',
         body: 'Valentina López envió "Diagnóstico hídrico de mi comunidad".',
         date: DateTime(2026, 7, 1),
@@ -668,6 +835,43 @@ class SeedService {
     ];
     for (final n in notifications) {
       await db.put('notifications', n.id, n.toJson());
+    }
+
+    // Foro de la comunidad: publicaciones de demostración de distintos
+    // roles (Admin, Asesor, estudiantes de universidades y laboratorios
+    // distintos), para que el espacio no se sienta vacío la primera vez.
+    final forumPosts = [
+      ForumPost(
+        id: 'post1',
+        authorId: 'adm1',
+        body:
+            '¡Bienvenidos al foro de la comunidad Enactus Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.',
+        date: DateTime(2026, 6, 2, 9, 0),
+      ),
+      ForumPost(
+        id: 'post2',
+        authorId: 'adv1',
+        body:
+            'Muy orgulloso del equipo AquaVida de la Universidad de los Andes: pasaron a etapa Piloto esta semana. Si algún otro equipo está trabajando temas de agua, con gusto conectamos experiencias 🚰',
+        date: DateTime(2026, 6, 15, 14, 30),
+      ),
+      ForumPost(
+        id: 'post3',
+        authorId: 'est1',
+        body:
+            '¿Alguien ha usado modelos de IA para predecir deserción escolar? Estamos empezando esa parte del proyecto en el Laboratorio de IA y Tecnología y nos vendría bien aprender de otros equipos.',
+        date: DateTime(2026, 7, 10, 11, 15),
+      ),
+      ForumPost(
+        id: 'post4',
+        authorId: 'est3',
+        body:
+            'Compartiendo un logro del Laboratorio Agua: instalamos el primer filtro comunitario piloto en La Guajira. ¡Gracias a todos los que nos dieron ideas en este foro! 🎉',
+        date: DateTime(2026, 7, 22, 16, 45),
+      ),
+    ];
+    for (final p in forumPosts) {
+      await db.put('forum_posts', p.id, p.toJson());
     }
 
     // Contenido de la página principal

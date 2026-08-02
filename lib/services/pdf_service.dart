@@ -60,11 +60,11 @@ class PdfService {
                 ),
               ),
               pw.SizedBox(height: 10),
-              pw.Text('completó satisfactoriamente el curso',
+              pw.Text('completó la Ruta de Impacto del laboratorio',
                   style: const pw.TextStyle(color: PdfColors.grey300, fontSize: 14)),
               pw.SizedBox(height: 8),
               pw.Text(
-                cert.courseName,
+                cert.labName,
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(
                   color: _gold,
@@ -87,10 +87,10 @@ class PdfService {
                   pw.Column(children: [
                     pw.Container(width: 160, height: 1, color: PdfColors.grey500),
                     pw.SizedBox(height: 6),
-                    pw.Text(cert.mentorName,
+                    pw.Text(cert.issuerName,
                         style: const pw.TextStyle(
                             color: PdfColors.white, fontSize: 12)),
-                    pw.Text('Mentor',
+                    pw.Text('Emitido por',
                         style: const pw.TextStyle(
                             color: PdfColors.grey400, fontSize: 10)),
                   ]),

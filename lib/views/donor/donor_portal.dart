@@ -6,9 +6,9 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
-import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/talent_search_view.dart';
 
 /// Portal del donante: transparencia total sobre el uso de su aporte.
 class DonorPortal extends StatelessWidget {
@@ -27,6 +27,10 @@ class DonorPortal extends StatelessWidget {
             label: 'Evidencias',
             icon: Icons.photo_library_outlined,
             builder: (_) => const _DonorEvidences()),
+        PortalTab(
+            label: 'BuscaTalento',
+            icon: Icons.people_alt_outlined,
+            builder: (_) => const TalentSearchView()),
       ],
     );
   }
@@ -40,13 +44,6 @@ class _DonorDashboard extends StatelessWidget {
     final data = context.watch<DataProvider>();
     final donor = context.watch<AuthProvider>().currentUser!;
     final supported = data.studentsForDonor(donor.id);
-    final expoTeams = supported
-        .map((s) => data.groupById(s.groupId))
-        .whereType<Object>()
-        .toSet()
-        .length;
-    final mentorships = supported.length * 3; // estimación demo
-    final scholarships = supported.length;
 
     return TabBody(
       title: 'Gracias, ${donor.name} 💛',
@@ -73,7 +70,7 @@ class _DonorDashboard extends StatelessWidget {
                     Text(donor.impactCode,
                         style: const TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.gold,
                             letterSpacing: 1.5)),
                     const Text(
@@ -87,38 +84,6 @@ class _DonorDashboard extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        StatRow(tiles: [
-          StatTile(
-              value: '${supported.length}',
-              label: 'Estudiantes apoyados',
-              icon: Icons.school_outlined),
-          StatTile(
-              value: '$scholarships',
-              label: 'Becas otorgadas',
-              icon: Icons.card_giftcard_outlined),
-          StatTile(
-              value: '$mentorships',
-              label: 'Mentorías posibilitadas',
-              icon: Icons.psychology_outlined),
-          StatTile(
-              value: '$expoTeams',
-              label: 'Equipos en National Expo',
-              icon: Icons.emoji_events_outlined),
-        ]),
-        const SizedBox(height: 16),
-        ChartCard(
-          title: 'Distribución de tu aporte',
-          height: 220,
-          child: DonutChart(
-            data: [
-              (label: 'Becas', value: 40),
-              (label: 'Formación', value: 30),
-              (label: 'Mentorías', value: 20),
-              (label: 'National Expo', value: 10),
-            ],
-          ),
-        ),
         const SectionTitle('Estudiantes que apoyas'),
         if (supported.isEmpty)
           const EmptyState(
@@ -126,33 +91,62 @@ class _DonorDashboard extends StatelessWidget {
               message:
                   'El administrador aún no ha vinculado estudiantes a tu aporte.')
         else
-          ...supported.map((s) {
-            final group = data.groupById(s.groupId);
-            final project =
-                group == null ? null : data.projectById(group.projectId);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: HoverCard(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.person_outline,
-                        color: AppColors.gold),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '${s.name} · ${s.university} · '
-                        'Proyecto: ${project?.name ?? '—'}',
-                        style: const TextStyle(fontSize: 13.5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          LayoutBuilder(builder: (context, c) {
+            final perRow = c.maxWidth > 900 ? 2 : 1;
+            final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final s in supported)
+                  SizedBox(width: width, child: _StudentProfileCard(student: s)),
+              ],
             );
           }),
       ],
+    );
+  }
+}
+
+/// Tarjeta de perfil: identidad y proyecto del estudiante apoyado, sin
+/// detalle de progreso ni de fases (eso lo ve el Asesor).
+class _StudentProfileCard extends StatelessWidget {
+  final AppUser student;
+  const _StudentProfileCard({required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final group = data.groupById(student.groupId);
+    final project = group == null ? null : data.projectById(group.projectId);
+
+    return HoverCard(
+      child: Row(
+        children: [
+          InitialsAvatar(student.name,
+              large: true, radius: 24, fontSize: 18),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(student.name,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${student.university} · ${student.career}',
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 12)),
+                if (project != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('Proyecto: ${project.name}',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12.5)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -264,7 +258,7 @@ class _DonorEvidences extends StatelessWidget {
                                         style: TextStyle(
                                             color: AppColors.goldBright,
                                             fontSize: 16,
-                                            fontWeight: FontWeight.w800)),
+                                            fontWeight: FontWeight.w700)),
                                   ),
                                 ),
                               ),

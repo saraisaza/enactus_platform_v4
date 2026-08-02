@@ -344,7 +344,7 @@ class ProgressRing extends StatelessWidget {
                 child: Text('${(value * 100).round()}%',
                     style: const TextStyle(
                         fontSize: 26,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary)),
               ),
             ],

@@ -14,6 +14,12 @@ class AppColors {
   static const slate = Color(0xFF2D3E50); // barras laterales, tarjetas secundarias
   static const slateLight = Color(0xFF3D5166);
 
+  /// Colores oficiales de la bandera de Colombia, para acentos de identidad
+  /// nacional (borde tricolor de header/footer, partículas del hero).
+  static const colombiaYellow = Color(0xFFFCD116);
+  static const colombiaBlue = Color(0xFF003893);
+  static const colombiaRed = Color(0xFFCE1126);
+
   // Superficies (tema oscuro)
   static const background = Color(0xFF111315);
   static const surface = Color(0xFF1A1D21); // superficie de tarjetas y gráficos
@@ -42,6 +48,33 @@ class AppColors {
   static const statusCritical = Color(0xFFE05252);
 }
 
+/// Tokens tipográficos — el equivalente Flutter de --font-display / --font-ui
+/// en CSS. Referencia esto (o mejor, usa el textTheme del Theme) en vez de
+/// escribir 'Knockout' o 'SpaceGrotesk' directo en un widget.
+///
+/// Reglas de uso:
+/// - [display] (Knockout 92): SOLO títulos principales — h1/h2, hero titles,
+///   nombres de sección grandes ([SectionTitle] en widgets/common.dart). Va
+///   siempre en mayúsculas (.toUpperCase() al renderizar, no en los datos) y
+///   con tracking vía [knockoutTracking] — es una fuente condensada.
+/// - [ui] (Space Grotesk): todo lo demás — botones, navegación, labels,
+///   body text, formularios, badges, footer. Ya viene aplicada por defecto
+///   a todo el textTheme, así que no hace falta declararla a mano salvo en
+///   TextStyle sueltos que no heredan del tema.
+class AppFonts {
+  static const display = 'Knockout';
+  static const ui = 'SpaceGrotesk';
+}
+
+/// Pesos de Space Grotesk realmente cargados en pubspec.yaml (variable font,
+/// eje wght 300-700): 400 para texto normal, 500-600 para botones y labels
+/// destacados — nunca "regular" en un botón, se ve débil al lado de Knockout.
+class AppWeights {
+  static const uiRegular = FontWeight.w400;
+  static const uiMedium = FontWeight.w500;
+  static const uiSemibold = FontWeight.w600;
+}
+
 ThemeData buildAppTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   const scheme = ColorScheme.dark(
@@ -57,6 +90,11 @@ ThemeData buildAppTheme() {
   return base.copyWith(
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.background,
+    // Sistema de dos fuentes (ver AppFonts arriba): display/headline en
+    // Knockout (títulos principales), title/body/label en Space Grotesk
+    // (todo lo demás) — ver _buildTextTheme más abajo.
+    textTheme: _buildTextTheme(base.textTheme),
+    primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
     cardTheme: const CardThemeData(
       color: AppColors.surface,
       elevation: 0,
@@ -91,7 +129,7 @@ ThemeData buildAppTheme() {
         overlayColor:
             WidgetStatePropertyAll(Colors.white.withValues(alpha: 0.12)),
         textStyle: const WidgetStatePropertyAll(
-            TextStyle(fontWeight: FontWeight.w700)),
+            TextStyle(fontWeight: AppWeights.uiSemibold)),
         padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(horizontal: 22, vertical: 16)),
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(
@@ -162,7 +200,9 @@ ThemeData buildAppTheme() {
     listTileTheme: const ListTileThemeData(iconColor: AppColors.textSecondary),
     dataTableTheme: DataTableThemeData(
       headingTextStyle: const TextStyle(
-          color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 13),
+          color: AppColors.gold,
+          fontWeight: AppWeights.uiSemibold,
+          fontSize: 13),
       dataTextStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
       dividerThickness: 0.5,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
@@ -190,3 +230,63 @@ OutlineInputBorder OutlineInputBorderWith(Color color) => OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide(color: color),
     );
+
+/// Tracking (letter-spacing) como fracción del tamaño de fuente. Knockout es
+/// condensada; sin esto las letras se ven pegadas entre sí.
+const double kKnockoutTrackingRatio = 0.045;
+
+/// Letter-spacing sugerido para un tamaño de fuente dado, usando Knockout.
+/// Útil para TextStyle sueltos que no vienen del textTheme (títulos hero,
+/// SectionTitle) — ver knockoutHeading() más abajo.
+double knockoutTracking(double fontSize) => fontSize * kKnockoutTrackingRatio;
+
+/// Construye un TextStyle de título en Knockout listo para usar: familia,
+/// tracking proporcional y el texto pasado por .toUpperCase() se aplican
+/// consistentemente. Para el texto, usa knockoutHeadingText() al armar el
+/// widget Text (el transform es solo visual, no toca los datos).
+TextStyle knockoutHeading({
+  required double fontSize,
+  FontWeight fontWeight = FontWeight.w700,
+  Color? color,
+  double? height,
+}) =>
+    TextStyle(
+      fontFamily: AppFonts.display,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: knockoutTracking(fontSize),
+      color: color,
+      height: height,
+    );
+
+/// Sistema de dos fuentes: display/headline en Knockout (títulos
+/// principales), title/body/label en Space Grotesk con los pesos de
+/// AppWeights (regular en body, medium/semibold en title y label — así
+/// botones y labels destacados no se ven débiles al lado de Knockout).
+TextTheme _buildTextTheme(TextTheme theme) {
+  TextStyle? display(TextStyle? style) => style?.copyWith(
+        fontFamily: AppFonts.display,
+        letterSpacing: knockoutTracking(style.fontSize ?? 24),
+      );
+  TextStyle? ui(TextStyle? style, FontWeight weight) => style?.copyWith(
+        fontFamily: AppFonts.ui,
+        fontWeight: weight,
+      );
+  return theme.copyWith(
+    displayLarge: display(theme.displayLarge),
+    displayMedium: display(theme.displayMedium),
+    displaySmall: display(theme.displaySmall),
+    headlineLarge: display(theme.headlineLarge),
+    headlineMedium: display(theme.headlineMedium),
+    headlineSmall: display(theme.headlineSmall),
+    titleLarge: ui(theme.titleLarge, AppWeights.uiSemibold),
+    titleMedium: ui(theme.titleMedium, AppWeights.uiMedium),
+    titleSmall: ui(theme.titleSmall, AppWeights.uiMedium),
+    bodyLarge: ui(theme.bodyLarge, AppWeights.uiRegular),
+    bodyMedium: ui(theme.bodyMedium, AppWeights.uiRegular),
+    bodySmall: ui(theme.bodySmall, AppWeights.uiRegular),
+    labelLarge: ui(theme.labelLarge, AppWeights.uiSemibold), // botones
+    labelMedium: ui(theme.labelMedium, AppWeights.uiMedium),
+    labelSmall: ui(theme.labelSmall, AppWeights.uiMedium),
+  );
+}

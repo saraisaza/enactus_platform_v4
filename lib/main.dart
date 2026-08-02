@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/data_provider.dart';
 import 'services/db_service.dart';
+import 'services/migration_service.dart';
 import 'services/seed_service.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
@@ -13,6 +16,7 @@ import 'views/advisor/advisor_portal.dart';
 import 'views/auth/login_view.dart';
 import 'views/company/company_portal.dart';
 import 'views/donor/donor_portal.dart';
+import 'views/lxd/lxd_portal.dart';
 import 'views/mentor/mentor_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
@@ -23,12 +27,19 @@ Future<void> main() async {
   await initializeDateFormatting('es');
   await DbService.init();
   final db = DbService();
+  // Migra datos de versiones anteriores (p. ej. rol Mentor→LXD) antes de
+  // sembrar o leer cualquier dato.
+  await MigrationService(db).runAll();
   await SeedService(db).seedIfEmpty();
   final data = DataProvider(db);
   final auth = AuthProvider(data);
   // Restaura la sesión guardada: al recargar la página el usuario vuelve
   // directo a su portal (hasta que la sesión expire o cierre sesión).
   final restored = auth.tryRestoreSession();
+  // No hay tareas programadas en un servidor (todo vive en Hive local):
+  // se revisan los deadlines de fase cada vez que arranca la app. No se
+  // espera a que termine para no retrasar el primer render.
+  unawaited(data.checkPhaseDeadlineAlerts());
   runApp(EnactusApp(
     data: data,
     auth: auth,
@@ -75,6 +86,12 @@ class EnactusApp extends StatelessWidget {
         page = const LoginView();
       case AppRoutes.student:
         page = const _RoleGuard(role: Roles.student, child: StudentPortal());
+      case AppRoutes.alumni:
+        // Mismo portal que un estudiante, sin ninguna diferencia de
+        // acceso: ver Roles.isStudentLike.
+        page = const _RoleGuard(role: Roles.alumni, child: StudentPortal());
+      case AppRoutes.lxd:
+        page = const _RoleGuard(role: Roles.lxd, child: LxdPortal());
       case AppRoutes.mentor:
         page = const _RoleGuard(role: Roles.mentor, child: MentorPortal());
       case AppRoutes.admin:
@@ -102,8 +119,12 @@ class _RoleGuard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().currentUser;
-    if (user == null || user.role != role) {
+    final auth = context.watch<AuthProvider>();
+    // isLoggedIn (no solo currentUser != null) es la señal correcta: tras
+    // logout, currentUser se queda con el último usuario a propósito (ver
+    // AuthProvider.logout) para no crashear pantallas que se están
+    // cerrando, así que aquí hay que exigir isLoggedIn explícitamente.
+    if (!auth.isLoggedIn || auth.currentUser!.role != role) {
       return const LoginView();
     }
     return child;

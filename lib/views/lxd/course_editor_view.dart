@@ -41,9 +41,7 @@ class _CourseEditorViewState extends State<CourseEditorView> {
   late TextEditingController _introVideo;
   late TextEditingController _hours;
   // Sección 4
-  late TextEditingController _certName;
   late TextEditingController _certHours;
-  late TextEditingController _certSigner;
   // Sección 5
   late TextEditingController _maxStudents;
 
@@ -60,10 +58,8 @@ class _CourseEditorViewState extends State<CourseEditorView> {
     _introVideo = TextEditingController(text: c?.introVideoPath ?? '');
     _hours =
         TextEditingController(text: (c?.estimatedHours ?? 0).toString());
-    _certName = TextEditingController(text: c?.certificateName ?? '');
     _certHours =
         TextEditingController(text: (c?.certifiedHours ?? 0).toString());
-    _certSigner = TextEditingController(text: c?.certificateSigner ?? '');
     _maxStudents =
         TextEditingController(text: (c?.maxStudents ?? 0).toString());
   }
@@ -77,9 +73,7 @@ class _CourseEditorViewState extends State<CourseEditorView> {
     c.coverImagePath = _cover.text.trim();
     c.introVideoPath = _introVideo.text.trim();
     c.estimatedHours = int.tryParse(_hours.text) ?? 0;
-    c.certificateName = _certName.text.trim();
     c.certifiedHours = int.tryParse(_certHours.text) ?? 0;
-    c.certificateSigner = _certSigner.text.trim();
     c.maxStudents = int.tryParse(_maxStudents.text) ?? 0;
     await context.read<DataProvider>().saveCourse(c);
     if (mounted) showSuccessCheck(context, 'Curso guardado ✓');
@@ -337,6 +331,26 @@ class _CourseEditorViewState extends State<CourseEditorView> {
           title: 'Objetivos del curso',
           items: c.objectives,
           hint: 'p. ej. Comprender los fundamentos de la IA aplicada',
+          onChanged: () => setState(() {}),
+        ),
+        const SectionTitle('Objetivos para la Ruta de Impacto'),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text(
+              'Si este curso se vincula a un módulo de un laboratorio, estos '
+              'objetivos se agregan automáticamente a los de esa fase.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+        ),
+        _EditableList(
+          title: 'Objetivos de Emprendimiento',
+          items: c.entrepreneurshipObjectives,
+          hint: 'p. ej. Identificar oportunidades de IA en proyectos sociales',
+          onChanged: () => setState(() {}),
+        ),
+        _EditableList(
+          title: 'Objetivos Empresariales',
+          items: c.businessObjectives,
+          hint: 'p. ej. Comprender los fundamentos de la IA y el aprendizaje automático',
           onChanged: () => setState(() {}),
         ),
         _EditableList(
@@ -617,9 +631,12 @@ class _CourseEditorViewState extends State<CourseEditorView> {
       children: [
         const SectionTitle('Certificado'),
         SwitchListTile(
-          title: const Text('¿Este curso genera certificado?'),
+          title: const Text('¿Este curso cuenta para certificado?'),
           subtitle: const Text(
-              'Al completarlo, el mentor podrá emitir el certificado en PDF',
+              'Se ve un sello en el curso y sus horas cuentan para el '
+              'certificado de la Ruta de Impacto del laboratorio (el PDF '
+              'lo emite el LXD al completar toda la Ruta, no por curso '
+              'individual)',
               style: TextStyle(fontSize: 12)),
           value: c.generatesCertificate,
           activeThumbColor: AppColors.gold,
@@ -628,36 +645,10 @@ class _CourseEditorViewState extends State<CourseEditorView> {
         if (c.generatesCertificate) ...[
           const SizedBox(height: 8),
           TextField(
-              controller: _certName,
+              controller: _certHours,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                  labelText: 'Nombre del certificado',
-                  hintText:
-                      'p. ej. Certificado en Fundamentos de IA Social')),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                    controller: _certHours,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        labelText: 'Horas certificadas')),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                    controller: _certSigner,
-                    decoration: const InputDecoration(
-                        labelText: 'Firmante (por defecto: el mentor)')),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'El certificado incluye automáticamente el logo de Enactus '
-            'Colombia y un código único de verificación.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
-          ),
+                  labelText: 'Horas certificadas')),
         ],
       ],
     );

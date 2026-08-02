@@ -17,7 +17,9 @@ class LandingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final content = data.siteContent;
-    final students = data.usersByRole(Roles.student).length;
+    // Estudiantes y Alumni cuentan igual (ver Roles.isStudentLike), como en
+    // el resto de la plataforma.
+    final students = data.studentsAndAlumni.length;
     final projects = data.projects.length;
     final labs = data.labs;
 
@@ -26,7 +28,7 @@ class LandingView extends StatelessWidget {
         children: [
           // Barra superior pública
           Container(
-            height: 108,
+            height: 160,
             padding: const EdgeInsets.symmetric(horizontal: 24),
             decoration: const BoxDecoration(
               color: AppColors.background,
@@ -34,7 +36,7 @@ class LandingView extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const AnimatedLogo(height: 90),
+                const AnimatedLogo(height: 135),
                 const Spacer(),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.login, size: 18),
@@ -60,7 +62,7 @@ class LandingView extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: Color(0xFF1A1400),
-                            fontWeight: FontWeight.w700,
+                            fontWeight: AppWeights.uiSemibold,
                             fontSize: 13),
                       ),
                     ),
@@ -104,11 +106,11 @@ class LandingView extends StatelessWidget {
                     ),
                   ),
                   // Laboratorios
-                  const Padding(
-                    padding: EdgeInsets.only(top: 40, bottom: 6),
-                    child: Text('Nuestros Laboratorios',
-                        style: TextStyle(
-                            fontSize: 24,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 40, bottom: 6),
+                    child: Text('Nuestros Laboratorios'.toUpperCase(),
+                        style: knockoutHeading(
+                            fontSize: 30,
                             fontWeight: FontWeight.w800,
                             color: AppColors.gold)),
                   ),
@@ -140,10 +142,10 @@ class LandingView extends StatelessWidget {
                                       Icon(_labIcon(labs[i].id),
                                           color: AppColors.gold, size: 30),
                                       const SizedBox(height: 12),
-                                      Text(labs[i].name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 15)),
+                                      Text(labs[i].name.toUpperCase(),
+                                          style: knockoutHeading(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700)),
                                       const SizedBox(height: 6),
                                       Text(labs[i].description,
                                           style: const TextStyle(
@@ -241,6 +243,13 @@ class _ParticlesPainter extends CustomPainter {
 
   static const _count = 14;
 
+  // Tricolor de la bandera de Colombia: cada partícula toma uno de los tres.
+  static const _colors = [
+    AppColors.colombiaYellow,
+    AppColors.colombiaBlue,
+    AppColors.colombiaRed,
+  ];
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
@@ -251,8 +260,8 @@ class _ParticlesPainter extends CustomPainter {
       final speed = 0.35 + ((seed * 3.7) % 1.0) * 0.65;
       final y = size.height * (1.2 - ((t * speed + seed) % 1.2));
       final radius = 1.2 + ((seed * 5.3) % 1.0) * 2.2;
-      final opacity = 0.05 + ((seed * 9.1) % 1.0) * 0.13;
-      paint.color = AppColors.gold.withValues(alpha: opacity);
+      final opacity = 0.08 + ((seed * 9.1) % 1.0) * 0.16;
+      paint.color = _colors[i % _colors.length].withValues(alpha: opacity);
       canvas.drawCircle(Offset(x, y), radius, paint);
     }
   }
@@ -281,14 +290,14 @@ class _HeroContent extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(title,
+            Text(title.toUpperCase(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 44,
+                style: knockoutHeading(
+                    fontSize: 54,
                     fontWeight: FontWeight.w900,
                     color: AppColors.gold,
                     height: 1.1)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
               child: Text(subtitle,
@@ -327,10 +336,8 @@ class _AnimatedCounter extends StatelessWidget {
           curve: Curves.easeOutCubic,
           builder: (_, v, __) => Text(
             v.round().toString(),
-            style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: AppColors.gold),
+            style: knockoutHeading(
+                fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.gold),
           ),
         ),
         Text(label,

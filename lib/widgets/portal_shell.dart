@@ -185,14 +185,14 @@ class TabBody extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title,
-                              style: const TextStyle(
-                                  fontSize: 24,
+                          Text(title.toUpperCase(),
+                              style: knockoutHeading(
+                                  fontSize: 30,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.gold)),
                           if (subtitle != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4),
+                              padding: const EdgeInsets.only(top: 8),
                               child: Text(subtitle!,
                                   style: const TextStyle(
                                       color: AppColors.textSecondary,

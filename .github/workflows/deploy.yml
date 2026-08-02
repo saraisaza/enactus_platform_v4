@@ -35,9 +35,9 @@ jobs:
         run: flutter pub get
 
       # base-href debe coincidir con el nombre del repositorio,
-      # porque la página vive en saraisaza.github.io/enactus_platform_v2/
+      # porque la página vive en saraisaza.github.io/enactus_platform_v4/
       - name: Compilar web
-        run: flutter build web --release --base-href /enactus_platform_v2/
+        run: flutter build web --release --base-href /enactus_platform_v4/
 
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@v3

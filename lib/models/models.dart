@@ -1155,6 +1155,11 @@ class SiteContent {
   int statLabs;
   int statUniversities;
 
+  /// Imágenes de la galería del landing, codificadas en base64 (no hay
+  /// backend de archivos: se editan y guardan localmente desde Admin →
+  /// "Contenido página").
+  List<String> galleryImages;
+
   SiteContent({
     this.heroTitle = 'Enactus Colombia',
     this.heroSubtitle =
@@ -1168,7 +1173,8 @@ class SiteContent {
     this.statProjects = 2,
     this.statLabs = 6,
     this.statUniversities = 2,
-  });
+    List<String>? galleryImages,
+  }) : galleryImages = galleryImages ?? [];
 
   Map<String, dynamic> toJson() => {
         'heroTitle': heroTitle,
@@ -1180,6 +1186,7 @@ class SiteContent {
         'statProjects': statProjects,
         'statLabs': statLabs,
         'statUniversities': statUniversities,
+        'galleryImages': galleryImages,
       };
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
@@ -1193,5 +1200,6 @@ class SiteContent {
         statProjects: (j['statProjects'] as num?)?.toInt() ?? 2,
         statLabs: (j['statLabs'] as num?)?.toInt() ?? 6,
         statUniversities: (j['statUniversities'] as num?)?.toInt() ?? 2,
+        galleryImages: (j['galleryImages'] as List?)?.cast<String>() ?? [],
       );
 }

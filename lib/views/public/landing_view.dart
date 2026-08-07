@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -167,6 +169,43 @@ class LandingView extends StatelessWidget {
                       );
                     }),
                   ),
+                  // Galería: fotos que el Admin sube desde "Contenido
+                  // página". Se oculta por completo si no hay ninguna.
+                  if (content.galleryImages.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 6),
+                      child: Text('Nuestro trabajo en imágenes'.toUpperCase(),
+                          style: knockoutHeading(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.gold)),
+                    ),
+                    const Text('Momentos de la comunidad Enactus Colombia',
+                        style: TextStyle(color: AppColors.textMuted)),
+                    Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          for (var i = 0; i < content.galleryImages.length; i++)
+                            Entrance(
+                              delayMs: 90 * i,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.memory(
+                                  base64Decode(content.galleryImages[i]),
+                                  width: 220,
+                                  height: 160,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                   // Invitación cálida a unirse, para que la página no
                   // termine de golpe justo después de los laboratorios.
                   Container(
@@ -388,6 +427,7 @@ class _AnimatedCounter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 150,
+      height: 148,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.slate.withValues(alpha: 0.4),
@@ -395,6 +435,7 @@ class _AnimatedCounter extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: AppColors.gold, size: 22),
           const SizedBox(height: 8),
@@ -411,10 +452,16 @@ class _AnimatedCounter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12.5)),
+          SizedBox(
+            height: 32,
+            child: Center(
+              child: Text(label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 12.5)),
+            ),
+          ),
         ],
       ),
     );

@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -860,6 +863,8 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
   late TextEditingController _statProjects;
   late TextEditingController _statLabs;
   late TextEditingController _statUniversities;
+  late List<String> _gallery;
+  bool _pickingImage = false;
 
   @override
   void initState() {
@@ -877,6 +882,24 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
     _statLabs = TextEditingController(text: content.statLabs.toString());
     _statUniversities =
         TextEditingController(text: content.statUniversities.toString());
+    _gallery = List.of(content.galleryImages);
+  }
+
+  Future<void> _addImage() async {
+    setState(() => _pickingImage = true);
+    try {
+      final result = await FilePicker.pickFiles(
+        dialogTitle: 'Selecciona una imagen',
+        type: FileType.image,
+        withData: true,
+      );
+      final bytes = result?.files.single.bytes;
+      if (bytes != null) {
+        setState(() => _gallery.add(base64Encode(bytes)));
+      }
+    } finally {
+      if (mounted) setState(() => _pickingImage = false);
+    }
   }
 
   @override
@@ -984,6 +1007,68 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Galería de imágenes',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 14)),
+              ),
+              const SizedBox(height: 4),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                    'Se muestran en la página principal, entre los laboratorios y el cierre.',
+                    style:
+                        TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (var i = 0; i < _gallery.length; i++)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            base64Decode(_gallery[i]),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: -8,
+                          right: -8,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _gallery.removeAt(i)),
+                            child: const CircleAvatar(
+                              radius: 12,
+                              backgroundColor: AppColors.statusCritical,
+                              child: Icon(Icons.close,
+                                  size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  OutlinedButton.icon(
+                    onPressed: _pickingImage ? null : _addImage,
+                    icon: _pickingImage
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.add_photo_alternate_outlined,
+                            size: 18),
+                    label: Text(_pickingImage ? 'Cargando…' : 'Agregar imagen'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerRight,
@@ -1009,6 +1094,7 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                             statUniversities: int.tryParse(
                                     _statUniversities.text.trim()) ??
                                 0,
+                            galleryImages: _gallery,
                           ),
                         );
                     if (context.mounted) {

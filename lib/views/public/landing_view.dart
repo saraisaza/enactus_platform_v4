@@ -22,6 +22,11 @@ class LandingView extends StatelessWidget {
     final students = data.studentsAndAlumni.length;
     final projects = data.projects.length;
     final labs = data.labs;
+    final universities = data.studentsAndAlumni
+        .map((s) => s.university)
+        .where((u) => u.isNotEmpty)
+        .toSet()
+        .length;
 
     return Scaffold(
       body: Column(
@@ -83,8 +88,9 @@ class LandingView extends StatelessWidget {
                             value: projects, label: 'Proyectos de impacto'),
                         _AnimatedCounter(
                             value: labs.length, label: 'Laboratorios'),
-                        const _AnimatedCounter(
-                            value: 12, label: 'Universidades aliadas'),
+                        _AnimatedCounter(
+                            value: universities,
+                            label: 'Universidades aliadas'),
                       ],
                     ),
                   ),

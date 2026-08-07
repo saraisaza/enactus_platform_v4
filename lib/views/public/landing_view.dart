@@ -7,6 +7,7 @@ import '../../utils/constants.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
+import '../../widgets/contact_dialog.dart';
 
 /// Página principal pública: hero editable por el admin, laboratorios,
 /// contadores animados de impacto y acceso al login.
@@ -211,8 +212,7 @@ class LandingView extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.favorite_outline, size: 18),
                           label: const Text('Quiero unirme'),
-                          onPressed: () =>
-                              Navigator.pushNamed(context, AppRoutes.login),
+                          onPressed: () => showContactDialog(context),
                         ),
                       ],
                     ),

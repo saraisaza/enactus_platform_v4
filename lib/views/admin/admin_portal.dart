@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
@@ -855,6 +856,10 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
   late TextEditingController _banner;
   late TextEditingController _about;
   late TextEditingController _meetingLink;
+  late TextEditingController _statStudents;
+  late TextEditingController _statProjects;
+  late TextEditingController _statLabs;
+  late TextEditingController _statUniversities;
 
   @override
   void initState() {
@@ -865,6 +870,13 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
     _banner = TextEditingController(text: content.bannerText);
     _about = TextEditingController(text: content.aboutText);
     _meetingLink = TextEditingController(text: content.meetingLink);
+    _statStudents =
+        TextEditingController(text: content.statStudents.toString());
+    _statProjects =
+        TextEditingController(text: content.statProjects.toString());
+    _statLabs = TextEditingController(text: content.statLabs.toString());
+    _statUniversities =
+        TextEditingController(text: content.statUniversities.toString());
   }
 
   @override
@@ -906,6 +918,73 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                       helperText:
                           'Un solo link genérico por ahora: no hay integración real con un proveedor de meetings.')),
               const SizedBox(height: 20),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Cifras del hero',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 14)),
+              ),
+              const SizedBox(height: 4),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                    'Los cuatro números que se ven bajo el título de la página principal.',
+                    style:
+                        TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                        controller: _statStudents,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: const InputDecoration(
+                            labelText: 'Estudiantes activos')),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: TextField(
+                        controller: _statProjects,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: const InputDecoration(
+                            labelText: 'Proyectos de impacto')),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                        controller: _statLabs,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration:
+                            const InputDecoration(labelText: 'Laboratorios')),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: TextField(
+                        controller: _statUniversities,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: const InputDecoration(
+                            labelText: 'Universidades aliadas')),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton.icon(
@@ -921,6 +1000,15 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                             meetingLink: _meetingLink.text.trim().isEmpty
                                 ? SiteContent().meetingLink
                                 : _meetingLink.text.trim(),
+                            statStudents:
+                                int.tryParse(_statStudents.text.trim()) ?? 0,
+                            statProjects:
+                                int.tryParse(_statProjects.text.trim()) ?? 0,
+                            statLabs:
+                                int.tryParse(_statLabs.text.trim()) ?? 0,
+                            statUniversities: int.tryParse(
+                                    _statUniversities.text.trim()) ??
+                                0,
                           ),
                         );
                     if (context.mounted) {

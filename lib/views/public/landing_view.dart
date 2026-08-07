@@ -17,16 +17,7 @@ class LandingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final content = data.siteContent;
-    // Estudiantes y Alumni cuentan igual (ver Roles.isStudentLike), como en
-    // el resto de la plataforma.
-    final students = data.studentsAndAlumni.length;
-    final projects = data.projects.length;
     final labs = data.labs;
-    final universities = data.studentsAndAlumni
-        .map((s) => s.university)
-        .where((u) => u.isNotEmpty)
-        .toSet()
-        .length;
 
     return Scaffold(
       body: Column(
@@ -83,13 +74,20 @@ class LandingView extends StatelessWidget {
                       alignment: WrapAlignment.center,
                       children: [
                         _AnimatedCounter(
-                            value: students, label: 'Estudiantes activos'),
+                            icon: Icons.groups_outlined,
+                            value: content.statStudents,
+                            label: 'Estudiantes activos'),
                         _AnimatedCounter(
-                            value: projects, label: 'Proyectos de impacto'),
+                            icon: Icons.lightbulb_outline,
+                            value: content.statProjects,
+                            label: 'Proyectos de impacto'),
                         _AnimatedCounter(
-                            value: labs.length, label: 'Laboratorios'),
+                            icon: Icons.science_outlined,
+                            value: content.statLabs,
+                            label: 'Laboratorios'),
                         _AnimatedCounter(
-                            value: universities,
+                            icon: Icons.school_outlined,
+                            value: content.statUniversities,
                             label: 'Universidades aliadas'),
                       ],
                     ),
@@ -167,6 +165,57 @@ class LandingView extends StatelessWidget {
                         ],
                       );
                     }),
+                  ),
+                  // Invitación cálida a unirse, para que la página no
+                  // termine de golpe justo después de los laboratorios.
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(40, 8, 40, 40),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 36),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.gold.withValues(alpha: 0.14),
+                          AppColors.slate,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                          color: AppColors.gold.withValues(alpha: 0.25)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('¿Listo para sumarte? 💛'.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: knockoutHeading(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary)),
+                        const SizedBox(height: 10),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: const Text(
+                            'Sin importar si eres estudiante, mentor, empresa o donante: '
+                            'hay un lugar para ti en Enactus Colombia.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                                height: 1.6),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.favorite_outline, size: 18),
+                          label: const Text('Quiero unirme'),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, AppRoutes.login),
+                        ),
+                      ],
+                    ),
                   ),
                   const AppFooter(),
                 ],
@@ -326,30 +375,48 @@ class _HeroContent extends StatelessWidget {
   }
 }
 
-/// Contador que anima desde 0 hasta su valor al aparecer.
+/// Contador que anima desde 0 hasta su valor al aparecer, con un ícono
+/// amigable arriba para que se sienta más humano que un número suelto.
 class _AnimatedCounter extends StatelessWidget {
+  final IconData icon;
   final int value;
   final String label;
-  const _AnimatedCounter({required this.value, required this.label});
+  const _AnimatedCounter(
+      {required this.icon, required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: value.toDouble()),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeOutCubic,
-          builder: (_, v, __) => Text(
-            v.round().toString(),
-            style: knockoutHeading(
-                fontSize: 40, fontWeight: FontWeight.w900, color: AppColors.gold),
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.slate.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.gold, size: 22),
+          const SizedBox(height: 8),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: value.toDouble()),
+            duration: const Duration(milliseconds: 1200),
+            curve: Curves.easeOutCubic,
+            builder: (_, v, __) => Text(
+              v.round().toString(),
+              style: knockoutHeading(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.gold),
+            ),
           ),
-        ),
-        Text(label,
-            style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 13)),
-      ],
+          const SizedBox(height: 2),
+          Text(label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 12.5)),
+        ],
+      ),
     );
   }
 }

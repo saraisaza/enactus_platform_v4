@@ -1146,6 +1146,15 @@ class SiteContent {
   /// proveedor de meetings.
   String meetingLink;
 
+  /// Cifras del hero público (contadores "Estudiantes activos", "Proyectos
+  /// de impacto", "Laboratorios", "Universidades aliadas"). Editables desde
+  /// Admin en vez de calcularse solas, para que reflejen números reales que
+  /// el equipo cura a mano.
+  int statStudents;
+  int statProjects;
+  int statLabs;
+  int statUniversities;
+
   SiteContent({
     this.heroTitle = 'Enactus Colombia',
     this.heroSubtitle =
@@ -1155,6 +1164,10 @@ class SiteContent {
         'Conectamos estudiantes, mentores, universidades, empresas y donantes '
         'para crear proyectos de impacto social en toda Colombia.',
     this.meetingLink = 'https://meet.google.com/enactus-mentoria',
+    this.statStudents = 6,
+    this.statProjects = 2,
+    this.statLabs = 6,
+    this.statUniversities = 2,
   });
 
   Map<String, dynamic> toJson() => {
@@ -1163,6 +1176,10 @@ class SiteContent {
         'bannerText': bannerText,
         'aboutText': aboutText,
         'meetingLink': meetingLink,
+        'statStudents': statStudents,
+        'statProjects': statProjects,
+        'statLabs': statLabs,
+        'statUniversities': statUniversities,
       };
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
@@ -1172,5 +1189,9 @@ class SiteContent {
         aboutText: (j['aboutText'] as String?) ?? '',
         meetingLink: (j['meetingLink'] as String?) ??
             'https://meet.google.com/enactus-mentoria',
+        statStudents: (j['statStudents'] as num?)?.toInt() ?? 6,
+        statProjects: (j['statProjects'] as num?)?.toInt() ?? 2,
+        statLabs: (j['statLabs'] as num?)?.toInt() ?? 6,
+        statUniversities: (j['statUniversities'] as num?)?.toInt() ?? 2,
       );
 }

@@ -8,6 +8,7 @@ import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
@@ -41,6 +42,10 @@ class StudentPortal extends StatelessWidget {
             label: 'Mis Cursos',
             icon: Icons.school_outlined,
             builder: (_) => const _StudentCourses()),
+        PortalTab(
+            label: 'Calendario',
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const _StudentCalendar()),
         if (isEnactus) ...[
           PortalTab(
               label: 'Laboratorios',
@@ -169,6 +174,28 @@ class _StudentDashboard extends StatelessWidget {
                   ),
                 ),
               )),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Calendario
+// ---------------------------------------------------------------------------
+
+class _StudentCalendar extends StatelessWidget {
+  const _StudentCalendar();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final student = context.watch<AuthProvider>().currentUser!;
+    return TabBody(
+      title: 'Calendario',
+      subtitle:
+          'Sesiones sincrónicas de tus cursos y eventos de tu Ruta de Impacto',
+      children: [
+        CalendarView(events: data.calendarEventsFor(student)),
       ],
     );
   }

@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
@@ -31,6 +32,10 @@ class AdvisorPortal extends StatelessWidget {
             label: 'Seguimiento Estudiantes',
             icon: Icons.person_search_outlined,
             builder: (_) => const _AdvisorStudents()),
+        PortalTab(
+            label: 'Calendario',
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const _AdvisorCalendar()),
         PortalTab(
             label: 'Proyectos',
             icon: Icons.lightbulb_outline,
@@ -123,6 +128,24 @@ class _AdvisorDashboard extends StatelessWidget {
       }
     }
     return count == 0 ? 0 : sum / count;
+  }
+}
+
+class _AdvisorCalendar extends StatelessWidget {
+  const _AdvisorCalendar();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final advisor = context.watch<AuthProvider>().currentUser!;
+    return TabBody(
+      title: 'Calendario',
+      subtitle:
+          'Sesiones sincrónicas y eventos de Ruta de Impacto de los estudiantes de tu universidad',
+      children: [
+        CalendarView(events: data.calendarEventsFor(advisor)),
+      ],
+    );
   }
 }
 

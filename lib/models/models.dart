@@ -1203,3 +1203,78 @@ class SiteContent {
         galleryImages: (j['galleryImages'] as List?)?.cast<String>() ?? [],
       );
 }
+
+/// Tipo de reunión del calendario. Los tres comparten el mismo mecanismo
+/// (fecha + link + botón "Unirse"), solo cambian su ícono/etiqueta y a qué
+/// se vincula el evento ([CalendarEvent.courseId] o [CalendarEvent.labId]).
+enum CalendarEventType {
+  /// Sesión sincrónica de un curso Open Learning (vinculada a [courseId]).
+  openLearningSync,
+
+  /// Evento de fase de la Ruta de Impacto, cada ~15 días con invitados
+  /// externos (vinculado a [labId]).
+  rutaImpacto,
+
+  /// Reunión del módulo de mentoría con el Mentor del laboratorio
+  /// (vinculada a [labId]).
+  mentoria,
+}
+
+/// Evento de calendario visible en el portal de cada rol (todos menos
+/// Empresa y Donante). Lo crea el LXD (para sus cursos Open Learning), el
+/// Mentor (para sus laboratorios) o Admin/Super Admin (para cualquiera).
+class CalendarEvent {
+  final String id;
+  String title;
+  String description;
+  DateTime start;
+  CalendarEventType type;
+  String meetLink;
+
+  /// Texto libre, p. ej. "Invitados: María Pérez (Bancolombia)".
+  String guests;
+
+  /// Curso Open Learning al que pertenece (solo [CalendarEventType.openLearningSync]).
+  String courseId;
+
+  /// Laboratorio al que pertenece (solo rutaImpacto/mentoria).
+  String labId;
+
+  CalendarEvent({
+    required this.id,
+    this.title = '',
+    this.description = '',
+    required this.start,
+    this.type = CalendarEventType.rutaImpacto,
+    this.meetLink = '',
+    this.guests = '',
+    this.courseId = '',
+    this.labId = '',
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'start': start.toIso8601String(),
+        'type': type.name,
+        'meetLink': meetLink,
+        'guests': guests,
+        'courseId': courseId,
+        'labId': labId,
+      };
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
+        id: j['id'] as String,
+        title: (j['title'] as String?) ?? '',
+        description: (j['description'] as String?) ?? '',
+        start: DateTime.tryParse(j['start'] as String? ?? '') ?? DateTime.now(),
+        type: CalendarEventType.values.firstWhere(
+            (t) => t.name == j['type'],
+            orElse: () => CalendarEventType.rutaImpacto),
+        meetLink: (j['meetLink'] as String?) ?? '',
+        guests: (j['guests'] as String?) ?? '',
+        courseId: (j['courseId'] as String?) ?? '',
+        labId: (j['labId'] as String?) ?? '',
+      );
+}

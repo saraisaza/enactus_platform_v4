@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
@@ -32,6 +33,10 @@ class AdminPortal extends StatelessWidget {
             label: 'Dashboard',
             icon: Icons.dashboard_outlined,
             builder: (_) => const AdminDashboard()),
+        PortalTab(
+            label: 'Calendario',
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const AdminCalendar()),
         PortalTab(
             label: 'Usuarios',
             icon: Icons.manage_accounts_outlined,
@@ -332,6 +337,60 @@ class _ImpactMetrics extends StatelessWidget {
 
   static String _shorten(String s) =>
       s.length <= 12 ? s : '${s.substring(0, 11)}…';
+}
+
+// ---------------------------------------------------------------------------
+// Calendario: control total — cualquier tipo de evento, cualquier curso
+// Open Learning o laboratorio.
+// ---------------------------------------------------------------------------
+
+class AdminCalendar extends StatelessWidget {
+  const AdminCalendar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final admin = context.watch<AuthProvider>().currentUser!;
+    final openLearningCourses =
+        data.courses.where((c) => c.isOpenLearning).toList();
+    return TabBody(
+      title: 'Calendario',
+      subtitle:
+          'Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma',
+      children: [
+        CalendarView(
+          events: data.calendarEventsFor(admin),
+          canManage: true,
+          onAddEvent: (day) => showCalendarEventDialog(
+            context,
+            allowedTypes: CalendarEventType.values,
+            courses: openLearningCourses,
+            labs: data.labs,
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onEditEvent: (event) => showCalendarEventDialog(
+            context,
+            existing: event,
+            allowedTypes: CalendarEventType.values,
+            courses: openLearningCourses,
+            labs: data.labs,
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onDeleteEvent: (event) => data.deleteCalendarEvent(event.id),
+        ),
+      ],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

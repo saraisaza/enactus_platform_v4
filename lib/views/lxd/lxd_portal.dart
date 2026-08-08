@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
@@ -29,6 +30,10 @@ class LxdPortal extends StatelessWidget {
             label: 'Mis Cursos',
             icon: Icons.video_library_outlined,
             builder: (_) => const _LxdCourses()),
+        PortalTab(
+            label: 'Calendario',
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const _LxdCalendar()),
         PortalTab(
             label: 'Calificaciones',
             icon: Icons.grading_outlined,
@@ -163,6 +168,57 @@ class _LxdDashboardState extends State<_LxdDashboard> {
             width: 120,
             child: ThinProgressBar(
                 value: progress, tooltip: 'Promedio de todos sus cursos'))),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Calendario: sesiones sincrónicas de los cursos Open Learning del LXD
+// ---------------------------------------------------------------------------
+
+class _LxdCalendar extends StatelessWidget {
+  const _LxdCalendar();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final user = context.watch<AuthProvider>().currentUser!;
+    final myCourses = data.openLearningCoursesForCreator(user.id);
+    return TabBody(
+      title: 'Calendario',
+      subtitle: 'Agenda las sesiones sincrónicas de tus cursos Open Learning',
+      children: [
+        CalendarView(
+          events: data.calendarEventsFor(user),
+          canManage: true,
+          onAddEvent: (day) => showCalendarEventDialog(
+            context,
+            allowedTypes: const [CalendarEventType.openLearningSync],
+            courses: myCourses,
+            labs: const [],
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onEditEvent: (event) => showCalendarEventDialog(
+            context,
+            existing: event,
+            allowedTypes: const [CalendarEventType.openLearningSync],
+            courses: myCourses,
+            labs: const [],
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onDeleteEvent: (event) => data.deleteCalendarEvent(event.id),
+        ),
       ],
     );
   }

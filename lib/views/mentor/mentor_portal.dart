@@ -6,6 +6,7 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 
@@ -25,6 +26,10 @@ class MentorPortal extends StatelessWidget {
             label: 'Mis Laboratorios',
             icon: Icons.science_outlined,
             builder: (_) => const _MentorLabs()),
+        PortalTab(
+            label: 'Calendario',
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const _MentorCalendar()),
         PortalTab(
             label: 'Entregas',
             icon: Icons.assignment_turned_in_outlined,
@@ -124,6 +129,65 @@ class _LabStudents extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Calendario: eventos de Ruta de Impacto y reuniones de mentoría de sus
+// laboratorios
+// ---------------------------------------------------------------------------
+
+class _MentorCalendar extends StatelessWidget {
+  const _MentorCalendar();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final mentor = context.watch<AuthProvider>().currentUser!;
+    final myLabs = data.labsForMentor(mentor);
+    return TabBody(
+      title: 'Calendario',
+      subtitle:
+          'Agenda eventos de la Ruta de Impacto y reuniones de mentoría de tus laboratorios',
+      children: [
+        CalendarView(
+          events: data.calendarEventsFor(mentor),
+          canManage: true,
+          onAddEvent: (day) => showCalendarEventDialog(
+            context,
+            allowedTypes: const [
+              CalendarEventType.rutaImpacto,
+              CalendarEventType.mentoria,
+            ],
+            courses: const [],
+            labs: myLabs,
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onEditEvent: (event) => showCalendarEventDialog(
+            context,
+            existing: event,
+            allowedTypes: const [
+              CalendarEventType.rutaImpacto,
+              CalendarEventType.mentoria,
+            ],
+            courses: const [],
+            labs: myLabs,
+            defaultMeetLink: data.siteContent.meetingLink,
+            onSave: (events) async {
+              for (final e in events) {
+                await data.saveCalendarEvent(e);
+              }
+            },
+          ),
+          onDeleteEvent: (event) => data.deleteCalendarEvent(event.id),
+        ),
+      ],
     );
   }
 }

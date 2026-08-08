@@ -794,6 +794,75 @@ class DataProvider extends ChangeNotifier {
           .where((s) => s.university == advisor.university)
           .toList();
 
+  // ---------------- Calendario ----------------
+
+  List<CalendarEvent> get calendarEvents => db
+      .getAll('calendar_events')
+      .map(CalendarEvent.fromJson)
+      .toList()
+    ..sort((a, b) => a.start.compareTo(b.start));
+
+  Future<void> saveCalendarEvent(CalendarEvent e) async {
+    await db.put('calendar_events', e.id, e.toJson());
+    notifyListeners();
+  }
+
+  Future<void> deleteCalendarEvent(String id) async {
+    await db.delete('calendar_events', id);
+    notifyListeners();
+  }
+
+  /// Cursos Open Learning creados por este LXD (para agendar sus propias
+  /// sesiones sincrónicas).
+  List<Course> openLearningCoursesForCreator(String creatorId) => courses
+      .where((c) => c.creatorId == creatorId && c.isOpenLearning)
+      .toList();
+
+  /// Eventos de calendario visibles para este usuario, filtrados según su
+  /// rol: Admin/Super Admin ven todo; LXD sus cursos; Mentor sus
+  /// laboratorios; Asesor y estudiantes, lo de sus laboratorios/cursos.
+  /// Empresa y Donante no tienen calendario (ver portales).
+  List<CalendarEvent> calendarEventsFor(AppUser user) {
+    if (user.role == Roles.superAdmin || user.role == Roles.admin) {
+      return calendarEvents;
+    }
+    if (user.role == Roles.lxd) {
+      final courseIds =
+          courses.where((c) => c.creatorId == user.id).map((c) => c.id).toSet();
+      return calendarEvents
+          .where((e) => e.courseId.isNotEmpty && courseIds.contains(e.courseId))
+          .toList();
+    }
+    if (user.role == Roles.mentor) {
+      final labIds = labsForMentor(user).map((l) => l.id).toSet();
+      return calendarEvents
+          .where((e) => e.labId.isNotEmpty && labIds.contains(e.labId))
+          .toList();
+    }
+    if (user.role == Roles.advisor) {
+      final myStudents = studentsForAdvisor(user);
+      final labIds = myStudents.expand((s) => s.labIds).toSet();
+      final courseIds = myStudents
+          .expand((s) => coursesForStudent(s).map((c) => c.id))
+          .toSet();
+      return calendarEvents
+          .where((e) =>
+              (e.labId.isNotEmpty && labIds.contains(e.labId)) ||
+              (e.courseId.isNotEmpty && courseIds.contains(e.courseId)))
+          .toList();
+    }
+    if (Roles.isStudentLike(user.role)) {
+      final labIds = user.labIds.toSet();
+      final courseIds = coursesForStudent(user).map((c) => c.id).toSet();
+      return calendarEvents
+          .where((e) =>
+              (e.labId.isNotEmpty && labIds.contains(e.labId)) ||
+              (e.courseId.isNotEmpty && courseIds.contains(e.courseId)))
+          .toList();
+    }
+    return [];
+  }
+
   /// Estudiantes patrocinados por una empresa.
   List<AppUser> studentsForCompany(String companyUserId) =>
       studentsAndAlumni

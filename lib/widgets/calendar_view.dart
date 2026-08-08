@@ -393,26 +393,42 @@ Future<void> showCalendarEventDialog(
                 ),
                 const SizedBox(height: 14),
                 if (type == CalendarEventType.openLearningSync)
-                  DropdownButtonFormField<String>(
-                    initialValue: courseId.isEmpty ? null : courseId,
-                    decoration: const InputDecoration(labelText: 'Curso'),
-                    items: [
-                      for (final c in courses)
-                        DropdownMenuItem(value: c.id, child: Text(c.name)),
-                    ],
-                    onChanged: (v) => setState(() => courseId = v ?? ''),
-                  )
+                  courses.isEmpty
+                      ? const Text(
+                          'Todavía no tienes cursos de Open Learning '
+                          'propios. Crea uno en "Mis Cursos" antes de '
+                          'agendar una sesión.',
+                          style: TextStyle(
+                              color: AppColors.statusWarning, fontSize: 12.5))
+                      : DropdownButtonFormField<String>(
+                          initialValue: courseId.isEmpty ? null : courseId,
+                          decoration:
+                              const InputDecoration(labelText: 'Curso'),
+                          items: [
+                            for (final c in courses)
+                              DropdownMenuItem(
+                                  value: c.id, child: Text(c.name)),
+                          ],
+                          onChanged: (v) => setState(() => courseId = v ?? ''),
+                        )
                 else if (type == CalendarEventType.mentoria)
-                  DropdownButtonFormField<String>(
-                    initialValue: labId.isEmpty ? null : labId,
-                    decoration:
-                        const InputDecoration(labelText: 'Laboratorio'),
-                    items: [
-                      for (final l in labs)
-                        DropdownMenuItem(value: l.id, child: Text(l.name)),
-                    ],
-                    onChanged: (v) => setState(() => labId = v ?? ''),
-                  )
+                  labs.isEmpty
+                      ? const Text(
+                          'Todavía no tienes laboratorios asignados, así '
+                          'que no hay a quién agendarle una mentoría.',
+                          style: TextStyle(
+                              color: AppColors.statusWarning, fontSize: 12.5))
+                      : DropdownButtonFormField<String>(
+                          initialValue: labId.isEmpty ? null : labId,
+                          decoration: const InputDecoration(
+                              labelText: 'Laboratorio'),
+                          items: [
+                            for (final l in labs)
+                              DropdownMenuItem(
+                                  value: l.id, child: Text(l.name)),
+                          ],
+                          onChanged: (v) => setState(() => labId = v ?? ''),
+                        )
                 else
                   const Text(
                       'Evento global: lo verán todos los estudiantes y '

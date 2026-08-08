@@ -427,7 +427,7 @@ class _AnimatedCounter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 150,
-      height: 148,
+      height: 160,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.slate.withValues(alpha: 0.4),
@@ -448,7 +448,8 @@ class _AnimatedCounter extends StatelessWidget {
               style: knockoutHeading(
                   fontSize: 36,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.gold),
+                  color: AppColors.gold,
+                  height: 1.0),
             ),
           ),
           const SizedBox(height: 2),

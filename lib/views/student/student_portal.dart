@@ -39,13 +39,13 @@ class StudentPortal extends StatelessWidget {
             icon: Icons.dashboard_outlined,
             builder: (_) => const _StudentDashboard()),
         PortalTab(
-            label: 'Mis Cursos',
-            icon: Icons.school_outlined,
-            builder: (_) => const _StudentCourses()),
-        PortalTab(
             label: 'Calendario',
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _StudentCalendar()),
+        PortalTab(
+            label: 'Mis Cursos',
+            icon: Icons.school_outlined,
+            builder: (_) => const _StudentCourses()),
         if (isEnactus) ...[
           PortalTab(
               label: 'Laboratorios',

@@ -27,13 +27,13 @@ class LxdPortal extends StatelessWidget {
             icon: Icons.groups_outlined,
             builder: (_) => const _LxdDashboard()),
         PortalTab(
-            label: 'Mis Cursos',
-            icon: Icons.video_library_outlined,
-            builder: (_) => const _LxdCourses()),
-        PortalTab(
             label: 'Calendario',
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _LxdCalendar()),
+        PortalTab(
+            label: 'Mis Cursos',
+            icon: Icons.video_library_outlined,
+            builder: (_) => const _LxdCourses()),
         PortalTab(
             label: 'Calificaciones',
             icon: Icons.grading_outlined,

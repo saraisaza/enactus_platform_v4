@@ -29,13 +29,13 @@ class AdvisorPortal extends StatelessWidget {
             icon: Icons.account_balance_outlined,
             builder: (_) => const _AdvisorDashboard()),
         PortalTab(
-            label: 'Seguimiento Estudiantes',
-            icon: Icons.person_search_outlined,
-            builder: (_) => const _AdvisorStudents()),
-        PortalTab(
             label: 'Calendario',
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _AdvisorCalendar()),
+        PortalTab(
+            label: 'Seguimiento Estudiantes',
+            icon: Icons.person_search_outlined,
+            builder: (_) => const _AdvisorStudents()),
         PortalTab(
             label: 'Proyectos',
             icon: Icons.lightbulb_outline,

@@ -6,10 +6,16 @@ import '../models/models.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
 
+/// Paleta semántica por tipo de evento del calendario. Elegida (y medida)
+/// para leerse con claridad como relleno/barra sobre fondo casi negro
+/// (#111315) y sobre las tarjetas (#22262B): las tres pasan AA (>=4.5:1)
+/// contra ambos — sesión 5.8:1, ruta 10.0:1, mentoría 6.8:1 — y son
+/// visualmente distintas del dorado de marca (reservado para "hoy", nunca
+/// se usa como color de evento para no competir con esa señal).
 Color calendarEventColor(CalendarEventType t) => switch (t) {
-      CalendarEventType.openLearningSync => AppColors.chartSeries[1],
-      CalendarEventType.rutaImpacto => AppColors.chartSeries[4],
-      CalendarEventType.mentoria => AppColors.chartSeries[3],
+      CalendarEventType.openLearningSync => const Color(0xFF4C8DFF), // azul
+      CalendarEventType.rutaImpacto => const Color(0xFF2DD4BF), // verde azulado
+      CalendarEventType.mentoria => const Color(0xFFA78BFA), // violeta
     };
 
 IconData calendarEventIcon(CalendarEventType t) => switch (t) {
@@ -112,6 +118,8 @@ class _CalendarViewState extends State<CalendarView> {
               ),
           ],
         ),
+        const SizedBox(height: 10),
+        _buildLegend(),
         const SizedBox(height: 12),
         LayoutBuilder(builder: (context, constraints) {
           final cellSize = (constraints.maxWidth / 7).clamp(36.0, 96.0);
@@ -152,53 +160,118 @@ class _CalendarViewState extends State<CalendarView> {
     );
   }
 
+  Widget _buildLegend() {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 6,
+      children: [
+        for (final t in CalendarEventType.values)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: calendarEventColor(t),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(calendarEventTypeLabel(t),
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 11.5)),
+            ],
+          ),
+      ],
+    );
+  }
+
   Widget _buildDayCell(DateTime day, double size, DateTime today) {
     final inMonth = day.month == _visibleMonth.month;
     final isSelected = _sameDay(day, _selectedDay);
     final isToday = _sameDay(day, today);
-    final types = _eventsOn(day).map((e) => e.type).toSet();
+    final dayEvents = _eventsOn(day);
+    final hasEvents = dayEvents.isNotEmpty;
+    final barColor =
+        hasEvents ? calendarEventColor(dayEvents.first.type) : null;
 
-    return GestureDetector(
+    return _HoverableDayCell(
       onTap: () => setState(() => _selectedDay = day),
+      tooltip: hasEvents
+          ? dayEvents
+              .map((e) =>
+                  '${DateFormat('h:mm a').format(e.start)} · ${e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title}')
+              .join('\n')
+          : null,
       child: Container(
         width: size,
         height: size,
         margin: const EdgeInsets.all(2),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.gold.withValues(alpha: 0.18)
-              : Colors.transparent,
+              : hasEvents
+                  ? barColor!.withValues(alpha: 0.12)
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border:
-              isToday ? Border.all(color: AppColors.gold, width: 1.4) : null,
+          border: isToday
+              ? Border.all(color: AppColors.gold, width: 1.6)
+              : hasEvents
+                  ? Border.all(color: barColor!.withValues(alpha: 0.35))
+                  : null,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Text('${day.day}',
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
-                    color: inMonth
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted.withValues(alpha: 0.4))),
-            if (types.isNotEmpty) ...[
-              const SizedBox(height: 3),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final t in types.take(3))
-                    Container(
-                      width: 5,
-                      height: 5,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration: BoxDecoration(
-                          color: calendarEventColor(t),
-                          shape: BoxShape.circle),
-                    ),
-                ],
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (hasEvents && size >= 56)
+                  Icon(calendarEventIcon(dayEvents.first.type),
+                      size: 12, color: barColor),
+                Text('${day.day}',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            isToday ? FontWeight.w800 : FontWeight.w500,
+                        color: inMonth
+                            ? AppColors.textPrimary
+                            : AppColors.textMuted.withValues(alpha: 0.4))),
+              ],
+            ),
+            if (hasEvents)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  height: size >= 64 ? 5 : 4,
+                  color: barColor,
+                ),
               ),
-            ],
+            if (dayEvents.length > 1)
+              Positioned(
+                top: 2,
+                right: 2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 15,
+                  constraints: const BoxConstraints(minWidth: 15),
+                  decoration: BoxDecoration(
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(8),
+                    border:
+                        Border.all(color: AppColors.background, width: 1.2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text('${dayEvents.length}',
+                      style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0B0B0C))),
+                ),
+              ),
           ],
         ),
       ),
@@ -230,6 +303,39 @@ class _CalendarViewState extends State<CalendarView> {
               onDelete: widget.onDeleteEvent,
             ),
       ],
+    );
+  }
+}
+
+/// Micro-interacción de una celda del día: al pasar el mouse, un ligero
+/// zoom (si tiene eventos) y un tooltip con hora + título de cada evento
+/// — preview rápido sin abrir nada.
+class _HoverableDayCell extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final String? tooltip;
+  const _HoverableDayCell(
+      {required this.child, required this.onTap, this.tooltip});
+
+  @override
+  Widget build(BuildContext context) {
+    final content = HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) => GestureDetector(
+        onTap: onTap,
+        child: AnimatedScale(
+          scale: hovered && tooltip != null ? 1.06 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          child: child,
+        ),
+      ),
+    );
+    if (tooltip == null) return content;
+    return Tooltip(
+      message: tooltip!,
+      waitDuration: const Duration(milliseconds: 300),
+      child: content,
     );
   }
 }
@@ -342,6 +448,7 @@ class _EventCard extends StatelessWidget {
 Future<void> showCalendarEventDialog(
   BuildContext context, {
   CalendarEvent? existing,
+  DateTime? initialDay,
   required List<CalendarEventType> allowedTypes,
   required List<Course> courses,
   required List<Laboratory> labs,
@@ -357,9 +464,9 @@ Future<void> showCalendarEventDialog(
   var type = existing?.type ?? allowedTypes.first;
   var courseId = existing?.courseId ?? (courses.isNotEmpty ? courses.first.id : '');
   var labId = existing?.labId ?? (labs.isNotEmpty ? labs.first.id : '');
-  final tomorrow = DateTime.now().add(const Duration(days: 1));
-  var start = existing?.start ??
-      DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 10, 0);
+  final fallbackDay = DateTime.now().add(const Duration(days: 1));
+  final day = initialDay ?? fallbackDay;
+  var start = existing?.start ?? DateTime(day.year, day.month, day.day, 10, 0);
   var repeatCount = 1;
 
   await showDialog<void>(

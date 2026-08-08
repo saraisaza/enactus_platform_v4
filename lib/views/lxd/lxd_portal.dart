@@ -194,6 +194,7 @@ class _LxdCalendar extends StatelessWidget {
           canManage: true,
           onAddEvent: (day) => showCalendarEventDialog(
             context,
+            initialDay: day,
             allowedTypes: const [CalendarEventType.openLearningSync],
             courses: myCourses,
             labs: const [],

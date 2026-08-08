@@ -363,6 +363,7 @@ class AdminCalendar extends StatelessWidget {
           canManage: true,
           onAddEvent: (day) => showCalendarEventDialog(
             context,
+            initialDay: day,
             allowedTypes: CalendarEventType.values,
             courses: openLearningCourses,
             labs: data.labs,

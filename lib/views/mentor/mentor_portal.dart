@@ -156,6 +156,7 @@ class _MentorCalendar extends StatelessWidget {
           canManage: true,
           onAddEvent: (day) => showCalendarEventDialog(
             context,
+            initialDay: day,
             allowedTypes: const [
               CalendarEventType.rutaImpacto,
               CalendarEventType.mentoria,

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+<style>
+@font-face { font-family: 'Knockout'; src: url('assets/media/Knockout-92.otf') format('opentype'); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('assets/media/SpaceGrotesk-Variable.ttf') format('truetype'); font-weight: 300 700; font-display: swap; }
+html, body { margin: 0; padding: 0; background: #111315; }
+* { box-sizing: border-box; }
+a { color: #F4C430; text-decoration: none; }
+a:hover { color: #FFD700; }
+input { font-family: inherit; }
+::placeholder { color: #8A9099; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sweep { from { background-position: -220% 0; } to { background-position: 220% 0; } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(244,196,48,.55); } 50% { box-shadow: 0 0 0 5px rgba(244,196,48,0); } }
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="--bg:#111315; --surface:#1A1D21; --surface2:#22262B; --border:#33383F; --text:#F5F5F2; --text2:#B8BCBF; --text3:#8A9099; --gold:#F4C430; --gold-ink:#F4C430; --gold-soft:rgba(244,196,48,.14); --shadow:0 18px 40px rgba(0,0,0,.45); --veil:rgba(0,0,0,.28); min-height:100vh; background:var(--bg); color:var(--text); font-family:'Space Grotesk', system-ui, sans-serif; display:flex; flex-direction:column;">
+
+  <div style="display:flex; height:4px; flex:none;">
+    <div style="flex:1; background:#FCD116;"></div>
+    <div style="flex:1; background:#003893;"></div>
+    <div style="flex:1; background:#CE1126;"></div>
+  </div>
+
+  <header style="display:flex; align-items:center; gap:22px; padding:14px 32px; background:#0D0F11; border-bottom:1px solid #24282D; flex:none;">
+    <img src="assets/media/mainlogo.png" alt="Enactus Colombia" style="height:52px; width:auto; display:block;" />
+    <div style="padding:9px 18px; border-radius:10px; background:#2D3E50; color:#F4C430; font-weight:600; font-size:14px; letter-spacing:.01em;">Portal Estudiante</div>
+    <div style="flex:1;"></div>
+    <div style="display:flex; align-items:center; gap:10px; background:#1A1D21; border:1px solid #33383F; border-radius:10px; padding:0 14px; height:44px; width:320px;">
+      <span style="font-family:'Material Symbols Rounded'; font-size:20px; color:#8A9099;">search</span>
+      <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="Buscar proyecto, comunidad u ODS" style="flex:1; background:transparent; border:none; outline:none; color:#F5F5F2; font-size:14px;" />
+    </div>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="width:44px; height:44px; display:grid; place-items:center; border-radius:10px; background:#1A1D21; border:1px solid #33383F; color:#B8BCBF; cursor:pointer;" style-hover="border-color:#F4C430; color:#F4C430;">
+      <span style="font-family:'Material Symbols Rounded'; font-size:21px;">{{ themeIcon }}</span>
+    </button>
+    <span style="font-family:'Material Symbols Rounded'; font-size:22px; color:#B8BCBF;">notifications</span>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:42px; height:42px; border-radius:50%; background:#F4C430; color:#1A1400; display:grid; place-items:center; font-weight:700; font-size:17px;">S</div>
+      <div style="line-height:1.25;">
+        <div style="font-weight:600; font-size:14px; color:#F5F5F2;">Sara Nieto</div>
+        <div style="font-size:12.5px; color:#8A9099;">Estudiante</div>
+      </div>
+    </div>
+  </header>
+
+  <div style="display:flex; flex:1; min-height:0;">
+    <nav style="width:230px; flex:none; background:#2D3E50; padding:16px 0; display:flex; flex-direction:column; gap:2px;">
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">dashboard</span><span style="font-size:13.5px;">Dashboard</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">calendar_month</span><span style="font-size:13.5px;">Calendario</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">school</span><span style="font-size:13.5px;">Mis Cursos</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">science</span><span style="font-size:13.5px;">Laboratorios</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">emoji_events</span><span style="font-size:13.5px;">Ruta de Impacto</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid #F4C430; background:rgba(244,196,48,.12); color:#F4C430; font-weight:600;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">explore</span><span style="font-size:13.5px;">Directorio de Proyectos</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">forum</span><span style="font-size:13.5px;">Foro</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">workspace_premium</span><span style="font-size:13.5px;">Certificados</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; border-left:3px solid transparent; color:#C3C9D0; cursor:pointer;" style-hover="background:rgba(255,255,255,.05); border-left-color:rgba(244,196,48,.55); color:#FFFFFF;">
+        <span style="font-family:'Material Symbols Rounded'; font-size:21px;">person</span><span style="font-size:13.5px;">Mi Perfil</span>
+      </div>
+    </nav>
+
+    <main style="flex:1; min-width:0; padding:34px 40px 60px; display:flex; flex-direction:column; gap:26px;">
+
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+        <div style="min-width:320px;">
+          <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+            <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Comunidad Enactus Colombia</span>
+          </div>
+          <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Directorio de Proyectos</h1>
+          <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">Todos los proyectos activos de la red. Filtra por etapa, explora los ODS que atienden y descubre qué está construyendo el resto de los equipos.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; flex:1; min-width:440px;">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+            <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--gold-ink);">{{ cProyectos }}</div>
+            <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">Proyectos activos</div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+            <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cUniversidades }}</div>
+            <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">Universidades</div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+            <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cOds }}</div>
+            <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">ODS cubiertos</div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+            <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cExpo }}</div>
+            <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">En National Expo</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:9px; flex-wrap:wrap; align-items:center;">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="7">
+          <button onClick="{{ c.pick }}" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:999px; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .16s ease; background: {{ c.bg }}; color: {{ c.fg }}; border:1px solid {{ c.bc }};" style-hover="transform:translateY(-1px);">
+            <span>{{ c.label }}</span>
+            <span style="min-width:22px; padding:1px 7px; border-radius:999px; font-size:11.5px; font-weight:700; background: {{ c.badgeBg }}; color: {{ c.badgeFg }};">{{ c.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(348px,1fr)); gap:20px;">
+          <sc-for list="{{ items }}" as="p" hint-placeholder-count="6">
+            <article style="position:relative; background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer; transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; animation:fadeUp .45s both; animation-delay: {{ p.delay }};" style-hover="transform:translateY(-5px); box-shadow:var(--shadow); border-color: {{ p.color }};">
+
+              <div style="position:relative; height:104px; overflow:hidden; background: {{ p.color }};">
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, var(--veil) 100%);"></div>
+                <div style="position:absolute; right:14px; bottom:-16px; font-family:'Knockout'; font-size:82px; line-height:1; letter-spacing:.02em; color:rgba(255,255,255,.32);">{{ p.odsNum }}</div>
+                <div style="position:absolute; left:16px; top:16px; display:flex; align-items:center; gap:7px; padding:6px 12px 6px 9px; border-radius:999px; background:rgba(10,12,14,.55); backdrop-filter:blur(6px); color:#FFFFFF; font-size:12px; font-weight:600; letter-spacing:.02em;">
+                  <span style="font-family:'Material Symbols Rounded'; font-size:15px;">flag</span>{{ p.stage }}
+                </div>
+              </div>
+
+              <div style="padding:18px 20px 20px; display:flex; flex-direction:column; gap:13px;">
+                <div>
+                  <h3 style="margin:0; font-family:'Knockout'; font-size:29px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">{{ p.name }}</h3>
+                  <p style="margin:9px 0 0; font-size:14px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ p.description }}</p>
+                </div>
+
+                <div>
+                  <div style="display:flex; gap:4px; margin-bottom:7px;">
+                    <sc-for list="{{ p.steps }}" as="s" hint-placeholder-count="6">
+                      <div style="flex:1; height:5px; border-radius:3px; background: {{ s.bg }};"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text3); letter-spacing:.02em;">
+                    <span>Etapa {{ p.stepNum }} de 6</span><span>{{ p.nextLabel }}</span>
+                  </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2);">
+                  <span style="font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">location_on</span>{{ p.community }}
+                </div>
+
+                <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                  <sc-for list="{{ p.ods }}" as="o" hint-placeholder-count="2">
+                    <span style="display:inline-flex; align-items:center; gap:7px; padding:5px 11px 5px 8px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); font-size:11.5px; color:var(--text2);">
+                      <span style="width:9px; height:9px; border-radius:2px; background: {{ o.color }};"></span>{{ o.label }}
+                    </span>
+                  </sc-for>
+                </div>
+
+                <div style="height:1px; background:var(--border);"></div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                  <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+                    <span style="font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">groups</span>
+                    <span style="font-size:12.5px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ p.team }}</span>
+                  </div>
+                  <span style="flex:none; width:32px; height:32px; display:grid; place-items:center; border-radius:9px; background:var(--gold-soft); color:var(--gold-ink); font-family:'Material Symbols Rounded'; font-size:18px;">arrow_forward</span>
+                </div>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; padding:70px 24px; background:var(--surface); border:1px dashed var(--border); border-radius:20px;">
+          <div style="width:76px; height:76px; border-radius:22px; background:var(--gold-soft); display:grid; place-items:center;">
+            <span style="font-family:'Material Symbols Rounded'; font-size:36px; color:var(--gold-ink);">lightbulb</span>
+          </div>
+          <h2 style="margin:0; font-family:'Knockout'; font-size:38px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Aún no hay proyectos aquí</h2>
+          <p style="margin:0; max-width:46ch; font-size:15px; line-height:1.55; color:var(--text2); text-wrap:pretty;">{{ emptyCopy }}</p>
+          <div style="display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; justify-content:center;">
+            <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; gap:9px; padding:14px 24px; border-radius:10px; border:none; background:#F4C430; color:#1A1400; font-weight:600; font-size:14px; cursor:pointer; transition:all .15s ease;" style-hover="background:#FFD700; box-shadow:0 8px 22px rgba(244,196,48,.28); transform:translateY(-1px);">
+              <span style="font-family:'Material Symbols Rounded'; font-size:19px;">restart_alt</span>Ver todas las etapas
+            </button>
+            <button style="display:flex; align-items:center; gap:9px; padding:14px 24px; border-radius:10px; background:transparent; border:1px solid var(--gold-ink); color:var(--gold-ink); font-weight:600; font-size:14px; cursor:pointer; transition:all .15s ease;" style-hover="background:var(--gold-soft);">
+              <span style="font-family:'Material Symbols Rounded'; font-size:19px;">add</span>Proponer un proyecto
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <footer style="margin-top:18px; padding-top:22px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="display:flex; height:22px; width:4px; flex-direction:column; border-radius:2px; overflow:hidden;">
+            <div style="flex:1; background:#FCD116;"></div>
+            <div style="flex:1; background:#003893;"></div>
+            <div style="flex:1; background:#CE1126;"></div>
+          </div>
+          <span style="font-size:12.5px; color:var(--text3);">Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:18px; font-size:12.5px;">
+          <a href="https://www.facebook.com/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">Facebook</a>
+          <a href="https://www.instagram.com/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">Instagram</a>
+          <a href="http://linkedin.com/company/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">LinkedIn</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Oscuro&quot;,&quot;Claro&quot;],&quot;default&quot;:&quot;Oscuro&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Con proyectos&quot;,&quot;Sin proyectos&quot;],&quot;default&quot;:&quot;Con proyectos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;acento&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Color por ODS&quot;,&quot;Solo amarillo&quot;],&quot;default&quot;:&quot;Color por ODS&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { stage: 'todas', query: '', theme: null };
+
+  odsColor = {1:'#E5243B',2:'#DDA63A',3:'#4C9F38',4:'#C5192D',5:'#FF3A21',6:'#26BDE2',7:'#FCC30B',8:'#A21942',9:'#FD6925',10:'#DD1367',11:'#FD9D24',12:'#BF8B2E',13:'#3F7E44',14:'#0A97D9',15:'#56C02B',16:'#00689D',17:'#19486A'};
+
+  stages = ['Ideación','Validación','Prototipo','Piloto','Escalamiento','National Expo'];
+
+  projects = [
+    {name:'AquaVida', description:'Filtros de agua de bajo costo para comunidades rurales.', community:'Comunidades wayúu, La Guajira', stage:'Piloto', ods:[6,3], team:'Equipo AquaVida · Universidad de los Andes · 2 estudiantes'},
+    {name:'SolAndino', description:'Micro-redes solares para escuelas rurales.', community:'Escuelas rurales, Boyacá', stage:'Validación', ods:[7,4], team:'Equipo SolAndino · Universidad Nacional · 2 estudiantes'},
+    {name:'Manglar Vivo', description:'Restauración de manglares junto a pescadores artesanales.', community:'Pescadores artesanales, Buenaventura', stage:'National Expo', ods:[14,13], team:'Equipo Manglar · Universidad del Valle · 5 estudiantes'},
+    {name:'Raíz Café', description:'Trazabilidad y precio justo para pequeños caficultores.', community:'Caficultores, Huila', stage:'Escalamiento', ods:[8,12], team:'Equipo Raíz · Universidad de Antioquia · 4 estudiantes'},
+    {name:'Semilla Digital', description:'Alfabetización digital para docentes de zonas apartadas.', community:'Docentes rurales, Atlántico', stage:'Prototipo', ods:[4,10], team:'Equipo Semilla · Universidad del Norte · 3 estudiantes'},
+    {name:'Tejido Wayúu', description:'Comercio digital directo para tejedoras artesanas.', community:'Tejedoras wayúu, Riohacha', stage:'Prototipo', ods:[5,8], team:'Equipo Tejido · Universidad de La Guajira · 3 estudiantes'},
+    {name:'Cosecha Urbana', description:'Huertas comunitarias en barrios de ladera.', community:'Barrios de ladera, Medellín', stage:'Ideación', ods:[2,11], team:'Equipo Cosecha · Pontificia Universidad Javeriana · 3 estudiantes'}
+  ];
+
+  odsLabel = {2:'ODS 2: Hambre cero',3:'ODS 3: Salud y bienestar',4:'ODS 4: Educación de calidad',5:'ODS 5: Igualdad de género',6:'ODS 6: Agua limpia y saneamiento',7:'ODS 7: Energía asequible',8:'ODS 8: Trabajo decente',10:'ODS 10: Reducción de desigualdades',11:'ODS 11: Ciudades sostenibles',12:'ODS 12: Consumo responsable',13:'ODS 13: Acción por el clima',14:'ODS 14: Vida submarina'};
+
+  themes = {
+    dark: {'--bg':'#111315','--surface':'#1A1D21','--surface2':'#22262B','--border':'#33383F','--text':'#F5F5F2','--text2':'#B8BCBF','--text3':'#8A9099','--gold-ink':'#F4C430','--gold-soft':'rgba(244,196,48,.14)','--shadow':'0 18px 40px rgba(0,0,0,.5)','--veil':'rgba(0,0,0,.28)'},
+    light: {'--bg':'#F2F2EC','--surface':'#FFFFFF','--surface2':'#F0F0E9','--border':'#DEDED4','--text':'#15181B','--text2':'#4C525A','--text3':'#787F88','--gold-ink':'#8A6A00','--gold-soft':'rgba(244,196,48,.24)','--shadow':'0 16px 36px rgba(20,25,35,.14)','--veil':'rgba(0,0,0,.22)'}
+  };
+
+  counters = { cProyectos: 0, cUniversidades: 0, cOds: 0, cExpo: 0 };
+
+  setRoot = (el) => { this.root = el; if (el) this.applyTheme(); };
+
+  get theme() { return this.state.theme ?? (this.props.tema === 'Claro' ? 'light' : 'dark'); }
+
+  get source() { return (this.props.estado ?? 'Con proyectos') === 'Sin proyectos' ? [] : this.projects; }
+
+  applyTheme() {
+    if (!this.root) return;
+    const vars = this.themes[this.theme];
+    for (const k in vars) this.root.style.setProperty(k, vars[k]);
+    document.body.style.background = vars['--bg'];
+  }
+
+  componentDidMount() {
+    this.applyTheme();
+    const targets = this.targets();
+    const t0 = performance.now();
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / 900);
+      const e = 1 - Math.pow(1 - k, 3);
+      this.counters = {
+        cProyectos: Math.round(targets.cProyectos * e),
+        cUniversidades: Math.round(targets.cUniversidades * e),
+        cOds: Math.round(targets.cOds * e),
+        cExpo: Math.round(targets.cExpo * e)
+      };
+      this.forceUpdate();
+      if (k < 1) this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+
+  componentDidUpdate(prev) {
+    this.applyTheme();
+    if (prev.estado !== this.props.estado) this.counters = this.targets();
+  }
+
+  componentWillUnmount() { cancelAnimationFrame(this.raf); }
+
+  targets() {
+    const src = this.source;
+    const unis = new Set(src.map(p => p.team.split('·')[1].trim()));
+    const ods = new Set(src.flatMap(p => p.ods));
+    return {
+      cProyectos: src.length,
+      cUniversidades: unis.size,
+      cOds: ods.size,
+      cExpo: src.filter(p => p.stage === 'National Expo').length
+    };
+  }
+
+  matches(p) {
+    const q = this.state.query.trim().toLowerCase();
+    if (!q) return true;
+    const hay = [p.name, p.description, p.community, p.stage, ...p.ods.map(n => this.odsLabel[n] || '')].join(' ').toLowerCase();
+    return hay.includes(q);
+  }
+
+  renderVals() {
+    const monoAccent = (this.props.acento ?? 'Color por ODS') === 'Solo amarillo';
+    const src = this.source;
+    const byStage = src.filter(p => this.state.stage === 'todas' || p.stage === this.state.stage);
+    const list = byStage.filter(p => this.matches(p));
+
+    const mkChip = (label, key, count) => {
+      const on = this.state.stage === key;
+      return {
+        label, count,
+        bg: on ? 'var(--gold-soft)' : 'var(--surface)',
+        fg: on ? 'var(--gold-ink)' : 'var(--text2)',
+        bc: on ? 'var(--gold-ink)' : 'var(--border)',
+        badgeBg: on ? 'var(--gold-ink)' : 'var(--surface2)',
+        badgeFg: on ? 'var(--bg)' : 'var(--text3)',
+        pick: () => this.setState({ stage: key })
+      };
+    };
+
+    const chips = [mkChip('Todas las etapas', 'todas', src.length)]
+      .concat(this.stages.map(s => mkChip(s, s, src.filter(p => p.stage === s).length)));
+
+    const items = list.map((p, i) => {
+      const idx = this.stages.indexOf(p.stage);
+      const color = monoAccent ? '#F4C430' : (this.odsColor[p.ods[0]] || '#F4C430');
+      return {
+        name: p.name,
+        description: p.description,
+        community: p.community,
+        stage: p.stage,
+        team: p.team,
+        color,
+        odsNum: p.ods[0],
+        delay: (i * 55) + 'ms',
+        stepNum: idx + 1,
+        nextLabel: idx === 5 ? 'Etapa final' : 'Sigue: ' + this.stages[idx + 1],
+        steps: this.stages.map((_, k) => ({ bg: k < idx ? 'var(--gold-soft)' : (k === idx ? color : 'var(--border)') })),
+        ods: p.ods.map(n => ({ label: this.odsLabel[n] || ('ODS ' + n), color: monoAccent ? '#F4C430' : this.odsColor[n] }))
+      };
+    });
+
+    const noneAtAll = src.length === 0;
+    return {
+      ...this.counters,
+      chips, items,
+      query: this.state.query,
+      hasResults: items.length > 0,
+      isEmpty: items.length === 0,
+      emptyCopy: noneAtAll
+        ? 'Todavía no se ha publicado ningún proyecto en la comunidad. Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.'
+        : 'Ningún proyecto coincide con este filtro. Prueba con otra etapa o limpia la búsqueda.',
+      themeIcon: this.theme === 'dark' ? 'light_mode' : 'dark_mode',
+      onSearch: (e) => this.setState({ query: e.target.value }),
+      resetFilters: () => this.setState({ stage: 'todas', query: '' }),
+      toggleTheme: () => this.setState({ theme: this.theme === 'dark' ? 'light' : 'dark' }),
+      setRoot: this.setRoot
+    };
+  }
+}
+</script>
+</body>
+</html>

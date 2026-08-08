@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+<style>
+@font-face { font-family: 'Knockout'; src: url('assets/media/Knockout-92.otf') format('opentype'); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('assets/media/SpaceGrotesk-Variable.ttf') format('truetype'); font-weight: 300 700; font-display: swap; }
+html, body { margin: 0; padding: 0; background: #111315; }
+* { box-sizing: border-box; }
+a { color: #F4C430; text-decoration: none; }
+a:hover { color: #FFD700; }
+input { font-family: inherit; }
+::placeholder { color: #8A9099; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(244,196,48,.55); } 50% { box-shadow: 0 0 0 5px rgba(244,196,48,0); } }
+</style>
+</helmet>
+
+<div ref="{{ setRoot }}" style="--bg:#111315; --surface:#1A1D21; --surface2:#22262B; --border:#33383F; --text:#F5F5F2; --text2:#B8BCBF; --text3:#8A9099; --gold-ink:#F4C430; --gold-soft:rgba(244,196,48,.14); --shadow:0 18px 40px rgba(0,0,0,.45); --veil:rgba(0,0,0,.28); min-height:100vh; background:var(--bg); color:var(--text); font-family:'Space Grotesk', system-ui, sans-serif; display:flex; flex-direction:column;">
+
+  <div style="display:flex; height:4px; flex:none;">
+    <div style="flex:1; background:#FCD116;"></div>
+    <div style="flex:1; background:#003893;"></div>
+    <div style="flex:1; background:#CE1126;"></div>
+  </div>
+
+  <header style="display:flex; align-items:center; gap:22px; padding:14px 32px; background:#0D0F11; border-bottom:1px solid #24282D; flex:none;">
+    <img src="assets/media/mainlogo.png" alt="Enactus Colombia" style="height:52px; width:auto; display:block;" />
+    <div style="padding:9px 18px; border-radius:10px; background:#2D3E50; color:#F4C430; font-weight:600; font-size:14px; letter-spacing:.01em;">Portal Estudiante</div>
+    <div style="flex:1;"></div>
+    <div style="display:flex; align-items:center; gap:10px; background:#1A1D21; border:1px solid #33383F; border-radius:10px; padding:0 14px; height:44px; width:320px;">
+      <span style="font-family:'Material Symbols Rounded'; font-size:20px; color:#8A9099;">search</span>
+      <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="{{ searchHint }}" style="flex:1; background:transparent; border:none; outline:none; color:#F5F5F2; font-size:14px;" />
+    </div>
+    <button onClick="{{ toggleTheme }}" title="Cambiar tema" style="width:44px; height:44px; display:grid; place-items:center; border-radius:10px; background:#1A1D21; border:1px solid #33383F; color:#B8BCBF; cursor:pointer;" style-hover="border-color:#F4C430; color:#F4C430;">
+      <span style="font-family:'Material Symbols Rounded'; font-size:21px;">{{ themeIcon }}</span>
+    </button>
+    <div style="position:relative; display:grid; place-items:center;">
+      <span style="font-family:'Material Symbols Rounded'; font-size:22px; color:#B8BCBF;">notifications</span>
+      <span style="position:absolute; top:-1px; right:-2px; width:8px; height:8px; border-radius:50%; background:#CE1126; border:2px solid #0D0F11;"></span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:42px; height:42px; border-radius:50%; background:#F4C430; color:#1A1400; display:grid; place-items:center; font-weight:700; font-size:17px;">S</div>
+      <div style="line-height:1.25;">
+        <div style="font-weight:600; font-size:14px; color:#F5F5F2;">Sara Nieto</div>
+        <div style="font-size:12.5px; color:#8A9099;">Estudiante</div>
+      </div>
+    </div>
+  </header>
+
+  <div style="display:flex; flex:1; min-height:0;">
+    <nav style="width:230px; flex:none; background:#2D3E50; padding:16px 0; display:flex; flex-direction:column; gap:2px;">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="9">
+        <div onClick="{{ n.go }}" style="display:flex; align-items:center; gap:12px; padding:12px; margin:2px 8px; border-radius:8px; cursor:pointer; border-left:3px solid {{ n.bar }}; background: {{ n.bg }}; color: {{ n.fg }}; font-weight: {{ n.weight }};" style-hover="background:rgba(255,255,255,.06);">
+          <span style="font-family:'Material Symbols Rounded'; font-size:21px;">{{ n.icon }}</span>
+          <span style="font-size:13.5px;">{{ n.label }}</span>
+        </div>
+      </sc-for>
+      <div style="flex:1;"></div>
+      <div style="margin:8px 16px 0; padding-top:14px; border-top:1px solid rgba(255,255,255,.09); font-size:11.5px; line-height:1.5; color:#8FA0B2;">
+        Universidad de los Andes<br />Equipo AquaVida
+      </div>
+    </nav>
+
+    <main style="flex:1; min-width:0; padding:34px 40px 60px; display:flex; flex-direction:column; gap:26px;">
+
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+            <div style="min-width:320px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+                <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Semana del 3 al 9 de agosto</span>
+              </div>
+              <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Hola, Sara</h1>
+              <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">{{ dashSub }}</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:20px; padding:20px 26px; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
+              <div style="position:relative; width:96px; height:96px; border-radius:50%; background: {{ ringGrad }};">
+                <div style="position:absolute; inset:10px; border-radius:50%; background:var(--surface); display:grid; place-items:center;">
+                  <span style="font-family:'Knockout'; font-size:30px; letter-spacing:.02em; color:var(--text);">{{ overallPct }}%</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:13px; color:var(--text3); letter-spacing:.02em;">Progreso general</div>
+                <div style="margin-top:5px; font-size:15px; color:var(--text); font-weight:600;">{{ lessonsDone }} de {{ lessonsTotal }} lecciones</div>
+                <div style="margin-top:9px; font-size:12.5px; color:var(--text3);">{{ coursesCount }} cursos activos · 2 laboratorios</div>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasCourses }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:20px; align-items:start;">
+
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                <div style="position:relative; border-radius:18px; overflow:hidden; border:1px solid var(--border); background:var(--surface); animation:fadeUp .45s both;">
+                  <div style="position:relative; padding:26px 28px; background: {{ resumeColor }};">
+                    <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+                    <div style="position:relative;">
+                      <div style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.85); font-weight:600;">Continúa donde ibas</div>
+                      <h2 style="margin:10px 0 0; font-family:'Knockout'; font-size:38px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:#FFFFFF;">{{ resumeName }}</h2>
+                      <div style="margin-top:8px; font-size:13.5px; color:rgba(255,255,255,.88);">{{ resumeLab }}</div>
+                    </div>
+                  </div>
+                  <div style="padding:20px 28px 24px; display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:220px;">
+                      <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--text3); margin-bottom:7px;">
+                        <span>Siguiente: {{ resumeNext }}</span><span>{{ resumeDone }} de {{ resumeTotal }}</span>
+                      </div>
+                      <div style="height:7px; border-radius:4px; background:var(--surface2); overflow:hidden;">
+                        <div style="height:100%; border-radius:4px; background: {{ resumeColor }}; width: {{ resumePct }};"></div>
+                      </div>
+                    </div>
+                    <button style="display:flex; align-items:center; gap:9px; padding:13px 22px; border-radius:10px; border:none; background:#F4C430; color:#1A1400; font-weight:600; font-size:14px; cursor:pointer;" style-hover="background:#FFD700; box-shadow:0 8px 22px rgba(244,196,48,.28); transform:translateY(-1px);">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:19px;">play_arrow</span>Continuar
+                    </button>
+                  </div>
+                </div>
+
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px 26px;">
+                  <h3 style="margin:0 0 18px; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Progreso por curso</h3>
+                  <div style="display:flex; flex-direction:column; gap:16px;">
+                    <sc-for list="{{ courses }}" as="c" hint-placeholder-count="3">
+                      <div>
+                        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:7px;">
+                          <span style="font-size:14px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ c.name }}</span>
+                          <span style="flex:none; font-size:12.5px; color:var(--text3);">{{ c.pctLabel }}</span>
+                        </div>
+                        <div style="height:7px; border-radius:4px; background:var(--surface2); overflow:hidden;">
+                          <div style="height:100%; border-radius:4px; background: {{ c.color }}; width: {{ c.pct }};"></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:20px;">
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px 24px;">
+                  <h3 style="margin:0 0 16px; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Pendientes</h3>
+                  <div style="display:flex; flex-direction:column; gap:11px;">
+                    <sc-for list="{{ pending }}" as="t" hint-placeholder-count="3">
+                      <div style="display:flex; align-items:flex-start; gap:12px; padding:13px 14px; border-radius:11px; background:var(--surface2); border-left:3px solid {{ t.color }};">
+                        <span style="font-family:'Material Symbols Rounded'; font-size:19px; color: {{ t.color }}; margin-top:1px;">{{ t.icon }}</span>
+                        <div style="min-width:0;">
+                          <div style="font-size:13.5px; color:var(--text); line-height:1.35;">{{ t.label }}</div>
+                          <div style="margin-top:4px; font-size:12px; color:var(--text3);">{{ t.meta }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px 24px;">
+                  <h3 style="margin:0 0 16px; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Actividad reciente</h3>
+                  <div style="display:flex; align-items:center; gap:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+                    <div style="flex:none; width:56px; height:56px; border-radius:14px; background:var(--gold-soft); display:grid; place-items:center; font-family:'Knockout'; font-size:26px; color:var(--gold-ink);">4.5</div>
+                    <div style="min-width:0;">
+                      <div style="font-size:13.5px; color:var(--text); font-weight:600;">Ensayo: IA para el bien social</div>
+                      <div style="margin-top:3px; font-size:12px; color:var(--text3);">Calificado el 21 de junio · Carlos Rodríguez</div>
+                    </div>
+                  </div>
+                  <p style="margin:14px 0 0; font-size:13px; line-height:1.55; color:var(--text2); text-wrap:pretty;">“Excelente análisis. Profundiza en la parte de datos.”</p>
+                </div>
+
+                <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px 24px;">
+                  <div style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Tu proyecto</div>
+                  <h3 style="margin:10px 0 0; font-family:'Knockout'; font-size:30px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">AquaVida</h3>
+                  <div style="display:flex; gap:4px; margin:14px 0 7px;">
+                    <sc-for list="{{ aquaSteps }}" as="s" hint-placeholder-count="6">
+                      <div style="flex:1; height:5px; border-radius:3px; background: {{ s.bg }};"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text3);">
+                    <span>Etapa 4 de 6 · Piloto</span><span>Sigue: Escalamiento</span>
+                  </div>
+                  <p style="margin:14px 0 0; font-size:13px; line-height:1.55; color:var(--text2);">320 familias con acceso a agua · 15 líderes capacitados</p>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCursos }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+              <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+              <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Laboratorio IA y Tecnología · Laboratorio Impacto</span>
+            </div>
+            <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Mis Cursos</h1>
+            <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">Cursos de laboratorio asignados por tu administrador, más la ruta de preparación de tu equipo para National Expo.</p>
+          </div>
+
+          <sc-if value="{{ hasCourseResults }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(392px,1fr)); gap:20px;">
+              <sc-for list="{{ courseCards }}" as="c" hint-placeholder-count="3">
+                <article style="display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer; transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; animation:fadeUp .45s both; animation-delay: {{ c.delay }};" style-hover="transform:translateY(-5px); box-shadow:var(--shadow); border-color: {{ c.color }};">
+                  <div style="position:relative; padding:20px 22px 18px; background: {{ c.color }}; overflow:hidden;">
+                    <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+                    <div style="position:relative; display:flex; align-items:flex-start; gap:14px;">
+                      <span style="flex:none; width:40px; height:40px; border-radius:11px; background:rgba(10,12,14,.42); display:grid; place-items:center; font-family:'Material Symbols Rounded'; font-size:22px; color:#FFFFFF;">{{ c.icon }}</span>
+                      <div style="min-width:0;">
+                        <h3 style="margin:0; font-family:'Knockout'; font-size:27px; line-height:1.02; letter-spacing:.04em; text-transform:uppercase; color:#FFFFFF;">{{ c.name }}</h3>
+                        <div style="margin-top:6px; font-size:12.5px; color:rgba(255,255,255,.88);">{{ c.lab }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="flex:1; padding:18px 22px 20px; display:flex; flex-direction:column; gap:14px;">
+                    <p style="margin:0; font-size:14px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ c.desc }}</p>
+
+                    <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                      <sc-for list="{{ c.meta }}" as="m" hint-placeholder-count="3">
+                        <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); font-size:11.5px; color:var(--text2);">
+                          <span style="font-family:'Material Symbols Rounded'; font-size:14px; color:var(--text3);">{{ m.icon }}</span>{{ m.label }}
+                        </span>
+                      </sc-for>
+                    </div>
+
+                    <div style="flex:1;"></div>
+
+                    <div>
+                      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text3); margin-bottom:7px;">
+                        <span>{{ c.progressLabel }}</span><span>{{ c.pctLabel }}</span>
+                      </div>
+                      <div style="height:7px; border-radius:4px; background:var(--surface2); overflow:hidden;">
+                        <div style="height:100%; border-radius:4px; background: {{ c.color }}; width: {{ c.pct }};"></div>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:14px; border-top:1px solid var(--border);">
+                      <span style="font-size:12.5px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ c.teacher }}</span>
+                      <span style="flex:none; display:flex; align-items:center; gap:8px; padding:9px 16px; border-radius:9px; background:var(--gold-soft); color:var(--gold-ink); font-size:13px; font-weight:600;">
+                        {{ c.cta }}<span style="font-family:'Material Symbols Rounded'; font-size:17px;">arrow_forward</span>
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRuta }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+            <div style="min-width:320px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+                <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Equipo AquaVida · Universidad de los Andes</span>
+              </div>
+              <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Ruta de Impacto</h1>
+              <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">Las fases de tu laboratorio, sus objetivos y lo que falta para llegar a National Expo.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:9px; flex-wrap:wrap;">
+            <sc-for list="{{ labTabs }}" as="l" hint-placeholder-count="2">
+              <button onClick="{{ l.pick }}" style="display:flex; align-items:center; gap:10px; padding:11px 18px; border-radius:999px; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .16s ease; background: {{ l.bg }}; color: {{ l.fg }}; border:1px solid {{ l.bc }};" style-hover="transform:translateY(-1px);">
+                <span style="width:9px; height:9px; border-radius:3px; background: {{ l.dot }};"></span>{{ l.label }}
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasPhases }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:22px; align-items:start;">
+
+              <div style="display:flex; flex-direction:column; gap:0;">
+                <sc-for list="{{ phases }}" as="f" hint-placeholder-count="3">
+                  <div style="display:flex; gap:20px; animation:fadeUp .45s both; animation-delay: {{ f.delay }};">
+                    <div style="flex:none; width:46px; display:flex; flex-direction:column; align-items:center;">
+                      <div style="width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-family:'Knockout'; font-size:22px; letter-spacing:.02em; background: {{ f.dotBg }}; color: {{ f.dotFg }}; border:2px solid {{ f.dotBorder }};">{{ f.num }}</div>
+                      <div style="flex:1; width:2px; background: {{ f.lineBg }}; min-height:18px;"></div>
+                    </div>
+
+                    <div style="flex:1; min-width:0; padding-bottom:22px;">
+                      <div style="background:var(--surface); border:1px solid {{ f.cardBorder }}; border-radius:16px; padding:20px 22px;">
+                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+                          <h3 style="margin:0; font-family:'Knockout'; font-size:27px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">{{ f.title }}</h3>
+                          <span style="flex:none; display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:600; background: {{ f.stateBg }}; color: {{ f.stateFg }};">
+                            <span style="font-family:'Material Symbols Rounded'; font-size:14px;">{{ f.stateIcon }}</span>{{ f.state }}
+                          </span>
+                        </div>
+
+                        <p style="margin:10px 0 0; font-size:13.5px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ f.desc }}</p>
+
+                        <sc-if value="{{ f.hasObjectives }}" hint-placeholder-val="{{ true }}">
+                          <div style="margin-top:16px;">
+                            <div style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); font-weight:600; margin-bottom:10px;">Objetivos</div>
+                            <div style="display:flex; flex-direction:column; gap:9px;">
+                              <sc-for list="{{ f.objectives }}" as="o" hint-placeholder-count="2">
+                                <div style="display:flex; align-items:flex-start; gap:10px;">
+                                  <span style="flex:none; margin-top:1px; font-family:'Material Symbols Rounded'; font-size:17px; color: {{ o.color }};">{{ o.icon }}</span>
+                                  <div style="min-width:0;">
+                                    <div style="font-size:13.5px; line-height:1.4; color:var(--text2);">{{ o.text }}</div>
+                                    <div style="margin-top:3px; font-size:11.5px; color:var(--text3);">{{ o.cat }}</div>
+                                  </div>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ f.hasModules }}" hint-placeholder-val="{{ true }}">
+                          <div style="margin-top:18px; display:flex; flex-direction:column; gap:8px;">
+                            <sc-for list="{{ f.modules }}" as="m" hint-placeholder-count="2">
+                              <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:11px; background:var(--surface2);">
+                                <span style="flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; background: {{ m.iconBg }}; color: {{ m.iconFg }}; font-family:'Material Symbols Rounded'; font-size:17px;">{{ m.icon }}</span>
+                                <div style="flex:1; min-width:0;">
+                                  <div style="font-size:13.5px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.title }}</div>
+                                  <div style="margin-top:2px; font-size:11.5px; color:var(--text3);">{{ m.meta }}</div>
+                                </div>
+                                <span style="flex:none; font-size:12px; font-weight:600; color: {{ m.iconFg }};">{{ m.status }}</span>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{ f.hasDeadline }}" hint-placeholder-val="{{ true }}">
+                          <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; align-items:center; gap:9px; font-size:12.5px; color: {{ f.deadlineColor }};">
+                            <span style="font-family:'Material Symbols Rounded'; font-size:17px;">event</span>{{ f.deadlineLabel }}
+                          </div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden;">
+                <div style="position:relative; padding:22px 24px; background:#F4C430; overflow:hidden;">
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.2) 0 2px, transparent 2px 13px);"></div>
+                  <div style="position:relative;">
+                    <div style="font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(26,20,0,.7); font-weight:700;">Meta del año</div>
+                    <h3 style="margin:8px 0 0; font-family:'Knockout'; font-size:32px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:#1A1400;">National Expo</h3>
+                  </div>
+                </div>
+                <div style="padding:20px 24px 24px;">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:9px;">
+                    <span style="font-size:12.5px; color:var(--text3);">Checklist del equipo</span>
+                    <span style="font-family:'Knockout'; font-size:22px; color:var(--gold-ink);">{{ expoDone }}/7</span>
+                  </div>
+                  <div style="height:7px; border-radius:4px; background:var(--surface2); overflow:hidden; margin-bottom:18px;">
+                    <div style="height:100%; border-radius:4px; background:#F4C430; width: {{ expoPct }};"></div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:10px;">
+                    <sc-for list="{{ expo }}" as="e" hint-placeholder-count="7">
+                      <div style="display:flex; align-items:center; gap:11px;">
+                        <span style="flex:none; font-family:'Material Symbols Rounded'; font-size:19px; color: {{ e.color }};">{{ e.icon }}</span>
+                        <span style="font-size:13px; line-height:1.35; color: {{ e.textColor }};">{{ e.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCalendario }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+            <div style="min-width:320px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+                <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Agosto 2026</span>
+              </div>
+              <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Calendario</h1>
+              <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">Sesiones sincrónicas de tus cursos y eventos de tu Ruta de Impacto.</p>
+            </div>
+            <div style="display:flex; gap:18px; flex-wrap:wrap;">
+              <sc-for list="{{ legend }}" as="g" hint-placeholder-count="3">
+                <div style="display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--text2);">
+                  <span style="width:10px; height:10px; border-radius:3px; background: {{ g.color }};"></span>{{ g.label }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasEvents }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:minmax(0,2.1fr) minmax(0,1fr); gap:22px; align-items:start;">
+
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px 24px 24px;">
+                <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:12px;">
+                  <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+                    <div style="font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); font-weight:600; text-align:center;">{{ w.label }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px;">
+                  <sc-for list="{{ days }}" as="d" hint-placeholder-count="35">
+                    <div style="min-height:96px; border-radius:11px; padding:9px 9px 8px; display:flex; flex-direction:column; gap:5px; background: {{ d.bg }}; border:1px solid {{ d.border }};">
+                      <div style="display:flex; justify-content:flex-end;">
+                        <span style="min-width:22px; height:22px; padding:0 5px; border-radius:7px; display:grid; place-items:center; font-size:12px; font-weight: {{ d.numWeight }}; background: {{ d.numBg }}; color: {{ d.numFg }};">{{ d.num }}</span>
+                      </div>
+                      <sc-for list="{{ d.events }}" as="e" hint-placeholder-count="0">
+                        <div style="padding:4px 7px; border-radius:6px; font-size:10.5px; line-height:1.3; background: {{ e.bg }}; color: {{ e.fg }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ e.label }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px 24px;">
+                <h3 style="margin:0 0 18px; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Próximos eventos</h3>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <sc-for list="{{ upcoming }}" as="u" hint-placeholder-count="4">
+                    <div style="display:flex; gap:14px;">
+                      <div style="flex:none; width:52px; text-align:center; padding:8px 0; border-radius:11px; background:var(--surface2);">
+                        <div style="font-family:'Knockout'; font-size:22px; line-height:1; color: {{ u.color }};">{{ u.day }}</div>
+                        <div style="margin-top:3px; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text3);">{{ u.dow }}</div>
+                      </div>
+                      <div style="min-width:0; padding-top:2px;">
+                        <div style="font-size:13.5px; color:var(--text); line-height:1.35;">{{ u.label }}</div>
+                        <div style="margin-top:4px; font-size:12px; color:var(--text3);">{{ u.meta }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDirectorio }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+            <div style="min-width:320px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+                <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Comunidad Enactus Colombia</span>
+              </div>
+              <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Directorio de Proyectos</h1>
+              <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:52ch; text-wrap:pretty;">Todos los proyectos activos de la red. Filtra por etapa, explora los ODS que atienden y descubre qué está construyendo el resto de los equipos.</p>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; flex:1; min-width:440px;">
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+                <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--gold-ink);">{{ cProyectos }}</div>
+                <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">Proyectos activos</div>
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+                <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cUniversidades }}</div>
+                <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">Universidades</div>
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+                <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cOds }}</div>
+                <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">ODS cubiertos</div>
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+                <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color:var(--text);">{{ cExpo }}</div>
+                <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">En National Expo</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:9px; flex-wrap:wrap; align-items:center;">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="7">
+              <button onClick="{{ c.pick }}" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:999px; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .16s ease; background: {{ c.bg }}; color: {{ c.fg }}; border:1px solid {{ c.bc }};" style-hover="transform:translateY(-1px);">
+                <span>{{ c.label }}</span>
+                <span style="min-width:22px; padding:1px 7px; border-radius:999px; font-size:11.5px; font-weight:700; background: {{ c.badgeBg }}; color: {{ c.badgeFg }};">{{ c.count }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(348px,1fr)); gap:20px;">
+              <sc-for list="{{ items }}" as="p" hint-placeholder-count="6">
+                <article style="position:relative; background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; cursor:pointer; transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; animation:fadeUp .45s both; animation-delay: {{ p.delay }};" style-hover="transform:translateY(-5px); box-shadow:var(--shadow); border-color: {{ p.color }};">
+
+                  <div style="position:relative; height:104px; overflow:hidden; background: {{ p.color }};">
+                    <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+                    <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, var(--veil) 100%);"></div>
+                    <div style="position:absolute; right:14px; bottom:-16px; font-family:'Knockout'; font-size:82px; line-height:1; letter-spacing:.02em; color:rgba(255,255,255,.32);">{{ p.odsNum }}</div>
+                    <div style="position:absolute; left:16px; top:16px; display:flex; align-items:center; gap:7px; padding:6px 12px 6px 9px; border-radius:999px; background:rgba(10,12,14,.55); backdrop-filter:blur(6px); color:#FFFFFF; font-size:12px; font-weight:600; letter-spacing:.02em;">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:15px;">flag</span>{{ p.stage }}
+                    </div>
+                  </div>
+
+                  <div style="padding:18px 20px 20px; display:flex; flex-direction:column; gap:13px;">
+                    <div>
+                      <h3 style="margin:0; font-family:'Knockout'; font-size:29px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">{{ p.name }}</h3>
+                      <p style="margin:9px 0 0; font-size:14px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ p.description }}</p>
+                    </div>
+
+                    <div>
+                      <div style="display:flex; gap:4px; margin-bottom:7px;">
+                        <sc-for list="{{ p.steps }}" as="s" hint-placeholder-count="6">
+                          <div style="flex:1; height:5px; border-radius:3px; background: {{ s.bg }};"></div>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text3); letter-spacing:.02em;">
+                        <span>Etapa {{ p.stepNum }} de 6</span><span>{{ p.nextLabel }}</span>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2);">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">location_on</span>{{ p.community }}
+                    </div>
+
+                    <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                      <sc-for list="{{ p.ods }}" as="o" hint-placeholder-count="2">
+                        <span style="display:inline-flex; align-items:center; gap:7px; padding:5px 11px 5px 8px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); font-size:11.5px; color:var(--text2);">
+                          <span style="width:9px; height:9px; border-radius:2px; background: {{ o.color }};"></span>{{ o.label }}
+                        </span>
+                      </sc-for>
+                    </div>
+
+                    <div style="height:1px; background:var(--border);"></div>
+
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                      <div style="display:flex; align-items:center; gap:9px; min-width:0;">
+                        <span style="font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">groups</span>
+                        <span style="font-size:12.5px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ p.team }}</span>
+                      </div>
+                      <span style="flex:none; width:32px; height:32px; display:grid; place-items:center; border-radius:9px; background:var(--gold-soft); color:var(--gold-ink); font-family:'Material Symbols Rounded'; font-size:18px;">arrow_forward</span>
+                    </div>
+                  </div>
+                </article>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isSoon }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+              <span style="width:7px; height:7px; border-radius:50%; background:var(--text3);"></span>
+              <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">Portal Estudiante</span>
+            </div>
+            <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">{{ soonTitle }}</h1>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; padding:70px 24px; background:var(--surface); border:1px dashed var(--border); border-radius:20px;">
+            <div style="width:76px; height:76px; border-radius:22px; background:var(--gold-soft); display:grid; place-items:center;">
+              <span style="font-family:'Material Symbols Rounded'; font-size:36px; color:var(--gold-ink);">design_services</span>
+            </div>
+            <h2 style="margin:0; font-family:'Knockout'; font-size:38px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Sección sin rediseñar</h2>
+            <p style="margin:0; max-width:46ch; font-size:15px; line-height:1.55; color:var(--text2); text-wrap:pretty;">Esta pantalla todavía usa el diseño original del portal. Las cinco pantallas rediseñadas son Dashboard, Calendario, Mis Cursos, Ruta de Impacto y Directorio de Proyectos.</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; padding:70px 24px; background:var(--surface); border:1px dashed var(--border); border-radius:20px;">
+          <div style="width:76px; height:76px; border-radius:22px; background:var(--gold-soft); display:grid; place-items:center;">
+            <span style="font-family:'Material Symbols Rounded'; font-size:36px; color:var(--gold-ink);">{{ emptyIcon }}</span>
+          </div>
+          <h2 style="margin:0; font-family:'Knockout'; font-size:38px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">{{ emptyTitle }}</h2>
+          <p style="margin:0; max-width:46ch; font-size:15px; line-height:1.55; color:var(--text2); text-wrap:pretty;">{{ emptyCopy }}</p>
+          <div style="display:flex; gap:12px; margin-top:6px; flex-wrap:wrap; justify-content:center;">
+            <button onClick="{{ resetFilters }}" style="display:flex; align-items:center; gap:9px; padding:14px 24px; border-radius:10px; border:none; background:#F4C430; color:#1A1400; font-weight:600; font-size:14px; cursor:pointer; transition:all .15s ease;" style-hover="background:#FFD700; box-shadow:0 8px 22px rgba(244,196,48,.28); transform:translateY(-1px);">
+              <span style="font-family:'Material Symbols Rounded'; font-size:19px;">restart_alt</span>{{ emptyCta }}
+            </button>
+            <button style="display:flex; align-items:center; gap:9px; padding:14px 24px; border-radius:10px; background:transparent; border:1px solid var(--gold-ink); color:var(--gold-ink); font-weight:600; font-size:14px; cursor:pointer; transition:all .15s ease;" style-hover="background:var(--gold-soft);">
+              <span style="font-family:'Material Symbols Rounded'; font-size:19px;">mail</span>Escribir a mi administrador
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <footer style="margin-top:18px; padding-top:22px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="display:flex; height:22px; width:4px; flex-direction:column; border-radius:2px; overflow:hidden;">
+            <div style="flex:1; background:#FCD116;"></div>
+            <div style="flex:1; background:#003893;"></div>
+            <div style="flex:1; background:#CE1126;"></div>
+          </div>
+          <span style="font-size:12.5px; color:var(--text3);">Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:18px; font-size:12.5px;">
+          <a href="https://www.facebook.com/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">Facebook</a>
+          <a href="https://www.instagram.com/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">Instagram</a>
+          <a href="http://linkedin.com/company/enactuscolombia/" style="color:var(--text3);" style-hover="color:var(--gold-ink);">LinkedIn</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pantalla&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;calendario&quot;,&quot;cursos&quot;,&quot;ruta&quot;,&quot;directorio&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Oscuro&quot;,&quot;Claro&quot;],&quot;default&quot;:&quot;Oscuro&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Con datos&quot;,&quot;Sin datos&quot;],&quot;default&quot;:&quot;Con datos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;acento&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Color por ODS&quot;,&quot;Solo amarillo&quot;],&quot;default&quot;:&quot;Color por ODS&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { screen: null, stage: 'todas', query: '', theme: null, lab: 'lab_ia' };
+
+  odsColor = {1:'#E5243B',2:'#DDA63A',3:'#4C9F38',4:'#C5192D',5:'#FF3A21',6:'#26BDE2',7:'#FCC30B',8:'#A21942',9:'#FD6925',10:'#DD1367',11:'#FD9D24',12:'#BF8B2E',13:'#3F7E44',14:'#0A97D9',15:'#56C02B',16:'#00689D',17:'#19486A'};
+
+  labColor = { lab_ia:'#FD6925', lab_agua:'#26BDE2', lab_energia:'#FCC30B', lab_impacto:'#DD1367', lab_emprendimiento:'#A21942', lab_agricultura:'#56C02B', expo:'#F4C430' };
+
+  stages = ['Ideación','Validación','Prototipo','Piloto','Escalamiento','National Expo'];
+
+  nav = [
+    {k:'dashboard', icon:'dashboard', label:'Dashboard'},
+    {k:'calendario', icon:'calendar_month', label:'Calendario'},
+    {k:'cursos', icon:'school', label:'Mis Cursos'},
+    {k:'labs', icon:'science', label:'Laboratorios'},
+    {k:'ruta', icon:'emoji_events', label:'Ruta de Impacto'},
+    {k:'directorio', icon:'explore', label:'Directorio de Proyectos'},
+    {k:'foro', icon:'forum', label:'Foro'},
+    {k:'certificados', icon:'workspace_premium', label:'Certificados'},
+    {k:'perfil', icon:'person', label:'Mi Perfil'}
+  ];
+
+  soonTitles = { labs:'Laboratorios', foro:'Foro', certificados:'Certificados', perfil:'Mi Perfil' };
+
+  courses = [
+    {id:'crs_ia_1', name:'Introducción a la Inteligencia Artificial', lab:'Laboratorio IA y Tecnología', labId:'lab_ia', icon:'smart_toy',
+     desc:'Fundamentos de IA aplicados a proyectos sociales.', done:2, total:6, modules:2, level:'Intermedio', hours:8, cert:true,
+     teacher:'Carlos Rodríguez', next:'Material de apoyo'},
+    {id:'crs_impacto_1', name:'Medición de Impacto Social', lab:'Laboratorio Impacto', labId:'lab_impacto', icon:'insights',
+     desc:'Teoría de cambio e indicadores de impacto.', done:1, total:2, modules:1, teacher:'Sofía Ramírez', next:'Plantilla de indicadores'},
+    {id:'crs_expo_p1', name:'Ruta National Expo — AquaVida', lab:'Equipo AquaVida', labId:'expo', icon:'emoji_events',
+     desc:'Preparación colaborativa del equipo AquaVida para National Expo: entrenamientos, entregables y simulaciones.', done:0, total:2, modules:1, next:'Entrenamiento de pitch'}
+  ];
+
+  phasesByLab = {
+    lab_ia: [
+      { num:1, title:'Fase 1: Fundamentos', deadline:'1 de julio de 2026', overdue:true, done:false,
+        desc:'Introducción a la inteligencia artificial y su aplicación a proyectos sociales.',
+        objectives:[
+          {text:'Identificar oportunidades de IA en proyectos sociales', cat:'Emprendimiento', done:true},
+          {text:'Comprender los fundamentos de la IA y el aprendizaje automático', cat:'Negocios', done:false}
+        ],
+        modules:[
+          {title:'Módulo 1: Introducción a la IA', meta:'Curso Intro a la IA · 1 lectura propia', status:'En curso', done:false, icon:'menu_book'},
+          {title:'Módulo 2: Mentoría', meta:'Daniela Herrera · confirmar asistencia', status:'Pendiente', done:false, icon:'diversity_3'}
+        ] },
+      { num:2, title:'Fase 2', deadline:'2 de agosto de 2026', overdue:true, done:false,
+        desc:'Aún sin contenido publicado por el laboratorio.', objectives:[], modules:[] },
+      { num:3, title:'Fase 3', deadline:null, overdue:false, done:false,
+        desc:'Aún sin contenido publicado por el laboratorio.', objectives:[], modules:[] }
+    ],
+    lab_impacto: []
+  };
+
+  labTabsData = [
+    {id:'lab_ia', label:'Laboratorio IA y Tecnología'},
+    {id:'lab_impacto', label:'Laboratorio Impacto'}
+  ];
+
+  expoItems = [
+    {label:'Inscripción del equipo confirmada', done:true},
+    {label:'Annual Report entregado', done:false},
+    {label:'Impact Page publicada', done:false},
+    {label:'Pitch Deck versión final', done:false},
+    {label:'Video del proyecto grabado', done:false},
+    {label:'Simulación de pitch realizada', done:false},
+    {label:'Documentación de viaje completa', done:false}
+  ];
+
+  events = [
+    {days:[4,6,11,13,18,20,25,27], label:'Mentoría IA', meta:'6:00–8:00 pm · Carlos Rodríguez', kind:'ia'},
+    {days:[5,12,19,26], label:'Asesoría de impacto', meta:'4:00–6:00 pm · Sofía Ramírez', kind:'impacto'},
+    {days:[2], label:'Entrega Fase 2', meta:'Laboratorio IA y Tecnología · vencida', kind:'entrega'}
+  ];
+
+  eventColor = { ia:'#FD6925', impacto:'#DD1367', entrega:'#CE1126' };
+
+  projects = [
+    {name:'AquaVida', description:'Filtros de agua de bajo costo para comunidades rurales.', community:'Comunidades wayúu, La Guajira', stage:'Piloto', ods:[6,3], team:'Equipo AquaVida · Universidad de los Andes · 3 estudiantes'},
+    {name:'SolAndino', description:'Micro-redes solares para escuelas rurales.', community:'Escuelas rurales, Boyacá', stage:'Validación', ods:[7,4], team:'Equipo SolAndino · Universidad Nacional · 2 estudiantes'},
+    {name:'Manglar Vivo', description:'Restauración de manglares junto a pescadores artesanales.', community:'Pescadores artesanales, Buenaventura', stage:'National Expo', ods:[14,13], team:'Equipo Manglar · Universidad del Valle · 5 estudiantes'},
+    {name:'Raíz Café', description:'Trazabilidad y precio justo para pequeños caficultores.', community:'Caficultores, Huila', stage:'Escalamiento', ods:[8,12], team:'Equipo Raíz · Universidad de Antioquia · 4 estudiantes'},
+    {name:'Semilla Digital', description:'Alfabetización digital para docentes de zonas apartadas.', community:'Docentes rurales, Atlántico', stage:'Prototipo', ods:[4,10], team:'Equipo Semilla · Universidad del Norte · 3 estudiantes'},
+    {name:'Tejido Wayúu', description:'Comercio digital directo para tejedoras artesanas.', community:'Tejedoras wayúu, Riohacha', stage:'Prototipo', ods:[5,8], team:'Equipo Tejido · Universidad de La Guajira · 3 estudiantes'},
+    {name:'Cosecha Urbana', description:'Huertas comunitarias en barrios de ladera.', community:'Barrios de ladera, Medellín', stage:'Ideación', ods:[2,11], team:'Equipo Cosecha · Pontificia Universidad Javeriana · 3 estudiantes'}
+  ];
+
+  odsLabel = {2:'ODS 2: Hambre cero',3:'ODS 3: Salud y bienestar',4:'ODS 4: Educación de calidad',5:'ODS 5: Igualdad de género',6:'ODS 6: Agua limpia y saneamiento',7:'ODS 7: Energía asequible',8:'ODS 8: Trabajo decente',10:'ODS 10: Reducción de desigualdades',11:'ODS 11: Ciudades sostenibles',12:'ODS 12: Consumo responsable',13:'ODS 13: Acción por el clima',14:'ODS 14: Vida submarina'};
+
+  themes = {
+    dark: {'--bg':'#111315','--surface':'#1A1D21','--surface2':'#22262B','--border':'#33383F','--text':'#F5F5F2','--text2':'#B8BCBF','--text3':'#8A9099','--gold-ink':'#F4C430','--gold-soft':'rgba(244,196,48,.14)','--shadow':'0 18px 40px rgba(0,0,0,.5)','--veil':'rgba(0,0,0,.28)'},
+    light: {'--bg':'#F2F2EC','--surface':'#FFFFFF','--surface2':'#F0F0E9','--border':'#DEDED4','--text':'#15181B','--text2':'#4C525A','--text3':'#787F88','--gold-ink':'#8A6A00','--gold-soft':'rgba(244,196,48,.24)','--shadow':'0 16px 36px rgba(20,25,35,.14)','--veil':'rgba(0,0,0,.22)'}
+  };
+
+  counters = { cProyectos: 0, cUniversidades: 0, cOds: 0, cExpo: 0 };
+
+  setRoot = (el) => { this.root = el; if (el) this.applyTheme(); };
+
+  get theme() { return this.state.theme ?? (this.props.tema === 'Claro' ? 'light' : 'dark'); }
+  get screen() { return this.state.screen ?? (this.props.pantalla ?? 'dashboard'); }
+  get full() { return (this.props.estado ?? 'Con datos') !== 'Sin datos'; }
+  get source() { return this.full ? this.projects : []; }
+  get myCourses() { return this.full ? this.courses : []; }
+
+  applyTheme() {
+    if (!this.root) return;
+    const vars = this.themes[this.theme];
+    for (const k in vars) this.root.style.setProperty(k, vars[k]);
+    document.body.style.background = vars['--bg'];
+  }
+
+  componentDidMount() {
+    this.applyTheme();
+    const targets = this.targets();
+    const t0 = performance.now();
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / 900);
+      const e = 1 - Math.pow(1 - k, 3);
+      this.counters = {
+        cProyectos: Math.round(targets.cProyectos * e),
+        cUniversidades: Math.round(targets.cUniversidades * e),
+        cOds: Math.round(targets.cOds * e),
+        cExpo: Math.round(targets.cExpo * e)
+      };
+      this.forceUpdate();
+      if (k < 1) this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+
+  componentDidUpdate(prev) {
+    this.applyTheme();
+    if (prev.estado !== this.props.estado) this.counters = this.targets();
+  }
+
+  componentWillUnmount() { cancelAnimationFrame(this.raf); }
+
+  targets() {
+    const src = this.source;
+    const unis = new Set(src.map(p => p.team.split('·')[1].trim()));
+    const ods = new Set(src.flatMap(p => p.ods));
+    return { cProyectos: src.length, cUniversidades: unis.size, cOds: ods.size, cExpo: src.filter(p => p.stage === 'National Expo').length };
+  }
+
+  matches(p) {
+    const q = this.state.query.trim().toLowerCase();
+    if (!q) return true;
+    return [p.name, p.description, p.community, p.stage, ...p.ods.map(n => this.odsLabel[n] || '')].join(' ').toLowerCase().includes(q);
+  }
+
+  courseMatches(c) {
+    const q = this.state.query.trim().toLowerCase();
+    if (!q) return true;
+    return [c.name, c.lab, c.desc, c.teacher || ''].join(' ').toLowerCase().includes(q);
+  }
+
+  buildDirectory(monoAccent) {
+    const src = this.source;
+    const byStage = src.filter(p => this.state.stage === 'todas' || p.stage === this.state.stage);
+    const list = byStage.filter(p => this.matches(p));
+
+    const mkChip = (label, key, count) => {
+      const on = this.state.stage === key;
+      return { label, count,
+        bg: on ? 'var(--gold-soft)' : 'var(--surface)', fg: on ? 'var(--gold-ink)' : 'var(--text2)',
+        bc: on ? 'var(--gold-ink)' : 'var(--border)', badgeBg: on ? 'var(--gold-ink)' : 'var(--surface2)',
+        badgeFg: on ? 'var(--bg)' : 'var(--text3)', pick: () => this.setState({ stage: key }) };
+    };
+
+    const chips = [mkChip('Todas las etapas', 'todas', src.length)]
+      .concat(this.stages.map(s => mkChip(s, s, src.filter(p => p.stage === s).length)));
+
+    const items = list.map((p, i) => {
+      const idx = this.stages.indexOf(p.stage);
+      const color = monoAccent ? '#F4C430' : (this.odsColor[p.ods[0]] || '#F4C430');
+      return { name:p.name, description:p.description, community:p.community, stage:p.stage, team:p.team, color,
+        odsNum: p.ods[0], delay: (i * 55) + 'ms', stepNum: idx + 1,
+        nextLabel: idx === 5 ? 'Etapa final' : 'Sigue: ' + this.stages[idx + 1],
+        steps: this.stages.map((_, k) => ({ bg: k < idx ? 'var(--gold-soft)' : (k === idx ? color : 'var(--border)') })),
+        ods: p.ods.map(n => ({ label: this.odsLabel[n] || ('ODS ' + n), color: monoAccent ? '#F4C430' : this.odsColor[n] })) };
+    });
+
+    return { chips, items };
+  }
+
+  buildCalendar() {
+    const dow = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const byDay = {};
+    if (this.full) {
+      for (const ev of this.events) for (const d of ev.days) (byDay[d] = byDay[d] || []).push(ev);
+    }
+    const days = [];
+    for (let i = 0; i < 5; i++) days.push({ num:'', bg:'transparent', border:'transparent', numBg:'transparent', numFg:'transparent', numWeight:'400', events:[] });
+    for (let d = 1; d <= 31; d++) {
+      const today = d === 8;
+      const evs = (byDay[d] || []).map(ev => ({ label: ev.label, bg: this.eventColor[ev.kind], fg: '#FFFFFF' }));
+      days.push({ num: String(d), bg: today ? 'var(--gold-soft)' : 'var(--surface2)',
+        border: today ? 'var(--gold-ink)' : 'transparent',
+        numBg: today ? 'var(--gold-ink)' : 'transparent', numFg: today ? 'var(--bg)' : 'var(--text3)',
+        numWeight: today ? '700' : '400', events: evs });
+    }
+    const dowOf = (d) => dow[(d + 4) % 7];
+    const upcoming = this.full ? [
+      { day:'11', dow:dowOf(11), label:'Mentoría IA', meta:'6:00–8:00 pm · Carlos Rodríguez', color:'#FD6925' },
+      { day:'12', dow:dowOf(12), label:'Asesoría de impacto', meta:'4:00–6:00 pm · Sofía Ramírez', color:'#DD1367' },
+      { day:'13', dow:dowOf(13), label:'Mentoría IA', meta:'6:00–8:00 pm · Carlos Rodríguez', color:'#FD6925' },
+      { day:'18', dow:dowOf(18), label:'Mentoría IA', meta:'6:00–8:00 pm · Carlos Rodríguez', color:'#FD6925' }
+    ] : [];
+    return { days, upcoming, weekdays: dow.map(d => ({ label: d })) };
+  }
+
+  renderVals() {
+    const monoAccent = (this.props.acento ?? 'Color por ODS') === 'Solo amarillo';
+    const screen = this.screen;
+    const tint = (id) => monoAccent ? '#F4C430' : (this.labColor[id] || '#F4C430');
+
+    const dir = this.buildDirectory(monoAccent);
+    const cal = this.buildCalendar();
+
+    const cs = this.myCourses;
+    const lessonsDone = cs.reduce((a, c) => a + c.done, 0);
+    const lessonsTotal = cs.reduce((a, c) => a + c.total, 0);
+    const overallPct = lessonsTotal ? Math.round(lessonsDone / lessonsTotal * 100) : 0;
+    const resume = cs[0];
+
+    const courseRows = cs.map(c => ({ name: c.name, color: tint(c.labId),
+      pct: Math.round(c.done / c.total * 100) + '%', pctLabel: c.done + '/' + c.total }));
+
+    const courseCards = cs.filter(c => this.courseMatches(c)).map((c, i) => {
+      const meta = [{ icon:'view_module', label: c.modules + (c.modules === 1 ? ' módulo' : ' módulos') },
+                    { icon:'play_lesson', label: c.total + ' lecciones' }];
+      if (c.level) meta.push({ icon:'signal_cellular_alt', label: c.level });
+      if (c.hours) meta.push({ icon:'schedule', label: c.hours + ' h' });
+      if (c.cert) meta.push({ icon:'workspace_premium', label: 'Certificado' });
+      return { name:c.name, lab:c.lab, desc:c.desc, icon:c.icon, color: tint(c.labId), meta,
+        delay: (i * 55) + 'ms', pct: Math.round(c.done / c.total * 100) + '%',
+        pctLabel: Math.round(c.done / c.total * 100) + '%',
+        progressLabel: c.done + ' de ' + c.total + ' lecciones',
+        teacher: c.teacher ? 'Docente: ' + c.teacher : 'Trabajo en equipo',
+        cta: c.done > 0 ? 'Continuar' : 'Comenzar' };
+    });
+
+    const rawPhases = this.full ? (this.phasesByLab[this.state.lab] || []) : [];
+    const phases = rawPhases.map((f, i) => {
+      const active = !f.done && i === 0;
+      const accent = f.overdue ? '#CE1126' : (active ? tint(this.state.lab) : 'var(--border)');
+      return { num: f.num, title: f.title, desc: f.desc, delay: (i * 70) + 'ms',
+        dotBg: active ? tint(this.state.lab) : 'var(--surface)', dotFg: active ? '#FFFFFF' : 'var(--text3)',
+        dotBorder: active ? tint(this.state.lab) : 'var(--border)', lineBg: 'var(--border)',
+        cardBorder: active ? tint(this.state.lab) : 'var(--border)',
+        state: f.overdue ? 'Vencida' : (active ? 'En curso' : 'Sin abrir'),
+        stateIcon: f.overdue ? 'warning' : (active ? 'play_circle' : 'lock'),
+        stateBg: f.overdue ? 'rgba(206,17,38,.16)' : (active ? 'var(--gold-soft)' : 'var(--surface2)'),
+        stateFg: f.overdue ? '#FF8A9B' : (active ? 'var(--gold-ink)' : 'var(--text3)'),
+        hasObjectives: f.objectives.length > 0, hasModules: f.modules.length > 0,
+        objectives: f.objectives.map(o => ({ text:o.text, cat:o.cat,
+          icon: o.done ? 'check_circle' : 'radio_button_unchecked', color: o.done ? '#4C9F38' : 'var(--text3)' })),
+        modules: f.modules.map(m => ({ title:m.title, meta:m.meta, status:m.status, icon:m.icon,
+          iconBg: m.done ? 'rgba(76,159,56,.16)' : 'var(--gold-soft)', iconFg: m.done ? '#4C9F38' : 'var(--gold-ink)' })),
+        hasDeadline: !!f.deadline,
+        deadlineLabel: f.deadline ? (f.overdue ? 'Entrega vencida: ' + f.deadline : 'Entrega: ' + f.deadline) : '',
+        deadlineColor: f.overdue ? '#FF8A9B' : 'var(--text3)' };
+    });
+
+    const labTabs = this.labTabsData.map(l => {
+      const on = this.state.lab === l.id;
+      return { label: l.label, dot: tint(l.id),
+        bg: on ? 'var(--gold-soft)' : 'var(--surface)', fg: on ? 'var(--gold-ink)' : 'var(--text2)',
+        bc: on ? 'var(--gold-ink)' : 'var(--border)', pick: () => this.setState({ lab: l.id }) };
+    });
+
+    const expoDone = this.full ? this.expoItems.filter(e => e.done).length : 0;
+
+    const empties = {
+      dashboard: { icon:'school', title:'Todo por empezar', copy:'Aún no tienes cursos asignados. Cuando tu administrador te asigne uno, tu progreso aparecerá aquí.', cta:'Actualizar' },
+      cursos: { icon:'school', title:'Sin cursos asignados', copy: this.full ? 'Ningún curso coincide con tu búsqueda. Prueba con otro término.' : 'Aún no tienes cursos asignados por tu administrador.', cta:'Limpiar búsqueda' },
+      ruta: { icon:'route', title:'Laboratorio sin fases', copy: this.full ? 'El Laboratorio Impacto todavía no ha publicado sus fases. Tu LXD las abrirá cuando el contenido esté listo.' : 'Todavía no perteneces a ningún laboratorio con Ruta de Impacto activa.', cta:'Ver Laboratorio IA' },
+      calendario: { icon:'event_busy', title:'Agenda despejada', copy:'No tienes sesiones ni entregas programadas este mes.', cta:'Actualizar' },
+      directorio: { icon:'lightbulb', title:'Aún no hay proyectos aquí', copy: this.full ? 'Ningún proyecto coincide con este filtro. Prueba con otra etapa o limpia la búsqueda.' : 'Todavía no se ha publicado ningún proyecto en la comunidad. Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.', cta:'Ver todas las etapas' }
+    };
+    const em = empties[screen] || empties.directorio;
+
+    const hasCourses = cs.length > 0;
+    const hasCourseResults = courseCards.length > 0;
+    const hasPhases = phases.length > 0;
+    const hasEvents = this.full;
+    const hasResults = dir.items.length > 0;
+
+    const filled = { dashboard: hasCourses, cursos: hasCourseResults, ruta: hasPhases, calendario: hasEvents, directorio: hasResults }[screen];
+    const isSoon = !!this.soonTitles[screen];
+
+    const searchHints = { cursos:'Buscar curso o laboratorio', directorio:'Buscar proyecto, comunidad u ODS' };
+
+    return {
+      ...this.counters,
+      nav: this.nav.map(n => {
+        const on = n.k === screen;
+        return { icon:n.icon, label:n.label, bar: on ? '#F4C430' : 'transparent',
+          bg: on ? 'rgba(244,196,48,.12)' : 'transparent', fg: on ? '#F4C430' : '#C3C9D0',
+          weight: on ? '600' : '400', go: () => this.setState({ screen: n.k }) };
+      }),
+
+      isDashboard: screen === 'dashboard', isCursos: screen === 'cursos', isRuta: screen === 'ruta',
+      isCalendario: screen === 'calendario', isDirectorio: screen === 'directorio',
+      isSoon, soonTitle: this.soonTitles[screen] || '',
+      isEmpty: !isSoon && !filled,
+      emptyIcon: em.icon, emptyTitle: em.title, emptyCopy: em.copy, emptyCta: em.cta,
+
+      dashSub: this.full ? 'Proyecto AquaVida · Etapa Piloto · Universidad de los Andes' : 'Aún no tienes proyecto asignado',
+      overallPct, lessonsDone, lessonsTotal, coursesCount: cs.length,
+      ringGrad: 'conic-gradient(#F4C430 0 ' + overallPct + '%, var(--surface2) ' + overallPct + '% 100%)',
+      hasCourses, courses: courseRows,
+      resumeName: resume ? resume.name : '', resumeLab: resume ? resume.lab : '',
+      resumeColor: resume ? tint(resume.labId) : '#F4C430',
+      resumeNext: resume ? resume.next : '', resumeDone: resume ? resume.done : 0,
+      resumeTotal: resume ? resume.total : 0,
+      resumePct: resume ? Math.round(resume.done / resume.total * 100) + '%' : '0%',
+      aquaSteps: this.stages.map((_, k) => ({ bg: k < 3 ? 'var(--gold-soft)' : (k === 3 ? '#26BDE2' : 'var(--border)') })),
+      pending: this.full ? [
+        { label:'Entrega Fase 2 · Laboratorio IA', meta:'Venció el 2 de agosto', icon:'warning', color:'#CE1126' },
+        { label:'Confirmar asistencia a la mentoría', meta:'Fase 1 · Daniela Herrera', icon:'diversity_3', color:'#F4C430' },
+        { label:'Continuar “Introducción a la Inteligencia Artificial”', meta:'Siguiente: Material de apoyo', icon:'play_circle', color:'#FD6925' },
+        { label:'Annual Report del equipo', meta:'Ruta National Expo · sin entregar', icon:'description', color:'#8A9099' }
+      ] : [],
+
+      hasCourseResults, courseCards,
+      hasPhases, phases, labTabs,
+      expo: this.expoItems.map(e => ({ label:e.label, icon: e.done ? 'check_circle' : 'radio_button_unchecked',
+        color: e.done ? '#4C9F38' : 'var(--text3)', textColor: e.done ? 'var(--text2)' : 'var(--text3)' })),
+      expoDone, expoPct: Math.round(expoDone / 7 * 100) + '%',
+
+      hasEvents, days: cal.days, upcoming: cal.upcoming, weekdays: cal.weekdays,
+      legend: [ { label:'Mentoría IA', color:'#FD6925' }, { label:'Asesoría de impacto', color:'#DD1367' }, { label:'Entregas', color:'#CE1126' } ],
+
+      hasResults, chips: dir.chips, items: dir.items,
+
+      query: this.state.query,
+      searchHint: searchHints[screen] || 'Buscar en el portal',
+      themeIcon: this.theme === 'dark' ? 'light_mode' : 'dark_mode',
+      onSearch: (e) => this.setState({ query: e.target.value }),
+      resetFilters: () => this.setState({ stage: 'todas', query: '', lab: 'lab_ia' }),
+      toggleTheme: () => this.setState({ theme: this.theme === 'dark' ? 'light' : 'dark' }),
+      setRoot: this.setRoot
+    };
+  }
+}
+</script>
+</body>
+</html>

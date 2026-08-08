@@ -46,6 +46,100 @@ class AppColors {
   static const statusWarning = Color(0xFFE8A93D);
   static const statusSerious = Color(0xFFE07030);
   static const statusCritical = Color(0xFFE05252);
+
+  /// Colores oficiales de los 17 Objetivos de Desarrollo Sostenible (ONU),
+  /// 1-indexados. Usados en el Directorio de Proyectos: portada de tarjeta,
+  /// marca de agua, cuadrito de etiqueta y segmento de etapa actual — el
+  /// color viene del dato (el ODS principal de cada proyecto), no de un
+  /// acento fijo.
+  static const odsColors = {
+    1: Color(0xFFE5243B),
+    2: Color(0xFFDDA63A),
+    3: Color(0xFF4C9F38),
+    4: Color(0xFFC5192D),
+    5: Color(0xFFFF3A21),
+    6: Color(0xFF26BDE2),
+    7: Color(0xFFFCC30B),
+    8: Color(0xFFA21942),
+    9: Color(0xFFFD6925),
+    10: Color(0xFFDD1367),
+    11: Color(0xFFFD9D24),
+    12: Color(0xFFBF8B2E),
+    13: Color(0xFF3F7E44),
+    14: Color(0xFF0A97D9),
+    15: Color(0xFF56C02B),
+    16: Color(0xFF00689D),
+    17: Color(0xFF19486A),
+  };
+}
+
+/// Paleta clara/oscura del Directorio de Proyectos (handoff
+/// `design_handoff_directorio_proyectos/README.md`). Es la única pantalla de
+/// la app con un toggle de tema propio: el resto del portal (header,
+/// sidebar, todas las demás pestañas) es oscuro fijo, así que estos tokens
+/// viven aparte de [AppColors] en vez de ampliar el [ThemeData] global.
+class DirectoryColors {
+  final Color bg;
+  final Color surface;
+  final Color surface2;
+  final Color border;
+  final Color text;
+  final Color text2;
+  final Color text3;
+  final Color goldInk;
+  final Color goldSoft;
+  final List<BoxShadow> shadow;
+  final Color veil;
+
+  const DirectoryColors({
+    required this.bg,
+    required this.surface,
+    required this.surface2,
+    required this.border,
+    required this.text,
+    required this.text2,
+    required this.text3,
+    required this.goldInk,
+    required this.goldSoft,
+    required this.shadow,
+    required this.veil,
+  });
+
+  static const dark = DirectoryColors(
+    bg: Color(0xFF111315),
+    surface: Color(0xFF1A1D21),
+    surface2: Color(0xFF22262B),
+    border: Color(0xFF33383F),
+    text: Color(0xFFF5F5F2),
+    text2: Color(0xFFB8BCBF),
+    text3: Color(0xFF8A9099),
+    goldInk: AppColors.gold,
+    goldSoft: Color(0x24F4C430), // rgba(244,196,48,.14)
+    shadow: [
+      BoxShadow(
+          color: Color(0x80000000), blurRadius: 40, offset: Offset(0, 18)),
+    ],
+    veil: Color(0x47000000), // rgba(0,0,0,.28)
+  );
+
+  /// El dorado de marca (#F4C430) no alcanza AA sobre blanco, así que en
+  /// tema claro el texto/ink dorado se oscurece a #8A6A00 (ver README).
+  static const light = DirectoryColors(
+    bg: Color(0xFFF2F2EC),
+    surface: Color(0xFFFFFFFF),
+    surface2: Color(0xFFF0F0E9),
+    border: Color(0xFFDEDED4),
+    text: Color(0xFF15181B),
+    text2: Color(0xFF4C525A),
+    text3: Color(0xFF787F88),
+    goldInk: Color(0xFF8A6A00),
+    goldSoft: Color(0x3DF4C430), // rgba(244,196,48,.24)
+    shadow: [
+      BoxShadow(
+          color: Color(0x24141923), blurRadius: 36, offset: Offset(0, 16)),
+    ],
+    veil: Color(0x38000000), // rgba(0,0,0,.22)
+  );
 }
 
 /// Tokens tipográficos — el equivalente Flutter de --font-display / --font-ui

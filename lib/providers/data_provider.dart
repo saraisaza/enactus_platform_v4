@@ -819,8 +819,16 @@ class DataProvider extends ChangeNotifier {
       .toList();
 
   /// Eventos de calendario visibles para este usuario, filtrados según su
-  /// rol: Admin/Super Admin ven todo; LXD sus cursos; Mentor sus
-  /// laboratorios; Asesor y estudiantes, lo de sus laboratorios/cursos.
+  /// rol y el tipo de evento:
+  /// - Admin/Super Admin ven todo.
+  /// - [CalendarEventType.rutaImpacto] es global: lo ve todo el mundo
+  ///   Enactus (estudiantes/alumni Enactus, mentores, asesores), sin
+  ///   importar el laboratorio — son los encuentros con invitados
+  ///   externos cada ~15 días, no algo de un solo laboratorio.
+  /// - [CalendarEventType.mentoria] sigue ligado a un laboratorio: solo
+  ///   lo ven los estudiantes/mentores de ESE laboratorio.
+  /// - [CalendarEventType.openLearningSync] sigue ligado a un curso: solo
+  ///   quien está inscrito en ESE curso (y el LXD que lo creó).
   /// Empresa y Donante no tienen calendario (ver portales).
   List<CalendarEvent> calendarEventsFor(AppUser user) {
     if (user.role == Roles.superAdmin || user.role == Roles.admin) {
@@ -836,7 +844,9 @@ class DataProvider extends ChangeNotifier {
     if (user.role == Roles.mentor) {
       final labIds = labsForMentor(user).map((l) => l.id).toSet();
       return calendarEvents
-          .where((e) => e.labId.isNotEmpty && labIds.contains(e.labId))
+          .where((e) =>
+              e.type == CalendarEventType.rutaImpacto ||
+              (e.labId.isNotEmpty && labIds.contains(e.labId)))
           .toList();
     }
     if (user.role == Roles.advisor) {
@@ -847,17 +857,24 @@ class DataProvider extends ChangeNotifier {
           .toSet();
       return calendarEvents
           .where((e) =>
+              e.type == CalendarEventType.rutaImpacto ||
               (e.labId.isNotEmpty && labIds.contains(e.labId)) ||
               (e.courseId.isNotEmpty && courseIds.contains(e.courseId)))
           .toList();
     }
     if (Roles.isStudentLike(user.role)) {
+      final isEnactus = user.studentType == StudentType.enactus;
       final labIds = user.labIds.toSet();
       final courseIds = coursesForStudent(user).map((c) => c.id).toSet();
       return calendarEvents
           .where((e) =>
-              (e.labId.isNotEmpty && labIds.contains(e.labId)) ||
-              (e.courseId.isNotEmpty && courseIds.contains(e.courseId)))
+              (e.type == CalendarEventType.rutaImpacto && isEnactus) ||
+              (e.type == CalendarEventType.mentoria &&
+                  e.labId.isNotEmpty &&
+                  labIds.contains(e.labId)) ||
+              (e.type == CalendarEventType.openLearningSync &&
+                  e.courseId.isNotEmpty &&
+                  courseIds.contains(e.courseId)))
           .toList();
     }
     return [];

@@ -402,7 +402,7 @@ Future<void> showCalendarEventDialog(
                     ],
                     onChanged: (v) => setState(() => courseId = v ?? ''),
                   )
-                else
+                else if (type == CalendarEventType.mentoria)
                   DropdownButtonFormField<String>(
                     initialValue: labId.isEmpty ? null : labId,
                     decoration:
@@ -412,7 +412,14 @@ Future<void> showCalendarEventDialog(
                         DropdownMenuItem(value: l.id, child: Text(l.name)),
                     ],
                     onChanged: (v) => setState(() => labId = v ?? ''),
-                  ),
+                  )
+                else
+                  const Text(
+                      'Evento global: lo verán todos los estudiantes y '
+                      'alumni Enactus de la plataforma, sin importar su '
+                      'laboratorio.',
+                      style: TextStyle(
+                          color: AppColors.textMuted, fontSize: 12)),
                 const SizedBox(height: 14),
                 Row(
                   children: [
@@ -513,12 +520,22 @@ Future<void> showCalendarEventDialog(
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancelar')),
           ElevatedButton(
-            onPressed: title.text.trim().isEmpty &&
-                    (type == CalendarEventType.openLearningSync
-                        ? courseId.isEmpty
-                        : labId.isEmpty)
+            onPressed: () {
+              final missingTarget = switch (type) {
+                CalendarEventType.openLearningSync => courseId.isEmpty,
+                CalendarEventType.mentoria => labId.isEmpty,
+                CalendarEventType.rutaImpacto => false,
+              };
+              return title.text.trim().isEmpty || missingTarget;
+            }()
                 ? null
                 : () async {
+                    final eventCourseId =
+                        type == CalendarEventType.openLearningSync
+                            ? courseId
+                            : '';
+                    final eventLabId =
+                        type == CalendarEventType.mentoria ? labId : '';
                     final baseId = existing?.id ??
                         'cal_${DateTime.now().millisecondsSinceEpoch}';
                     final events = <CalendarEvent>[
@@ -530,13 +547,8 @@ Future<void> showCalendarEventDialog(
                         type: type,
                         meetLink: meetLink.text.trim(),
                         guests: guests.text.trim(),
-                        courseId:
-                            type == CalendarEventType.openLearningSync
-                                ? courseId
-                                : '',
-                        labId: type == CalendarEventType.openLearningSync
-                            ? ''
-                            : labId,
+                        courseId: eventCourseId,
+                        labId: eventLabId,
                       ),
                     ];
                     if (!isEditing && repeatCount > 1) {

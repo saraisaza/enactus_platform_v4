@@ -83,12 +83,31 @@ class AppUser {
 
   String get university => (extra['university'] as String?) ?? '';
   String get career => (extra['career'] as String?) ?? '';
+  set career(String v) => extra['career'] = v;
   String? get groupId => extra['groupId'] as String?;
   String? get companyId => extra['companyId'] as String?;
   String? get donorId => extra['donorId'] as String?;
   String? get labId => extra['labId'] as String?;
   String get companyName => (extra['companyName'] as String?) ?? '';
   String get impactCode => (extra['impactCode'] as String?) ?? '';
+
+  /// Foto de perfil como base64 (mismo patrón que la galería de
+  /// `SiteContent`: no hay backend de archivos, así que la imagen vive
+  /// codificada en el propio registro). `null` = sin foto, usar la
+  /// inicial sobre amarillo ([InitialsAvatar]).
+  String? get avatarBase64 => extra['avatarBase64'] as String?;
+  set avatarBase64(String? v) => extra['avatarBase64'] = v;
+
+  /// Desde cuándo es miembro de la comunidad — respalda el eyebrow
+  /// "Miembro activo desde `<año>`" de Mi Perfil. `null` en cuentas creadas
+  /// antes de este campo: el perfil cae a un texto sin año en vez de
+  /// inventar una fecha.
+  DateTime? get joinedAt {
+    final raw = extra['joinedAt'] as String?;
+    return raw == null ? null : DateTime.tryParse(raw);
+  }
+
+  set joinedAt(DateTime? v) => extra['joinedAt'] = v?.toIso8601String();
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -1098,17 +1117,33 @@ class AppNotification {
 // Foro de la comunidad Enactus
 // ---------------------------------------------------------------------------
 
-/// Publicación del foro: el único espacio de la plataforma que NO está
-/// aislado por laboratorio, universidad o empresa — lo comparten Admin,
-/// Super Admin, Asesores y estudiantes Enactus (ver
-/// [DataProvider.canAccessForum]).
-class ForumPost {
+/// Categoría de una publicación del foro: fija el color/ícono de la
+/// tarjeta y alimenta tanto el selector del compositor como los chips de
+/// filtro (dos controles distintos que comparten este catálogo, no
+/// estado).
+class ForumCategory {
+  static const pregunta = 'pregunta';
+  static const avance = 'avance';
+  static const recurso = 'recurso';
+  static const anuncio = 'anuncio';
+  static const all = [pregunta, avance, recurso, anuncio];
+
+  static String label(String c) => switch (c) {
+        avance => 'Avance',
+        recurso => 'Recurso',
+        anuncio => 'Anuncio',
+        _ => 'Pregunta',
+      };
+}
+
+/// Respuesta anidada a una publicación del foro.
+class ForumReply {
   final String id;
   final String authorId;
   String body;
   final DateTime date;
 
-  ForumPost({
+  ForumReply({
     required this.id,
     required this.authorId,
     required this.body,
@@ -1122,11 +1157,63 @@ class ForumPost {
         'date': date.toIso8601String(),
       };
 
+  factory ForumReply.fromJson(Map<String, dynamic> j) => ForumReply(
+        id: j['id'] as String,
+        authorId: j['authorId'] as String,
+        body: (j['body'] as String?) ?? '',
+        date: DateTime.tryParse(j['date'] as String? ?? '') ?? DateTime.now(),
+      );
+}
+
+/// Publicación del foro: el único espacio de la plataforma que NO está
+/// aislado por laboratorio, universidad o empresa — lo comparten Admin,
+/// Super Admin, Asesores y estudiantes Enactus (ver
+/// [DataProvider.canAccessForum]).
+class ForumPost {
+  final String id;
+  final String authorId;
+  String body;
+  final DateTime date;
+  String category;
+  List<ForumReply> replies;
+  List<String> likedBy;
+  bool pinned;
+
+  ForumPost({
+    required this.id,
+    required this.authorId,
+    required this.body,
+    DateTime? date,
+    this.category = ForumCategory.pregunta,
+    List<ForumReply>? replies,
+    List<String>? likedBy,
+    this.pinned = false,
+  })  : date = date ?? DateTime.now(),
+        replies = replies ?? [],
+        likedBy = likedBy ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'authorId': authorId,
+        'body': body,
+        'date': date.toIso8601String(),
+        'category': category,
+        'replies': replies.map((r) => r.toJson()).toList(),
+        'likedBy': likedBy,
+        'pinned': pinned,
+      };
+
   factory ForumPost.fromJson(Map<String, dynamic> j) => ForumPost(
         id: j['id'] as String,
         authorId: j['authorId'] as String,
         body: (j['body'] as String?) ?? '',
         date: DateTime.tryParse(j['date'] as String? ?? '') ?? DateTime.now(),
+        category: (j['category'] as String?) ?? ForumCategory.pregunta,
+        replies: (j['replies'] as List? ?? const [])
+            .map((e) => ForumReply.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        likedBy: List<String>.from(j['likedBy'] as List? ?? const []),
+        pinned: (j['pinned'] as bool?) ?? false,
       );
 }
 

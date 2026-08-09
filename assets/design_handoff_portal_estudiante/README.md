@@ -2,13 +2,13 @@
 
 ## Resumen
 
-Rediseño de cinco pantallas del portal estudiantil de Enactus Colombia (`lib/views/student/student_portal.dart` y `lib/views/shared/projects_directory_view.dart`): **Dashboard, Calendario, Mis Cursos, Ruta de Impacto y Directorio de Proyectos**, más el marco compartido (header, barra lateral y pie).
+Rediseño de siete pantallas del portal estudiantil de Enactus Colombia: **Dashboard, Calendario, Mis Cursos, Ruta de Impacto, Directorio de Proyectos, Foro y Mi Perfil**, más el marco compartido (header, barra lateral y pie).
 
 El objetivo fue subir la densidad visual y la legibilidad sin salirse de la marca: pasar de tarjetas grises apiladas con un único acento amarillo a un sistema donde **el color proviene del dato** — el ODS del proyecto, el laboratorio del curso — y donde el avance se lee de un vistazo.
 
 ## Sobre los archivos de este paquete
 
-`Portal Estudiante.dc.html` es una **referencia de diseño construida en HTML**: un prototipo navegable que muestra la apariencia y el comportamiento buscados. **No es código para copiar a producción.**
+`Portal Estudiante.dc.html` es una **referencia de diseño construida en HTML**: un prototipo navegable que muestra la apariencia y el comportamiento buscados. El Foro y Mi Perfil son las dos pantallas más recientes y las que más trabajo funcional necesitan, no solo visual. **No es código para copiar a producción.**
 
 La app real es **Flutter (Dart)**. La tarea es **recrear estas pantallas en Flutter**, usando los patrones, widgets y utilidades que ya existen en el repositorio — no portar el HTML ni introducir un motor de vistas nuevo.
 
@@ -17,6 +17,7 @@ Antes de escribir código, lee:
 - `lib/views/student/student_portal.dart` — Dashboard, Calendario, Mis Cursos, Certificados y Perfil
 - `lib/views/student/ruta_impacto_view.dart` — Ruta de Impacto y Laboratorios
 - `lib/views/shared/projects_directory_view.dart` — Directorio de Proyectos
+- `lib/views/shared/forum_view.dart` — Foro de la comunidad
 - `lib/widgets/portal_shell.dart` — el marco con las pestañas laterales
 - `lib/widgets/common.dart`, `lib/widgets/charts.dart`, `lib/widgets/calendar_view.dart` — widgets reutilizables ya existentes (`TabBody`, `HoverCard`, `EmptyState`, `ProgressRing`, `ThinProgressBar`, `Entrance`, `SimpleBarChart`)
 - `lib/utils/app_theme.dart` y `lib/utils/constants.dart` — tokens y constantes actuales
@@ -222,6 +223,126 @@ Etapas, en orden: **Ideación · Validación · Prototipo · Piloto · Escalamie
 
 ---
 
+## Pantalla 6 — Foro de la Comunidad
+
+**Propósito.** Estudiantes, mentores y LXD de toda la red preguntan, comparten avances y publican recursos. Es la única pantalla del portal donde el estudiante *escribe* para gente fuera de su equipo.
+
+La versión actual es un cuadro de texto y una lista de mensajes planos: no distingue quién escribe, no se puede responder, no hay categorías y no hay forma de encontrar nada. El rediseño resuelve esas cuatro cosas.
+
+**Encabezado.** Etiqueta: "<n> PERSONAS ACTIVAS ESTA SEMANA". Título "Foro de la Comunidad". Bajada: "Pregunta, comparte avances y encuentra a quién ya resolvió lo que tú estás resolviendo. Escriben estudiantes, mentores y LXD de toda la red."
+
+**Grilla de dos columnas `minmax(0,1.7fr) / minmax(0,1fr)`, `gap: 22px`, alineadas arriba.**
+
+### a) Compositor (columna izquierda, arriba)
+
+Tarjeta `padding: 20px 22px`, radio 18 px, fondo `--surface`, borde 1 px `--border`. Fila con `gap: 14px`:
+
+- Avatar del usuario, 44 px, fondo `#F4C430`, inicial `#1A1400` 17 px peso 700.
+- Columna con `gap: 14px`:
+  - `textarea` de 3 filas, ancho completo, `resize: vertical`, fondo `--surface2`, borde 1 px `--border`, radio 12 px, `padding: 13px 15px`, 14.5 px `line-height: 1.5`, sin outline. Placeholder: "¿Qué quieres compartir con la comunidad?"
+  - Fila inferior con `space-between`: a la izquierda los **chips de categoría**, a la derecha el botón **Publicar**.
+- **Chips de categoría** (uno seleccionado siempre, "Pregunta" por defecto): `padding: 7px 13px`, radio 999 px, 12.5 px peso 500, ícono 15 px, `gap: 7px`. Inactivo: fondo `--surface2`, texto `--text3`, borde `--border`. Activo: fondo `--gold-soft`, texto `--gold-ink`, borde `--gold-ink`. Hover `translateY(-1px)`.
+- **Botón Publicar**: `padding: 12px 22px`, radio 10 px, fondo `#F4C430`, texto `#1A1400` peso 600, ícono `send` 18 px. Hover `#FFD700` + sombra `0 8px 22px rgba(244,196,48,.28)` + `translateY(-1px)`. **Deshabilitado mientras el textarea esté vacío** (opacidad .45, cursor `not-allowed`).
+
+### b) Filtros de categoría
+
+Chips con wrap, `gap: 9px`, idénticos a los del Directorio (`padding: 10px 16px`, radio 999 px, 13.5 px peso 500) con contador embebido. Primero "Todo", luego una por categoría. El contador es sobre el total de publicaciones, no sobre el resultado filtrado.
+
+### c) Publicaciones
+
+Tarjeta `padding: 20px 22px`, radio 16 px, fondo `--surface`, borde 1 px `--border` y **borde izquierdo 3 px del color de su categoría**. Hover: sombra `--shadow`. Entrada `fadeUp` escalonada 55 ms. Fila con `gap: 14px`:
+
+- **Avatar** 44 px con la inicial del autor, del color asignado a esa persona.
+- **Cabecera**: nombre 14.5 px peso 600 `--text`; **píldora de rol** (`padding: 3px 10px`, radio 999 px, 11 px peso 600) — mentores y LXD en `--gold-soft`/`--gold-ink`, estudiantes en `--surface2`/`--text3`; organización y tiempo relativo en 12 px `--text3` separados por un punto medio.
+- **Categoría**: ícono 15 px + etiqueta 11.5 px `letter-spacing: .12em` mayúsculas peso 600, ambos del color de la categoría.
+- **Cuerpo** 14.5 px `line-height: 1.6` `--text2`, `text-wrap: pretty`.
+- **Acciones**, tras una línea 1 px `--border` con `padding-top: 14px`: dos botones de `padding: 7px 13px`, radio 9 px, fondo `--surface2`, borde 1 px `--border`, 12.5 px `--text2`, ícono 16 px — `volunteer_activism` con el número de apoyos, y `mode_comment` con "<n> respuestas". Hover: borde y texto `--gold-ink`. A la derecha, **solo en las publicaciones propias**, un botón de 32 px radio 9 px con `delete`, transparente con borde `--border`; hover borde `#CE1126` y color `#FF8A9B`.
+- **Respuesta anidada** (si la hay): bloque `padding: 14px 16px`, radio 12 px, fondo `--surface2`, con avatar de 32 px, nombre 13 px peso 600, tiempo 11.5 px `--text3` y cuerpo 13.5 px `line-height: 1.55` `--text2`.
+
+**Colores de categoría:**
+
+| Categoría | Ícono | Color |
+| --- | --- | --- |
+| Pregunta | `help` | `#26BDE2` |
+| Avance | `trending_up` | `#4C9F38` |
+| Recurso | `attach_file` | `#FD6925` |
+| Anuncio | `campaign` | `#F4C430` |
+
+### d) Columna derecha
+
+- **"Normas del foro"** — tarjeta `padding: 22px 24px`, radio 18 px, título Knockout 24 px. Tres reglas, cada una con ícono 18 px `--gold-ink` y texto 13.5 px `line-height: 1.45` `--text2`, `gap: 11px`.
+- **"Equipos más activos"** — misma tarjeta. Cada fila: cuadro de rango de 32 px radio 9 px con el número en Knockout 17 px (el primero con fondo `--gold-ink` y texto `--bg`, el resto `--surface2`/`--text3`), nombre del equipo 13.5 px con elipsis, universidad 11.5 px `--text3`, y el conteo de publicaciones a la derecha en 12.5 px `--text3`.
+
+### Comportamiento funcional requerido
+
+Esto es lo que hoy no existe y debe construirse:
+
+1. **Publicar** — el post se persiste con autor, categoría, cuerpo y timestamp; aparece al principio del feed sin recargar la pantalla; el textarea se limpia. Bloquear el botón mientras se envía y mostrar el error si falla.
+2. **Categorías** — la que esté seleccionada en el compositor se guarda con el post y alimenta el filtro y el color del borde.
+3. **Responder** — el botón de respuestas abre un campo en línea bajo la publicación; las respuestas se guardan asociadas al post y se muestran anidadas. Si son más de dos, colapsar con "Ver las <n> respuestas".
+4. **Apoyar** — un apoyo por persona por publicación, con estado activo visible (borde y texto `--gold-ink`) y conteo actualizado de inmediato.
+5. **Borrar** — solo el autor y los administradores; pedir confirmación antes.
+6. **Buscar** — el buscador del header filtra en vivo sobre autor, organización y cuerpo.
+7. **Tiempo relativo** — "hace 2 h", "ayer", y fecha completa a partir de una semana.
+8. **Orden** — más reciente primero. Si un LXD marca un anuncio como fijado, va arriba con un distintivo.
+
+---
+
+## Pantalla 7 — Mi Perfil
+
+**Propósito.** El estudiante ve y corrige sus datos, y reconoce su lugar en Enactus: su equipo, su proyecto, su avance.
+
+La versión actual es una lista de ocho pares etiqueta-valor sin jerarquía. El rediseño la agrupa por significado y le da al perfil una identidad visual.
+
+**Encabezado.** Etiqueta: "MIEMBRO ACTIVO DESDE <año>". Título "Mi Perfil".
+
+### a) Banda de identidad
+
+Tarjeta de radio 20 px, borde 1 px `--border`, contenido recortado.
+
+- **Banda superior** de 112 px, fondo `#2D3E50` + patrón `repeating-linear-gradient(115deg, rgba(255,255,255,.08) 0 2px, transparent 2px 13px)`. A la derecha, el nombre del proyecto como marca de agua: Knockout 104 px `rgba(244,196,48,.16)` mayúsculas, anclado a `right: 26px; bottom: -22px`.
+- **Fila inferior** `padding: 0 30px 28px`, `margin-top: -44px` para que el avatar monte sobre la banda, `gap: 24px`, alineada abajo:
+  - **Avatar** de 110 px, fondo `#F4C430`, inicial en Knockout 52 px `#1A1400`, borde 5 px `--surface`.
+  - **Identidad**: nombre en Knockout 44 px mayúsculas; correo 14 px `--text2` con ícono `mail` 17 px; y una fila de **chips de credencial** (`padding: 7px 13px`, radio 999 px, 12.5 px, ícono 15 px): rol (`school`, en `--gold-soft`/`--gold-ink`), universidad (`apartment`), carrera (`engineering`) y equipo (`groups`), estos tres en `--surface2`/`--text2`/`--border`.
+  - **Botón "Editar perfil"** a la derecha: transparente, borde 1 px `--gold-ink`, texto `--gold-ink` peso 600, `padding: 13px 22px`, radio 10 px, ícono `edit` 19 px. Hover: fondo `--gold-soft`.
+
+### b) Cifras
+
+Grilla de 4 columnas iguales, `gap: 12px`. Misma tarjeta de estadística del Directorio (fondo `--surface`, borde 1 px, radio 14 px, `padding: 16px 18px`, número en Knockout 40 px, etiqueta 12.5 px `--text3`). La primera cifra en `--gold-ink`, el resto en `--text`.
+
+Métricas, todas calculadas: **cursos activos · lecciones completadas (formato "3/10") · laboratorios · certificados**.
+
+### c) Datos agrupados
+
+Grilla `repeat(auto-fit, minmax(360px,1fr))`, `gap: 20px`. Dos tarjetas de `padding: 24px 26px`, radio 18 px:
+
+- Cabecera: cuadro de 34 px radio 10 px fondo `--gold-soft` con ícono 19 px `--gold-ink`, más el título en Knockout 24 px mayúsculas, `gap: 11px`.
+- Filas: `padding: 12px 0`, línea inferior 1 px `--border` salvo en la última. Etiqueta 13 px `--text3` a la izquierda; valor 14 px `--text` alineado a la derecha.
+
+| Tarjeta | Ícono | Campos |
+| --- | --- | --- |
+| Datos personales | `badge` | Cédula · Teléfono · Correo · Carrera |
+| Vida Enactus | `workspaces` | Universidad · Equipo · Laboratorios · Empresa patrocinadora |
+
+### d) Proyecto y certificados
+
+Grilla `minmax(0,1.3fr) / minmax(0,1fr)`, `gap: 20px`.
+
+**Tarjeta de proyecto** — radio 18 px, borde 1 px `--border`:
+- Portada de 96 px con el color del ODS principal + patrón de rayas + velo inferior + número del ODS en Knockout 78 px `rgba(255,255,255,.32)` a `right: 16px; bottom: -16px`. Encima, "MI PROYECTO" 11.5 px `letter-spacing: .16em` mayúsculas `rgba(255,255,255,.9)` peso 700 a `left: 18px; top: 16px`, y el nombre en Knockout 32 px blanco a `left: 18px; bottom: 14px`.
+- Cuerpo `padding: 20px 22px 22px`, `gap: 14px`: descripción e indicadores de impacto 14 px `--text2`; el riel de 6 etapas con sus leyendas; y las etiquetas de ODS (idénticas a las del Directorio).
+
+**Tarjeta de certificados** — `padding: 24px 26px`, radio 18 px, cabecera con ícono `workspace_premium`. Cuando no hay ninguno: caja punteada 1 px `--border`, radio 14 px, `padding: 26px 12px`, centrada — ícono `hourglass_empty` 32 px `--text3`, texto 13.5 px `--text2` `max-width: 34ch` nombrando el curso más cercano a completarse, y una barra de progreso de 7 px del color de su laboratorio con la leyenda "<hechas> de <total> lecciones". Cuando sí los hay: una fila por certificado con el curso, la fecha y un botón de descarga.
+
+### Comportamiento funcional requerido
+
+1. **Editar perfil** — abre un formulario con los campos editables (teléfono, carrera, foto). Cédula, universidad, equipo, proyecto y patrocinador son de solo lectura: los asigna el administrador. Validar el teléfono y guardar contra el backend con estado de carga y error.
+2. **Avatar** — permitir subir foto; la inicial sobre amarillo es el respaldo cuando no hay imagen.
+3. **Cifras y proyecto** — derivadas de `DataProvider`, nunca codificadas.
+4. **Certificado** — el botón de descarga genera el PDF del certificado ya existente en el flujo de Certificados; no dupliques esa lógica, reúsala.
+
+---
+
 ## Estados vacíos
 
 Un único componente, con contenido distinto por pantalla. Caja centrada: `padding: 70px 24px`, fondo `--surface`, borde **punteado** 1 px `--border`, radio 20 px, `gap: 16px`.
@@ -240,6 +361,8 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 | Calendario | `event_busy` | Agenda despejada | "No tienes sesiones ni entregas programadas este mes." | Actualizar |
 | Directorio (sin proyectos) | `lightbulb` | Aún no hay proyectos aquí | "Todavía no se ha publicado ningún proyecto en la comunidad. Cuando tu equipo registre el suyo, aparecerá aquí para toda la red." | Ver todas las etapas |
 | Directorio (filtro vacío) | `lightbulb` | Aún no hay proyectos aquí | "Ningún proyecto coincide con este filtro. Prueba con otra etapa o limpia la búsqueda." | Ver todas las etapas |
+| Foro (sin publicaciones) | `forum` | Nadie ha escrito aún | "El foro está vacío. Sé la primera en abrir la conversación de la comunidad." | Ver todo el foro |
+| Foro (filtro vacío) | `forum` | Nadie ha escrito aún | "Ninguna publicación coincide con este filtro. Prueba con otra categoría o limpia la búsqueda." | Ver todo el foro |
 
 ## Interacciones y comportamiento
 
@@ -248,7 +371,9 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 | Barra lateral | Cambia de pantalla; el ítem activo se marca con el borde izquierdo amarillo. |
 | Chip de etapa (Directorio) | Filtra la grilla. "Todas las etapas" limpia el filtro. Solo uno activo. |
 | Chip de laboratorio (Ruta) | Cambia el conjunto de fases mostrado. |
-| Buscador | Filtra en vivo, sin debounce, sobre la pantalla actual. Directorio: nombre + descripción + comunidad + etapa + ODS. Mis Cursos: nombre + laboratorio + descripción + docente. Coincidencia por substring, sin distinguir mayúsculas. |
+| Buscador | Filtra en vivo, sin debounce, sobre la pantalla actual. Directorio: nombre + descripción + comunidad + etapa + ODS. Mis Cursos: nombre + laboratorio + descripción + docente. Foro: autor + organización + cuerpo. Coincidencia por substring, sin distinguir mayúsculas. |
+| Chip de categoría (Foro) | En el compositor fija la categoría del post; en la barra de filtros acota el feed. Son dos controles distintos: no compartas estado entre ellos. |
+| Publicar / responder / apoyar / borrar | Ver "Comportamiento funcional requerido" en la Pantalla 6. |
 | Hover en tarjeta | `translateY(-5px)`, sombra `--shadow` y borde teñido del color del ODS o del laboratorio. |
 | Click en tarjeta | Navega al detalle (rutas existentes: `CourseDetailView`, detalle de proyecto). |
 | Botón de tema | Alterna claro/oscuro solo en el área de contenido. |
@@ -259,6 +384,9 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 - `screen` — pantalla activa.
 - `stage` — etapa filtrada en el Directorio; `'todas'` por defecto.
 - `lab` — laboratorio activo en la Ruta de Impacto; el primero del estudiante por defecto.
+- `kind` — categoría seleccionada en el compositor del Foro; `pregunta` por defecto.
+- `foroFilter` — categoría filtrada en el feed; `todos` por defecto.
+- `draft` — texto del compositor.
 - `query` — texto del buscador.
 - `theme` — `dark` | `light`; oscuro por defecto.
 
@@ -374,7 +502,7 @@ Ya presentes en el repositorio, bajo `assets/media/`:
 - `SpaceGrotesk-Variable.ttf` — texto
 - `mainlogo.png` — logotipo
 
-Iconografía: **Material Symbols Rounded** (en Flutter, los `Icons` redondeados equivalentes). Glifos usados: `search`, `light_mode`, `dark_mode`, `notifications`, `dashboard`, `calendar_month`, `school`, `science`, `emoji_events`, `explore`, `forum`, `workspace_premium`, `person`, `flag`, `location_on`, `groups`, `arrow_forward`, `lightbulb`, `restart_alt`, `mail`, `play_arrow`, `play_circle`, `play_lesson`, `view_module`, `signal_cellular_alt`, `schedule`, `smart_toy`, `insights`, `menu_book`, `diversity_3`, `description`, `warning`, `lock`, `check_circle`, `radio_button_unchecked`, `event`, `event_busy`, `route`, `design_services`.
+Iconografía: **Material Symbols Rounded** (en Flutter, los `Icons` redondeados equivalentes). Glifos usados: `search`, `light_mode`, `dark_mode`, `notifications`, `dashboard`, `calendar_month`, `school`, `science`, `emoji_events`, `explore`, `forum`, `workspace_premium`, `person`, `flag`, `location_on`, `groups`, `arrow_forward`, `lightbulb`, `restart_alt`, `mail`, `play_arrow`, `play_circle`, `play_lesson`, `view_module`, `signal_cellular_alt`, `schedule`, `smart_toy`, `insights`, `menu_book`, `diversity_3`, `description`, `warning`, `lock`, `check_circle`, `radio_button_unchecked`, `event`, `event_busy`, `route`, `design_services`, `send`, `help`, `trending_up`, `attach_file`, `campaign`, `volunteer_activism`, `mode_comment`, `delete`, `share`, `shield`, `edit`, `badge`, `workspaces`, `apartment`, `engineering`, `hourglass_empty`.
 
 **No se usan imágenes de curso ni de proyecto.** Las portadas son color plano + patrón de rayas + marca de agua, precisamente para no depender de fotografías que los equipos aún no han subido.
 
@@ -391,4 +519,6 @@ Los datos del prototipo salen de `seed_service.dart`: **Sara Nieto** (est1, Univ
 
 - Los cinco proyectos extra del Directorio (Manglar Vivo, Raíz Café, Semilla Digital, Tejido Wayúu, Cosecha Urbana) — relleno para mostrar la variedad de colores de ODS y de etapas.
 - Los horarios del calendario, derivados de los campos `availability` de los LXD.
-- La asignación de color por laboratorio.
+- La asignación de color por laboratorio y de color por categoría del foro.
+- Tres de las cuatro publicaciones del Foro (solo el post de Sara es real). Están escritas con personas que sí existen en el seed — Carlos Rodríguez, Sofía Ramírez, Daniela Herrera — para que el tono sea creíble, pero el contenido es inventado.
+- Los conteos de apoyos y respuestas, "38 personas activas" y la tabla de equipos más activos.

@@ -389,7 +389,7 @@ class EmptyState extends StatelessWidget {
       );
     }
     final c = colors ?? ContentColors.dark;
-    return _DashedRRectBorder(
+    return DashedRRectBorder(
       color: c.border,
       radius: 20,
       child: Container(
@@ -448,13 +448,14 @@ class EmptyState extends StatelessWidget {
 
 /// Borde punteado — Flutter no lo trae de fábrica; se dibuja a mano sobre
 /// el contorno redondeado del hijo. Usado por la variante de alta
-/// fidelidad de [EmptyState].
-class _DashedRRectBorder extends StatelessWidget {
+/// fidelidad de [EmptyState] y por cajas vacías más chicas dentro de una
+/// tarjeta (p. ej. "sin certificados aún" en Mi Perfil).
+class DashedRRectBorder extends StatelessWidget {
   final Widget child;
   final Color color;
   final double radius;
-  const _DashedRRectBorder(
-      {required this.child, required this.color, required this.radius});
+  const DashedRRectBorder(
+      {super.key, required this.child, required this.color, required this.radius});
 
   @override
   Widget build(BuildContext context) {

@@ -713,6 +713,73 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  ForumPost? forumPostById(String id) {
+    final j = db.get('forum_posts', id);
+    return j == null ? null : ForumPost.fromJson(j);
+  }
+
+  /// Un apoyo por persona por publicación: si ya apoyó, lo retira.
+  Future<void> toggleForumLike(String postId, String userId) async {
+    final post = forumPostById(postId);
+    if (post == null) return;
+    if (post.likedBy.contains(userId)) {
+      post.likedBy.remove(userId);
+    } else {
+      post.likedBy.add(userId);
+    }
+    await saveForumPost(post);
+  }
+
+  Future<void> addForumReply(String postId, ForumReply reply) async {
+    final post = forumPostById(postId);
+    if (post == null) return;
+    post.replies.add(reply);
+    await saveForumPost(post);
+  }
+
+  /// Fijar un anuncio arriba del feed: moderación de Admin/Super Admin,
+  /// igual que borrar (ver [canAccessForum] — LXD/Mentor no tienen acceso
+  /// al foro hoy, así que no se les da este permiso tampoco).
+  Future<void> setForumPinned(String postId, bool pinned) async {
+    final post = forumPostById(postId);
+    if (post == null) return;
+    post.pinned = pinned;
+    await saveForumPost(post);
+  }
+
+  /// Autores distintos con al menos una publicación en los últimos 7 días
+  /// — respalda el eyebrow "`<n>` personas activas esta semana" con un dato
+  /// real en vez de un número inventado.
+  int activeForumUsersThisWeek() {
+    final since = DateTime.now().subtract(const Duration(days: 7));
+    return forumPosts
+        .where((p) => p.date.isAfter(since))
+        .map((p) => p.authorId)
+        .toSet()
+        .length;
+  }
+
+  /// Equipos con más publicaciones en el foro, resuelto desde el `Group`
+  /// real de cada autor (solo cuenta autores con equipo — LXD/Mentor/
+  /// Advisor no tienen uno). Real, no inventado: con pocos posts el
+  /// ranking simplemente sale corto.
+  List<({Group group, int count})> mostActiveForumTeams({int take = 3}) {
+    final counts = <String, int>{};
+    for (final post in forumPosts) {
+      final author = userById(post.authorId);
+      final groupId = author?.groupId;
+      if (groupId == null) continue;
+      counts[groupId] = (counts[groupId] ?? 0) + 1;
+    }
+    final result = <({Group group, int count})>[];
+    for (final entry in counts.entries) {
+      final group = groupById(entry.key);
+      if (group != null) result.add((group: group, count: entry.value));
+    }
+    result.sort((a, b) => b.count.compareTo(a.count));
+    return result.take(take).toList();
+  }
+
   // ---------------- Contenido de la página principal ----------------
   SiteContent get siteContent {
     final j = db.get('content', 'site');

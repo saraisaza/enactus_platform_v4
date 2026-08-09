@@ -48,6 +48,7 @@ class SeedService {
         email: 'superadmin1@enactus.co',
         password: 'Super123',
         role: 'superadmin',
+        extra: {'joinedAt': '2021-03-01T00:00:00.000'},
       ),
       AppUser(
         id: 'sa2',
@@ -55,6 +56,7 @@ class SeedService {
         email: 'superadmin2@enactus.co',
         password: 'Super456',
         role: 'superadmin',
+        extra: {'joinedAt': '2021-03-01T00:00:00.000'},
       ),
       // --- Admin ---
       AppUser(
@@ -64,6 +66,7 @@ class SeedService {
         password: 'Admin123',
         role: 'admin',
         phone: '3001234567',
+        extra: {'joinedAt': '2021-06-01T00:00:00.000'},
       ),
       // --- LXD (antes "Mentor"): crean y son dueños de los cursos ---
       AppUser(
@@ -82,6 +85,7 @@ class SeedService {
           'availability': 'Martes y jueves 6-8 pm',
           'experience': '10 años en analítica y ML',
           'interests': 'Educación, impacto social, tecnología',
+          'joinedAt': '2023-08-01T00:00:00.000',
         },
       ),
       AppUser(
@@ -98,6 +102,7 @@ class SeedService {
           'availability': 'Lunes 5-7 pm',
           'experience': '8 años en proyectos de saneamiento',
           'interests': 'Sostenibilidad, comunidades rurales',
+          'joinedAt': '2024-02-01T00:00:00.000',
         },
       ),
       // Segundo LXD de Bancolombia: una empresa puede tener varios LXD
@@ -117,6 +122,7 @@ class SeedService {
           'availability': 'Miércoles 4-6 pm',
           'experience': '6 años en evaluación de impacto social',
           'interests': 'Medición de impacto, datos para el desarrollo',
+          'joinedAt': '2024-04-01T00:00:00.000',
         },
       ),
       // --- Mentor (rol nuevo): revisa Ruta de Impacto y entregas ---
@@ -129,6 +135,7 @@ class SeedService {
         extra: {
           'companyId': 'emp1',
           'company': 'Bancolombia',
+          'joinedAt': '2024-05-01T00:00:00.000',
         },
       ),
       // --- Asesor académico ---
@@ -138,7 +145,10 @@ class SeedService {
         email: 'asesor@uniandes.edu.co',
         password: 'Asesor123',
         role: 'advisor',
-        extra: {'university': 'Universidad de los Andes'},
+        extra: {
+          'university': 'Universidad de los Andes',
+          'joinedAt': '2022-01-15T00:00:00.000',
+        },
       ),
       // --- Empresa ---
       AppUser(
@@ -147,7 +157,10 @@ class SeedService {
         email: 'empresa@bancolombia.com',
         password: 'Empresa123',
         role: 'company',
-        extra: {'companyName': 'Bancolombia'},
+        extra: {
+          'companyName': 'Bancolombia',
+          'joinedAt': '2021-09-01T00:00:00.000',
+        },
       ),
       // --- Donante ---
       AppUser(
@@ -156,7 +169,10 @@ class SeedService {
         email: 'donante@gmail.com',
         password: 'Donante123',
         role: 'donor',
-        extra: {'impactCode': 'ENACTUS-2026-4589'},
+        extra: {
+          'impactCode': 'ENACTUS-2026-4589',
+          'joinedAt': '2022-03-01T00:00:00.000',
+        },
       ),
       // --- Estudiantes ---
       AppUser(
@@ -178,6 +194,7 @@ class SeedService {
           // y sus cursos se ven automáticamente (no hace falta asignarlos
           // aparte).
           'labIds': ['lab_ia', 'lab_impacto'],
+          'joinedAt': '2025-01-20T00:00:00.000',
         },
       ),
       AppUser(
@@ -195,6 +212,7 @@ class SeedService {
           'courseIds': ['crs_expo_p1', 'crs_emprend_1'],
           'companyId': 'emp1',
           'labIds': ['lab_emprendimiento'],
+          'joinedAt': '2025-01-20T00:00:00.000',
         },
       ),
       AppUser(
@@ -212,6 +230,7 @@ class SeedService {
           'courseIds': ['crs_expo_p2', 'crs_agua_1', 'crs_agri_1'],
           'donorId': 'don1',
           'labIds': ['lab_agua', 'lab_agricultura'],
+          'joinedAt': '2025-02-01T00:00:00.000',
         },
       ),
       AppUser(
@@ -228,6 +247,7 @@ class SeedService {
           'groupId': 'grp2',
           'courseIds': ['crs_expo_p2', 'crs_energia_1'],
           'labIds': ['lab_energia'],
+          'joinedAt': '2025-02-01T00:00:00.000',
         },
       ),
       // --- Estudiante de Open Learning (externo, pagó el curso) ---
@@ -240,6 +260,7 @@ class SeedService {
         extra: {
           'studentType': StudentType.openLearning,
           'courseIds': ['crs_ol_marketing'],
+          'joinedAt': '2026-05-01T00:00:00.000',
         },
       ),
       // --- Alumni (egresada Enactus): mismo acceso que un estudiante, ver
@@ -262,6 +283,7 @@ class SeedService {
           'companyId': 'emp1',
           'donorId': 'don1',
           'labIds': ['lab_ia', 'lab_impacto'],
+          'joinedAt': '2023-01-15T00:00:00.000',
         },
       ),
     ];
@@ -847,6 +869,8 @@ class SeedService {
         body:
             '¡Bienvenidos al foro de la comunidad Enactus Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.',
         date: DateTime(2026, 6, 2, 9, 0),
+        category: ForumCategory.anuncio,
+        pinned: true,
       ),
       ForumPost(
         id: 'post2',
@@ -854,6 +878,7 @@ class SeedService {
         body:
             'Muy orgulloso del equipo AquaVida de la Universidad de los Andes: pasaron a etapa Piloto esta semana. Si algún otro equipo está trabajando temas de agua, con gusto conectamos experiencias 🚰',
         date: DateTime(2026, 6, 15, 14, 30),
+        category: ForumCategory.avance,
       ),
       ForumPost(
         id: 'post3',
@@ -861,6 +886,7 @@ class SeedService {
         body:
             '¿Alguien ha usado modelos de IA para predecir deserción escolar? Estamos empezando esa parte del proyecto en el Laboratorio de IA y Tecnología y nos vendría bien aprender de otros equipos.',
         date: DateTime(2026, 7, 10, 11, 15),
+        category: ForumCategory.pregunta,
       ),
       ForumPost(
         id: 'post4',
@@ -868,6 +894,7 @@ class SeedService {
         body:
             'Compartiendo un logro del Laboratorio Agua: instalamos el primer filtro comunitario piloto en La Guajira. ¡Gracias a todos los que nos dieron ideas en este foro! 🎉',
         date: DateTime(2026, 7, 22, 16, 45),
+        category: ForumCategory.avance,
       ),
     ];
     for (final p in forumPosts) {

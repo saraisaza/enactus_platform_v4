@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
-    show calendarEventColor, calendarEventTypeLabel;
+    show calendarEventColor, calendarEventIcon, calendarEventTypeLabel;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 
@@ -251,7 +252,7 @@ class _DayCell extends StatelessWidget {
     final isToday = _sameDay(day, today);
     if (!inMonth) return const SizedBox(height: 96);
 
-    return Container(
+    final cell = Container(
       constraints: const BoxConstraints(minHeight: 96),
       padding: const EdgeInsets.fromLTRB(9, 9, 9, 8),
       decoration: BoxDecoration(
@@ -299,6 +300,15 @@ class _DayCell extends StatelessWidget {
         ],
       ),
     );
+
+    if (events.isEmpty) return cell;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => showEventsDialog(context, events, colors),
+        child: cell,
+      ),
+    );
   }
 }
 
@@ -312,38 +322,156 @@ class _UpcomingRow extends StatelessWidget {
     final color = calendarEventColor(event.type);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 52,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration:
-                BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(11)),
-            child: Column(
-              children: [
-                Text('${event.start.day}',
-                    style: knockoutHeading(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-                Text(DateFormat('EEE', 'es').format(event.start).toUpperCase(),
-                    style: TextStyle(fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),
-              ],
-            ),
+      child: HoverBuilder(
+        cursor: SystemMouseCursors.click,
+        builder: (context, hover) => GestureDetector(
+          onTap: () => showEventsDialog(context, [event], colors),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 52,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                    color: colors.surface2, borderRadius: BorderRadius.circular(11)),
+                child: Column(
+                  children: [
+                    Text('${event.start.day}',
+                        style: knockoutHeading(
+                            fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+                    Text(DateFormat('EEE', 'es').format(event.start).toUpperCase(),
+                        style: TextStyle(
+                            fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
+                        style: TextStyle(
+                            fontSize: 13.5,
+                            color: hover ? colors.goldInk : colors.text)),
+                    const SizedBox(height: 2),
+                    Text(
+                        '${DateFormat('h:mm a').format(event.start)}'
+                        '${event.guests.isEmpty ? '' : ' · ${event.guests}'}',
+                        style: TextStyle(fontSize: 12, color: colors.text3)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 18, color: colors.text3),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
-                    style: TextStyle(fontSize: 13.5, color: colors.text)),
-                const SizedBox(height: 2),
-                Text(
-                    '${DateFormat('h:mm a').format(event.start)}'
-                    '${event.guests.isEmpty ? '' : ' · ${event.guests}'}',
-                    style: TextStyle(fontSize: 12, color: colors.text3)),
-              ],
-            ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Detalle de uno o varios eventos del mismo día: hora, descripción,
+/// invitados y el botón para unirse a la reunión — sin esto, un evento en
+/// el calendario del estudiante era solo un chip de color sin forma de
+/// ver el link ni el resto de la información.
+Future<void> showEventsDialog(
+    BuildContext context, List<CalendarEvent> events, ContentColors colors) {
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => Dialog(
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      insetPadding: const EdgeInsets.all(24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480, maxHeight: 560),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(DateFormat("EEEE d 'de' MMMM", 'es').format(events.first.start),
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700, color: colors.text)),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, size: 20, color: colors.text3),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [for (final e in events) _EventDetailTile(event: e, colors: colors)],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _EventDetailTile extends StatelessWidget {
+  final CalendarEvent event;
+  final ContentColors colors;
+  const _EventDetailTile({required this.event, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = calendarEventColor(event.type);
+    final hasLink = event.meetLink.trim().isNotEmpty;
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(left: BorderSide(color: color, width: 3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(calendarEventIcon(event.type), color: color, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: colors.text)),
+              ),
+              Text(DateFormat('h:mm a').format(event.start),
+                  style: TextStyle(color: colors.text3, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(calendarEventTypeLabel(event.type),
+              style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w600)),
+          if (event.description.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(event.description,
+                style: TextStyle(fontSize: 12.5, height: 1.4, color: colors.text2)),
+          ],
+          if (event.guests.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(event.guests,
+                style: TextStyle(
+                    color: colors.text2, fontSize: 12, fontStyle: FontStyle.italic)),
+          ],
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.videocam_outlined, size: 16),
+            label: const Text('Unirse a la reunión'),
+            onPressed: hasLink ? () => launchUrl(Uri.parse(event.meetLink)) : null,
           ),
         ],
       ),

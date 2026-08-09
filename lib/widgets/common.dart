@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
@@ -79,7 +81,11 @@ class _EntranceState extends State<Entrance> {
 }
 
 /// Tarjeta interactiva: al pasar el mouse se eleva (sombra), escala 1.02,
-/// aclara el fondo y el borde pasa al amarillo de marca.
+/// aclara el fondo y el borde se tiñe de un color de acento. Por defecto
+/// usa los tokens fijos de tema oscuro de [AppColors] (como siempre); las
+/// pantallas con tema claro/oscuro propio ([ContentColors]) o con acento
+/// por dato (ODS, laboratorio) pueden pasar [bg]/[bgHover]/[borderColor]/
+/// [borderHoverColor] sin bifurcar el widget.
 class HoverCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -87,13 +93,21 @@ class HoverCard extends StatelessWidget {
 
   /// Escala en hover (1.0 = sin zoom). 1.02 por defecto.
   final double hoverScale;
+  final Color? bg;
+  final Color? bgHover;
+  final Color? borderColor;
+  final Color? borderHoverColor;
 
   const HoverCard(
       {super.key,
       required this.child,
       this.onTap,
       this.padding = const EdgeInsets.all(16),
-      this.hoverScale = 1.02});
+      this.hoverScale = 1.02,
+      this.bg,
+      this.bgHover,
+      this.borderColor,
+      this.borderHoverColor});
 
   @override
   Widget build(BuildContext context) {
@@ -111,10 +125,14 @@ class HoverCard extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             padding: padding,
             decoration: BoxDecoration(
-              color: hover ? AppColors.surfaceAlt : AppColors.surface,
+              color: hover
+                  ? (bgHover ?? AppColors.surfaceAlt)
+                  : (bg ?? AppColors.surface),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: hover ? AppColors.gold : AppColors.border,
+                  color: hover
+                      ? (borderHoverColor ?? AppColors.gold)
+                      : (borderColor ?? AppColors.border),
                   width: hover ? 1.2 : 1),
               boxShadow: hover
                   ? const [
@@ -319,30 +337,163 @@ class ThinProgressBar extends StatelessWidget {
   }
 }
 
-/// Estado vacío estándar.
+/// Estado vacío estándar. Sin [title]/acciones: ícono+mensaje centrado,
+/// como lo usan hoy ~15 pantallas. Con [title] (y opcionalmente
+/// [primaryLabel]/[secondaryLabel]): la versión de alta fidelidad del
+/// portal estudiante (`design_handoff_portal_estudiante/README.md`) — caja
+/// con borde punteado, ícono en caja dorada, título Knockout y hasta dos
+/// botones de acción. [colors] tiñe la variante con tokens de tema
+/// claro/oscuro de una pantalla; `null` = tema oscuro fijo de [AppColors].
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
-  const EmptyState({super.key, required this.icon, required this.message});
+  final String? title;
+  final String? primaryLabel;
+  final IconData primaryIcon;
+  final VoidCallback? onPrimary;
+  final String? secondaryLabel;
+  final IconData? secondaryIcon;
+  final VoidCallback? onSecondary;
+  final ContentColors? colors;
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.message,
+    this.title,
+    this.primaryLabel,
+    this.primaryIcon = Icons.restart_alt,
+    this.onPrimary,
+    this.secondaryLabel,
+    this.secondaryIcon,
+    this.onSecondary,
+    this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
+    if (title == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            children: [
+              Icon(icon, size: 48, color: AppColors.textMuted),
+              const SizedBox(height: 12),
+              Text(message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 14)),
+            ],
+          ),
+        ),
+      );
+    }
+    final c = colors ?? ContentColors.dark;
+    return _DashedRRectBorder(
+      color: c.border,
+      radius: 20,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 70, horizontal: 24),
+        decoration:
+            BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(20)),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: AppColors.textMuted),
-            const SizedBox(height: 12),
-            Text(message,
-                textAlign: TextAlign.center,
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 14)),
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                  color: c.goldSoft, borderRadius: BorderRadius.circular(22)),
+              child: Icon(icon, size: 36, color: c.goldInk),
+            ),
+            const SizedBox(height: 16),
+            Text(title!.toUpperCase(),
+                style: knockoutHeading(
+                    fontSize: 38, fontWeight: FontWeight.w800, color: c.text)),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Text(message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, height: 1.55, color: c.text2)),
+            ),
+            if (primaryLabel != null || secondaryLabel != null) ...[
+              const SizedBox(height: 22),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  if (primaryLabel != null)
+                    ElevatedButton.icon(
+                      onPressed: onPrimary,
+                      icon: Icon(primaryIcon, size: 19),
+                      label: Text(primaryLabel!),
+                    ),
+                  if (secondaryLabel != null)
+                    OutlinedButton.icon(
+                      onPressed: onSecondary,
+                      icon: Icon(secondaryIcon ?? Icons.mail_outline, size: 19),
+                      label: Text(secondaryLabel!),
+                    ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+/// Borde punteado — Flutter no lo trae de fábrica; se dibuja a mano sobre
+/// el contorno redondeado del hijo. Usado por la variante de alta
+/// fidelidad de [EmptyState].
+class _DashedRRectBorder extends StatelessWidget {
+  final Widget child;
+  final Color color;
+  final double radius;
+  const _DashedRRectBorder(
+      {required this.child, required this.color, required this.radius});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: _DashedBorderPainter(color: color, radius: radius),
+      child: child,
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  const _DashedBorderPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect =
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius));
+    final path = Path()..addRRect(rect);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = math.min(distance + dashWidth, metric.length);
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.radius != radius;
 }
 
 /// Título de sección dentro de una pestaña (Knockout, mayúsculas). Espaciado

@@ -144,41 +144,570 @@ class _LabCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Tab "Ruta de Impacto": atajo directo del panel lateral
+// Tab "Ruta de Impacto": rediseño de alta fidelidad según
+// `design_handoff_portal_estudiante/README.md` (pantalla 4) — selector de
+// laboratorio, camino de fases con objetivos y módulos siempre expandidos
+// (reemplaza la navegación a PhaseDetailScreen) y la tarjeta National
+// Expo. Los módulos, al tocarlos, siguen empujando a [ModuleDetailScreen]
+// (sin cambios) para abrir/entregar contenido.
 // ---------------------------------------------------------------------------
 
-class RutaImpactoShortcut extends StatelessWidget {
+class RutaImpactoShortcut extends StatefulWidget {
   const RutaImpactoShortcut({super.key});
+
+  @override
+  State<RutaImpactoShortcut> createState() => _RutaImpactoShortcutState();
+}
+
+class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
+  String? _selectedLabId;
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
     final labs = data.labsForStudent(student);
+    final group = data.groupById(student.groupId);
 
-    if (labs.isEmpty) {
-      return const TabBody(
-        title: 'Ruta de Impacto',
-        children: [
-          EmptyState(
-              icon: Icons.emoji_events_outlined,
-              message:
-                  'Tu administrador aún no te asignó a ningún laboratorio.'),
-        ],
-      );
-    }
-    if (labs.length == 1) {
-      final lab = labs.first;
-      return TabBody(
-        title: 'Ruta de Impacto',
-        subtitle: lab.name,
-        children: [_PhasesGrid(lab: lab)],
-      );
-    }
-    return TabBody(
+    return ContentScreenShell(
+      eyebrow: group == null
+          ? 'Ruta de Impacto'
+          : '${group.name}${group.university.isEmpty ? '' : ' · ${group.university}'}',
       title: 'Ruta de Impacto',
-      subtitle: 'Tienes varios laboratorios: elige uno para ver su Ruta de Impacto',
-      children: [_LabsGrid(labs: labs)],
+      subtitle: 'Las fases de tu laboratorio, sus objetivos y lo que falta '
+          'para llegar a National Expo.',
+      searchHint: 'Buscar en el portal',
+      bodyBuilder: (context, colors, isDark) {
+        if (labs.isEmpty) {
+          return EmptyState(
+            icon: Icons.route_outlined,
+            title: 'Sin laboratorio asignado',
+            message: 'Tu administrador aún no te asignó a ningún laboratorio.',
+            colors: colors,
+          );
+        }
+        final selected =
+            labs.firstWhere((l) => l.id == _selectedLabId, orElse: () => labs.first);
+        final hasContent =
+            selected.phases.any((p) => p.objectives.isNotEmpty || p.modules.isNotEmpty);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final lab in labs)
+                  _LabChip(
+                    lab: lab,
+                    active: lab.id == selected.id,
+                    colors: colors,
+                    onTap: () => setState(() => _selectedLabId = lab.id),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            if (!hasContent)
+              EmptyState(
+                icon: Icons.route_outlined,
+                title: 'Laboratorio sin fases',
+                message: 'El ${selected.name} todavía no ha publicado sus fases. '
+                    'Tu LXD las abrirá cuando el contenido esté listo.',
+                primaryLabel: labs.length > 1 ? 'Ver otro laboratorio' : null,
+                onPrimary: labs.length > 1
+                    ? () => setState(() {
+                          final idx = labs.indexOf(selected);
+                          _selectedLabId = labs[(idx + 1) % labs.length].id;
+                        })
+                    : null,
+                colors: colors,
+              )
+            else
+              LayoutBuilder(builder: (context, c) {
+                final left = _PhasePath(
+                    lab: selected, student: student, colors: colors, isDark: isDark);
+                final right = _ExpoCard(group: group, colors: colors);
+                if (c.maxWidth > 800) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 160, child: left),
+                      const SizedBox(width: 22),
+                      Expanded(flex: 100, child: right),
+                    ],
+                  );
+                }
+                return Column(children: [left, const SizedBox(height: 22), right]);
+              }),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LabChip extends StatelessWidget {
+  final Laboratory lab;
+  final bool active;
+  final ContentColors colors;
+  final VoidCallback onTap;
+  const _LabChip(
+      {required this.lab, required this.active, required this.colors, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = labColorFor(lab.id);
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hover) => GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          transform: Matrix4.translationValues(0, hover ? -1 : 0, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+          decoration: BoxDecoration(
+            color: active ? colors.goldSoft : colors.surface,
+            border: Border.all(color: active ? colors.goldInk : colors.border),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(3)),
+              ),
+              const SizedBox(width: 10),
+              Text(lab.name,
+                  style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: active ? colors.goldInk : colors.text2)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PhasePath extends StatelessWidget {
+  final Laboratory lab;
+  final AppUser student;
+  final ContentColors colors;
+  final bool isDark;
+  const _PhasePath(
+      {required this.lab, required this.student, required this.colors, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < lab.phases.length; i++)
+          _PhaseRow(
+              lab: lab,
+              index: i,
+              student: student,
+              colors: colors,
+              isDark: isDark,
+              isLast: i == lab.phases.length - 1),
+      ],
+    );
+  }
+}
+
+class _PhaseRow extends StatelessWidget {
+  final Laboratory lab;
+  final int index;
+  final AppUser student;
+  final ContentColors colors;
+  final bool isDark;
+  final bool isLast;
+  const _PhaseRow(
+      {required this.lab,
+      required this.index,
+      required this.student,
+      required this.colors,
+      required this.isDark,
+      required this.isLast});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final phase = lab.phases[index];
+    final accent = labColorFor(lab.id);
+    final unlocked = data.isPhaseUnlocked(student.id, lab.id, lab, index);
+    final complete = data.isPhaseComplete(student.id, lab.id, phase);
+    final deadlineStatus = data.phaseDeadlineStatus(student.id, lab.id, phase);
+    final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
+    final alertColor = isDark ? const Color(0xFFFF8A9B) : AppColors.colombiaRed;
+
+    final (chipBg, chipColor, chipIcon, chipLabel) = complete
+        ? (const Color(0x264C9F38), AppColors.statusGood, Icons.check_circle, 'Completa')
+        : !unlocked
+            ? (colors.surface2, colors.text3, Icons.lock_outline, 'Sin abrir')
+            : deadlineStatus == DeadlineStatus.overdue
+                ? (const Color(0x29CE1126), alertColor, Icons.warning_amber_rounded, 'Vencida')
+                : (colors.goldSoft, colors.goldInk, Icons.play_circle_outline, 'En curso');
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 46,
+          child: Column(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: unlocked ? accent : colors.surface,
+                  border: Border.all(color: unlocked ? accent : colors.border, width: 2),
+                ),
+                child: Text('${index + 1}',
+                    style: knockoutHeading(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: unlocked ? Colors.white : colors.text3)),
+              ),
+              if (!isLast)
+                Container(width: 2, height: 64, color: colors.border),
+            ],
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 22),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                border: Border.all(color: complete || unlocked ? accent : colors.border),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(title.toUpperCase(),
+                            style: knockoutHeading(
+                                fontSize: 27, fontWeight: FontWeight.w800, color: colors.text)),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration:
+                            BoxDecoration(color: chipBg, borderRadius: BorderRadius.circular(999)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(chipIcon, size: 14, color: chipColor),
+                            const SizedBox(width: 5),
+                            Text(chipLabel,
+                                style: TextStyle(
+                                    fontSize: 11.5, fontWeight: FontWeight.w600, color: chipColor)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (phase.description.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(phase.description,
+                        style: TextStyle(fontSize: 13.5, height: 1.5, color: colors.text2)),
+                  ],
+                  if (phase.objectives.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('OBJETIVOS',
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            letterSpacing: 11.5 * 0.14,
+                            fontWeight: FontWeight.w600,
+                            color: colors.text3)),
+                    const SizedBox(height: 10),
+                    for (final o in phase.objectives)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                                data.isObjectiveComplete(student.id, o)
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
+                                size: 17,
+                                color: data.isObjectiveComplete(student.id, o)
+                                    ? AppColors.statusGood
+                                    : colors.text3),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(o.text, style: TextStyle(fontSize: 13.5, color: colors.text2)),
+                                  Text(o.category,
+                                      style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                  if (phase.modules.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    for (var j = 0; j < phase.modules.length; j++)
+                      _ModuleSummaryRow(
+                          lab: lab,
+                          phaseIndex: index,
+                          moduleIndex: j,
+                          student: student,
+                          colors: colors),
+                  ],
+                  if (phase.deadline.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Divider(height: 1, color: colors.border),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Icon(Icons.event, size: 17, color: colors.text3),
+                        const SizedBox(width: 8),
+                        Text(
+                            deadlineStatus == DeadlineStatus.overdue
+                                ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
+                                : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}',
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                color: deadlineStatus == DeadlineStatus.overdue
+                                    ? alertColor
+                                    : colors.text3)),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ModuleSummaryRow extends StatelessWidget {
+  final Laboratory lab;
+  final int phaseIndex;
+  final int moduleIndex;
+  final AppUser student;
+  final ContentColors colors;
+  const _ModuleSummaryRow(
+      {required this.lab,
+      required this.phaseIndex,
+      required this.moduleIndex,
+      required this.student,
+      required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final phase = lab.phases[phaseIndex];
+    final module = phase.modules[moduleIndex];
+    final unlocked = data.isModuleUnlocked(student.id, lab.id, phase, moduleIndex);
+    final complete = data.isModuleComplete(student.id, lab.id, module);
+    final title = module.title.isEmpty ? 'Módulo ${moduleIndex + 1}' : module.title;
+    final totalItems = module.ownLessons.length + module.courseIds.length;
+
+    final (iconBg, iconColor) = complete
+        ? (const Color(0x264C9F38), AppColors.statusGood)
+        : !unlocked
+            ? (colors.surface2, colors.text3)
+            : (colors.goldSoft, colors.goldInk);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => unlocked
+            ? Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ModuleDetailScreen(
+                        labId: lab.id, phaseIndex: phaseIndex, moduleIndex: moduleIndex)))
+            : showAppSnack(
+                context, 'Completa el módulo anterior para desbloquear "$title".'),
+        child: MouseRegion(
+          cursor: unlocked ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration:
+                BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(11)),
+            child: Row(
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)),
+                  child: Icon(
+                      complete
+                          ? Icons.check_circle
+                          : (!unlocked
+                              ? Icons.lock_outline
+                              : (module.isMentorshipModule
+                                  ? Icons.diversity_3
+                                  : Icons.menu_book_outlined)),
+                      size: 16,
+                      color: iconColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13.5, color: colors.text)),
+                      Text(
+                          !unlocked
+                              ? 'Bloqueado'
+                              : (module.isMentorshipModule
+                                  ? 'Módulo de mentoría'
+                                  : '$totalItems elemento(s)'),
+                          style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                    ],
+                  ),
+                ),
+                Text(
+                    complete ? 'Completo' : (!unlocked ? 'Bloqueado' : 'Pendiente'),
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600, color: iconColor)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpoCard extends StatelessWidget {
+  final Group? group;
+  final ContentColors colors;
+  const _ExpoCard({required this.group, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final checklist = group == null ? null : data.checklistFor(group!.id);
+    final done = checklist?.items.where((i) => i['done'] == true).length ?? 0;
+    final total = checklist?.items.length ?? 0;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
+            color: AppColors.gold,
+            child: Stack(
+              children: [
+                const Positioned.fill(child: CustomPaint(painter: StripePainter())),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('META DEL AÑO',
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            letterSpacing: 11.5 * 0.16,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1A1400).withValues(alpha: 0.7))),
+                    const SizedBox(height: 8),
+                    Text('National Expo',
+                        style: knockoutHeading(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1A1400))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            child: group == null
+                ? Text('Aún no perteneces a un equipo.',
+                    style: TextStyle(fontSize: 13.5, color: colors.text3))
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Checklist del equipo',
+                              style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                          Text('$done/$total',
+                              style: knockoutHeading(
+                                  fontSize: 22, fontWeight: FontWeight.w800, color: colors.goldInk)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: total == 0 ? 0 : done / total,
+                          minHeight: 7,
+                          backgroundColor: colors.surface2,
+                          valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      for (final item in checklist!.items)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                  item['done'] == true
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  size: 19,
+                                  color: item['done'] == true
+                                      ? AppColors.statusGood
+                                      : colors.text3),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text((item['label'] as String?) ?? '',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: item['done'] == true ? colors.text2 : colors.text3)),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

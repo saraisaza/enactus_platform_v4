@@ -8,17 +8,8 @@ import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
-import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
-
-/// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
-int _odsNumber(String odsLabel) {
-  final match = RegExp(r'ODS\s*(\d+)').firstMatch(odsLabel);
-  return match != null ? int.parse(match.group(1)!) : 1;
-}
-
-Color _odsColor(String odsLabel) =>
-    AppColors.odsColors[_odsNumber(odsLabel)] ?? AppColors.gold;
+import '../../widgets/portal_shell.dart';
 
 /// Directorio de todos los proyectos Enactus de la plataforma, sin
 /// importar laboratorio, universidad o equipo — para que estudiantes y
@@ -27,11 +18,11 @@ Color _odsColor(String odsLabel) =>
 /// sus propias pestañas de gestión).
 ///
 /// Rediseño de alta fidelidad según
-/// `assets/design_handoff_directorio_proyectos/README.md`: el color de
+/// `design_handoff_portal_estudiante/README.md` (pantalla 5): el color de
 /// cada tarjeta viene del ODS principal del proyecto, no de un acento fijo.
-/// Es la única pantalla con tema claro/oscuro propio (el header y el
-/// sidebar del portal — compartidos con el resto de la app — siguen
-/// oscuros siempre).
+/// Usa el [ContentScreenShell] compartido con el resto del portal
+/// estudiante para el tema claro/oscuro propio de esta pantalla (el header
+/// y el sidebar del portal siguen oscuros siempre).
 class ProjectsDirectoryView extends StatefulWidget {
   const ProjectsDirectoryView({super.key});
 
@@ -39,31 +30,15 @@ class ProjectsDirectoryView extends StatefulWidget {
   State<ProjectsDirectoryView> createState() => _ProjectsDirectoryViewState();
 }
 
-class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView>
-    with SingleTickerProviderStateMixin {
+class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
   String _stageFilter = 'todas';
   String _query = '';
-  bool _isDark = true;
-  final _searchCtrl = TextEditingController();
-  late final AnimationController _glow = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 2400))
-    ..repeat();
-
-  DirectoryColors get _colors => _isDark ? DirectoryColors.dark : DirectoryColors.light;
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    _glow.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final allProjects = data.projects;
     final groups = data.groups;
-    final colors = _colors;
 
     // Etapa primero, luego búsqueda — encadenado, como pide el handoff.
     var projects = _stageFilter == 'todas'
@@ -74,9 +49,14 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView>
       projects = projects.where((p) {
         final teamUniversities =
             groups.where((g) => g.projectId == p.id).map((g) => g.university);
-        final haystack = [p.name, p.description, p.community, p.stage, ...p.ods, ...teamUniversities]
-            .join(' ')
-            .toLowerCase();
+        final haystack = [
+          p.name,
+          p.description,
+          p.community,
+          p.stage,
+          ...p.ods,
+          ...teamUniversities
+        ].join(' ').toLowerCase();
         return haystack.contains(q);
       }).toList();
     }
@@ -89,188 +69,65 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView>
           if (g.university.isNotEmpty) g.university,
     }.length;
     final odsCovered = <String>{for (final p in allProjects) ...p.ods}.length;
-    final expoCount = allProjects.where((p) => p.stage == 'National Expo').length;
+    final expoCount =
+        allProjects.where((p) => p.stage == 'National Expo').length;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(color: colors.bg),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildControlsRow(colors),
-                  const SizedBox(height: 22),
-                  _buildHeader(
-                      colors, allProjects.length, universities, odsCovered, expoCount),
-                  const SizedBox(height: 26),
-                  _buildStageChips(colors, allProjects),
-                  const SizedBox(height: 26),
-                  if (projects.isEmpty)
-                    _buildEmptyState(colors, allProjects.isEmpty)
-                  else
-                    _buildGrid(colors, projects, groups),
-                ],
-              ),
-            ),
+    return ContentScreenShell(
+      eyebrow: 'Comunidad Enactus Colombia',
+      title: 'Directorio de Proyectos',
+      subtitle:
+          'Todos los proyectos activos de la red. Filtra por etapa, explora '
+          'los ODS que atienden y descubre qué está construyendo el resto '
+          'de los equipos.',
+      searchHint: 'Buscar proyecto, comunidad u ODS',
+      onSearchChanged: (v) => setState(() => _query = v),
+      trailingBuilder: (context, colors, isDark) => ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 440),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                  child: _StatCard(
+                      value: allProjects.length,
+                      label: 'Proyectos activos',
+                      colors: colors,
+                      isPrimary: true)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _StatCard(
+                      value: universities,
+                      label: 'Universidades',
+                      colors: colors)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _StatCard(
+                      value: odsCovered, label: 'ODS cubiertos', colors: colors)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _StatCard(
+                      value: expoCount,
+                      label: 'En National Expo',
+                      colors: colors)),
+            ],
           ),
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: AppFooter(),
-            ),
-          ),
+        ),
+      ),
+      bodyBuilder: (context, colors, isDark) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildStageChips(colors, allProjects),
+          const SizedBox(height: 26),
+          if (projects.isEmpty)
+            _buildEmptyState(colors, allProjects.isEmpty)
+          else
+            _buildGrid(colors, projects, groups),
         ],
       ),
     );
   }
 
-  Widget _buildControlsRow(DirectoryColors colors) {
-    return Row(
-      children: [
-        const Spacer(),
-        Container(
-          width: 320,
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.search_rounded, size: 20, color: colors.text3),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: _searchCtrl,
-                  onChanged: (v) => setState(() => _query = v),
-                  style: TextStyle(fontSize: 14, color: colors.text),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    filled: false,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    hintText: 'Buscar proyecto, comunidad u ODS',
-                    hintStyle: TextStyle(fontSize: 14, color: colors.text3),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        _ThemeToggleButton(
-          isDark: _isDark,
-          colors: colors,
-          onTap: () => setState(() => _isDark = !_isDark),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader(
-      DirectoryColors colors, int total, int universities, int ods, int expo) {
-    return Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      crossAxisAlignment: WrapCrossAlignment.end,
-      spacing: 32,
-      runSpacing: 20,
-      children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 320, maxWidth: 620),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: _glow,
-                    builder: (_, __) {
-                      final t = _glow.value;
-                      return Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4C9F38),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4C9F38)
-                                  .withValues(alpha: 0.55 * (1 - t)),
-                              spreadRadius: 5 * t,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 9),
-                  Text('COMUNIDAD ENACTUS COLOMBIA',
-                      style: TextStyle(
-                          fontSize: 12,
-                          letterSpacing: 12 * 0.16,
-                          fontWeight: FontWeight.w600,
-                          color: colors.text3)),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text('Directorio de Proyectos'.toUpperCase(),
-                  style: knockoutHeading(
-                      fontSize: 58,
-                      fontWeight: FontWeight.w800,
-                      color: colors.goldInk,
-                      height: 0.94)),
-              const SizedBox(height: 12),
-              Text(
-                'Todos los proyectos activos de la red. Filtra por etapa, explora '
-                'los ODS que atienden y descubre qué está construyendo el resto '
-                'de los equipos.',
-                style: TextStyle(fontSize: 15.5, color: colors.text2, height: 1.4),
-              ),
-            ],
-          ),
-        ),
-        ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 440),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                    child: _StatCard(
-                        value: total,
-                        label: 'Proyectos activos',
-                        colors: colors,
-                        isPrimary: true)),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: _StatCard(
-                        value: universities, label: 'Universidades', colors: colors)),
-                const SizedBox(width: 12),
-                Expanded(
-                    child:
-                        _StatCard(value: ods, label: 'ODS cubiertos', colors: colors)),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: _StatCard(
-                        value: expo, label: 'En National Expo', colors: colors)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStageChips(DirectoryColors colors, List<Project> allProjects) {
+  Widget _buildStageChips(ContentColors colors, List<Project> allProjects) {
     int countFor(String stage) => stage == 'todas'
         ? allProjects.length
         : allProjects.where((p) => p.stage == stage).length;
@@ -299,7 +156,7 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView>
   }
 
   Widget _buildGrid(
-      DirectoryColors colors, List<Project> projects, List<Group> groups) {
+      ContentColors colors, List<Project> projects, List<Group> groups) {
     return LayoutBuilder(builder: (context, constraints) {
       const minCard = 348.0;
       const gap = 20.0;
@@ -333,102 +190,23 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView>
     });
   }
 
-  Widget _buildEmptyState(DirectoryColors colors, bool noProjectsAtAll) {
-    return _DashedRRectBorder(
-      color: colors.border,
-      radius: 20,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 70, horizontal: 24),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 76,
-              height: 76,
-              decoration:
-                  BoxDecoration(color: colors.goldSoft, borderRadius: BorderRadius.circular(22)),
-              child: Icon(Icons.lightbulb_outline, size: 36, color: colors.goldInk),
-            ),
-            const SizedBox(height: 16),
-            Text('Aún no hay proyectos aquí'.toUpperCase(),
-                style: knockoutHeading(
-                    fontSize: 38, fontWeight: FontWeight.w800, color: colors.text)),
-            const SizedBox(height: 16),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: Text(
-                noProjectsAtAll
-                    ? 'Todavía no se ha publicado ningún proyecto en la comunidad. '
-                        'Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.'
-                    : 'Ningún proyecto coincide con este filtro. Prueba con otra '
-                        'etapa o limpia la búsqueda.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, height: 1.55, color: colors.text2),
-              ),
-            ),
-            const SizedBox(height: 22),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () => setState(() {
-                    _stageFilter = 'todas';
-                    _query = '';
-                    _searchCtrl.clear();
-                  }),
-                  icon: const Icon(Icons.restart_alt, size: 19),
-                  label: const Text('Ver todas las etapas'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: null,
-                  icon: const Icon(Icons.add, size: 19),
-                  label: const Text('Proponer un proyecto'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  final bool isDark;
-  final DirectoryColors colors;
-  final VoidCallback onTap;
-  const _ThemeToggleButton(
-      {required this.isDark, required this.colors, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: hover ? AppColors.gold : colors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-            size: 21,
-            color: hover ? AppColors.gold : colors.text2,
-          ),
-        ),
-      ),
+  Widget _buildEmptyState(ContentColors colors, bool noProjectsAtAll) {
+    return EmptyState(
+      icon: Icons.lightbulb_outline,
+      title: 'Aún no hay proyectos aquí',
+      message: noProjectsAtAll
+          ? 'Todavía no se ha publicado ningún proyecto en la comunidad. '
+              'Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.'
+          : 'Ningún proyecto coincide con este filtro. Prueba con otra '
+              'etapa o limpia la búsqueda.',
+      primaryLabel: 'Ver todas las etapas',
+      onPrimary: () => setState(() {
+        _stageFilter = 'todas';
+        _query = '';
+      }),
+      secondaryLabel: 'Proponer un proyecto',
+      secondaryIcon: Icons.add,
+      colors: colors,
     );
   }
 }
@@ -436,7 +214,7 @@ class _ThemeToggleButton extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final int value;
   final String label;
-  final DirectoryColors colors;
+  final ContentColors colors;
   final bool isPrimary;
   const _StatCard(
       {required this.value,
@@ -483,7 +261,7 @@ class _StageChip extends StatelessWidget {
   final String label;
   final int count;
   final bool active;
-  final DirectoryColors colors;
+  final ContentColors colors;
   final VoidCallback onTap;
   const _StageChip(
       {required this.label,
@@ -544,10 +322,10 @@ class _StageChip extends StatelessWidget {
 /// detalle: color plano del ODS principal + rayas diagonales + velo +
 /// número en marca de agua + píldora de etapa. Sin fotos de proyecto a
 /// propósito (ver README): los equipos aún no suben imágenes.
-Widget _buildProjectCover(Project project, DirectoryColors colors,
+Widget _buildProjectCover(Project project, ContentColors colors,
     {required double height}) {
   final primaryOds = project.ods.isNotEmpty ? project.ods.first : '';
-  final odsNum = primaryOds.isEmpty ? 1 : _odsNumber(primaryOds);
+  final odsNum = primaryOds.isEmpty ? 1 : odsNumberFrom(primaryOds);
   final odsColor = AppColors.odsColors[odsNum] ?? AppColors.gold;
   return SizedBox(
     height: height,
@@ -556,7 +334,7 @@ Widget _buildProjectCover(Project project, DirectoryColors colors,
       fit: StackFit.expand,
       children: [
         ColoredBox(color: odsColor),
-        const CustomPaint(painter: _StripePainter()),
+        const CustomPaint(painter: StripePainter()),
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -611,36 +389,10 @@ Widget _buildProjectCover(Project project, DirectoryColors colors,
   );
 }
 
-/// Rayas diagonales de la portada: `repeating-linear-gradient(115deg,
-/// rgba(255,255,255,.14) 0 2px, transparent 2px 13px)` del handoff.
-class _StripePainter extends CustomPainter {
-  const _StripePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.clipRect(Offset.zero & size);
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.14)
-      ..strokeWidth = 2;
-    canvas.translate(size.width / 2, size.height / 2);
-    canvas.rotate(-25 * math.pi / 180);
-    canvas.translate(-size.width / 2, -size.height / 2);
-    final diag = size.width + size.height;
-    for (double x = -diag; x < diag; x += 13) {
-      canvas.drawLine(Offset(x, -diag), Offset(x, diag * 2), paint);
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class _ProjectCard extends StatelessWidget {
   final Project project;
   final List<Group> groups;
-  final DirectoryColors colors;
+  final ContentColors colors;
   final VoidCallback onTap;
   const _ProjectCard(
       {required this.project,
@@ -660,7 +412,7 @@ class _ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final odsColor =
-        project.ods.isNotEmpty ? _odsColor(project.ods.first) : AppColors.gold;
+        project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 
@@ -703,8 +455,10 @@ class _ProjectCard extends StatelessWidget {
                                 fontSize: 14, height: 1.5, color: colors.text2)),
                       ),
                     const SizedBox(height: 13),
-                    _StageRail(
-                        odsColor: odsColor, colors: colors, currentIndex: currentIndex),
+                    StageRail(
+                        accentColor: odsColor,
+                        colors: colors,
+                        currentIndex: currentIndex),
                     if (project.community.isNotEmpty) ...[
                       const SizedBox(height: 13),
                       Row(children: [
@@ -763,58 +517,9 @@ class _ProjectCard extends StatelessWidget {
   }
 }
 
-class _StageRail extends StatelessWidget {
-  final Color odsColor;
-  final DirectoryColors colors;
-  final int currentIndex;
-  const _StageRail(
-      {required this.odsColor, required this.colors, required this.currentIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    final total = projectStages.length;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            for (var i = 0; i < total; i++) ...[
-              if (i > 0) const SizedBox(width: 4),
-              Expanded(
-                child: Container(
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: i < currentIndex
-                        ? colors.goldSoft
-                        : (i == currentIndex ? odsColor : colors.border),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 7),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Etapa ${currentIndex + 1} de $total',
-                style: TextStyle(fontSize: 11.5, color: colors.text3)),
-            Text(
-                currentIndex >= total - 1
-                    ? 'Etapa final'
-                    : 'Sigue: ${projectStages[currentIndex + 1]}',
-                style: TextStyle(fontSize: 11.5, color: colors.text3)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class _OdsTag extends StatelessWidget {
   final String label;
-  final DirectoryColors colors;
+  final ContentColors colors;
   const _OdsTag({required this.label, required this.colors});
 
   @override
@@ -833,7 +538,7 @@ class _OdsTag extends StatelessWidget {
             width: 9,
             height: 9,
             decoration:
-                BoxDecoration(color: _odsColor(label), borderRadius: BorderRadius.circular(2)),
+                BoxDecoration(color: odsColorFor(label), borderRadius: BorderRadius.circular(2)),
           ),
           const SizedBox(width: 7),
           Text(label, style: TextStyle(fontSize: 11.5, color: colors.text2)),
@@ -843,55 +548,7 @@ class _OdsTag extends StatelessWidget {
   }
 }
 
-/// Borde punteado — Flutter no lo trae de fábrica; se dibuja a mano sobre
-/// el contorno redondeado del hijo. Usado solo en el estado vacío.
-class _DashedRRectBorder extends StatelessWidget {
-  final Widget child;
-  final Color color;
-  final double radius;
-  const _DashedRRectBorder(
-      {required this.child, required this.color, required this.radius});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      foregroundPainter: _DashedBorderPainter(color: color, radius: radius),
-      child: child,
-    );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  const _DashedBorderPainter({required this.color, required this.radius});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius));
-    final path = Path()..addRRect(rect);
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    const dashWidth = 6.0;
-    const dashSpace = 4.0;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final next = math.min(distance + dashWidth, metric.length);
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance = next + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.radius != radius;
-}
-
-List<Widget> _detailSection(String title, String body, DirectoryColors colors) => [
+List<Widget> _detailSection(String title, String body, ContentColors colors) => [
       const SizedBox(height: 16),
       Text(title.toUpperCase(),
           style: TextStyle(
@@ -908,7 +565,7 @@ List<Widget> _detailSection(String title, String body, DirectoryColors colors) =
 /// diálogo (contenido a esta pantalla) cumple ese propósito sin introducir
 /// una ruta/página nueva.
 Future<void> showProjectDetailDialog(
-    BuildContext context, Project project, List<Group> groups, DirectoryColors colors) {
+    BuildContext context, Project project, List<Group> groups, ContentColors colors) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => Dialog(

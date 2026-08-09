@@ -311,20 +311,43 @@ class SimpleLineChart extends StatelessWidget {
   }
 }
 
-/// Indicador radial de progreso con número héroe al centro.
+/// Indicador radial de progreso con número héroe al centro. [size]/
+/// [strokeWidth]/[percentFontSize] permiten variantes más chicas (p. ej. la
+/// tarjeta de progreso general del Dashboard, 96px) sin duplicar el widget.
+/// [colors] tiñe el anillo con los tokens de tema claro/oscuro de una
+/// pantalla (`ContentColors`); `null` mantiene el tema oscuro fijo de
+/// [AppColors], como lo usaban los call sites originales.
 class ProgressRing extends StatelessWidget {
   final double value; // 0..1
-  final String label;
-  const ProgressRing({super.key, required this.value, required this.label});
+
+  /// `null` u vacío = sin etiqueta debajo del anillo (p. ej. cuando el
+  /// texto de contexto se arma aparte, al lado — ver Dashboard).
+  final String? label;
+  final double size;
+  final double strokeWidth;
+  final double percentFontSize;
+  final ContentColors? colors;
+  const ProgressRing({
+    super.key,
+    required this.value,
+    this.label,
+    this.size = 130,
+    this.strokeWidth = 9,
+    this.percentFontSize = 26,
+    this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final track = colors?.surface2 ?? AppColors.surfaceAlt;
+    final percentColor = colors?.text ?? AppColors.textPrimary;
+    final labelColor = colors?.text2 ?? AppColors.textSecondary;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
-          width: 130,
-          height: 130,
+          width: size,
+          height: size,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -334,26 +357,26 @@ class ProgressRing extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 builder: (_, v, __) => CircularProgressIndicator(
                   value: v,
-                  strokeWidth: 9,
+                  strokeWidth: strokeWidth,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: AppColors.surfaceAlt,
+                  backgroundColor: track,
                   valueColor: const AlwaysStoppedAnimation(AppColors.gold),
                 ),
               ),
               Center(
                 child: Text('${(value * 100).round()}%',
-                    style: const TextStyle(
-                        fontSize: 26,
+                    style: TextStyle(
+                        fontSize: percentFontSize,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                        color: percentColor)),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
-        Text(label,
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+        if (label != null && label!.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(label!, style: TextStyle(color: labelColor, fontSize: 13)),
+        ],
       ],
     );
   }

@@ -71,14 +71,50 @@ class AppColors {
     16: Color(0xFF00689D),
     17: Color(0xFF19486A),
   };
+
+  /// Color por laboratorio (handoff `design_handoff_portal_estudiante`),
+  /// derivado de la paleta ODS para que cada laboratorio sea reconocible en
+  /// Dashboard, Mis Cursos y Ruta de Impacto: el color viene del dato (el
+  /// laboratorio del curso/fase), no de un acento fijo. Asignación
+  /// confirmada con el equipo de Enactus.
+  static const labColors = {
+    'lab_ia': Color(0xFFFD6925), // ODS 9
+    'lab_agua': Color(0xFF26BDE2), // ODS 6
+    'lab_energia': Color(0xFFFCC30B), // ODS 7
+    'lab_impacto': Color(0xFFDD1367), // ODS 10
+    'lab_emprendimiento': Color(0xFFA21942), // ODS 8
+    'lab_agricultura': Color(0xFF56C02B), // ODS 15
+  };
 }
 
-/// Paleta clara/oscura del Directorio de Proyectos (handoff
-/// `design_handoff_directorio_proyectos/README.md`). Es la única pantalla de
-/// la app con un toggle de tema propio: el resto del portal (header,
-/// sidebar, todas las demás pestañas) es oscuro fijo, así que estos tokens
-/// viven aparte de [AppColors] en vez de ampliar el [ThemeData] global.
-class DirectoryColors {
+/// Color de un laboratorio para acentos por dato (cabeceras de curso,
+/// barras de progreso, riel de fases). Sin match — incluye la Ruta National
+/// Expo, cuyos cursos no tienen laboratorio (`Course.labId` vacío) — cae al
+/// amarillo de marca, tal como pide el README para "Ruta National Expo".
+Color labColorFor(String labId) => AppColors.labColors[labId] ?? AppColors.gold;
+
+/// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
+/// Los `ods` de [Project]/[Course] se guardan como texto completo
+/// ("ODS N: Etiqueta"), nunca como número suelto.
+int odsNumberFrom(String odsLabel) {
+  final match = RegExp(r'ODS\s*(\d+)').firstMatch(odsLabel);
+  return match != null ? int.parse(match.group(1)!) : 1;
+}
+
+/// Color oficial del ODS de un rótulo ("ODS 6: ..." -> #26BDE2). Usado
+/// dondequiera que el acento venga del ODS principal de un proyecto
+/// (Directorio de Proyectos, tarjeta "Tu proyecto" del Dashboard).
+Color odsColorFor(String odsLabel) =>
+    AppColors.odsColors[odsNumberFrom(odsLabel)] ?? AppColors.gold;
+
+/// Paleta clara/oscura del contenido del portal estudiante (handoffs
+/// `design_handoff_directorio_proyectos/README.md` y
+/// `design_handoff_portal_estudiante/README.md`). Dashboard, Calendario, Mis
+/// Cursos, Ruta de Impacto y Directorio de Proyectos tienen cada uno su
+/// propio toggle de tema local: el resto del portal (header, sidebar) es
+/// oscuro fijo, así que estos tokens viven aparte de [AppColors] en vez de
+/// ampliar el [ThemeData] global.
+class ContentColors {
   final Color bg;
   final Color surface;
   final Color surface2;
@@ -91,7 +127,7 @@ class DirectoryColors {
   final List<BoxShadow> shadow;
   final Color veil;
 
-  const DirectoryColors({
+  const ContentColors({
     required this.bg,
     required this.surface,
     required this.surface2,
@@ -105,7 +141,7 @@ class DirectoryColors {
     required this.veil,
   });
 
-  static const dark = DirectoryColors(
+  static const dark = ContentColors(
     bg: Color(0xFF111315),
     surface: Color(0xFF1A1D21),
     surface2: Color(0xFF22262B),
@@ -124,7 +160,7 @@ class DirectoryColors {
 
   /// El dorado de marca (#F4C430) no alcanza AA sobre blanco, así que en
   /// tema claro el texto/ink dorado se oscurece a #8A6A00 (ver README).
-  static const light = DirectoryColors(
+  static const light = ContentColors(
     bg: Color(0xFFF2F2EC),
     surface: Color(0xFFFFFFFF),
     surface2: Color(0xFFF0F0E9),

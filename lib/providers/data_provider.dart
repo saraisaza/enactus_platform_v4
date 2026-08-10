@@ -855,6 +855,54 @@ class DataProvider extends ChangeNotifier {
   List<Laboratory> labsForStudent(AppUser student) =>
       student.labIds.map(labById).whereType<Laboratory>().toList();
 
+  /// Módulos hechos/totales de TODA la Ruta de Impacto de un laboratorio,
+  /// sumando sus fases. Única fuente de verdad: el anillo del detalle, la
+  /// cifra "módulos publicados" y cada tarjeta de fase leen de aquí — no
+  /// existe un campo `modulesDone`/`modulesTotal` separado en [Laboratory]
+  /// que pueda desincronizarse (ver `design_handoff_portal_estudiante`,
+  /// pantalla 9, "una sola fuente de verdad para el avance").
+  ({int done, int total}) labModuleProgress(String studentId, Laboratory lab) {
+    var total = 0;
+    var done = 0;
+    for (final phase in lab.phases) {
+      for (final module in phase.modules) {
+        total++;
+        if (isModuleComplete(studentId, lab.id, module)) done++;
+      }
+    }
+    return (done: done, total: total);
+  }
+
+  /// Si una fase ya tiene contenido publicado por el LXD (objetivos o
+  /// módulos) — una fase desbloqueada pero vacía no es lo mismo que una
+  /// fase con trabajo pendiente: el estudiante no puede hacer nada en ella
+  /// todavía.
+  bool labPhaseContentPublished(Phase phase) =>
+      phase.objectives.isNotEmpty || phase.modules.isNotEmpty;
+
+  /// El LXD "dueño" de un laboratorio: quien creó sus cursos. `null` si
+  /// ninguno de sus cursos tiene un creador real (laboratorios del seed
+  /// sin LXD asignado aún) — no se inventa uno.
+  AppUser? lxdForLab(String labId) {
+    for (final course in coursesByLab(labId)) {
+      if (course.creatorId.isNotEmpty) {
+        final lxd = userById(course.creatorId);
+        if (lxd != null) return lxd;
+      }
+    }
+    return null;
+  }
+
+  /// Equipos reales que ya trabajan en un área de laboratorio: grupos con
+  /// al menos un estudiante que tiene ese `labId` asignado. Fuente real
+  /// para "Otros laboratorios de la red" (no el conteo inventado del
+  /// prototipo).
+  int teamsInLabArea(String labId) {
+    final studentIdsInLab =
+        studentsAndAlumni.where((s) => s.labIds.contains(labId)).map((s) => s.id).toSet();
+    return groups.where((g) => g.studentIds.any(studentIdsInLab.contains)).length;
+  }
+
   /// Estudiantes de la universidad de un asesor.
   List<AppUser> studentsForAdvisor(AppUser advisor) =>
       studentsAndAlumni

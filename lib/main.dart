@@ -90,6 +90,30 @@ class EnactusApp extends StatelessWidget {
         // Mismo portal que un estudiante, sin ninguna diferencia de
         // acceso: ver Roles.isStudentLike.
         page = const _RoleGuard(role: Roles.alumni, child: StudentPortal());
+      // Detalle de laboratorio con URL real (para que el botón atrás del
+      // navegador funcione): mismo StudentPortal, con la pestaña
+      // "Laboratorios" resaltada y su contenido reemplazado.
+      case String name when name.startsWith('${AppRoutes.student}/lab/'):
+        page = _RoleGuard(
+            role: Roles.student,
+            child: StudentPortal(
+                openLabId: name.substring('${AppRoutes.student}/lab/'.length)));
+      case String name when name.startsWith('${AppRoutes.alumni}/lab/'):
+        page = _RoleGuard(
+            role: Roles.alumni,
+            child: StudentPortal(
+                openLabId: name.substring('${AppRoutes.alumni}/lab/'.length)));
+      // "Todos los laboratorios" desde el detalle: no se puede confiar en
+      // Navigator.canPop (Flutter web mantiene una entrada de historial
+      // "de más" incluso en la ruta inicial, así que canPop puede dar true
+      // sin que haya nada real que hacer pop) — por eso el botón siempre
+      // navega aquí de forma explícita en vez de intentar pop().
+      case '${AppRoutes.student}/laboratorios':
+        page = const _RoleGuard(
+            role: Roles.student, child: StudentPortal(initialTabLabel: 'Laboratorios'));
+      case '${AppRoutes.alumni}/laboratorios':
+        page = const _RoleGuard(
+            role: Roles.alumni, child: StudentPortal(initialTabLabel: 'Laboratorios'));
       case AppRoutes.lxd:
         page = const _RoleGuard(role: Roles.lxd, child: LxdPortal());
       case AppRoutes.mentor:

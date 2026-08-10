@@ -85,7 +85,24 @@ class AppColors {
     'lab_emprendimiento': Color(0xFFA21942), // ODS 8
     'lab_agricultura': Color(0xFF56C02B), // ODS 15
   };
+
+  /// El número de ODS detrás de cada [labColors] — para la marca de agua
+  /// de las tarjetas de laboratorio (Pantallas 8 y 9). Mismo criterio: sin
+  /// match cae al 8 (Trabajo decente), el ODS del amarillo de marca /
+  /// Ruta National Expo.
+  static const labOdsNumbers = {
+    'lab_ia': 9,
+    'lab_agua': 6,
+    'lab_energia': 7,
+    'lab_impacto': 10,
+    'lab_emprendimiento': 8,
+    'lab_agricultura': 15,
+  };
 }
+
+/// Número de ODS detrás del color de un laboratorio, para su marca de
+/// agua. Ver [labColorFor].
+int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 
 /// Color de un laboratorio para acentos por dato (cabeceras de curso,
 /// barras de progreso, riel de fases). Sin match — incluye la Ruta National
@@ -124,6 +141,12 @@ class ContentColors {
   final Color text3;
   final Color goldInk;
   final Color goldSoft;
+
+  /// Texto/ícono de alerta (vencido) sobre el área de contenido. `#FF8A9B`
+  /// en oscuro; en claro se oscurece a `#A8101C` porque el primero sobre
+  /// blanco da 2.24:1 y no pasa AA. Todo texto de alerta debe leer este
+  /// token — nunca un literal hex suelto en el widget.
+  final Color alertInk;
   final List<BoxShadow> shadow;
   final Color veil;
 
@@ -137,6 +160,7 @@ class ContentColors {
     required this.text3,
     required this.goldInk,
     required this.goldSoft,
+    required this.alertInk,
     required this.shadow,
     required this.veil,
   });
@@ -151,6 +175,7 @@ class ContentColors {
     text3: Color(0xFF8A9099),
     goldInk: AppColors.gold,
     goldSoft: Color(0x24F4C430), // rgba(244,196,48,.14)
+    alertInk: Color(0xFFFF8A9B),
     shadow: [
       BoxShadow(
           color: Color(0x80000000), blurRadius: 40, offset: Offset(0, 18)),
@@ -170,6 +195,7 @@ class ContentColors {
     text3: Color(0xFF787F88),
     goldInk: Color(0xFF8A6A00),
     goldSoft: Color(0x3DF4C430), // rgba(244,196,48,.24)
+    alertInk: Color(0xFFA8101C),
     shadow: [
       BoxShadow(
           color: Color(0x24141923), blurRadius: 36, offset: Offset(0, 16)),

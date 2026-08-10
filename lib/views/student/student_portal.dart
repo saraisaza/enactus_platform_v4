@@ -15,7 +15,7 @@ import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
 import '../shared/projects_directory_view.dart';
-import 'ruta_impacto_view.dart' show LabsView, RutaImpactoShortcut;
+import 'ruta_impacto_view.dart' show LabDetailBody, LabsView, RutaImpactoShortcut;
 import 'student_calendar_view.dart';
 import 'student_courses_view.dart';
 import 'student_dashboard_view.dart';
@@ -24,58 +24,78 @@ import 'student_dashboard_view.dart';
 /// de Impacto; uno de Open Learning solo ve y completa sus cursos
 /// asignados (sin laboratorios, fases ni módulos).
 class StudentPortal extends StatelessWidget {
-  const StudentPortal({super.key});
+  /// Si no es null, se llegó por una URL de detalle de laboratorio
+  /// (`/student/lab/<id>` o `/alumni/lab/<id>`): la pestaña "Laboratorios"
+  /// se marca activa y su contenido se reemplaza por [LabDetailBody], sin
+  /// duplicar la barra lateral.
+  final String? openLabId;
+
+  /// Pestaña con la que abrir cuando no hay [openLabId] — usado por
+  /// "Todos los laboratorios" al volver de un detalle sin historial de
+  /// navegación que hacer pop (p. ej. se entró por URL directa): en vez de
+  /// caer al Dashboard, reabre el portal ya en "Laboratorios".
+  final String? initialTabLabel;
+  const StudentPortal({super.key, this.openLabId, this.initialTabLabel});
 
   @override
   Widget build(BuildContext context) {
     final student = context.watch<AuthProvider>().currentUser!;
     final isEnactus = student.studentType == StudentType.enactus;
 
+    final tabs = [
+      PortalTab(
+          label: 'Dashboard',
+          icon: Icons.dashboard_outlined,
+          builder: (_) => const StudentDashboardView()),
+      PortalTab(
+          label: 'Calendario',
+          icon: Icons.calendar_month_outlined,
+          builder: (_) => const StudentCalendarView()),
+      PortalTab(
+          label: 'Mis Cursos',
+          icon: Icons.school_outlined,
+          builder: (_) => const StudentCoursesView()),
+      if (isEnactus) ...[
+        PortalTab(
+            label: 'Laboratorios',
+            icon: Icons.science_outlined,
+            builder: (_) => const LabsView()),
+        PortalTab(
+            label: 'Ruta de Impacto',
+            icon: Icons.emoji_events_outlined,
+            builder: (_) => const RutaImpactoShortcut()),
+        PortalTab(
+            label: 'Directorio de Proyectos',
+            icon: Icons.explore_outlined,
+            builder: (_) => const ProjectsDirectoryView()),
+        PortalTab(
+            label: 'Foro',
+            icon: Icons.forum_outlined,
+            builder: (_) => const ForumView()),
+      ],
+      PortalTab(
+          label: 'Certificados',
+          icon: Icons.workspace_premium_outlined,
+          builder: (_) => const _StudentCertificates()),
+      PortalTab(
+          label: 'Mi Perfil',
+          icon: Icons.person_outline,
+          builder: (_) => const _StudentProfile()),
+    ];
+    final labTabIndex = tabs.indexWhere((t) => t.label == 'Laboratorios');
+    final showLabDetail = openLabId != null && labTabIndex >= 0;
+    final wantedTabIndex = showLabDetail
+        ? labTabIndex
+        : (initialTabLabel == null ? -1 : tabs.indexWhere((t) => t.label == initialTabLabel));
+
     return PortalShell(
       // Mismo portal para estudiante y alumni (ver Roles.isStudentLike):
       // solo cambia el título visible, según lo pidió el usuario ("que se
       // llame alumni").
       portalTitle: 'Portal ${Roles.label(student.role)}',
-      tabs: [
-        PortalTab(
-            label: 'Dashboard',
-            icon: Icons.dashboard_outlined,
-            builder: (_) => const StudentDashboardView()),
-        PortalTab(
-            label: 'Calendario',
-            icon: Icons.calendar_month_outlined,
-            builder: (_) => const StudentCalendarView()),
-        PortalTab(
-            label: 'Mis Cursos',
-            icon: Icons.school_outlined,
-            builder: (_) => const StudentCoursesView()),
-        if (isEnactus) ...[
-          PortalTab(
-              label: 'Laboratorios',
-              icon: Icons.science_outlined,
-              builder: (_) => const LabsView()),
-          PortalTab(
-              label: 'Ruta de Impacto',
-              icon: Icons.emoji_events_outlined,
-              builder: (_) => const RutaImpactoShortcut()),
-          PortalTab(
-              label: 'Directorio de Proyectos',
-              icon: Icons.explore_outlined,
-              builder: (_) => const ProjectsDirectoryView()),
-          PortalTab(
-              label: 'Foro',
-              icon: Icons.forum_outlined,
-              builder: (_) => const ForumView()),
-        ],
-        PortalTab(
-            label: 'Certificados',
-            icon: Icons.workspace_premium_outlined,
-            builder: (_) => const _StudentCertificates()),
-        PortalTab(
-            label: 'Mi Perfil',
-            icon: Icons.person_outline,
-            builder: (_) => const _StudentProfile()),
-      ],
+      tabs: tabs,
+      initialSelectedIndex: wantedTabIndex >= 0 ? wantedTabIndex : 0,
+      contentOverride: showLabDetail ? LabDetailBody(labId: openLabId!) : null,
     );
   }
 }

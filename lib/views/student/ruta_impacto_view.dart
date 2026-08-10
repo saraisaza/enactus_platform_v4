@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:ui';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,8 +11,10 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
+import '../../widgets/charts.dart' show ProgressRing;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/video_player_dialog.dart';
@@ -22,7 +27,11 @@ import 'course_detail_view.dart';
 /// botón para unirse a la reunión).
 
 // ---------------------------------------------------------------------------
-// Tab "Laboratorios": tarjetas de los laboratorios asignados
+// Tab "Laboratorios": rediseño de alta fidelidad según
+// `design_handoff_portal_estudiante/README.md` (pantalla 8) — cada
+// laboratorio con identidad de color, avance legible (una sola fuente de
+// verdad: [DataProvider.labModuleProgress], sumando los módulos de sus
+// fases) y una entrada clara al detalle ([LabDetailBody], pantalla 9).
 // ---------------------------------------------------------------------------
 
 class LabsView extends StatelessWidget {
@@ -32,112 +41,1324 @@ class LabsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final labs = data.labsForStudent(student);
+    final myLabs = data.labsForStudent(student);
+    final otherLabs =
+        data.labs.where((l) => !myLabs.any((m) => m.id == l.id)).toList();
 
-    return TabBody(
+    return ContentScreenShell(
+      eyebrow: myLabs.isEmpty
+          ? '${data.labs.length} en la red'
+          : '${myLabs.length} ${myLabs.length == 1 ? 'laboratorio asignado' : 'laboratorios asignados'} '
+              '· ${data.labs.length} en la red',
       title: 'Laboratorios',
-      subtitle:
-          'Laboratorios asignados — entra a uno para ver su Ruta de Impacto',
-      children: [
-        if (labs.isEmpty)
-          const EmptyState(
-              icon: Icons.science_outlined,
-              message:
-                  'Tu administrador aún no te asignó a ningún laboratorio.')
-        else
-          _LabsGrid(labs: labs),
-      ],
+      subtitle: 'Un laboratorio es un área de trabajo de Enactus Colombia: '
+          'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
+          'acompaña. Entra al tuyo para ver qué sigue.',
+      bodyBuilder: (context, colors, isDark) {
+        if (myLabs.isEmpty) {
+          return EmptyState(
+            icon: Icons.science_outlined,
+            title: 'Sin laboratorios asignados',
+            message: 'Tu administrador todavía no te ha asignado un '
+                'laboratorio. Sin uno no tienes Ruta de Impacto ni cursos '
+                'de área.',
+            primaryLabel: 'Actualizar',
+            onPrimary: () => showAppSnack(context, 'Actualizado'),
+            colors: colors,
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _LabsGrid(labs: myLabs, student: student, colors: colors),
+            if (otherLabs.isNotEmpty) ...[
+              const SizedBox(height: 36),
+              Text('OTROS LABORATORIOS DE LA RED',
+                  style: knockoutHeading(
+                      fontSize: 30, fontWeight: FontWeight.w800, color: colors.text)),
+              const SizedBox(height: 6),
+              Text(
+                  'Pídele a tu administrador que te asigne uno si tu proyecto lo necesita.',
+                  style: TextStyle(fontSize: 13.5, color: colors.text3)),
+              const SizedBox(height: 16),
+              _OtherLabsGrid(labs: otherLabs, colors: colors),
+            ],
+          ],
+        );
+      },
     );
   }
 }
 
 class _LabsGrid extends StatelessWidget {
   final List<Laboratory> labs;
-  const _LabsGrid({required this.labs});
+  final AppUser student;
+  final ContentColors colors;
+  const _LabsGrid({required this.labs, required this.student, required this.colors});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, c) {
-      final perRow = c.maxWidth > 900 ? 3 : (c.maxWidth > 600 ? 2 : 1);
-      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+      const minCard = 420.0;
+      const gap = 20.0;
+      final columns =
+          math.max(1, ((c.maxWidth + gap) / (minCard + gap)).floor());
+      final width = (c.maxWidth - gap * (columns - 1)) / columns;
       return Wrap(
-        spacing: 12,
-        runSpacing: 12,
+        spacing: gap,
+        runSpacing: gap,
         children: [
-          for (final lab in labs)
-            SizedBox(width: width, child: _LabCard(lab: lab)),
+          for (var i = 0; i < labs.length; i++)
+            SizedBox(
+              width: width,
+              child: Entrance(
+                  delayMs: 70 * i,
+                  child: _LabCard(lab: labs[i], student: student, colors: colors)),
+            ),
         ],
       );
     });
   }
 }
 
+/// Tarjeta de un laboratorio asignado. Toda la tarjeta es clicable y navega
+/// al detalle con una ruta con nombre real (`/student/lab/<id>` o
+/// `/alumni/lab/<id>`, ver `main.dart`) para que la URL cambie y el botón
+/// atrás del navegador funcione — la barra lateral sigue mostrando
+/// "Laboratorios" resaltado porque el detalle vive dentro del mismo
+/// [PortalShell] (ver [StudentPortal.openLabId]).
 class _LabCard extends StatelessWidget {
   final Laboratory lab;
-  const _LabCard({required this.lab});
+  final AppUser student;
+  final ContentColors colors;
+  const _LabCard({required this.lab, required this.student, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final accent = labColorFor(lab.id);
+    final odsNum = labOdsNumberFor(lab.id);
+    final progress = data.labModuleProgress(student.id, lab);
+    final currentPhaseIdx = lab.phases
+        .indexWhere((p) => !data.isPhaseComplete(student.id, lab.id, p));
+    final allComplete = currentPhaseIdx == -1;
+    final currentPhaseDisplay = allComplete ? lab.phases.length : currentPhaseIdx + 1;
+    final overdue = lab.phases.asMap().entries.any((e) =>
+        data.isPhaseUnlocked(student.id, lab.id, lab, e.key) &&
+        data.phaseDeadlineStatus(student.id, lab.id, e.value) ==
+            DeadlineStatus.overdue);
+    final courses = data.coursesByLab(lab.id);
+    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
+    final lxd = data.lxdForLab(lab.id);
+
+    void open() =>
+        Navigator.pushNamed(context, '${AppRoutes.forRole(student.role)}/lab/${lab.id}');
+
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hover) => GestureDetector(
+        onTap: open,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          clipBehavior: Clip.antiAlias,
+          transform: Matrix4.translationValues(0, hover ? -5 : 0, 0),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border.all(color: hover ? accent : colors.border),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: hover ? colors.shadow : const [],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 136,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(color: accent),
+                    const Positioned.fill(child: CustomPaint(painter: StripePainter())),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: const [0.35, 1.0],
+                          colors: [Colors.transparent, colors.veil],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      right: 16,
+                      bottom: -24,
+                      child: Text('$odsNum',
+                          style: knockoutHeading(
+                              fontSize: 104,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white.withValues(alpha: 0.28),
+                              height: 1.0)),
+                    ),
+                    Positioned(
+                      left: 20,
+                      top: 18,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: const Color(0x6B0A0C0E),
+                                borderRadius: BorderRadius.circular(11)),
+                            child: const Icon(Icons.science_outlined, size: 21, color: Colors.white),
+                          ),
+                          const SizedBox(width: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                    color: const Color(0x800A0C0E),
+                                    borderRadius: BorderRadius.circular(999)),
+                                child: Text(overdue ? 'ENTREGA VENCIDA' : 'EN CURSO',
+                                    style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 11.5 * 0.1,
+                                        color: Colors.white)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: 20,
+                      right: 100,
+                      bottom: 16,
+                      child: Text(lab.name.toUpperCase(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: knockoutHeading(
+                              fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, height: 1.0)),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (lab.description.isNotEmpty)
+                      Text(lab.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14, height: 1.5, color: colors.text2)),
+                    const SizedBox(height: 16),
+                    StageRail(
+                      accentColor: accent,
+                      colors: colors,
+                      currentIndex: allComplete ? lab.phases.length - 1 : currentPhaseIdx,
+                      totalOverride: lab.phases.length,
+                      caption: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              allComplete
+                                  ? 'Fase ${lab.phases.length} de ${lab.phases.length} completa'
+                                  : 'Fase $currentPhaseDisplay de ${lab.phases.length} en curso',
+                              style: TextStyle(fontSize: 12, color: colors.text3)),
+                          const SizedBox(height: 2),
+                          Text(
+                              progress.total == 0
+                                  ? 'Sin módulos aún'
+                                  : '${progress.done}/${progress.total} módulos',
+                              style: TextStyle(fontSize: 12, color: colors.text3)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _MetaChip(icon: Icons.route, label: '${lab.phases.length} fases', colors: colors),
+                        _MetaChip(icon: Icons.school, label: '${courses.length} cursos', colors: colors),
+                        _MetaChip(icon: Icons.schedule, label: '$hours h estimadas', colors: colors),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Divider(height: 1, color: colors.border),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                          child: Text(
+                              lxd == null || lxd.name.isEmpty ? '?' : lxd.name[0].toUpperCase(),
+                              style: const TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(lxd == null ? 'Sin LXD asignado' : 'LXD: ${lxd.name}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                        ),
+                        const SizedBox(width: 10),
+                        TextButton.icon(
+                          onPressed: open,
+                          style: TextButton.styleFrom(
+                            backgroundColor: colors.goldSoft,
+                            foregroundColor: colors.goldInk,
+                            padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                          ),
+                          icon: const Icon(Icons.arrow_forward, size: 17),
+                          label: const Text('Entrar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final ContentColors colors;
+  const _MetaChip({required this.icon, required this.label, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+      decoration: BoxDecoration(
+        color: colors.surface2,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: colors.text3),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(fontSize: 11.5, color: colors.text2)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sección "Otros laboratorios de la red" — adición del diseño confirmada
+/// por el usuario, con el conteo de equipos calculado de datos reales
+/// ([DataProvider.teamsInLabArea]: grupos con al menos un estudiante
+/// asignado a esa área), no la cifra inventada del prototipo.
+class _OtherLabsGrid extends StatelessWidget {
+  final List<Laboratory> labs;
+  final ContentColors colors;
+  const _OtherLabsGrid({required this.labs, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      const minCard = 268.0;
+      const gap = 14.0;
+      final columns =
+          math.max(1, ((c.maxWidth + gap) / (minCard + gap)).floor());
+      final width = (c.maxWidth - gap * (columns - 1)) / columns;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final lab in labs)
+            SizedBox(width: width, child: _OtherLabCard(lab: lab, colors: colors)),
+        ],
+      );
+    });
+  }
+}
+
+class _OtherLabCard extends StatelessWidget {
+  final Laboratory lab;
+  final ContentColors colors;
+  const _OtherLabCard({required this.lab, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final accent = labColorFor(lab.id);
+    final teams = data.teamsInLabArea(lab.id);
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 3, color: accent),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.science_outlined, size: 19, color: accent),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(lab.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
+                    if (lab.description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(lab.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(teams == 1 ? '1 equipo en la red' : '$teams equipos en la red',
+                        style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Detalle de laboratorio (pantalla 9): identidad, avance, Ruta de Impacto
+// con las 4 fases del estado (Completa/Vencida/Disponible/Bloqueada — nunca
+// "Bloqueada" a secas, siempre con la razón), cursos del laboratorio y la
+// tarjeta del LXD. Vive "dentro" de la pestaña Laboratorios vía
+// `PortalShell.contentOverride` (ver [StudentPortal.openLabId]), así que no
+// repite el header ni la barra lateral del portal.
+// ---------------------------------------------------------------------------
+
+class LabDetailBody extends StatefulWidget {
+  final String labId;
+  const LabDetailBody({super.key, required this.labId});
+
+  @override
+  State<LabDetailBody> createState() => _LabDetailBodyState();
+}
+
+class _LabDetailBodyState extends State<LabDetailBody> {
+  bool _isDark = true;
+  ContentColors get _colors => _isDark ? ContentColors.dark : ContentColors.light;
+
+  // Siempre navega explícitamente en vez de intentar Navigator.pop(): en
+  // Flutter web, `canPop()` puede devolver true incluso cuando se llegó por
+  // URL directa (sin nada real que hacer pop), lo que rompía este botón —
+  // ver la nota en `main.dart` junto a la ruta `/laboratorios`.
+  void _goBack(AppUser student) {
+    Navigator.pushReplacementNamed(context, '${AppRoutes.forRole(student.role)}/laboratorios');
+  }
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final completedPhases = lab.phases
-        .where((p) => data.isPhaseComplete(student.id, lab.id, p))
-        .length;
+    final lab = data.labById(widget.labId);
+    final colors = _colors;
 
+    if (lab == null) {
+      return DecoratedBox(
+        decoration: BoxDecoration(color: colors.bg),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(40),
+            child: EmptyState(
+              icon: Icons.science_outlined,
+              title: 'Laboratorio no encontrado',
+              message: 'Puede que ya no exista o que el enlace esté mal escrito.',
+              primaryLabel: 'Todos los laboratorios',
+              onPrimary: () => _goBack(student),
+              colors: colors,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final progress = data.labModuleProgress(student.id, lab);
+    final currentPhaseIdx = lab.phases
+        .indexWhere((p) => !data.isPhaseComplete(student.id, lab.id, p));
+    final currentPhaseDisplay = currentPhaseIdx == -1 ? lab.phases.length : currentPhaseIdx + 1;
+    final courses = data.coursesByLab(lab.id);
+    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
+    final lxd = data.lxdForLab(lab.id);
+    final accent = labColorFor(lab.id);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(color: colors.bg),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _BackButton(colors: colors, onTap: () => _goBack(student)),
+                      const Spacer(),
+                      _ContentThemeToggle(
+                          isDark: _isDark, colors: colors, onTap: () => setState(() => _isDark = !_isDark)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  _LabIdentityBand(
+                      lab: lab,
+                      progress: progress,
+                      currentPhaseDisplay: currentPhaseDisplay,
+                      totalPhases: lab.phases.length,
+                      colors: colors),
+                  const SizedBox(height: 20),
+                  _LabStatsRow(
+                      lab: lab, progress: progress, courseCount: courses.length, hours: hours, colors: colors),
+                  const SizedBox(height: 32),
+                  Text('RUTA DE IMPACTO',
+                      style: knockoutHeading(fontSize: 34, fontWeight: FontWeight.w800, color: colors.text)),
+                  const SizedBox(height: 4),
+                  Text('Las fases se abren en orden. Tu LXD publica el contenido de cada una.',
+                      style: TextStyle(fontSize: 13.5, color: colors.text3)),
+                  const SizedBox(height: 18),
+                  _PhaseCardsGrid(lab: lab, student: student, colors: colors),
+                  const SizedBox(height: 32),
+                  LayoutBuilder(builder: (context, c) {
+                    final coursesCard = _LabCoursesCard(
+                        courses: courses, studentId: student.id, accent: accent, colors: colors);
+                    final lxdCard = _LabLxdCard(lab: lab, lxd: lxd, accent: accent, colors: colors);
+                    if (c.maxWidth > 760) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 150, child: coursesCard),
+                          const SizedBox(width: 20),
+                          Expanded(flex: 100, child: lxdCard),
+                        ],
+                      );
+                    }
+                    return Column(children: [coursesCard, const SizedBox(height: 20), lxdCard]);
+                  }),
+                ],
+              ),
+            ),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  final ContentColors colors;
+  final VoidCallback onTap;
+  const _BackButton({required this.colors, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hover) => GestureDetector(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => LabPhasesScreen(labId: lab.id))),
+        onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.fromLTRB(11, 9, 15, 9),
           decoration: BoxDecoration(
-            color: hover ? AppColors.surfaceAlt : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: hover ? AppColors.gold : AppColors.border,
-                width: hover ? 1.2 : 1),
-            boxShadow: hover
-                ? const [
-                    BoxShadow(
-                        color: Colors.black45,
-                        blurRadius: 16,
-                        offset: Offset(0, 6)),
-                  ]
-                : const [],
+            color: colors.surface,
+            border: Border.all(color: hover ? colors.goldInk : colors.border),
+            borderRadius: BorderRadius.circular(9),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.science_outlined,
-                  color: AppColors.gold, size: 28),
-              const SizedBox(height: 10),
-              Text(lab.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 15)),
-              const SizedBox(height: 6),
-              Text(lab.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12.5)),
-              const SizedBox(height: 12),
-              ThinProgressBar(
-                  value: lab.phases.isEmpty
-                      ? 0
-                      : completedPhases / lab.phases.length,
-                  tooltip:
-                      '$completedPhases de ${lab.phases.length} fases completadas'),
-              const SizedBox(height: 6),
-              Text('$completedPhases/${lab.phases.length} fases · Ruta de Impacto',
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12)),
+              Icon(Icons.arrow_back, size: 18, color: hover ? colors.goldInk : colors.text2),
+              const SizedBox(width: 8),
+              Text('Todos los laboratorios',
+                  style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ContentThemeToggle extends StatelessWidget {
+  final bool isDark;
+  final ContentColors colors;
+  final VoidCallback onTap;
+  const _ContentThemeToggle({required this.isDark, required this.colors, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hover) => GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border.all(color: hover ? AppColors.gold : colors.border),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              size: 21, color: hover ? AppColors.gold : colors.text2),
+        ),
+      ),
+    );
+  }
+}
+
+class _LabIdentityBand extends StatelessWidget {
+  final Laboratory lab;
+  final ({int done, int total}) progress;
+  final int currentPhaseDisplay;
+  final int totalPhases;
+  final ContentColors colors;
+  const _LabIdentityBand(
+      {required this.lab,
+      required this.progress,
+      required this.currentPhaseDisplay,
+      required this.totalPhases,
+      required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = labColorFor(lab.id);
+    final odsNum = labOdsNumberFor(lab.id);
+    final pct = progress.total == 0 ? 0.0 : progress.done / progress.total;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(32, 30, 32, 28),
+        color: accent,
+        child: Stack(
+          children: [
+            const Positioned.fill(child: CustomPaint(painter: StripePainter())),
+            Positioned(
+              right: 24,
+              bottom: -30,
+              child: Text('$odsNum',
+                  style: knockoutHeading(
+                      fontSize: 132, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha: 0.24), height: 1.0)),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('LABORATORIO',
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              letterSpacing: 11.5 * 0.16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white.withValues(alpha: 0.85))),
+                      const SizedBox(height: 8),
+                      Text(lab.name.toUpperCase(),
+                          style: knockoutHeading(
+                              fontSize: 52, fontWeight: FontWeight.w800, color: Colors.white, height: 0.96)),
+                      if (lab.description.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 460),
+                          child: Text(lab.description,
+                              style: TextStyle(fontSize: 15, color: Colors.white.withValues(alpha: 0.9), height: 1.4)),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration:
+                          BoxDecoration(color: const Color(0x6B0A0C0E), borderRadius: BorderRadius.circular(14)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ProgressRing(value: pct, size: 76, strokeWidth: 8, percentFontSize: 20),
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Tu avance',
+                                  style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
+                              const SizedBox(height: 4),
+                              Text('Fase $currentPhaseDisplay de $totalPhases',
+                                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: Colors.white)),
+                              const SizedBox(height: 2),
+                              Text('${progress.done} de ${progress.total} módulos',
+                                  style: TextStyle(fontSize: 12.5, color: Colors.white.withValues(alpha: 0.85))),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LabStatsRow extends StatelessWidget {
+  final Laboratory lab;
+  final ({int done, int total}) progress;
+  final int courseCount;
+  final int hours;
+  final ContentColors colors;
+  const _LabStatsRow(
+      {required this.lab,
+      required this.progress,
+      required this.courseCount,
+      required this.hours,
+      required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      (value: '${lab.phases.length}', label: 'Fases en la ruta', primary: true),
+      (value: '${progress.total}', label: 'Módulos publicados', primary: false),
+      (value: '$courseCount', label: 'Cursos del laboratorio', primary: false),
+      (value: '$hours h', label: 'Horas estimadas', primary: false),
+    ];
+    return LayoutBuilder(builder: (context, c) {
+      final perRow = c.maxWidth > 700 ? 4 : 2;
+      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final t in tiles)
+            SizedBox(
+              width: width,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                decoration: BoxDecoration(
+                    color: colors.surface, border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(14)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(t.value,
+                        style: knockoutHeading(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w800,
+                            color: t.primary ? colors.goldInk : colors.text,
+                            height: 1.0)),
+                    const SizedBox(height: 6),
+                    Text(t.label, style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      );
+    });
+  }
+}
+
+class _PhaseCardsGrid extends StatelessWidget {
+  final Laboratory lab;
+  final AppUser student;
+  final ContentColors colors;
+  const _PhaseCardsGrid({required this.lab, required this.student, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      final perRow = c.maxWidth > 940 ? 3 : (c.maxWidth > 620 ? 2 : 1);
+      final width = (c.maxWidth - (perRow - 1) * 16) / perRow;
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: [
+          for (var i = 0; i < lab.phases.length; i++)
+            SizedBox(
+              width: width,
+              child: Entrance(
+                  delayMs: 70 * i,
+                  child: _PhaseDetailCard(lab: lab, index: i, student: student, colors: colors)),
+            ),
+        ],
+      );
+    });
+  }
+}
+
+enum _PhaseUiState { complete, overdue, available, locked }
+
+/// Tarjeta de fase del detalle (pantalla 9): 4 estados con color e ícono
+/// propios (tabla del README) y, si está bloqueada, **siempre** una razón
+/// concreta — nunca la palabra "Bloqueada" a secas. Una fase bloqueada
+/// nunca muestra su fecha en rojo: eso está reservado para lo que el
+/// estudiante puede abrir de verdad.
+class _PhaseDetailCard extends StatelessWidget {
+  final Laboratory lab;
+  final int index;
+  final AppUser student;
+  final ContentColors colors;
+  const _PhaseDetailCard(
+      {required this.lab, required this.index, required this.student, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final phase = lab.phases[index];
+    final accent = labColorFor(lab.id);
+    final unlocked = data.isPhaseUnlocked(student.id, lab.id, lab, index);
+    final complete = data.isPhaseComplete(student.id, lab.id, phase);
+    final published = data.labPhaseContentPublished(phase);
+    final deadlineStatus = data.phaseDeadlineStatus(student.id, lab.id, phase);
+    final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
+
+    final state = complete
+        ? _PhaseUiState.complete
+        : (!unlocked || !published)
+            ? _PhaseUiState.locked
+            : (deadlineStatus == DeadlineStatus.overdue
+                ? _PhaseUiState.overdue
+                : _PhaseUiState.available);
+
+    final (chipBg, chipColor, chipIcon, chipLabel) = switch (state) {
+      _PhaseUiState.complete => (
+          const Color(0x294C9F38),
+          const Color(0xFF4C9F38),
+          Icons.check_circle,
+          'Completa'
+        ),
+      _PhaseUiState.overdue => (
+          const Color(0x29CE1126),
+          colors.alertInk,
+          Icons.warning_amber_rounded,
+          'Vencida'
+        ),
+      _PhaseUiState.available => (colors.goldSoft, colors.goldInk, Icons.lock_open, 'Disponible'),
+      _PhaseUiState.locked => (colors.surface2, colors.text3, Icons.lock_outline, 'Bloqueada'),
+    };
+
+    final (circleBg, circleBorder, circleTextColor) = switch (state) {
+      _PhaseUiState.complete => (const Color(0x294C9F38), const Color(0xFF4C9F38), const Color(0xFF4C9F38)),
+      _PhaseUiState.overdue || _PhaseUiState.available => (accent, accent, Colors.white),
+      _PhaseUiState.locked => (colors.surface2, colors.border, colors.text3),
+    };
+
+    final done = phase.modules.where((m) => data.isModuleComplete(student.id, lab.id, m)).length;
+    final total = phase.modules.length;
+    final showModules = state != _PhaseUiState.locked;
+
+    String lockedReason() => !unlocked
+        ? 'Se abre cuando completes la Fase $index'
+        : 'Tu LXD publicará el contenido de esta fase.';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: state == _PhaseUiState.locked ? colors.border : accent),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: circleBg,
+                  border: Border.all(color: circleBorder, width: 2),
+                ),
+                child: Text('${index + 1}',
+                    style: knockoutHeading(fontSize: 22, fontWeight: FontWeight.w800, color: circleTextColor)),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: chipBg, borderRadius: BorderRadius.circular(999)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(chipIcon, size: 14, color: chipColor),
+                    const SizedBox(width: 5),
+                    Text(chipLabel, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: chipColor)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(title.toUpperCase(),
+              style: knockoutHeading(fontSize: 27, fontWeight: FontWeight.w800, color: colors.text)),
+          if (phase.description.isNotEmpty || !published) ...[
+            const SizedBox(height: 8),
+            Text(
+                phase.description.isNotEmpty
+                    ? phase.description
+                    : 'Tu LXD aún no ha publicado el contenido de esta fase.',
+                style: TextStyle(fontSize: 13.5, height: 1.5, color: colors.text2)),
+          ],
+          const SizedBox(height: 14),
+          if (!showModules)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              decoration: BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(10)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lock_outline, size: 17, color: colors.text3),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: Text(lockedReason(), style: TextStyle(fontSize: 12.5, color: colors.text3))),
+                ],
+              ),
+            )
+          else ...[
+            for (var j = 0; j < phase.modules.length; j++)
+              _ModuleSummaryRow(lab: lab, phaseIndex: index, moduleIndex: j, student: student, colors: colors),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(total == 0 ? 'Sin módulos publicados' : '$done de $total módulos',
+                    style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                if (total > 0)
+                  Text('${(done / total * 100).round()}%', style: TextStyle(fontSize: 11.5, color: colors.text3)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                  minHeight: 6,
+                  value: total == 0 ? 0 : done / total,
+                  backgroundColor: colors.surface2,
+                  valueColor: AlwaysStoppedAnimation(accent)),
+            ),
+          ],
+          if (phase.deadline.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Divider(height: 1, color: colors.border),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Icon(Icons.event, size: 17, color: colors.text3),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                      state == _PhaseUiState.locked
+                          ? 'Fecha prevista por el laboratorio: '
+                              '${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
+                          : (state == _PhaseUiState.overdue
+                              ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
+                              : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'),
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          color: state == _PhaseUiState.overdue ? colors.alertInk : colors.text3)),
+                ),
+              ],
+            ),
+          ],
+          if ((state == _PhaseUiState.available || state == _PhaseUiState.overdue) &&
+              phase.modules.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  final nextIndex =
+                      phase.modules.indexWhere((m) => !data.isModuleComplete(student.id, lab.id, m));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ModuleDetailScreen(
+                              labId: lab.id, phaseIndex: index, moduleIndex: nextIndex == -1 ? 0 : nextIndex)));
+                },
+                icon: const Icon(Icons.play_arrow, size: 18),
+                label: Text(done == 0 ? 'Empezar la fase' : 'Continuar la fase'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final ContentColors colors;
+  final Widget child;
+  const _DetailCard({required this.icon, required this.title, required this.colors, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: colors.goldSoft, borderRadius: BorderRadius.circular(10)),
+                child: Icon(icon, size: 19, color: colors.goldInk),
+              ),
+              const SizedBox(width: 11),
+              Text(title.toUpperCase(),
+                  style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _LabCoursesCard extends StatelessWidget {
+  final List<Course> courses;
+  final String studentId;
+  final Color accent;
+  final ContentColors colors;
+  const _LabCoursesCard(
+      {required this.courses, required this.studentId, required this.accent, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return _DetailCard(
+      icon: Icons.school_outlined,
+      title: 'Cursos del laboratorio',
+      colors: colors,
+      child: courses.isEmpty
+          ? DashedRRectBorder(
+              color: colors.border,
+              radius: 14,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+                child: Column(
+                  children: [
+                    Icon(Icons.library_books_outlined, size: 30, color: colors.text3),
+                    const SizedBox(height: 12),
+                    Text(
+                        'Este laboratorio todavía no tiene cursos publicados. '
+                        'Tu LXD los abrirá junto con la Fase 1.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: colors.text2)),
+                  ],
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                for (final c in courses)
+                  _LabCourseRow(course: c, studentId: studentId, accent: accent, colors: colors),
+              ],
+            ),
+    );
+  }
+}
+
+class _LabCourseRow extends StatelessWidget {
+  final Course course;
+  final String studentId;
+  final Color accent;
+  final ContentColors colors;
+  const _LabCourseRow(
+      {required this.course, required this.studentId, required this.accent, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final progress = data.courseProgress(studentId, course);
+    final done = data.progressFor(studentId, course.id).completedLessonIds.length;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: HoverBuilder(
+        cursor: SystemMouseCursors.click,
+        builder: (context, hover) => GestureDetector(
+          onTap: () => Navigator.push(
+              context, MaterialPageRoute(builder: (_) => CourseDetailView(courseId: course.id))),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: hover ? colors.goldSoft : colors.surface2,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(10)),
+                  child: const Icon(Icons.menu_book_outlined, size: 19, color: Colors.white),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(course.name,
+                          maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: colors.text)),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                            minHeight: 5,
+                            value: progress,
+                            backgroundColor: colors.border,
+                            valueColor: AlwaysStoppedAnimation(accent)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text('$done/${course.lessonCount}', style: TextStyle(fontSize: 12.5, color: colors.text3)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tarjeta "Tu LXD" — datos reales del laboratorio (`DataProvider.lxdForLab`,
+/// `AppUser.email`, `extra['availability']`). El botón "Agendar mentoría"
+/// no fabrica una integración de calendario que el estudiante no tiene
+/// permiso de usar (crear eventos es exclusivo de Admin/LXD/Mentor): si el
+/// LXD publicó su disponibilidad, abre un diálogo con el horario y un
+/// enlace `mailto:` para coordinar; si no, el botón queda deshabilitado con
+/// el porqué.
+class _LabLxdCard extends StatelessWidget {
+  final Laboratory lab;
+  final AppUser? lxd;
+  final Color accent;
+  final ContentColors colors;
+  const _LabLxdCard({required this.lab, required this.lxd, required this.accent, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final lxd = this.lxd;
+    return _DetailCard(
+      icon: Icons.diversity_3,
+      title: 'Tu LXD',
+      colors: colors,
+      child: lxd == null
+          ? Text('Este laboratorio todavía no tiene un LXD asignado.',
+              style: TextStyle(fontSize: 13.5, color: colors.text3))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                      child: Text(lxd.name.isEmpty ? '?' : lxd.name[0].toUpperCase(),
+                          style: knockoutHeading(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(lxd.name,
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colors.text)),
+                          Text('Learning Experience Designer',
+                              style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(height: 1, color: colors.border),
+                const SizedBox(height: 14),
+                _LxdInfoRow(
+                    icon: Icons.schedule,
+                    text: (lxd.extra['availability'] as String?)?.isNotEmpty == true
+                        ? lxd.extra['availability'] as String
+                        : 'Sin horario publicado',
+                    colors: colors),
+                const SizedBox(height: 10),
+                _LxdInfoRow(icon: Icons.mail_outline, text: lxd.email, colors: colors),
+                const SizedBox(height: 18),
+                _ScheduleMentoriaButton(lab: lab, lxd: lxd, colors: colors),
+              ],
+            ),
+    );
+  }
+}
+
+class _LxdInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final ContentColors colors;
+  const _LxdInfoRow({required this.icon, required this.text, required this.colors});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 17, color: colors.text3),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: TextStyle(fontSize: 13, color: colors.text2))),
+        ],
+      );
+}
+
+class _ScheduleMentoriaButton extends StatelessWidget {
+  final Laboratory lab;
+  final AppUser lxd;
+  final ContentColors colors;
+  const _ScheduleMentoriaButton({required this.lab, required this.lxd, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final availability = (lxd.extra['availability'] as String?) ?? '';
+    final enabled = availability.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: enabled ? () => _showDialog(context, availability) : null,
+            icon: const Icon(Icons.event_available, size: 18),
+            label: const Text('Agendar mentoría'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.goldInk,
+              side: BorderSide(color: enabled ? colors.goldInk : colors.border),
+            ),
+          ),
+        ),
+        if (!enabled)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('Tu LXD todavía no publicó su disponibilidad.',
+                style: TextStyle(fontSize: 12, color: colors.text3)),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _showDialog(BuildContext context, String availability) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Agendar mentoría', style: TextStyle(fontSize: 18)),
+        content: SizedBox(
+          width: 380,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Disponibilidad de ${lxd.name}',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+              const SizedBox(height: 6),
+              Text(availability, style: const TextStyle(fontSize: 13.5, height: 1.5)),
+              const SizedBox(height: 16),
+              Text('Escríbele para coordinar el horario exacto de ${lab.name}.',
+                  style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.mail_outline, size: 16),
+            label: const Text('Escribir correo'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              launchUrl(Uri(
+                  scheme: 'mailto',
+                  path: lxd.email,
+                  query: 'subject=${Uri.encodeComponent('Mentoría - ${lab.name}')}'));
+            },
+          ),
+        ],
       ),
     );
   }
@@ -225,8 +1446,7 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
               )
             else
               LayoutBuilder(builder: (context, c) {
-                final left = _PhasePath(
-                    lab: selected, student: student, colors: colors, isDark: isDark);
+                final left = _PhasePath(lab: selected, student: student, colors: colors);
                 final right = _ExpoCard(group: group, colors: colors);
                 if (c.maxWidth > 800) {
                   return Row(
@@ -297,9 +1517,7 @@ class _PhasePath extends StatelessWidget {
   final Laboratory lab;
   final AppUser student;
   final ContentColors colors;
-  final bool isDark;
-  const _PhasePath(
-      {required this.lab, required this.student, required this.colors, required this.isDark});
+  const _PhasePath({required this.lab, required this.student, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +1530,6 @@ class _PhasePath extends StatelessWidget {
               index: i,
               student: student,
               colors: colors,
-              isDark: isDark,
               isLast: i == lab.phases.length - 1),
       ],
     );
@@ -324,14 +1541,12 @@ class _PhaseRow extends StatelessWidget {
   final int index;
   final AppUser student;
   final ContentColors colors;
-  final bool isDark;
   final bool isLast;
   const _PhaseRow(
       {required this.lab,
       required this.index,
       required this.student,
       required this.colors,
-      required this.isDark,
       required this.isLast});
 
   @override
@@ -343,7 +1558,9 @@ class _PhaseRow extends StatelessWidget {
     final complete = data.isPhaseComplete(student.id, lab.id, phase);
     final deadlineStatus = data.phaseDeadlineStatus(student.id, lab.id, phase);
     final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
-    final alertColor = isDark ? const Color(0xFFFF8A9B) : AppColors.colombiaRed;
+    // Token de alerta (README `design_handoff_portal_estudiante`, sección
+    // "Tokens de diseño"): nunca un literal hex suelto por tema.
+    final alertColor = colors.alertInk;
 
     final (chipBg, chipColor, chipIcon, chipLabel) = complete
         ? (const Color(0x264C9F38), AppColors.statusGood, Icons.check_circle, 'Completa')

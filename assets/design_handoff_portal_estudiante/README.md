@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Rediseño de siete pantallas del portal estudiantil de Enactus Colombia: **Dashboard, Calendario, Mis Cursos, Ruta de Impacto, Directorio de Proyectos, Foro y Mi Perfil**, más el marco compartido (header, barra lateral y pie).
+Rediseño de nueve pantallas del portal estudiantil de Enactus Colombia: **Dashboard, Calendario, Mis Cursos, Laboratorios, Detalle de laboratorio, Ruta de Impacto, Directorio de Proyectos, Foro y Mi Perfil**, más el marco compartido (header, barra lateral y pie).
 
 El objetivo fue subir la densidad visual y la legibilidad sin salirse de la marca: pasar de tarjetas grises apiladas con un único acento amarillo a un sistema donde **el color proviene del dato** — el ODS del proyecto, el laboratorio del curso — y donde el avance se lee de un vistazo.
 
@@ -15,7 +15,7 @@ La app real es **Flutter (Dart)**. La tarea es **recrear estas pantallas en Flut
 Antes de escribir código, lee:
 
 - `lib/views/student/student_portal.dart` — Dashboard, Calendario, Mis Cursos, Certificados y Perfil
-- `lib/views/student/ruta_impacto_view.dart` — Ruta de Impacto y Laboratorios
+- `lib/views/student/ruta_impacto_view.dart` — Ruta de Impacto, lista de Laboratorios y detalle de laboratorio
 - `lib/views/shared/projects_directory_view.dart` — Directorio de Proyectos
 - `lib/views/shared/forum_view.dart` — Foro de la comunidad
 - `lib/widgets/portal_shell.dart` — el marco con las pestañas laterales
@@ -223,6 +223,97 @@ Etapas, en orden: **Ideación · Validación · Prototipo · Piloto · Escalamie
 
 ---
 
+## Pantalla 8 — Laboratorios
+
+**Propósito.** El laboratorio es la unidad de trabajo de Enactus Colombia: agrupa una Ruta de Impacto por fases, cursos de área y un LXD que la acompaña. Esta pantalla es la puerta de entrada a todo eso.
+
+La versión actual son dos tarjetas idénticas de 200 px con un vaso de precipitados, una barra en 0% y "0/3 fases". No comunica qué es un laboratorio, no distingue uno de otro, y el elemento más visible de la página es un cero. El rediseño le da a cada laboratorio identidad de color, avance legible y una entrada clara.
+
+**Encabezado.** Etiqueta: "<n> LABORATORIOS ASIGNADOS · <n> EN LA RED". Título "Laboratorios". Bajada: "Un laboratorio es un área de trabajo de Enactus Colombia: reúne una Ruta de Impacto por fases, cursos y un LXD que la acompaña. Entra al tuyo para ver qué sigue."
+
+### a) Tus laboratorios
+
+Grilla `repeat(auto-fill, minmax(420px,1fr))`, `gap: 20px`. Tarjeta de radio 20 px, fondo `--surface`, borde 1 px `--border`, contenido recortado, columna flexible. Hover: `translateY(-5px)`, sombra `--shadow`, borde del color del laboratorio. Entrada `fadeUp` escalonada 70 ms. **Toda la tarjeta es el área clicable** y navega al detalle.
+
+- **Portada de 136 px**: fondo del color del laboratorio + patrón `repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px)` + velo `linear-gradient(180deg, transparent 35%, var(--veil) 100%)`. El número del ODS del área como marca de agua en Knockout 104 px `rgba(255,255,255,.28)` a `right: 16px; bottom: -24px`.
+  - Arriba a la izquierda (`left: 20px; top: 18px`, `gap: 10px`): cuadro de 38 px radio 11 px `rgba(10,12,14,.42)` con `science` 21 px blanco, y una **píldora de estado** (`padding: 6px 12px`, radio 999 px, `rgba(10,12,14,.5)`, `backdrop-filter: blur(6px)`, 11.5 px peso 600 `letter-spacing: .1em` mayúsculas blanco): "En curso" o "Entrega vencida".
+  - Abajo a la izquierda (`left: 20px; bottom: 16px; right: 100px`): nombre en Knockout 32 px `letter-spacing: .04em` mayúsculas blanco.
+- **Cuerpo** `padding: 20px 22px 22px`, columna con `gap: 16px`:
+  - Descripción del área, 14 px `line-height: 1.5` `--text2`.
+  - **Riel de fases**: un segmento por fase, `gap: 5px`, alto 7 px, radio 4 px — completadas `--gold-soft`, actual el color del laboratorio, futuras `--border`. Debajo, 12 px `--text3`: "Fase N de M en curso" y "<hechos>/<total> módulos" (o "Sin módulos aún").
+  - **Metadatos** (chips `padding: 5px 11px`, radio 8 px, fondo `--surface2`, borde 1 px `--border`, 11.5 px, ícono 14 px): `route` fases · `school` cursos · `schedule` horas estimadas.
+  - Espaciador flexible, luego el **pie** tras una línea 1 px `--border` con `padding-top: 16px`: a la izquierda avatar de 30 px del color del laboratorio con la inicial del LXD y "LXD: <nombre>" en 12.5 px `--text3` con elipsis; a la derecha el botón **Entrar** (`padding: 10px 17px`, radio 9 px, fondo `--gold-soft`, texto `--gold-ink` 13 px peso 600, con `arrow_forward` 17 px).
+
+### b) Otros laboratorios de la red
+
+Encabezado de sección: título en Knockout 30 px mayúsculas + nota 13.5 px `--text3`: "Pídele a tu administrador que te asigne uno si tu proyecto lo necesita."
+
+Grilla `repeat(auto-fill, minmax(268px,1fr))`, `gap: 14px`. Fichas compactas de `padding: 17px 18px`, radio 14 px, fondo `--surface`, borde 1 px `--border` y **borde izquierdo 3 px del color del laboratorio**: cuadro de 34 px radio 10 px con `science` 19 px sobre el color del laboratorio al 14 % de opacidad; nombre 14 px peso 600; descripción 12.5 px `--text3`; y el número de equipos de la red en 11.5 px `--text3`.
+
+Esta sección existe para que el estudiante entienda el catálogo de áreas de Enactus, no solo las dos que le tocaron. **Es una adición del diseño: confírmala antes de implementarla**, y si no hay una fuente real para "N equipos en la red", quítala o reemplázala por la cantidad de proyectos del área.
+
+---
+
+## Pantalla 9 — Detalle de laboratorio
+
+**Propósito.** Todo lo que el estudiante necesita de un laboratorio en una pantalla: qué es, cuánto lleva, qué fase puede abrir, qué cursos tiene y a quién preguntarle.
+
+El problema que resuelve: hoy las fases bloqueadas dicen solo "Bloqueada" y "0/0 módulos", sin explicar por qué están cerradas ni qué las abre. **Un estado bloqueado sin causa visible es un callejón sin salida.**
+
+**Navegación de regreso**: botón alineado a la izquierda, `padding: 9px 15px 9px 11px`, radio 9 px, fondo `--surface`, borde 1 px `--border`, 13 px `--text2`, con `arrow_back` 18 px. Texto: "Todos los laboratorios". Hover: borde y texto `--gold-ink`. En la barra lateral, "Laboratorios" **sigue marcado como activo** mientras se ve el detalle.
+
+### a) Banda de identidad
+
+Tarjeta de radio 20 px, borde 1 px `--border`, contenido recortado. Banda `padding: 30px 32px 28px` con fondo del color del laboratorio + patrón de rayas de 115°, y el número del ODS en Knockout 132 px `rgba(255,255,255,.24)` a `right: 24px; bottom: -30px`.
+
+Fila con `space-between` alineada abajo:
+- Izquierda: rótulo "LABORATORIO" 11.5 px `letter-spacing: .16em` mayúsculas `rgba(255,255,255,.85)` peso 700; nombre en Knockout 52 px `line-height: .96` mayúsculas blanco; descripción 15 px `rgba(255,255,255,.9)` `max-width: 48ch`.
+- Derecha: bloque de `padding: 16px 20px`, radio 14 px, `rgba(10,12,14,.42)`, `backdrop-filter: blur(6px)`, con un anillo de 76 px (`conic-gradient(#FFFFFF 0 <pct>%, rgba(255,255,255,.22) <pct>% 100%)`, interior a `inset: 9px` en `rgba(14,17,20,.92)`, porcentaje en Knockout 25 px blanco) y al lado "Tu avance" 12 px, "Fase N de M" 14.5 px peso 600, y "<hechos> de <total> módulos" 12.5 px.
+
+### b) Cifras
+
+Grilla de 4 columnas iguales, `gap: 12px`, misma tarjeta de estadística del resto del portal: **fases en la ruta** (en `--gold-ink`) · **módulos publicados** · **cursos del laboratorio** · **horas estimadas**.
+
+### c) Ruta de Impacto
+
+Encabezado de sección: título en Knockout 34 px mayúsculas + nota 13.5 px `--text3`: "Las fases se abren en orden. Tu LXD publica el contenido de cada una."
+
+Grilla `repeat(auto-fit, minmax(300px,1fr))`, `gap: 16px`. Tarjeta de `padding: 22px 24px 24px`, radio 18 px, fondo `--surface`, borde 1 px — del color del laboratorio si la fase está disponible, si no `--border`. Entrada `fadeUp` escalonada 70 ms.
+
+- **Fila superior**: círculo de 46 px con el número de fase en Knockout 22 px, y el **chip de estado** a la derecha (`padding: 6px 12px`, radio 999 px, 11.5 px peso 600, ícono 14 px):
+
+| Estado | Ícono | Chip | Círculo |
+| --- | --- | --- | --- |
+| Completa | `check_circle` | `rgba(76,159,56,.16)` / `#4C9F38` | fondo `rgba(76,159,56,.16)`, número y borde `#4C9F38` |
+| Vencida | `warning` | `rgba(206,17,38,.16)` / `--alert-ink` | fondo y borde del color del laboratorio, número blanco |
+| Disponible | `lock_open` | `--gold-soft` / `--gold-ink` | fondo y borde del color del laboratorio, número blanco |
+| Bloqueada | `lock` | `--surface2` / `--text3` | fondo `--surface2`, número `--text3`, borde `--border` |
+
+- **Título** en Knockout 27 px mayúsculas, y **descripción** 13.5 px `line-height: 1.5` `--text2`. Si la fase no tiene contenido publicado: "Tu LXD aún no ha publicado el contenido de esta fase."
+- **Fase disponible** — lista de sus módulos: filas de `padding: 11px 13px`, radio 10 px, fondo `--surface2`, con ícono 17 px (verde `#4C9F38` si el módulo está completo, color del laboratorio si no), título 13 px con elipsis y su estado a la derecha en 11.5 px `--text3`.
+- **Fase bloqueada** — bloque de `padding: 13px 14px`, radio 10 px, fondo `--surface2`, con `lock` 17 px `--text3` y **la razón concreta** en 12.5 px `--text3`: "Se abre cuando completes la Fase N", o "Tu LXD publicará el contenido de esta fase" cuando es la primera y aún está vacía. Nunca la palabra "Bloqueada" a secas.
+- **Progreso**: leyenda "<hechos> de <total> módulos" (o "Sin módulos publicados") y el porcentaje en 11.5 px `--text3`; barra de 6 px radio 4 px, fondo `--surface2`, relleno del color del laboratorio.
+- **Fecha**, si la hay, tras una línea 1 px `--border`: ícono `event` 17 px + texto 12.5 px. **La redacción depende del estado**: en la fase abierta, "Entrega: <fecha>" o "Entrega vencida: <fecha>" en `--alert-ink`; en una fase bloqueada, "Fecha prevista por el laboratorio: <fecha>" en `--text3` — una fase que el estudiante no puede abrir no puede ser su entrega vencida.
+- **Fase disponible** — botón de ancho completo al final: `padding: 13px 20px`, radio 10 px, fondo `#F4C430`, texto `#1A1400` peso 600, ícono `play_arrow` 18 px. "Empezar la fase" si no hay módulos hechos, "Continuar la fase" si ya hay.
+
+### d) Cursos del laboratorio y LXD
+
+Grilla `minmax(0,1.5fr) / minmax(0,1fr)`, `gap: 20px`. Ambas tarjetas de `padding: 24px 26px`, radio 18 px, con cabecera de cuadro 34 px radio 10 px `--gold-soft`/`--gold-ink` + título en Knockout 24 px mayúsculas.
+
+**Cursos** (ícono `school`) — filas de `padding: 14px 16px`, radio 12 px, fondo `--surface2`, clicables (hover fondo `--gold-soft`): cuadro de 36 px radio 10 px del color del laboratorio con el ícono del curso 19 px blanco; nombre 14 px con elipsis sobre una barra de 5 px radio 3 px (fondo `--border`, relleno del color del laboratorio); y "<hechas>/<total>" a la derecha en 12.5 px `--text3`. Sin cursos: caja punteada con `library_books` 30 px y "Este laboratorio todavía no tiene cursos publicados. Tu LXD los abrirá junto con la Fase 1."
+
+**Tu LXD** (ícono `diversity_3`) — avatar de 52 px del color del laboratorio con la inicial, nombre 15 px peso 600, "Learning Experience Designer" 12.5 px `--text3`. Tras una línea `--border`: horario de mentorías (`schedule`) y correo (`mail`), ambos 13 px `--text2` con ícono 17 px `--text3`. Al final, botón de ancho completo transparente con borde `--gold-ink`: "Agendar mentoría" con `event_available` 18 px.
+
+### Comportamiento funcional requerido
+
+1. **Una sola fuente de verdad para el avance.** El conteo de módulos del anillo, de la tarjeta en la lista y de cada tarjeta de fase **debe derivarse de los mismos datos de fases**. No dupliques `modulesDone`/`modulesTotal` en el modelo del laboratorio: se calculan sumando los módulos de sus fases. (Este fue un defecto real del prototipo: el encabezado decía 1/2 y la tarjeta de abajo 0/2.)
+2. **Desbloqueo de fases** — una fase se abre cuando la anterior está completa Y su contenido está publicado. Expón ambas condiciones al estudiante en el texto de la razón.
+3. **Navegación** — lista → detalle → atrás, con la ruta reflejada en la URL para que el botón del navegador funcione. "Laboratorios" queda activo en la barra lateral en ambas.
+4. **Agendar mentoría** — abre el flujo de calendario con la disponibilidad del LXD precargada; si no hay horario publicado, deshabilita el botón y explica por qué.
+5. **Los cursos** llevan a `CourseDetailView`, la misma ruta que Mis Cursos.
+
+---
+
 ## Pantalla 6 — Foro de la Comunidad
 
 **Propósito.** Estudiantes, mentores y LXD de toda la red preguntan, comparten avances y publican recursos. Es la única pantalla del portal donde el estudiante *escribe* para gente fuera de su equipo.
@@ -363,6 +454,7 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 | Directorio (filtro vacío) | `lightbulb` | Aún no hay proyectos aquí | "Ningún proyecto coincide con este filtro. Prueba con otra etapa o limpia la búsqueda." | Ver todas las etapas |
 | Foro (sin publicaciones) | `forum` | Nadie ha escrito aún | "El foro está vacío. Sé la primera en abrir la conversación de la comunidad." | Ver todo el foro |
 | Foro (filtro vacío) | `forum` | Nadie ha escrito aún | "Ninguna publicación coincide con este filtro. Prueba con otra categoría o limpia la búsqueda." | Ver todo el foro |
+| Laboratorios | `science` | Sin laboratorios asignados | "Tu administrador todavía no te ha asignado un laboratorio. Sin uno no tienes Ruta de Impacto ni cursos de área." | Actualizar |
 
 ## Interacciones y comportamiento
 
@@ -371,6 +463,8 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 | Barra lateral | Cambia de pantalla; el ítem activo se marca con el borde izquierdo amarillo. |
 | Chip de etapa (Directorio) | Filtra la grilla. "Todas las etapas" limpia el filtro. Solo uno activo. |
 | Chip de laboratorio (Ruta) | Cambia el conjunto de fases mostrado. |
+| Click en tarjeta de laboratorio | Navega al detalle de ese laboratorio; toda la tarjeta es clicable. |
+| "Todos los laboratorios" | Vuelve a la lista. |
 | Buscador | Filtra en vivo, sin debounce, sobre la pantalla actual. Directorio: nombre + descripción + comunidad + etapa + ODS. Mis Cursos: nombre + laboratorio + descripción + docente. Foro: autor + organización + cuerpo. Coincidencia por substring, sin distinguir mayúsculas. |
 | Chip de categoría (Foro) | En el compositor fija la categoría del post; en la barra de filtros acota el feed. Son dos controles distintos: no compartas estado entre ellos. |
 | Publicar / responder / apoyar / borrar | Ver "Comportamiento funcional requerido" en la Pantalla 6. |
@@ -387,6 +481,7 @@ Un único componente, con contenido distinto por pantalla. Caja centrada: `paddi
 - `kind` — categoría seleccionada en el compositor del Foro; `pregunta` por defecto.
 - `foroFilter` — categoría filtrada en el feed; `todos` por defecto.
 - `draft` — texto del compositor.
+- `labOpen` — laboratorio abierto en el detalle; `null` en la lista.
 - `query` — texto del buscador.
 - `theme` — `dark` | `light`; oscuro por defecto.
 
@@ -407,7 +502,7 @@ Todo lo demás se deriva de `DataProvider` (`coursesForStudent`, `courseProgress
 | Texto del sidebar | `#C3C9D0` |
 | Texto secundario del sidebar | `#8FA0B2` |
 | Éxito | `#4C9F38` |
-| Alerta / vencido | `#CE1126` (texto sobre oscuro: `#FF8A9B`) |
+| Alerta / vencido (fondo, borde) | `#CE1126` |
 | Bandera de Colombia | `#FCD116`, `#003893`, `#CE1126` |
 
 ### Tokens por tema (solo afectan al área de contenido)
@@ -423,10 +518,11 @@ Todo lo demás se deriva de `DataProvider` (`coursesForStudent`, `courseProgress
 | `--text3` | `#8A9099` | `#787F88` |
 | `--gold-ink` | `#F4C430` | `#8A6A00` |
 | `--gold-soft` | `rgba(244,196,48,.14)` | `rgba(244,196,48,.24)` |
+| `--alert-ink` | `#FF8A9B` | `#A8101C` |
 | `--shadow` | `0 18px 40px rgba(0,0,0,.5)` | `0 16px 36px rgba(20,25,35,.14)` |
 | `--veil` | `rgba(0,0,0,.28)` | `rgba(0,0,0,.22)` |
 
-En tema claro el amarillo se oscurece a `#8A6A00` para el texto — `#F4C430` sobre blanco no alcanza contraste AA.
+En tema claro el amarillo se oscurece a `#8A6A00` y el rojo de alerta a `#A8101C` para el texto: `#F4C430` y `#FF8A9B` sobre blanco no alcanzan contraste AA. Todo texto de alerta usa `--alert-ink`, nunca un literal.
 
 ### Colores oficiales de los ODS
 
@@ -502,7 +598,7 @@ Ya presentes en el repositorio, bajo `assets/media/`:
 - `SpaceGrotesk-Variable.ttf` — texto
 - `mainlogo.png` — logotipo
 
-Iconografía: **Material Symbols Rounded** (en Flutter, los `Icons` redondeados equivalentes). Glifos usados: `search`, `light_mode`, `dark_mode`, `notifications`, `dashboard`, `calendar_month`, `school`, `science`, `emoji_events`, `explore`, `forum`, `workspace_premium`, `person`, `flag`, `location_on`, `groups`, `arrow_forward`, `lightbulb`, `restart_alt`, `mail`, `play_arrow`, `play_circle`, `play_lesson`, `view_module`, `signal_cellular_alt`, `schedule`, `smart_toy`, `insights`, `menu_book`, `diversity_3`, `description`, `warning`, `lock`, `check_circle`, `radio_button_unchecked`, `event`, `event_busy`, `route`, `design_services`, `send`, `help`, `trending_up`, `attach_file`, `campaign`, `volunteer_activism`, `mode_comment`, `delete`, `share`, `shield`, `edit`, `badge`, `workspaces`, `apartment`, `engineering`, `hourglass_empty`.
+Iconografía: **Material Symbols Rounded** (en Flutter, los `Icons` redondeados equivalentes). Glifos usados: `search`, `light_mode`, `dark_mode`, `notifications`, `dashboard`, `calendar_month`, `school`, `science`, `emoji_events`, `explore`, `forum`, `workspace_premium`, `person`, `flag`, `location_on`, `groups`, `arrow_forward`, `lightbulb`, `restart_alt`, `mail`, `play_arrow`, `play_circle`, `play_lesson`, `view_module`, `signal_cellular_alt`, `schedule`, `smart_toy`, `insights`, `menu_book`, `diversity_3`, `description`, `warning`, `lock`, `check_circle`, `radio_button_unchecked`, `event`, `event_busy`, `route`, `design_services`, `send`, `help`, `trending_up`, `attach_file`, `campaign`, `volunteer_activism`, `mode_comment`, `delete`, `share`, `shield`, `edit`, `badge`, `workspaces`, `apartment`, `engineering`, `hourglass_empty`, `arrow_back`, `lock_open`, `library_books`, `event_available`.
 
 **No se usan imágenes de curso ni de proyecto.** Las portadas son color plano + patrón de rayas + marca de agua, precisamente para no depender de fotografías que los equipos aún no han subido.
 
@@ -520,5 +616,7 @@ Los datos del prototipo salen de `seed_service.dart`: **Sara Nieto** (est1, Univ
 - Los cinco proyectos extra del Directorio (Manglar Vivo, Raíz Café, Semilla Digital, Tejido Wayúu, Cosecha Urbana) — relleno para mostrar la variedad de colores de ODS y de etapas.
 - Los horarios del calendario, derivados de los campos `availability` de los LXD.
 - La asignación de color por laboratorio y de color por categoría del foro.
+- Los correos de los LXD, las horas estimadas por laboratorio y los conteos de "N equipos en la red".
+- Los laboratorios asignados del prototipo son **IA y Tecnología + Impacto** (los del seed), no Agricultura + Energía como en algunas capturas del build actual.
 - Tres de las cuatro publicaciones del Foro (solo el post de Sara es real). Están escritas con personas que sí existen en el seed — Carlos Rodríguez, Sofía Ramírez, Daniela Herrera — para que el tono sea creíble, pero el contenido es inventado.
 - Los conteos de apoyos y respuestas, "38 personas activas" y la tabla de equipos más activos.

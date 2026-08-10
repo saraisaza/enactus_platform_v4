@@ -23,7 +23,7 @@ input { font-family: inherit; }
 </style>
 </helmet>
 
-<div ref="{{ setRoot }}" style="--bg:#111315; --surface:#1A1D21; --surface2:#22262B; --border:#33383F; --text:#F5F5F2; --text2:#B8BCBF; --text3:#8A9099; --gold-ink:#F4C430; --gold-soft:rgba(244,196,48,.14); --shadow:0 18px 40px rgba(0,0,0,.45); --veil:rgba(0,0,0,.28); min-height:100vh; background:var(--bg); color:var(--text); font-family:'Space Grotesk', system-ui, sans-serif; display:flex; flex-direction:column;">
+<div ref="{{ setRoot }}" style="--bg:#111315; --surface:#1A1D21; --surface2:#22262B; --border:#33383F; --text:#F5F5F2; --text2:#B8BCBF; --text3:#8A9099; --gold-ink:#F4C430; --gold-soft:rgba(244,196,48,.14); --alert-ink:#FF8A9B; --shadow:0 18px 40px rgba(0,0,0,.45); --veil:rgba(0,0,0,.28); min-height:100vh; background:var(--bg); color:var(--text); font-family:'Space Grotesk', system-ui, sans-serif; display:flex; flex-direction:column;">
 
   <div style="display:flex; height:4px; flex:none;">
     <div style="flex:1; background:#FCD116;"></div>
@@ -534,6 +534,259 @@ input { font-family: inherit; }
         </div>
       </sc-if>
 
+      <sc-if value="{{ isLabs }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+            <div style="min-width:320px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite;"></span>
+                <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600;">{{ myLabsCount }} laboratorios asignados · {{ netLabsCount }} en la red</span>
+              </div>
+              <h1 style="font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase;">Laboratorios</h1>
+              <p style="margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:56ch; text-wrap:pretty;">Un laboratorio es un área de trabajo de Enactus Colombia: reúne una Ruta de Impacto por fases, cursos y un LXD que la acompaña. Entra al tuyo para ver qué sigue.</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(420px,1fr)); gap:20px;">
+            <sc-for list="{{ myLabs }}" as="l" hint-placeholder-count="2">
+              <article onClick="{{ l.open }}" style="display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; cursor:pointer; transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; animation:fadeUp .45s both; animation-delay: {{ l.delay }};" style-hover="transform:translateY(-5px); box-shadow:var(--shadow); border-color: {{ l.color }};">
+                <div style="position:relative; height:136px; overflow:hidden; background: {{ l.color }};">
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 35%, var(--veil) 100%);"></div>
+                  <div style="position:absolute; right:16px; bottom:-24px; font-family:'Knockout'; font-size:104px; line-height:1; letter-spacing:.02em; color:rgba(255,255,255,.28);">{{ l.odsNum }}</div>
+                  <div style="position:absolute; left:20px; top:18px; display:flex; align-items:center; gap:10px;">
+                    <span style="width:38px; height:38px; border-radius:11px; background:rgba(10,12,14,.42); display:grid; place-items:center; font-family:'Material Symbols Rounded'; font-size:21px; color:#FFFFFF;">science</span>
+                    <span style="padding:6px 12px; border-radius:999px; background:rgba(10,12,14,.5); backdrop-filter:blur(6px); color:#FFFFFF; font-size:11.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;">{{ l.stateLabel }}</span>
+                  </div>
+                  <div style="position:absolute; left:20px; bottom:16px; right:100px;">
+                    <h3 style="margin:0; font-family:'Knockout'; font-size:32px; line-height:1; letter-spacing:.04em; text-transform:uppercase; color:#FFFFFF;">{{ l.name }}</h3>
+                  </div>
+                </div>
+
+                <div style="flex:1; padding:20px 22px 22px; display:flex; flex-direction:column; gap:16px;">
+                  <p style="margin:0; font-size:14px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ l.tagline }}</p>
+
+                  <div>
+                    <div style="display:flex; gap:5px; margin-bottom:8px;">
+                      <sc-for list="{{ l.phaseBars }}" as="b" hint-placeholder-count="3">
+                        <div style="flex:1; height:7px; border-radius:4px; background: {{ b.bg }};"></div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text3);">
+                      <span>{{ l.phaseLabel }}</span><span>{{ l.nextLabel }}</span>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                    <sc-for list="{{ l.meta }}" as="m" hint-placeholder-count="3">
+                      <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); font-size:11.5px; color:var(--text2);">
+                        <span style="font-family:'Material Symbols Rounded'; font-size:14px; color:var(--text3);">{{ m.icon }}</span>{{ m.label }}
+                      </span>
+                    </sc-for>
+                  </div>
+
+                  <div style="flex:1;"></div>
+
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:16px; border-top:1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                      <span style="flex:none; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:12.5px; background: {{ l.color }}; color:#1A1400;">{{ l.lxdInitial }}</span>
+                      <span style="font-size:12.5px; color:var(--text3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ l.lxd }}</span>
+                    </div>
+                    <span style="flex:none; display:flex; align-items:center; gap:8px; padding:10px 17px; border-radius:9px; background:var(--gold-soft); color:var(--gold-ink); font-size:13px; font-weight:600;">
+                      Entrar<span style="font-family:'Material Symbols Rounded'; font-size:17px;">arrow_forward</span>
+                    </span>
+                  </div>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:6px;">
+            <div style="display:flex; align-items:baseline; gap:14px; margin-bottom:16px; flex-wrap:wrap;">
+              <h2 style="margin:0; font-family:'Knockout'; font-size:30px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Otros laboratorios de la red</h2>
+              <span style="font-size:13.5px; color:var(--text3);">Pídele a tu administrador que te asigne uno si tu proyecto lo necesita.</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(268px,1fr)); gap:14px;">
+              <sc-for list="{{ otherLabs }}" as="o" hint-placeholder-count="4">
+                <div style="display:flex; align-items:flex-start; gap:13px; padding:17px 18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); border-left:3px solid {{ o.color }};">
+                  <span style="flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background: {{ o.soft }}; color: {{ o.color }}; font-family:'Material Symbols Rounded'; font-size:19px;">science</span>
+                  <div style="min-width:0;">
+                    <div style="font-size:14px; font-weight:600; color:var(--text); line-height:1.3;">{{ o.name }}</div>
+                    <div style="margin-top:5px; font-size:12.5px; line-height:1.45; color:var(--text3); text-wrap:pretty;">{{ o.tagline }}</div>
+                    <div style="margin-top:9px; font-size:11.5px; color:var(--text3);">{{ o.teams }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLabDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:26px;">
+
+          <button onClick="{{ backToLabs }}" style="align-self:flex-start; display:flex; align-items:center; gap:9px; padding:9px 15px 9px 11px; border-radius:9px; background:var(--surface); border:1px solid var(--border); color:var(--text2); font-size:13px; cursor:pointer; transition:all .15s ease; font-family:inherit;" style-hover="border-color:var(--gold-ink); color:var(--gold-ink);">
+            <span style="font-family:'Material Symbols Rounded'; font-size:18px;">arrow_back</span>Todos los laboratorios
+          </button>
+
+          <div style="border-radius:20px; overflow:hidden; border:1px solid var(--border); background:var(--surface);">
+            <div style="position:relative; padding:30px 32px 28px; background: {{ dColor }}; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(255,255,255,.14) 0 2px, transparent 2px 13px);"></div>
+              <div style="position:absolute; right:24px; bottom:-30px; font-family:'Knockout'; font-size:132px; line-height:1; color:rgba(255,255,255,.24);">{{ dOdsNum }}</div>
+              <div style="position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:28px; flex-wrap:wrap;">
+                <div style="min-width:300px;">
+                  <div style="font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.85); font-weight:700;">Laboratorio</div>
+                  <h1 style="margin:10px 0 0; font-family:'Knockout'; font-size:52px; line-height:.96; letter-spacing:.045em; text-transform:uppercase; color:#FFFFFF;">{{ dName }}</h1>
+                  <p style="margin:12px 0 0; font-size:15px; line-height:1.5; color:rgba(255,255,255,.9); max-width:48ch; text-wrap:pretty;">{{ dTagline }}</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:16px; padding:16px 20px; border-radius:14px; background:rgba(10,12,14,.42); backdrop-filter:blur(6px);">
+                  <div style="position:relative; width:76px; height:76px; border-radius:50%; background: {{ dRing }};">
+                    <div style="position:absolute; inset:9px; border-radius:50%; background:rgba(14,17,20,.92); display:grid; place-items:center;">
+                      <span style="font-family:'Knockout'; font-size:25px; color:#FFFFFF;">{{ dPct }}%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:12px; color:rgba(255,255,255,.75);">Tu avance</div>
+                    <div style="margin-top:5px; font-size:14.5px; color:#FFFFFF; font-weight:600;">{{ dPhaseLabel }}</div>
+                    <div style="margin-top:4px; font-size:12.5px; color:rgba(255,255,255,.75);">{{ dModuleLabel }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px;">
+            <sc-for list="{{ dStats }}" as="s" hint-placeholder-count="4">
+              <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;">
+                <div style="font-family:'Knockout'; font-size:40px; line-height:1; letter-spacing:.03em; color: {{ s.color }};">{{ s.value }}</div>
+                <div style="margin-top:6px; font-size:12.5px; color:var(--text3);">{{ s.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
+              <h2 style="margin:0; font-family:'Knockout'; font-size:34px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Ruta de Impacto</h2>
+              <span style="font-size:13.5px; color:var(--text3);">Las fases se abren en orden. Tu LXD publica el contenido de cada una.</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px;">
+              <sc-for list="{{ dPhases }}" as="f" hint-placeholder-count="3">
+                <article style="display:flex; flex-direction:column; background:var(--surface); border:1px solid {{ f.border }}; border-radius:18px; padding:22px 24px 24px; animation:fadeUp .45s both; animation-delay: {{ f.delay }};">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+                    <span style="width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-family:'Knockout'; font-size:22px; background: {{ f.numBg }}; color: {{ f.numFg }}; border:2px solid {{ f.numBorder }};">{{ f.num }}</span>
+                    <span style="display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:600; background: {{ f.stateBg }}; color: {{ f.stateFg }};">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:14px;">{{ f.stateIcon }}</span>{{ f.state }}
+                    </span>
+                  </div>
+
+                  <h3 style="margin:16px 0 0; font-family:'Knockout'; font-size:27px; line-height:1; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">{{ f.title }}</h3>
+                  <p style="margin:9px 0 0; font-size:13.5px; line-height:1.5; color:var(--text2); text-wrap:pretty;">{{ f.desc }}</p>
+
+                  <sc-if value="{{ f.open }}" hint-placeholder-val="{{ true }}">
+                    <div style="margin-top:18px; display:flex; flex-direction:column; gap:9px;">
+                      <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="2">
+                        <div style="display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:10px; background:var(--surface2);">
+                          <span style="flex:none; font-family:'Material Symbols Rounded'; font-size:17px; color: {{ r.color }};">{{ r.icon }}</span>
+                          <span style="flex:1; min-width:0; font-size:13px; color:var(--text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.label }}</span>
+                          <span style="flex:none; font-size:11.5px; color:var(--text3);">{{ r.meta }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ f.locked }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:18px; display:flex; align-items:flex-start; gap:11px; padding:13px 14px; border-radius:10px; background:var(--surface2);">
+                      <span style="flex:none; margin-top:1px; font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">lock</span>
+                      <span style="font-size:12.5px; line-height:1.45; color:var(--text3); text-wrap:pretty;">{{ f.lockReason }}</span>
+                    </div>
+                  </sc-if>
+
+                  <div style="flex:1;"></div>
+
+                  <div style="margin-top:18px;">
+                    <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text3); margin-bottom:7px;">
+                      <span>{{ f.progressLabel }}</span><span>{{ f.pctLabel }}</span>
+                    </div>
+                    <div style="height:6px; border-radius:4px; background:var(--surface2); overflow:hidden;">
+                      <div style="height:100%; border-radius:4px; background: {{ f.barColor }}; width: {{ f.pct }};"></div>
+                    </div>
+                  </div>
+
+                  <sc-if value="{{ f.hasDeadline }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; align-items:center; gap:9px; font-size:12.5px; color: {{ f.deadlineColor }};">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:17px;">event</span>{{ f.deadlineLabel }}
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ f.open }}" hint-placeholder-val="{{ true }}">
+                    <button style="margin-top:18px; display:flex; align-items:center; justify-content:center; gap:9px; padding:13px 20px; border-radius:10px; border:none; background:#F4C430; color:#1A1400; font-weight:600; font-size:13.5px; cursor:pointer; transition:all .15s ease; font-family:inherit;" style-hover="background:#FFD700; box-shadow:0 8px 22px rgba(244,196,48,.28); transform:translateY(-1px);">
+                      <span style="font-family:'Material Symbols Rounded'; font-size:18px;">play_arrow</span>{{ f.cta }}
+                    </button>
+                  </sc-if>
+                </article>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:20px; align-items:start;">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px 26px;">
+              <div style="display:flex; align-items:center; gap:11px; margin-bottom:18px;">
+                <span style="width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--gold-soft); color:var(--gold-ink); font-family:'Material Symbols Rounded'; font-size:19px;">school</span>
+                <h3 style="margin:0; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Cursos del laboratorio</h3>
+              </div>
+              <sc-if value="{{ dHasCourses }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:11px;">
+                  <sc-for list="{{ dCourses }}" as="c" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; background:var(--surface2); cursor:pointer; transition:all .15s ease;" style-hover="background:var(--gold-soft);">
+                      <span style="flex:none; width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background: {{ dColor }}; color:#FFFFFF; font-family:'Material Symbols Rounded'; font-size:19px;">{{ c.icon }}</span>
+                      <div style="flex:1; min-width:0;">
+                        <div style="font-size:14px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ c.name }}</div>
+                        <div style="margin-top:5px; height:5px; border-radius:3px; background:var(--border); overflow:hidden;">
+                          <div style="height:100%; border-radius:3px; background: {{ dColor }}; width: {{ c.pct }};"></div>
+                        </div>
+                      </div>
+                      <span style="flex:none; font-size:12.5px; color:var(--text3);">{{ c.progress }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ dNoCourses }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; padding:26px 12px; border:1px dashed var(--border); border-radius:14px;">
+                  <span style="font-family:'Material Symbols Rounded'; font-size:30px; color:var(--text3);">library_books</span>
+                  <p style="margin:0; font-size:13.5px; line-height:1.5; color:var(--text2); max-width:36ch; text-wrap:pretty;">Este laboratorio todavía no tiene cursos publicados. Tu LXD los abrirá junto con la Fase 1.</p>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px 26px;">
+              <div style="display:flex; align-items:center; gap:11px; margin-bottom:18px;">
+                <span style="width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--gold-soft); color:var(--gold-ink); font-family:'Material Symbols Rounded'; font-size:19px;">diversity_3</span>
+                <h3 style="margin:0; font-family:'Knockout'; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text);">Tu LXD</h3>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="flex:none; width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:20px; background: {{ dColor }}; color:#1A1400;">{{ dLxdInitial }}</span>
+                <div style="min-width:0;">
+                  <div style="font-size:15px; font-weight:600; color:var(--text);">{{ dLxd }}</div>
+                  <div style="margin-top:3px; font-size:12.5px; color:var(--text3);">Learning Experience Designer</div>
+                </div>
+              </div>
+              <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:flex-start; gap:11px; font-size:13px; color:var(--text2);">
+                  <span style="flex:none; margin-top:1px; font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">schedule</span>{{ dAvailability }}
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:11px; font-size:13px; color:var(--text2);">
+                  <span style="flex:none; margin-top:1px; font-family:'Material Symbols Rounded'; font-size:17px; color:var(--text3);">mail</span>{{ dLxdMail }}
+                </div>
+              </div>
+              <button style="margin-top:20px; width:100%; display:flex; align-items:center; justify-content:center; gap:9px; padding:13px 20px; border-radius:10px; background:transparent; border:1px solid var(--gold-ink); color:var(--gold-ink); font-weight:600; font-size:13.5px; cursor:pointer; transition:all .15s ease; font-family:inherit;" style-hover="background:var(--gold-soft);">
+                <span style="font-family:'Material Symbols Rounded'; font-size:18px;">event_available</span>Agendar mentoría
+              </button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ isForo }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; flex-direction:column; gap:26px;">
           <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
@@ -610,7 +863,7 @@ input { font-family: inherit; }
                             </button>
                             <div style="flex:1;"></div>
                             <sc-if value="{{ p.mine }}" hint-placeholder-val="{{ false }}">
-                              <button style="display:grid; place-items:center; width:32px; height:32px; border-radius:9px; background:transparent; border:1px solid var(--border); color:var(--text3); cursor:pointer; transition:all .15s ease; font-family:'Material Symbols Rounded'; font-size:17px;" style-hover="border-color:#CE1126; color:#FF8A9B;">delete</button>
+                              <button style="display:grid; place-items:center; width:32px; height:32px; border-radius:9px; background:transparent; border:1px solid var(--border); color:var(--text3); cursor:pointer; transition:all .15s ease; font-family:'Material Symbols Rounded'; font-size:17px;" style-hover="border-color:#CE1126; color:var(--alert-ink);">delete</button>
                             </sc-if>
                           </div>
 
@@ -840,9 +1093,9 @@ input { font-family: inherit; }
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;pantalla&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;calendario&quot;,&quot;cursos&quot;,&quot;ruta&quot;,&quot;directorio&quot;,&quot;foro&quot;,&quot;perfil&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Oscuro&quot;,&quot;Claro&quot;],&quot;default&quot;:&quot;Oscuro&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Con datos&quot;,&quot;Sin datos&quot;],&quot;default&quot;:&quot;Con datos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;acento&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Color por ODS&quot;,&quot;Solo amarillo&quot;],&quot;default&quot;:&quot;Color por ODS&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;pantalla&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;calendario&quot;,&quot;cursos&quot;,&quot;labs&quot;,&quot;labdetail&quot;,&quot;ruta&quot;,&quot;directorio&quot;,&quot;foro&quot;,&quot;perfil&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Oscuro&quot;,&quot;Claro&quot;],&quot;default&quot;:&quot;Oscuro&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Con datos&quot;,&quot;Sin datos&quot;],&quot;default&quot;:&quot;Con datos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;acento&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Color por ODS&quot;,&quot;Solo amarillo&quot;],&quot;default&quot;:&quot;Color por ODS&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
-  state = { screen: null, stage: 'todas', query: '', theme: null, lab: 'lab_ia', kind: 'pregunta', foroFilter: 'todos', draft: '' };
+  state = { screen: null, stage: 'todas', query: '', theme: null, lab: 'lab_ia', kind: 'pregunta', foroFilter: 'todos', draft: '', labOpen: null };
 
   odsColor = {1:'#E5243B',2:'#DDA63A',3:'#4C9F38',4:'#C5192D',5:'#FF3A21',6:'#26BDE2',7:'#FCC30B',8:'#A21942',9:'#FD6925',10:'#DD1367',11:'#FD9D24',12:'#BF8B2E',13:'#3F7E44',14:'#0A97D9',15:'#56C02B',16:'#00689D',17:'#19486A'};
 
@@ -862,7 +1115,22 @@ class Component extends DCLogic {
     {k:'perfil', icon:'person', label:'Mi Perfil'}
   ];
 
-  soonTitles = { labs:'Laboratorios', certificados:'Certificados' };
+  soonTitles = { certificados:'Certificados' };
+
+  labsData = [
+    { id:'lab_ia', name:'Laboratorio IA y Tecnología', tagline:'Inteligencia artificial aplicada a proyectos sociales.', ods:9,
+      mine:true, phasesDone:0, phasesTotal:3, courses:1, hours:8,
+      lxd:'Carlos Rodríguez', mail:'lxd.ia@enactuscolombia.org', availability:'Mentorías los martes y jueves, 6:00–8:00 pm',
+      teams:'6 equipos en la red', overdue:true },
+    { id:'lab_impacto', name:'Laboratorio Impacto', tagline:'Medición y gestión del impacto social de tu proyecto.', ods:10,
+      mine:true, phasesDone:0, phasesTotal:3, courses:1, hours:6,
+      lxd:'Sofía Ramírez', mail:'lxd.impacto@enactuscolombia.org', availability:'Asesorías los miércoles, 4:00–6:00 pm',
+      teams:'11 equipos en la red', overdue:false },
+    { id:'lab_agua', name:'Laboratorio Agua', tagline:'Acceso a agua limpia y saneamiento básico.', ods:6, mine:false, teams:'4 equipos en la red' },
+    { id:'lab_energia', name:'Laboratorio Energía', tagline:'Energías renovables y eficiencia energética.', ods:7, mine:false, teams:'3 equipos en la red' },
+    { id:'lab_emprendimiento', name:'Laboratorio Emprendimiento', tagline:'Modelos de negocio con propósito y finanzas.', ods:8, mine:false, teams:'9 equipos en la red' },
+    { id:'lab_agricultura', name:'Laboratorio Agricultura', tagline:'Agricultura sostenible y seguridad alimentaria.', ods:15, mine:false, teams:'5 equipos en la red' }
+  ];
 
   postKinds = [
     {id:'pregunta', label:'Pregunta', icon:'help', color:'#26BDE2'},
@@ -967,8 +1235,8 @@ class Component extends DCLogic {
   odsLabel = {2:'ODS 2: Hambre cero',3:'ODS 3: Salud y bienestar',4:'ODS 4: Educación de calidad',5:'ODS 5: Igualdad de género',6:'ODS 6: Agua limpia y saneamiento',7:'ODS 7: Energía asequible',8:'ODS 8: Trabajo decente',10:'ODS 10: Reducción de desigualdades',11:'ODS 11: Ciudades sostenibles',12:'ODS 12: Consumo responsable',13:'ODS 13: Acción por el clima',14:'ODS 14: Vida submarina'};
 
   themes = {
-    dark: {'--bg':'#111315','--surface':'#1A1D21','--surface2':'#22262B','--border':'#33383F','--text':'#F5F5F2','--text2':'#B8BCBF','--text3':'#8A9099','--gold-ink':'#F4C430','--gold-soft':'rgba(244,196,48,.14)','--shadow':'0 18px 40px rgba(0,0,0,.5)','--veil':'rgba(0,0,0,.28)'},
-    light: {'--bg':'#F2F2EC','--surface':'#FFFFFF','--surface2':'#F0F0E9','--border':'#DEDED4','--text':'#15181B','--text2':'#4C525A','--text3':'#787F88','--gold-ink':'#8A6A00','--gold-soft':'rgba(244,196,48,.24)','--shadow':'0 16px 36px rgba(20,25,35,.14)','--veil':'rgba(0,0,0,.22)'}
+    dark: {'--bg':'#111315','--surface':'#1A1D21','--surface2':'#22262B','--border':'#33383F','--text':'#F5F5F2','--text2':'#B8BCBF','--text3':'#8A9099','--gold-ink':'#F4C430','--gold-soft':'rgba(244,196,48,.14)','--alert-ink':'#FF8A9B','--shadow':'0 18px 40px rgba(0,0,0,.5)','--veil':'rgba(0,0,0,.28)'},
+    light: {'--bg':'#F2F2EC','--surface':'#FFFFFF','--surface2':'#F0F0E9','--border':'#DEDED4','--text':'#15181B','--text2':'#4C525A','--text3':'#787F88','--gold-ink':'#8A6A00','--gold-soft':'rgba(244,196,48,.24)','--alert-ink':'#A8101C','--shadow':'0 16px 36px rgba(20,25,35,.14)','--veil':'rgba(0,0,0,.22)'}
   };
 
   counters = { cProyectos: 0, cUniversidades: 0, cOds: 0, cExpo: 0 };
@@ -1130,7 +1398,7 @@ class Component extends DCLogic {
         state: f.overdue ? 'Vencida' : (active ? 'En curso' : 'Sin abrir'),
         stateIcon: f.overdue ? 'warning' : (active ? 'play_circle' : 'lock'),
         stateBg: f.overdue ? 'rgba(206,17,38,.16)' : (active ? 'var(--gold-soft)' : 'var(--surface2)'),
-        stateFg: f.overdue ? '#FF8A9B' : (active ? 'var(--gold-ink)' : 'var(--text3)'),
+        stateFg: f.overdue ? 'var(--alert-ink)' : (active ? 'var(--gold-ink)' : 'var(--text3)'),
         hasObjectives: f.objectives.length > 0, hasModules: f.modules.length > 0,
         objectives: f.objectives.map(o => ({ text:o.text, cat:o.cat,
           icon: o.done ? 'check_circle' : 'radio_button_unchecked', color: o.done ? '#4C9F38' : 'var(--text3)' })),
@@ -1138,7 +1406,7 @@ class Component extends DCLogic {
           iconBg: m.done ? 'rgba(76,159,56,.16)' : 'var(--gold-soft)', iconFg: m.done ? '#4C9F38' : 'var(--gold-ink)' })),
         hasDeadline: !!f.deadline,
         deadlineLabel: f.deadline ? (f.overdue ? 'Entrega vencida: ' + f.deadline : 'Entrega: ' + f.deadline) : '',
-        deadlineColor: f.overdue ? '#FF8A9B' : 'var(--text3)' };
+        deadlineColor: f.overdue ? 'var(--alert-ink)' : 'var(--text3)' };
     });
 
     const labTabs = this.labTabsData.map(l => {
@@ -1149,6 +1417,81 @@ class Component extends DCLogic {
     });
 
     const expoDone = this.full ? this.expoItems.filter(e => e.done).length : 0;
+
+    const labSoft = { lab_ia:'rgba(253,105,37,.14)', lab_impacto:'rgba(221,19,103,.14)', lab_agua:'rgba(38,189,226,.14)', lab_energia:'rgba(252,195,11,.14)', lab_emprendimiento:'rgba(162,25,66,.14)', lab_agricultura:'rgba(86,192,43,.14)' };
+    const assigned = this.full ? this.labsData.filter(l => l.mine) : [];
+
+    const labModules = (id) => {
+      const mods = (this.phasesByLab[id] || []).flatMap(f => f.modules);
+      return { done: mods.filter(m => m.done).length, total: mods.length };
+    };
+
+    const myLabs = assigned.map((l, i) => {
+      const c = tint(l.id);
+      const nextPhase = l.phasesDone + 1;
+      const lm = labModules(l.id);
+      return { name:l.name, tagline:l.tagline, color:c, odsNum:l.ods, delay:(i * 70) + 'ms',
+        stateLabel: l.overdue ? 'Entrega vencida' : 'En curso',
+        phaseBars: Array.from({ length: l.phasesTotal }, (_, k) => ({
+          bg: k < l.phasesDone ? 'var(--gold-soft)' : (k === l.phasesDone ? c : 'var(--border)') })),
+        phaseLabel: 'Fase ' + nextPhase + ' de ' + l.phasesTotal + ' en curso',
+        nextLabel: lm.total ? lm.done + '/' + lm.total + ' módulos' : 'Sin módulos aún',
+        meta: [
+          { icon:'route', label: l.phasesTotal + ' fases' },
+          { icon:'school', label: l.courses + (l.courses === 1 ? ' curso' : ' cursos') },
+          { icon:'schedule', label: l.hours + ' h estimadas' }
+        ],
+        lxd: 'LXD: ' + l.lxd, lxdInitial: l.lxd.charAt(0),
+        open: () => this.setState({ screen: 'labdetail', labOpen: l.id }) };
+    });
+
+    const otherLabs = this.labsData.filter(l => !l.mine).map(l => ({
+      name:l.name, tagline:l.tagline, teams:l.teams, color: tint(l.id), soft: labSoft[l.id] || 'var(--gold-soft)' }));
+
+    const openLab = this.labsData.find(l => l.id === this.state.labOpen) || assigned[0] || this.labsData[0];
+    const dColor = tint(openLab.id);
+    const dPhaseTotal = openLab.phasesTotal || 3;
+    const labPhaseData = this.phasesByLab[openLab.id] || [];
+    const dCoursesRaw = this.courses.filter(c => c.labId === openLab.id);
+    const dMods = labModules(openLab.id);
+    const dModulesDone = dMods.done;
+    const dModulesTotal = dMods.total;
+    const dPct = dModulesTotal ? Math.round(dModulesDone / dModulesTotal * 100) : 0;
+
+    const dPhases = Array.from({ length: dPhaseTotal }, (_, i) => {
+      const src = labPhaseData[i];
+      const isOpen = i === (openLab.phasesDone || 0);
+      const done = i < (openLab.phasesDone || 0);
+      const mods = src ? src.modules : [];
+      const modsDone = mods.filter(m => m.done).length;
+      const pct = mods.length ? Math.round(modsDone / mods.length * 100) : 0;
+      const overdue = isOpen && src && src.overdue;
+      return { num: i + 1, delay: (i * 70) + 'ms',
+        title: src ? src.title : 'Fase ' + (i + 1),
+        desc: src ? src.desc : (isOpen ? 'Tu LXD aún no ha publicado el contenido de esta fase.' : 'Se abrirá cuando completes la fase anterior.'),
+        open: isOpen, locked: !isOpen && !done,
+        border: isOpen ? dColor : 'var(--border)',
+        numBg: done ? 'rgba(76,159,56,.16)' : (isOpen ? dColor : 'var(--surface2)'),
+        numFg: done ? '#4C9F38' : (isOpen ? '#FFFFFF' : 'var(--text3)'),
+        numBorder: done ? '#4C9F38' : (isOpen ? dColor : 'var(--border)'),
+        state: done ? 'Completa' : (overdue ? 'Vencida' : (isOpen ? 'Disponible' : 'Bloqueada')),
+        stateIcon: done ? 'check_circle' : (overdue ? 'warning' : (isOpen ? 'lock_open' : 'lock')),
+        stateBg: done ? 'rgba(76,159,56,.16)' : (overdue ? 'rgba(206,17,38,.16)' : (isOpen ? 'var(--gold-soft)' : 'var(--surface2)')),
+        stateFg: done ? '#4C9F38' : (overdue ? 'var(--alert-ink)' : (isOpen ? 'var(--gold-ink)' : 'var(--text3)')),
+        rows: mods.map(m => ({ label: m.title, meta: m.status, icon: m.icon,
+          color: m.done ? '#4C9F38' : dColor })),
+        lockReason: i === 0 ? 'Tu LXD publicará el contenido de esta fase.'
+          : 'Se abre cuando completes la Fase ' + i + '.',
+        progressLabel: mods.length ? modsDone + ' de ' + mods.length + ' módulos' : 'Sin módulos publicados',
+        pctLabel: pct + '%', pct: pct + '%', barColor: dColor,
+        hasDeadline: !!(src && src.deadline),
+        deadlineLabel: src && src.deadline
+          ? (!isOpen && !done ? 'Fecha prevista por el laboratorio: ' + src.deadline
+            : (src.overdue ? 'Entrega vencida: ' + src.deadline : 'Entrega: ' + src.deadline))
+          : '',
+        deadlineColor: (isOpen && src && src.overdue) ? 'var(--alert-ink)' : 'var(--text3)',
+        cta: modsDone > 0 ? 'Continuar la fase' : 'Empezar la fase' };
+    });
 
     const allPosts = this.full ? this.posts : [];
     const kindOf = (id) => this.postKinds.find(k => k.id === id) || this.postKinds[0];
@@ -1198,7 +1541,8 @@ class Component extends DCLogic {
       ruta: { icon:'route', title:'Laboratorio sin fases', copy: this.full ? 'El Laboratorio Impacto todavía no ha publicado sus fases. Tu LXD las abrirá cuando el contenido esté listo.' : 'Todavía no perteneces a ningún laboratorio con Ruta de Impacto activa.', cta:'Ver Laboratorio IA' },
       calendario: { icon:'event_busy', title:'Agenda despejada', copy:'No tienes sesiones ni entregas programadas este mes.', cta:'Actualizar' },
       directorio: { icon:'lightbulb', title:'Aún no hay proyectos aquí', copy: this.full ? 'Ningún proyecto coincide con este filtro. Prueba con otra etapa o limpia la búsqueda.' : 'Todavía no se ha publicado ningún proyecto en la comunidad. Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.', cta:'Ver todas las etapas' },
-      foro: { icon:'forum', title:'Nadie ha escrito aún', copy: this.full ? 'Ninguna publicación coincide con este filtro. Prueba con otra categoría o limpia la búsqueda.' : 'El foro está vacío. Sé la primera en abrir la conversación de la comunidad.', cta:'Ver todo el foro' }
+      foro: { icon:'forum', title:'Nadie ha escrito aún', copy: this.full ? 'Ninguna publicación coincide con este filtro. Prueba con otra categoría o limpia la búsqueda.' : 'El foro está vacío. Sé la primera en abrir la conversación de la comunidad.', cta:'Ver todo el foro' },
+      labs: { icon:'science', title:'Sin laboratorios asignados', copy:'Tu administrador todavía no te ha asignado un laboratorio. Sin uno no tienes Ruta de Impacto ni cursos de área.', cta:'Actualizar' }
     };
     const em = empties[screen] || empties.directorio;
 
@@ -1209,7 +1553,7 @@ class Component extends DCLogic {
     const hasResults = dir.items.length > 0;
 
     const hasPosts = posts.length > 0;
-    const filled = { dashboard: hasCourses, cursos: hasCourseResults, ruta: hasPhases, calendario: hasEvents, directorio: hasResults, foro: hasPosts, perfil: true }[screen];
+    const filled = { dashboard: hasCourses, cursos: hasCourseResults, ruta: hasPhases, calendario: hasEvents, directorio: hasResults, foro: hasPosts, perfil: true, labs: myLabs.length > 0, labdetail: true }[screen];
     const isSoon = !!this.soonTitles[screen];
 
     const searchHints = { cursos:'Buscar curso o laboratorio', directorio:'Buscar proyecto, comunidad u ODS', foro:'Buscar en el foro' };
@@ -1218,14 +1562,39 @@ class Component extends DCLogic {
       ...this.counters,
       nav: this.nav.map(n => {
         const on = n.k === screen;
-        return { icon:n.icon, label:n.label, bar: on ? '#F4C430' : 'transparent',
-          bg: on ? 'rgba(244,196,48,.12)' : 'transparent', fg: on ? '#F4C430' : '#C3C9D0',
-          weight: on ? '600' : '400', go: () => this.setState({ screen: n.k }) };
+        const lit = on || (n.k === 'labs' && screen === 'labdetail');
+        return { icon:n.icon, label:n.label, bar: lit ? '#F4C430' : 'transparent',
+          bg: lit ? 'rgba(244,196,48,.12)' : 'transparent', fg: lit ? '#F4C430' : '#C3C9D0',
+          weight: lit ? '600' : '400', go: () => this.setState({ screen: n.k, labOpen: null }) };
       }),
 
       isDashboard: screen === 'dashboard', isCursos: screen === 'cursos', isRuta: screen === 'ruta',
       isCalendario: screen === 'calendario', isDirectorio: screen === 'directorio',
       isForo: screen === 'foro', isPerfil: screen === 'perfil',
+      isLabs: screen === 'labs', isLabDetail: screen === 'labdetail',
+
+      myLabs, otherLabs,
+      myLabsCount: String(myLabs.length), netLabsCount: String(this.labsData.length),
+      backToLabs: () => this.setState({ screen: 'labs', labOpen: null }),
+
+      dName: openLab.name, dTagline: openLab.tagline, dColor, dOdsNum: openLab.ods,
+      dPct, dRing: 'conic-gradient(#FFFFFF 0 ' + dPct + '%, rgba(255,255,255,.22) ' + dPct + '% 100%)',
+      dPhaseLabel: 'Fase ' + ((openLab.phasesDone || 0) + 1) + ' de ' + dPhaseTotal,
+      dModuleLabel: dModulesTotal ? dModulesDone + ' de ' + dModulesTotal + ' módulos' : 'Sin módulos publicados',
+      dStats: [
+        { value: String(dPhaseTotal), label:'Fases en la ruta', color: 'var(--gold-ink)' },
+        { value: String(dModulesTotal), label:'Módulos publicados', color:'var(--text)' },
+        { value: String(dCoursesRaw.length), label:'Cursos del laboratorio', color:'var(--text)' },
+        { value: String(openLab.hours || 0), label:'Horas estimadas', color:'var(--text)' }
+      ],
+      dPhases,
+      dHasCourses: dCoursesRaw.length > 0, dNoCourses: dCoursesRaw.length === 0,
+      dCourses: dCoursesRaw.map(c => ({ name:c.name, icon:c.icon,
+        pct: Math.round(c.done / c.total * 100) + '%', progress: c.done + '/' + c.total })),
+      dLxd: openLab.lxd || 'Sin asignar', dLxdInitial: (openLab.lxd || '?').charAt(0),
+      dLxdMail: openLab.mail || 'Sin correo registrado',
+      dAvailability: openLab.availability || 'Sin horario publicado',
+
 
       foroActive: '38', hasPosts, posts, foroFilters, kinds, rules: this.rules,
       draft: this.state.draft,

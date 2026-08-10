@@ -22,14 +22,30 @@ class PortalTab {
 class PortalShell extends StatefulWidget {
   final String portalTitle;
   final List<PortalTab> tabs;
-  const PortalShell({super.key, required this.portalTitle, required this.tabs});
+
+  /// Pestaña resaltada al montar. Por defecto la primera — todos los
+  /// portales existentes se comportan exactamente igual que antes.
+  final int initialSelectedIndex;
+
+  /// Si no es null, reemplaza el contenido de la pestaña seleccionada sin
+  /// cambiar cuál queda resaltada en la barra lateral — así una pantalla
+  /// de detalle (p. ej. el detalle de un laboratorio) puede vivir "dentro"
+  /// de su pestaña sin duplicar el header ni la barra lateral.
+  final Widget? contentOverride;
+
+  const PortalShell(
+      {super.key,
+      required this.portalTitle,
+      required this.tabs,
+      this.initialSelectedIndex = 0,
+      this.contentOverride});
 
   @override
   State<PortalShell> createState() => _PortalShellState();
 }
 
 class _PortalShellState extends State<PortalShell> {
-  int _selected = 0;
+  late int _selected = widget.initialSelectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +82,11 @@ class _PortalShellState extends State<PortalShell> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: KeyedSubtree(
-                      key: ValueKey(_selected),
-                      child: widget.tabs[_selected].builder(context),
+                      key: ValueKey(widget.contentOverride != null
+                          ? 'override-$_selected'
+                          : _selected),
+                      child: widget.contentOverride ??
+                          widget.tabs[_selected].builder(context),
                     ),
                   ),
                 ),
@@ -475,15 +494,28 @@ class StageRail extends StatelessWidget {
   final Color accentColor;
   final ContentColors colors;
   final int currentIndex;
+
+  /// Número de segmentos. Por defecto las 6 etapas de un proyecto
+  /// (`projectStages`) — la Ruta de Impacto de un laboratorio pasa el
+  /// número real de sus fases en su lugar, con [caption] propio (sus
+  /// fases no tienen nombre fijo como "Ideación"/"Piloto").
+  final int? totalOverride;
+
+  /// Reemplaza la leyenda por defecto ("Etapa N de M" / "Sigue: `<etapa>`")
+  /// cuando el texto de `projectStages` no aplica.
+  final Widget? caption;
+
   const StageRail(
       {super.key,
       required this.accentColor,
       required this.colors,
-      required this.currentIndex});
+      required this.currentIndex,
+      this.totalOverride,
+      this.caption});
 
   @override
   Widget build(BuildContext context) {
-    final total = projectStages.length;
+    final total = totalOverride ?? projectStages.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -506,18 +538,19 @@ class StageRail extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 7),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Etapa ${currentIndex + 1} de $total',
-                style: TextStyle(fontSize: 11.5, color: colors.text3)),
-            Text(
-                currentIndex >= total - 1
-                    ? 'Etapa final'
-                    : 'Sigue: ${projectStages[currentIndex + 1]}',
-                style: TextStyle(fontSize: 11.5, color: colors.text3)),
-          ],
-        ),
+        caption ??
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Etapa ${currentIndex + 1} de $total',
+                    style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                Text(
+                    currentIndex >= total - 1
+                        ? 'Etapa final'
+                        : 'Sigue: ${projectStages[currentIndex + 1]}',
+                    style: TextStyle(fontSize: 11.5, color: colors.text3)),
+              ],
+            ),
       ],
     );
   }

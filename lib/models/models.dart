@@ -84,6 +84,11 @@ class AppUser {
   String get university => (extra['university'] as String?) ?? '';
   String get career => (extra['career'] as String?) ?? '';
   set career(String v) => extra['career'] = v;
+
+  /// Ciudad a la que pertenece el usuario (la asigna el Admin al crear o
+  /// editar la cuenta, igual que universidad/empresa) — todos los roles.
+  String get city => (extra['city'] as String?) ?? '';
+  set city(String v) => extra['city'] = v;
   String? get groupId => extra['groupId'] as String?;
   String? get companyId => extra['companyId'] as String?;
   String? get donorId => extra['donorId'] as String?;

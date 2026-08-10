@@ -381,6 +381,7 @@ class _MentorProfile extends StatelessWidget {
               const Divider(height: 32),
               row('Laboratorios', labs.map((l) => l.name).join(', ')),
               row('Teléfono', mentor.phone),
+              row('Ciudad', mentor.city),
             ],
           ),
         ),

@@ -537,6 +537,12 @@ class _AdminUsersState extends State<AdminUsers> {
   }
 
   String _detail(DataProvider data, AppUser u) {
+    final base = _detailBase(data, u);
+    if (u.city.isEmpty) return base;
+    return base.isEmpty ? u.city : '$base · ${u.city}';
+  }
+
+  String _detailBase(DataProvider data, AppUser u) {
     if (Roles.isStudentLike(u.role)) {
       if (u.studentType == StudentType.openLearning) {
         return StudentType.label(u.studentType);
@@ -574,6 +580,7 @@ Future<void> showUserDialog(
   final emailCtrl = TextEditingController(text: user?.email ?? '');
   final passCtrl = TextEditingController(text: user?.password ?? '');
   final phoneCtrl = TextEditingController(text: user?.phone ?? '');
+  final cityCtrl = TextEditingController(text: user?.city ?? '');
   final cedulaCtrl = TextEditingController(text: user?.cedula ?? '');
   final universityCtrl =
       TextEditingController(text: user?.university ?? '');
@@ -649,6 +656,10 @@ Future<void> showUserDialog(
                     controller: phoneCtrl,
                     decoration:
                         const InputDecoration(labelText: 'Teléfono')),
+                const SizedBox(height: 12),
+                TextField(
+                    controller: cityCtrl,
+                    decoration: const InputDecoration(labelText: 'Ciudad')),
                 // Campos según el rol (alumni usa los mismos que estudiante:
                 // ver Roles.isStudentLike)
                 if (Roles.isStudentLike(role)) ...[
@@ -842,6 +853,7 @@ Future<void> showUserDialog(
               }
               final extra =
                   Map<String, dynamic>.from(user?.extra ?? {});
+              extra['city'] = cityCtrl.text.trim();
               switch (role) {
                 case Roles.student || Roles.alumni:
                   extra['university'] = universityCtrl.text.trim();

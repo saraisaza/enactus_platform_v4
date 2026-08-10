@@ -1010,6 +1010,7 @@ class _LxdProfile extends StatelessWidget {
               Text(lxd.email,
                   style: const TextStyle(
                       color: AppColors.textMuted, fontSize: 13)),
+              row('Ciudad', lxd.city),
               const Divider(height: 32),
               row('Permiso de calificar · Open Learning',
                   lxd.canGradeOpenLearning ? 'Activado' : 'Desactivado'),

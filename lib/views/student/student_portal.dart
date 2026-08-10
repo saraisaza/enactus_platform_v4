@@ -294,6 +294,7 @@ class _StudentProfile extends StatelessWidget {
                   ('Cédula', student.cedula),
                   ('Teléfono', student.phone),
                   ('Correo', student.email),
+                  ('Ciudad', student.city),
                   ('Carrera', student.career),
                 ],
                 colors: colors,

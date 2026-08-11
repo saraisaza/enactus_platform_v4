@@ -71,6 +71,7 @@ flutter:
 
   assets:
     - assets/media/
+    - assets/data/colombia-110m.json
 
   fonts:
     - family: Knockout

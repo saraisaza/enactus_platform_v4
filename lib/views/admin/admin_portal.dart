@@ -9,6 +9,7 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/colombia_cities.dart';
 import '../../utils/constants.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
@@ -608,6 +609,13 @@ Future<void> showUserDialog(
   var canGradeOpenLearning = user?.canGradeOpenLearning ?? true;
   var canGradeEnactus = user?.canGradeEnactus ?? false;
   var studentType = user?.studentType ?? StudentType.enactus;
+  // Ciudad del estudiante: lista cerrada (Mapa de Estudiantes necesita
+  // coordenadas reales para ubicar el punto — ver
+  // design_handoff_mapa_estudiantes/README.md). Si el valor guardado no
+  // está en el catálogo (dato viejo o typo) cae a "sin elegir" en vez de
+  // reventar: el Admin simplemente lo vuelve a elegir.
+  String? selectedStudentCity =
+      colombiaCityByName(user?.city ?? '') == null ? null : user!.city;
   String? alliedCompanyId =
       (user?.role == Roles.lxd || user?.role == Roles.mentor)
           ? user?.companyId
@@ -656,10 +664,12 @@ Future<void> showUserDialog(
                     controller: phoneCtrl,
                     decoration:
                         const InputDecoration(labelText: 'Teléfono')),
-                const SizedBox(height: 12),
-                TextField(
-                    controller: cityCtrl,
-                    decoration: const InputDecoration(labelText: 'Ciudad')),
+                if (!Roles.isStudentLike(role)) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: cityCtrl,
+                      decoration: const InputDecoration(labelText: 'Ciudad')),
+                ],
                 // Campos según el rol (alumni usa los mismos que estudiante:
                 // ver Roles.isStudentLike)
                 if (Roles.isStudentLike(role)) ...[
@@ -692,6 +702,20 @@ Future<void> showUserDialog(
                       controller: universityCtrl,
                       decoration:
                           const InputDecoration(labelText: 'Universidad')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedStudentCity,
+                    decoration: const InputDecoration(
+                        labelText: 'Ciudad',
+                        helperText:
+                            'De dónde es — ubica al estudiante en el Mapa de Estudiantes'),
+                    items: [
+                      for (final c in colombiaCities)
+                        DropdownMenuItem(
+                            value: c.name, child: Text('${c.name} · ${c.department}')),
+                    ],
+                    onChanged: (v) => setState(() => selectedStudentCity = v),
+                  ),
                   const SizedBox(height: 12),
                   TextField(
                       controller: careerCtrl,
@@ -853,7 +877,9 @@ Future<void> showUserDialog(
               }
               final extra =
                   Map<String, dynamic>.from(user?.extra ?? {});
-              extra['city'] = cityCtrl.text.trim();
+              extra['city'] = Roles.isStudentLike(role)
+                  ? (selectedStudentCity ?? '')
+                  : cityCtrl.text.trim();
               switch (role) {
                 case Roles.student || Roles.alumni:
                   extra['university'] = universityCtrl.text.trim();

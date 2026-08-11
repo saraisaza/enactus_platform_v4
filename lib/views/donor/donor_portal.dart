@@ -8,6 +8,7 @@ import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
 
 /// Portal del donante: transparencia total sobre el uso de su aporte.
@@ -23,6 +24,10 @@ class DonorPortal extends StatelessWidget {
             label: 'Mi Impacto',
             icon: Icons.favorite_outline,
             builder: (_) => const _DonorDashboard()),
+        PortalTab(
+            label: 'Mapa de Estudiantes',
+            icon: Icons.public_outlined,
+            builder: (_) => const StudentsMapView()),
         PortalTab(
             label: 'Evidencias',
             icon: Icons.photo_library_outlined,

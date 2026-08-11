@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Mapa de estudiantes — Enactus Colombia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" media="print" onload="this.media='all'" />
+<style>
+@font-face { font-family:'Knockout'; src:url('assets/media/Knockout-92.otf') format('opentype'); font-weight:400 700; font-display:swap; }
+@font-face { font-family:'Space Grotesk'; src:url('assets/media/SpaceGrotesk-Variable.ttf') format('truetype'); font-weight:300 700; font-display:swap; }
+* { box-sizing:border-box; }
+html, body { margin:0; padding:0; }
+body {
+  --bg:#111315; --surface:#1A1D21; --surface2:#22262B; --border:#33383F;
+  --text:#F5F5F2; --text2:#B8BCBF; --text3:#8A9099;
+  --gold:#F4C430; --gold-ink:#F4C430; --gold-soft:rgba(244,196,48,.14);
+  background:var(--bg); color:var(--text);
+  font-family:'Space Grotesk', system-ui, sans-serif;
+}
+body.light {
+  --bg:#F2F2EC; --surface:#FFFFFF; --surface2:#F0F0E9; --border:#DEDED4;
+  --text:#15181B; --text2:#4C525A; --text3:#787F88;
+  --gold-ink:#8A6A00; --gold-soft:rgba(244,196,48,.24);
+}
+a { color:var(--gold-ink); text-decoration:none; }
+a:hover { color:#FFD700; }
+.ms { font-family:'Material Symbols Rounded'; font-weight:400; font-style:normal; line-height:1; }
+@keyframes glow { 0%,100% { box-shadow:0 0 0 0 rgba(244,196,48,.55); } 50% { box-shadow:0 0 0 5px rgba(244,196,48,0); } }
+@keyframes pulse { 0%,100% { opacity:.4; } 50% { opacity:.75; } }
+.wrap { padding:34px 40px 56px; display:flex; flex-direction:column; gap:26px; max-width:1560px; margin:0 auto; }
+.eyebrow { display:flex; align-items:center; gap:9px; margin-bottom:10px; }
+.eyebrow span:first-child { width:7px; height:7px; border-radius:50%; background:#4C9F38; animation:glow 2.4s infinite; }
+.eyebrow span:last-child { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--text3); font-weight:600; }
+h1 { font-family:'Knockout'; font-size:58px; line-height:.94; letter-spacing:.045em; margin:0; color:var(--gold-ink); text-transform:uppercase; }
+.sub { margin:12px 0 0; font-size:15.5px; color:var(--text2); max-width:56ch; text-wrap:pretty; }
+.stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+.stat b { display:block; font-family:'Knockout'; font-weight:400; font-size:40px; line-height:1; letter-spacing:.03em; }
+.stat span { display:block; margin-top:6px; font-size:12.5px; color:var(--text3); }
+.controls { display:flex; gap:9px; flex-wrap:wrap; align-items:center; }
+.seg { display:flex; gap:4px; padding:4px; background:var(--surface); border:1px solid var(--border); border-radius:999px; }
+.seg button { display:flex; align-items:center; gap:8px; padding:9px 17px; border-radius:999px; border:none; background:transparent;
+  color:var(--text3); font-family:inherit; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .16s ease; }
+.seg button:hover { color:var(--text); }
+.seg button[aria-pressed="true"] { background:var(--gold-soft); color:var(--gold-ink); font-weight:600; }
+.spacer { flex:1; }
+.ghost { display:flex; align-items:center; gap:9px; padding:11px 17px; border-radius:10px; background:var(--surface);
+  border:1px solid var(--border); color:var(--text2); font-family:inherit; font-size:13px; cursor:pointer; transition:all .15s ease; }
+.ghost:hover { border-color:var(--gold-ink); color:var(--gold-ink); }
+.grid { display:grid; grid-template-columns:minmax(0,1.62fr) minmax(0,1fr); gap:20px; align-items:start; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:18px; }
+#mapCard { position:relative; overflow:hidden; }
+#map { position:relative; width:100%; height:620px; }
+#map svg { position:absolute; inset:0; z-index:1; }
+#state { position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:32px; }
+#state .box { max-width:34ch; }
+#state .ms { font-size:34px; color:var(--text3); animation:pulse 1.8s infinite; }
+#state p { margin:14px 0 0; font-size:13.5px; line-height:1.5; color:var(--text3); }
+.land { fill:var(--surface2); stroke:var(--border); stroke-width:1.2; }
+body.light .land { fill:#EDEDE3; }
+.bubble { cursor:pointer; transition:opacity .25s ease; }
+.bubble .halo { opacity:.16; }
+.bubble .core { stroke:#0D0F11; stroke-width:1.3; }
+body.light .bubble .core { stroke:#FFFFFF; stroke-width:1.6; }
+.bubble:hover .core { stroke:var(--text); stroke-width:2; }
+.bubble text { font-size:11px; font-weight:600; fill:var(--text2); pointer-events:none;
+  stroke:var(--surface2); stroke-width:3.5px; paint-order:stroke; stroke-linejoin:round; }
+body.light .bubble text { stroke:#EDEDE3; }
+.tip { position:absolute; pointer-events:none; opacity:0; transform:translate(-50%,-118%); transition:opacity .12s ease;
+  background:rgba(10,12,14,.92); border:1px solid rgba(255,255,255,.12); border-radius:11px; padding:11px 14px;
+  backdrop-filter:blur(8px); min-width:172px; z-index:5; }
+.tip .head { display:flex; align-items:center; gap:8px; }
+.tip .head i { width:9px; height:9px; border-radius:50%; flex:none; }
+.tip h4 { margin:0; font-family:'Knockout'; font-weight:400; font-size:21px; letter-spacing:.03em; text-transform:uppercase; color:#FFF; }
+.tip .dep { margin-top:2px; font-size:11.5px; color:rgba(255,255,255,.6); }
+.tip .big { margin-top:9px; display:flex; align-items:baseline; gap:8px; }
+.tip .big b { font-family:'Knockout'; font-weight:400; font-size:26px; letter-spacing:.02em; }
+.tip .big span { font-size:12px; color:rgba(255,255,255,.72); }
+.tip .uni { margin-top:7px; padding-top:7px; border-top:1px solid rgba(255,255,255,.12); font-size:11.5px; color:rgba(255,255,255,.66); line-height:1.4; }
+.legend { position:absolute; z-index:6; left:22px; bottom:20px; background:rgba(10,12,14,.72); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:13px 15px; opacity:0; transition:opacity .3s ease; }
+body.light .legend { background:rgba(255,255,255,.86); border-color:var(--border); }
+.legend .lt { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text3); font-weight:600; margin-bottom:10px; }
+.legend .sizes { display:flex; align-items:flex-end; gap:11px; }
+.legend .sizes i { display:block; border-radius:50%; background:var(--gold); opacity:.85; }
+.legend .sizes u { text-decoration:none; font-size:10.5px; color:var(--text3); display:block; text-align:center; margin-top:5px; }
+.legend .tiers { display:flex; flex-direction:column; gap:7px; margin-top:12px; padding-top:11px; border-top:1px solid var(--border); }
+.legend .tiers div { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); }
+.legend .tiers i { width:10px; height:10px; border-radius:50%; flex:none; }
+.rail { padding:22px 24px; }
+.rail h3 { margin:0 0 4px; font-family:'Knockout'; font-weight:400; font-size:24px; letter-spacing:.045em; text-transform:uppercase; color:var(--text); }
+.rail .hint { font-size:12.5px; color:var(--text3); margin-bottom:16px; }
+.rows { display:flex; flex-direction:column; gap:3px; max-height:470px; overflow-y:auto; margin:0 -8px; padding:0 8px; }
+.rows::-webkit-scrollbar { width:6px; }
+.rows::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.row { display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:10px; cursor:pointer; transition:background .15s ease; }
+.row:hover, .row.on { background:var(--surface2); }
+.row .rank { flex:none; width:22px; font-size:11.5px; color:var(--text3); text-align:right; }
+.row .body { flex:1; min-width:0; }
+.row .name { font-size:13.5px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.row .bar { margin-top:5px; height:5px; border-radius:3px; background:var(--surface2); overflow:hidden; }
+.row:hover .bar, .row.on .bar { background:var(--border); }
+.row .bar i { display:block; height:100%; border-radius:3px; transition:width .3s ease; }
+.row .n { flex:none; font-family:'Knockout'; font-weight:400; font-size:19px; letter-spacing:.02em; color:var(--text2); min-width:30px; text-align:right; }
+.note { display:flex; align-items:flex-start; gap:11px; padding:14px 16px; border-radius:12px; background:var(--surface2);
+  font-size:12.5px; line-height:1.5; color:var(--text3); margin-top:18px; }
+.note .ms { font-size:17px; color:var(--gold-ink); margin-top:1px; flex:none; }
+.foot { margin-top:4px; padding-top:22px; border-top:1px solid var(--border); display:flex; justify-content:space-between;
+  gap:24px; flex-wrap:wrap; font-size:12.5px; color:var(--text3); }
+.flag { display:flex; height:22px; width:4px; flex-direction:column; border-radius:2px; overflow:hidden; }
+.flag i { flex:1; }
+@media (max-width:1080px) { .grid { grid-template-columns:1fr; } #map { height:520px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap;">
+    <div style="min-width:320px;">
+      <div class="eyebrow"><span></span><span id="eyebrow">Red nacional · actualizado hoy</span></div>
+      <h1>Estudiantes en el país</h1>
+      <p class="sub">Dónde están los estudiantes registrados en Enactus Colombia. Cada punto es una ciudad con al menos una universidad activa en la red.</p>
+    </div>
+    <div class="stats" style="flex:1; min-width:460px;">
+      <div class="stat"><b id="sTotal" style="color:var(--gold-ink)">0</b><span>Estudiantes registrados</span></div>
+      <div class="stat"><b id="sCities">0</b><span>Ciudades</span></div>
+      <div class="stat"><b id="sUnis">0</b><span>Universidades</span></div>
+      <div class="stat"><b id="sDepts">0</b><span>Departamentos</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Alcance">
+      <button id="sAll" aria-pressed="true">Toda la red</button>
+      <button id="sMine" aria-pressed="false">Los que patrocino</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost" id="theme"><span class="ms" style="font-size:18px">light_mode</span>Tema</button>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="mapCard">
+      <div id="map">
+        <div id="state"><div class="box"><span class="ms">public</span><p id="stateText">Cargando la geometría del país…</p></div></div>
+        <div class="tip" id="tip"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+
+    <div class="card rail">
+      <h3>Ciudades</h3>
+      <div class="hint" id="railHint">Ordenadas por número de estudiantes</div>
+      <div class="rows" id="rows"></div>
+      <div class="note">
+        <span class="ms">info</span>
+        <span>Un estudiante cuenta en la ciudad de su universidad. Los que estudian a distancia se agrupan en la sede principal.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="flag"><i style="background:#FCD116"></i><i style="background:#003893"></i><i style="background:#CE1126"></i></div>
+      <span>Portal de aliados · Enactus Colombia</span>
+    </div>
+    <span>Geometría: Natural Earth (dominio público)</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CITIES = [
+    { c:'Bogotá',       d:'Cundinamarca',   lat:4.711,  lon:-74.072, n:96, m:38, u:['Universidad de los Andes','Universidad Nacional','Pontificia Universidad Javeriana','Universidad del Rosario'] },
+    { c:'Medellín',     d:'Antioquia',      lat:6.244,  lon:-75.581, n:61, m:24, u:['Universidad de Antioquia','Universidad EAFIT'] },
+    { c:'Cali',         d:'Valle del Cauca',lat:3.452,  lon:-76.532, n:48, m:19, u:['Universidad del Valle','Universidad Icesi'] },
+    { c:'Barranquilla', d:'Atlántico',      lat:10.968, lon:-74.781, n:34, m:14, u:['Universidad del Norte'] },
+    { c:'Bucaramanga',  d:'Santander',      lat:7.119,  lon:-73.123, n:28, m:9,  u:['Universidad Industrial de Santander'] },
+    { c:'Cartagena',    d:'Bolívar',        lat:10.391, lon:-75.479, n:24, m:11, u:['Universidad de Cartagena'] },
+    { c:'Pereira',      d:'Risaralda',      lat:4.809,  lon:-75.691, n:21, m:6,  u:['Universidad Tecnológica de Pereira'] },
+    { c:'Manizales',    d:'Caldas',         lat:5.069,  lon:-75.517, n:18, m:5,  u:['Universidad de Caldas'] },
+    { c:'Santa Marta',  d:'Magdalena',      lat:11.240, lon:-74.211, n:16, m:7,  u:['Universidad del Magdalena'] },
+    { c:'Cúcuta',       d:'N. de Santander',lat:7.894,  lon:-72.508, n:14, m:4,  u:['Universidad Francisco de Paula Santander'] },
+    { c:'Popayán',      d:'Cauca',          lat:2.445,  lon:-76.615, n:12, m:5,  u:['Universidad del Cauca'] },
+    { c:'Tunja',        d:'Boyacá',         lat:5.535,  lon:-73.368, n:11, m:3,  u:['UPTC'] },
+    { c:'Ibagué',       d:'Tolima',         lat:4.439,  lon:-75.232, n:10, m:3,  u:['Universidad del Tolima'] },
+    { c:'Neiva',        d:'Huila',          lat:2.927,  lon:-75.282, n:9,  m:4,  u:['Universidad Surcolombiana'] },
+    { c:'Pasto',        d:'Nariño',         lat:1.214,  lon:-77.281, n:8,  m:2,  u:['Universidad de Nariño'] },
+    { c:'Villavicencio',d:'Meta',           lat:4.142,  lon:-73.627, n:7,  m:2,  u:['Universidad de los Llanos'] },
+    { c:'Montería',     d:'Córdoba',        lat:8.748,  lon:-75.881, n:6,  m:2,  u:['Universidad de Córdoba'] },
+    { c:'Riohacha',     d:'La Guajira',     lat:11.544, lon:-72.907, n:5,  m:3,  u:['Universidad de La Guajira'] },
+    { c:'Armenia',      d:'Quindío',        lat:4.534,  lon:-75.681, n:4,  m:1,  u:['Universidad del Quindío'] }
+  ];
+
+  /* Colombia — Natural Earth 110m (world-atlas@2.0.2), public domain.
+     Embedded so the page has zero third-party dependencies. */
+  var COLOMBIA = [[[[-66.876,1.253],[-67.063,1.13],[-67.261,1.72],[-67.538,2.037],[-67.87,1.693],[-69.817,1.715],[-69.803,1.089],[-69.22,0.986],[-69.252,0.603],[-69.454,0.706],[-70.015,0.542],[-70.019,-0.186],[-69.576,-0.55],[-69.421,-1.123],[-69.443,-1.557],[-69.893,-4.299],[-70.393,-3.767],[-70.692,-3.743],[-70.048,-2.724],[-70.815,-2.257],[-71.412,-2.344],[-71.776,-2.169],[-72.327,-2.435],[-73.072,-2.31],[-73.659,-1.26],[-74.123,-1.003],[-74.443,-0.531],[-75.106,-0.057],[-75.372,-0.152],[-75.801,0.085],[-76.294,0.415],[-76.578,0.256],[-77.424,0.395],[-77.669,0.827],[-77.856,0.81],[-78.857,1.382],[-78.99,1.691],[-78.619,1.766],[-78.663,2.267],[-78.429,2.629],[-77.932,2.697],[-77.511,3.325],[-77.129,3.849],[-77.496,4.088],[-77.309,4.669],[-77.532,5.583],[-77.32,5.845],[-77.478,6.691],[-77.881,7.224],[-77.752,7.71],[-77.431,7.637],[-77.244,7.935],[-77.475,8.524],[-77.352,8.67],[-76.837,8.639],[-76.085,9.337],[-75.675,9.443],[-75.664,9.773],[-75.48,10.62],[-74.908,11.083],[-74.278,11.102],[-74.199,11.31],[-73.414,11.227],[-72.629,11.732],[-72.237,11.955],[-71.754,12.437],[-71.401,12.377],[-71.139,12.113],[-71.333,11.776],[-71.974,11.608],[-72.229,11.109],[-72.615,10.823],[-72.906,10.45],[-73.029,9.736],[-73.306,9.152],[-72.787,9.085],[-72.661,8.626],[-72.438,8.406],[-72.363,8.003],[-72.481,7.632],[-72.445,7.424],[-72.197,7.341],[-71.959,6.991],[-70.674,7.087],[-70.095,6.96],[-69.389,6.101],[-68.986,6.207],[-68.266,6.153],[-67.697,6.268],[-67.34,6.095],[-67.52,5.557],[-67.744,5.22],[-67.823,4.504],[-67.621,3.839],[-67.337,3.543],[-67.304,3.318],[-67.808,2.82],[-67.448,2.6],[-67.182,2.25],[-66.876,1.253]]]];
+
+  /* spherical Mercator, fitted to a box — same math as d3.geoMercator().fitExtent() */
+  function mercator(rings, w, h, pad) {
+    var pts = [], x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    var fwd = function (lon, lat) {
+      var la = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
+      return [lon * Math.PI / 180, Math.log(Math.tan(Math.PI / 4 + la / 2))];
+    };
+    rings.forEach(function (poly) {
+      poly.forEach(function (ring) {
+        ring.forEach(function (p) {
+          var q = fwd(p[0], p[1]);
+          if (q[0] < x0) x0 = q[0]; if (q[0] > x1) x1 = q[0];
+          if (q[1] < y0) y0 = q[1]; if (q[1] > y1) y1 = q[1];
+        });
+      });
+    });
+    var k = Math.min((w - pad * 2) / (x1 - x0), (h - pad * 2) / (y1 - y0));
+    var dx = (w - k * (x1 + x0)) / 2, dy = (h + k * (y1 + y0)) / 2;
+    var project = function (lon, lat) { var q = fwd(lon, lat); return [q[0] * k + dx, dy - q[1] * k]; };
+    project.path = function () {
+      return rings.map(function (poly) {
+        return poly.map(function (ring) {
+          return ring.map(function (p, i) {
+            var q = project(p[0], p[1]);
+            return (i ? 'L' : 'M') + q[0].toFixed(1) + ',' + q[1].toFixed(1);
+          }).join('') + 'Z';
+        }).join('');
+      }).join('');
+    };
+    return project;
+  }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  var scope = 'all', projection = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var val = function (d) { return scope === 'all' ? d.n : d.m; };
+  var active = function () {
+    return CITIES.filter(function (d) { return val(d) > 0; })
+                 .sort(function (a, b) { return val(b) - val(a); });
+  };
+  var maxVal = function () {
+    return active().reduce(function (m, d) { return Math.max(m, val(d)); }, 1);
+  };
+  var radius = function (v, m) { return Math.max(3.5, Math.sqrt(v / m) * 26); };
+
+  /* Paleta de la bandera. El azul se aclara para que se lea sobre fondo oscuro. */
+  var TIERS = [
+    { min:40, color:'#CE1126', label:'40 o más estudiantes' },
+    { min:12, color:'#FCD116', label:'Entre 12 y 39' },
+    { min:0,  color:'#2F6BE0', label:'Menos de 12' }
+  ];
+  var tierOf = function (d) {
+    var v = val(d);
+    for (var i = 0; i < TIERS.length; i++) if (v >= TIERS[i].min) return TIERS[i];
+    return TIERS[TIERS.length - 1];
+  };
+
+  /* ---------- pieces that need no map library ---------- */
+  function setStats() {
+    var list = active();
+    var targets = {
+      sTotal: list.reduce(function (s, d) { return s + val(d); }, 0),
+      sCities: list.length,
+      sUnis: new Set([].concat.apply([], list.map(function (d) { return d.u; }))).size,
+      sDepts: new Set(list.map(function (d) { return d.d; })).size
+    };
+    var t0 = performance.now();
+    (function tick(t) {
+      var k = Math.min(1, (t - t0) / 800), e = 1 - Math.pow(1 - k, 3);
+      for (var id in targets) $(id).textContent = Math.round(targets[id] * e);
+      if (k < 1) requestAnimationFrame(tick);
+    })(t0);
+
+    $('eyebrow').textContent = scope === 'all'
+      ? 'Red nacional · actualizado hoy'
+      : 'Estudiantes que patrocina tu organización';
+    $('railHint').textContent = scope === 'all'
+      ? 'Ordenadas por número de estudiantes'
+      : 'Solo los estudiantes vinculados a tu aporte';
+  }
+
+  function drawRail() {
+    var list = active(), max = maxVal(), box = $('rows');
+    box.textContent = '';
+    list.forEach(function (d, i) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML =
+        '<div class="rank">' + (i + 1) + '</div>' +
+        '<div class="body"><div class="name"></div><div class="bar"><i style="width:' +
+          (val(d) / max * 100) + '%;background:' + tierOf(d).color + '"></i></div></div>' +
+        '<div class="n">' + val(d) + '</div>';
+      row.querySelector('.name').textContent = d.c + ' · ' + d.d;
+      row.onmouseenter = function () { focus(d.c); };
+      row.onmouseleave = function () { focus(null); };
+      box.appendChild(row);
+    });
+  }
+
+  function focus(name) {
+    var rows = $('rows').children;
+    for (var i = 0; i < rows.length; i++) {
+      var label = rows[i].querySelector('.name').textContent.split(' · ')[0];
+      rows[i].classList.toggle('on', !!name && label === name);
+    }
+    var bubbles = document.querySelectorAll('.bubble');
+    for (var j = 0; j < bubbles.length; j++) {
+      bubbles[j].style.opacity = !name || bubbles[j].dataset.city === name ? 1 : .25;
+    }
+  }
+
+  function setLegend() {
+    var max = maxVal(), el = $('legend');
+    el.style.opacity = 1;
+    var steps = [Math.max(1, Math.round(max * .1)), Math.round(max * .45), max];
+    el.innerHTML = '<div class="lt">Estudiantes por ciudad</div><div class="sizes">' +
+      steps.map(function (v) {
+        var r = Math.max(4, radius(v, max));
+        var c = TIERS.filter(function (t) { return v >= t.min; })[0] || TIERS[2];
+        return '<div><i style="width:' + r * 2 + 'px;height:' + r * 2 +
+               'px;background:' + c.color + '"></i><u>' + v + '</u></div>';
+      }).join('') + '</div><div class="tiers">' +
+      TIERS.map(function (t) {
+        return '<div><i style="background:' + t.color + '"></i>' + t.label + '</div>';
+      }).join('') + '</div>';
+  }
+
+  /* ---------- map ---------- */
+  function render() {
+    var box = $('map'), w = box.clientWidth, h = box.clientHeight;
+    if (!w || !h) return;
+
+    projection = mercator(COLOMBIA, w, h, 40);
+
+    var old = box.querySelector('svg');
+    if (old) old.remove();
+
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    box.insertBefore(svg, $('tip'));
+
+    var land = document.createElementNS(NS, 'path');
+    land.setAttribute('class', 'land');
+    land.setAttribute('d', projection.path());
+    svg.appendChild(land);
+
+    var g = document.createElementNS(NS, 'g');
+    svg.appendChild(g);
+
+    var list = active(), max = maxVal();
+    list.forEach(function (d) {
+      var p = projection(d.lon, d.lat);
+      var r = radius(val(d), max);
+      var node = document.createElementNS(NS, 'g');
+      node.setAttribute('class', 'bubble');
+      node.setAttribute('transform', 'translate(' + p[0] + ',' + p[1] + ')');
+      node.dataset.city = d.c;
+
+      var col = tierOf(d).color;
+
+      var halo = document.createElementNS(NS, 'circle');
+      halo.setAttribute('class', 'halo');
+      halo.setAttribute('r', Math.max(6, r) * 1.9);
+      halo.setAttribute('fill', col);
+      node.appendChild(halo);
+
+      var core = document.createElementNS(NS, 'circle');
+      core.setAttribute('class', 'core');
+      core.setAttribute('r', r);
+      core.setAttribute('fill', col);
+      node.appendChild(core);
+
+      if (val(d) >= max * .35) {
+        var t = document.createElementNS(NS, 'text');
+        t.setAttribute('y', -r - 8); t.setAttribute('text-anchor', 'middle');
+        t.textContent = d.c;
+        node.appendChild(t);
+      }
+
+      node.addEventListener('mousemove', function (e) {
+        var rect = box.getBoundingClientRect(), tip = $('tip');
+        tip.style.left = (e.clientX - rect.left) + 'px';
+        tip.style.top = (e.clientY - rect.top) + 'px';
+        tip.style.opacity = 1;
+        tip.innerHTML = '<div class="head"><i style="background:' + col + '"></i><h4></h4></div>' +
+          '<div class="dep"></div>' +
+          '<div class="big"><b style="color:' + col + '">' + val(d) + '</b><span>estudiantes' +
+          (scope === 'mine' ? ' que patrocinas' : '') + '</span></div><div class="uni"></div>';
+        tip.querySelector('h4').textContent = d.c;
+        tip.querySelector('.dep').textContent = d.d;
+        tip.querySelector('.uni').textContent = d.u.join(' · ');
+        focus(d.c);
+      });
+      node.addEventListener('mouseleave', function () {
+        $('tip').style.opacity = 0; focus(null);
+      });
+
+      g.appendChild(node);
+    });
+
+    setLegend();
+  }
+
+  function wireControls(redraw) {
+    var press = function (on, off) {
+      on.setAttribute('aria-pressed', 'true');
+      off.setAttribute('aria-pressed', 'false');
+    };
+    var A = $('sAll'), M = $('sMine');
+
+    A.onclick = function () { scope = 'all'; press(A, M); setStats(); drawRail(); redraw(); };
+    M.onclick = function () { scope = 'mine'; press(M, A); setStats(); drawRail(); redraw(); };
+
+    $('theme').onclick = function () {
+      document.body.classList.toggle('light');
+      var light = document.body.classList.contains('light');
+      $('theme').querySelector('.ms').textContent = light ? 'dark_mode' : 'light_mode';
+      redraw();
+    };
+  }
+
+  /* nothing here depends on a network request — paint and wire immediately */
+  setStats();
+  drawRail();
+  wireControls(function () { render(); });
+  $('state').style.display = 'none';
+  render();
+
+  var rt;
+  new ResizeObserver(function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () { render(); }, 140);
+  }).observe($('map'));
+
+  window.__mapReady = true;
+
+})();
+</script>
+</body>
+</html>

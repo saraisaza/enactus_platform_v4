@@ -67,6 +67,11 @@ class LandingView extends StatelessWidget {
                     ),
                   // Hero
                   _Hero(title: content.heroTitle, subtitle: content.heroSubtitle),
+                  // Prueba social inmediata: los campeones reales de la última
+                  // National Expo, justo debajo del hero — antes de los
+                  // contadores, para que el primer impacto visual sea gente
+                  // real, no solo números.
+                  const _ExpoShowcase(),
                   // Contadores de impacto
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -275,6 +280,166 @@ class LandingView extends StatelessWidget {
         'lab_agricultura' => Icons.agriculture_outlined,
         _ => Icons.science_outlined,
       };
+}
+
+/// Fotos reales de los campeones de la National Expo 2026 (Santa Marta):
+/// la foto grupal (horizontal) junto a los dos equipos ganadores por
+/// categoría (verticales). Alturas iguales, ancho según su proporción
+/// real — así conviven una foto horizontal y dos verticales sin recortes
+/// forzados ni casillas vacías.
+class _ExpoShowcase extends StatelessWidget {
+  const _ExpoShowcase();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(40, 44, 40, 8),
+      child: Column(
+        children: [
+          Text('Campeones National Expo 2026'.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: knockoutHeading(
+                  fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.gold)),
+          const SizedBox(height: 6),
+          const Text(
+              'Santa Marta, julio 2026 — nuestros equipos rumbo al Enactus World Cup en São Paulo',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textMuted)),
+          const SizedBox(height: 26),
+          LayoutBuilder(builder: (context, c) {
+            final wide = c.maxWidth > 760;
+            final photoHeight = wide ? 340.0 : 260.0;
+            final photos = [
+              Entrance(
+                child: _ExpoPhoto(
+                  asset: 'assets/media/foto1.jpeg',
+                  aspectRatio: 1600 / 1107,
+                  height: photoHeight,
+                  fillWidth: !wide,
+                  caption: 'Delegación Enactus Colombia · National Expo 2026',
+                ),
+              ),
+              Entrance(
+                delayMs: 90,
+                child: _ExpoPhoto(
+                  asset: 'assets/media/foto2.jpeg',
+                  aspectRatio: 3 / 4,
+                  height: photoHeight,
+                  fillWidth: !wide,
+                  // Sin leyenda propia: la foto ya trae "EARLY STAGE
+                  // CHAMPION · ENERUNITY" impreso — duplicarla se veía
+                  // encimado con el texto real de la foto.
+                  caption: null,
+                ),
+              ),
+              Entrance(
+                delayMs: 180,
+                child: _ExpoPhoto(
+                  asset: 'assets/media/foto3.jpeg',
+                  aspectRatio: 3 / 4,
+                  height: photoHeight,
+                  fillWidth: !wide,
+                  caption: null,
+                ),
+              ),
+            ];
+            if (!wide) {
+              return Column(
+                children: [
+                  for (var i = 0; i < photos.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 16),
+                    photos[i],
+                  ],
+                ],
+              );
+            }
+            return Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 16,
+              runSpacing: 16,
+              children: photos,
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+/// Una foto con su relación de aspecto real (nunca recortada a la fuerza)
+/// y una leyenda superpuesta con degradado, mismo lenguaje visual que la
+/// portada de las tarjetas de proyecto del portal interno.
+class _ExpoPhoto extends StatelessWidget {
+  final String asset;
+  final double aspectRatio;
+  final double height;
+  final bool fillWidth;
+
+  /// `null` cuando la foto ya trae su propio letrero impreso (los
+  /// carteles de categoría/equipo) — evita duplicar el texto encimado.
+  final String? caption;
+  const _ExpoPhoto(
+      {required this.asset,
+      required this.aspectRatio,
+      required this.height,
+      required this.fillWidth,
+      required this.caption});
+
+  @override
+  Widget build(BuildContext context) {
+    final image = ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(asset, fit: BoxFit.cover),
+          if (caption != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(14, 26, 14, 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.78)],
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.emoji_events, color: AppColors.gold, size: 15),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(caption!,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (fillWidth) {
+      // Móvil: alto fijo, ancho completo hasta un máximo legible — el
+      // recorte de BoxFit.cover ya resuelve la proporción.
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: SizedBox(height: height, width: double.infinity, child: image),
+        ),
+      );
+    }
+    // Escritorio: alto fijo, ancho derivado de la proporción real de la
+    // foto — sin recorte, para que convivan una horizontal y dos
+    // verticales en la misma fila sin casillas vacías.
+    return SizedBox(height: height, width: height * aspectRatio, child: image);
+  }
 }
 
 class _Hero extends StatefulWidget {

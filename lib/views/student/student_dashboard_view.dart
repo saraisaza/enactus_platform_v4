@@ -10,6 +10,7 @@ import '../../utils/constants.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/projects_directory_view.dart' show ProjectDetailView;
 import 'course_detail_view.dart';
 
 /// Dashboard del estudiante — rediseño de alta fidelidad según
@@ -272,8 +273,14 @@ class _ContinueCard extends StatelessWidget {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.play_arrow, size: 19),
                   label: const Text('Continuar'),
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => CourseDetailView(courseId: course!.id))),
+                  onPressed: () {
+                    final id = course!.id;
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            settings: RouteSettings(name: '${AppRoutes.courses}/$id'),
+                            builder: (_) => CourseDetailView(courseId: id)));
+                  },
                 ),
               ],
             ),
@@ -310,22 +317,32 @@ class _CourseProgressCard extends StatelessWidget {
           for (final c in courses)
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(c.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14, color: colors.text)),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          settings: RouteSettings(name: '${AppRoutes.courses}/${c.id}'),
+                          builder: (_) => CourseDetailView(courseId: c.id))),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(c.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 14, color: colors.text)),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 3,
+                        child: ThinProgressBar(
+                            value: data.courseProgress(student.id, c), color: labColorFor(c.labId)),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 3,
-                    child: ThinProgressBar(
-                        value: data.courseProgress(student.id, c), color: labColorFor(c.labId)),
-                  ),
-                ],
+                ),
               ),
             ),
         ],
@@ -339,8 +356,13 @@ class _PendingRow {
   final Color color;
   final String title;
   final String meta;
+  final VoidCallback? onTap;
   const _PendingRow(
-      {required this.icon, required this.color, required this.title, required this.meta});
+      {required this.icon,
+      required this.color,
+      required this.title,
+      required this.meta,
+      this.onTap});
 }
 
 class _PendingCard extends StatelessWidget {
@@ -373,6 +395,8 @@ class _PendingCard extends StatelessWidget {
             color: AppColors.statusCritical,
             title: 'Fase vencida: ${phase.title.isEmpty ? 'Fase' : phase.title}',
             meta: lab.name,
+            onTap: () => Navigator.pushNamed(
+                context, '${AppRoutes.forRole(student.role)}/lab/${lab.id}'),
           ));
         }
         for (var i = 0; i < phase.modules.length; i++) {
@@ -386,6 +410,8 @@ class _PendingCard extends StatelessWidget {
               color: AppColors.gold,
               title: 'Confirmar mentoría: ${phase.title.isEmpty ? 'Fase' : phase.title}',
               meta: lab.name,
+              onTap: () => Navigator.pushNamed(
+                  context, '${AppRoutes.forRole(student.role)}/lab/${lab.id}'),
             ));
           }
         }
@@ -398,6 +424,11 @@ class _PendingCard extends StatelessWidget {
           color: labColorFor(c.labId),
           title: 'Continuar "${c.name}"',
           meta: c.labId.isEmpty ? 'Ruta National Expo' : (data.labById(c.labId)?.name ?? ''),
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  settings: RouteSettings(name: '${AppRoutes.courses}/${c.id}'),
+                  builder: (_) => CourseDetailView(courseId: c.id))),
         ));
       }
     }
@@ -410,6 +441,7 @@ class _PendingCard extends StatelessWidget {
             color: AppColors.textMuted,
             title: (item['label'] as String?) ?? '',
             meta: 'Checklist National Expo',
+            onTap: () => _showChecklistDialog(context, colors, checklist),
           ));
         }
       }
@@ -438,31 +470,39 @@ class _PendingCard extends StatelessWidget {
             for (final item in items)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: colors.surface2,
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border(left: BorderSide(color: item.color, width: 3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(item.icon, size: 19, color: item.color),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(item.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 13.5, color: colors.text)),
-                            Text(item.meta, style: TextStyle(fontSize: 12, color: colors.text3)),
-                          ],
-                        ),
+                child: MouseRegion(
+                  cursor: item.onTap == null
+                      ? MouseCursor.defer
+                      : SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: item.onTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                      decoration: BoxDecoration(
+                        color: colors.surface2,
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border(left: BorderSide(color: item.color, width: 3)),
                       ),
-                    ],
+                      child: Row(
+                        children: [
+                          Icon(item.icon, size: 19, color: item.color),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(item.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 13.5, color: colors.text)),
+                                Text(item.meta, style: TextStyle(fontSize: 12, color: colors.text3)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -470,6 +510,54 @@ class _PendingCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Checklist RUTA NATIONAL EXPO del equipo, de solo lectura — no existe
+/// ninguna pantalla en todo el proyecto para editarlo (se seedea con datos
+/// fijos y `DataProvider.saveChecklist` no tiene ningún llamador desde la
+/// UI); construir esa edición es una función nueva, no una navegación, así
+/// que queda fuera de este alcance — este diálogo solo muestra el estado
+/// real ya guardado.
+void _showChecklistDialog(BuildContext context, ContentColors colors, ExpoChecklist checklist) {
+  showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: colors.surface,
+      title: const Text('Checklist RUTA NATIONAL EXPO'),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final item in checklist.items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                        item['done'] == true
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        size: 18,
+                        color: item['done'] == true
+                            ? AppColors.statusGood
+                            : colors.text3),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: Text((item['label'] as String?) ?? '',
+                            style: TextStyle(fontSize: 13.5, color: colors.text))),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+      ],
+    ),
+  );
 }
 
 class _RecentActivityCard extends StatelessWidget {
@@ -506,7 +594,7 @@ class _RecentActivityCard extends StatelessWidget {
               final course = data.courseById(sub.courseId);
               final teacher =
                   course == null || course.creatorId.isEmpty ? null : data.userById(course.creatorId);
-              return Column(
+              final content = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -549,6 +637,18 @@ class _RecentActivityCard extends StatelessWidget {
                   ],
                 ],
               );
+              if (course == null) return content;
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
+                          builder: (_) => CourseDetailView(courseId: course.id))),
+                  child: content,
+                ),
+              );
             }),
         ],
       ),
@@ -568,29 +668,40 @@ class _ProjectCard extends StatelessWidget {
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('Tu proyecto'.toUpperCase(),
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: colors.text3, letterSpacing: 1)),
-          const SizedBox(height: 8),
-          Text(project.name.toUpperCase(),
-              style: knockoutHeading(fontSize: 30, fontWeight: FontWeight.w800, color: colors.text)),
-          const SizedBox(height: 14),
-          StageRail(accentColor: odsColor, colors: colors, currentIndex: currentIndex),
-          if (project.impactIndicators.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Text(project.impactIndicators, style: TextStyle(fontSize: 13, color: colors.text2)),
-          ],
-        ],
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                settings: RouteSettings(name: '${AppRoutes.projects}/${project.id}'),
+                builder: (_) => ProjectDetailView(projectId: project.id))),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border.all(color: colors.border),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Tu proyecto'.toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w700, color: colors.text3, letterSpacing: 1)),
+              const SizedBox(height: 8),
+              Text(project.name.toUpperCase(),
+                  style: knockoutHeading(fontSize: 30, fontWeight: FontWeight.w800, color: colors.text)),
+              const SizedBox(height: 14),
+              StageRail(accentColor: odsColor, colors: colors, currentIndex: currentIndex),
+              if (project.impactIndicators.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(project.impactIndicators, style: TextStyle(fontSize: 13, color: colors.text2)),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

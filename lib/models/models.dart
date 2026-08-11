@@ -170,6 +170,11 @@ class Project {
   String impactIndicators;
   bool expoEnabled; // habilitado para RUTA NATIONAL EXPO
 
+  /// Fecha real de creación del proyecto — se sella al crearlo desde el
+  /// Admin/Advisor; null en proyectos existentes de antes de este campo
+  /// (la UI muestra "Fecha no registrada" en ese caso, nunca una inventada).
+  DateTime? createdAt;
+
   Project({
     required this.id,
     required this.name,
@@ -181,6 +186,7 @@ class Project {
     this.stage = 'Ideación',
     this.impactIndicators = '',
     this.expoEnabled = false,
+    this.createdAt,
   }) : ods = ods ?? [];
 
   Map<String, dynamic> toJson() => {
@@ -194,6 +200,7 @@ class Project {
         'stage': stage,
         'impactIndicators': impactIndicators,
         'expoEnabled': expoEnabled,
+        'createdAt': createdAt?.toIso8601String(),
       };
 
   factory Project.fromJson(Map<String, dynamic> j) => Project(
@@ -207,6 +214,9 @@ class Project {
         stage: (j['stage'] as String?) ?? 'Ideación',
         impactIndicators: (j['impactIndicators'] as String?) ?? '',
         expoEnabled: (j['expoEnabled'] as bool?) ?? false,
+        createdAt: j['createdAt'] == null
+            ? null
+            : DateTime.tryParse(j['createdAt'] as String),
       );
 }
 

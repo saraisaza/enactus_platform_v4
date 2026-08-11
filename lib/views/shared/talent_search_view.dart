@@ -8,6 +8,7 @@ import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import 'student_detail_view.dart';
 
 /// BuscaTalento: como un Facebook de talento Enactus para Donantes y
 /// Empresas — ven el perfil de los estudiantes Enactus (los de Open
@@ -58,6 +59,8 @@ class _TalentCard extends StatelessWidget {
 
     return HoverCard(
       padding: const EdgeInsets.all(18),
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => StudentDetailView(studentId: student.id))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

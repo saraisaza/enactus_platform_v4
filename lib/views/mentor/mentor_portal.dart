@@ -9,6 +9,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/student_detail_view.dart';
 
 /// Portal del Mentor (rol nuevo, sin relación con el "mentor" anterior,
 /// que ahora es LXD). El Mentor no crea cursos: revisa la Ruta de Impacto
@@ -103,6 +104,8 @@ class _LabStudents extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: HoverCard(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),

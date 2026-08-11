@@ -20,6 +20,8 @@ import 'views/lxd/lxd_portal.dart';
 import 'views/mentor/mentor_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
+import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
+import 'views/student/course_detail_view.dart';
 import 'views/student/student_portal.dart';
 
 Future<void> main() async {
@@ -130,6 +132,18 @@ class EnactusApp extends StatelessWidget {
         page = const _RoleGuard(role: Roles.company, child: CompanyPortal());
       case AppRoutes.donor:
         page = const _RoleGuard(role: Roles.donor, child: DonorPortal());
+      // Detalle de Proyecto y de Curso: URL real y botón atrás funcional,
+      // accesibles desde cualquier portal (Admin, Asesor, Estudiante,
+      // Empresa, Donante) — por eso usan _AuthGuard (cualquier rol con
+      // sesión activa) en vez de _RoleGuard.
+      case String name when name.startsWith('${AppRoutes.projects}/'):
+        page = _AuthGuard(
+            child: ProjectDetailView(
+                projectId: name.substring('${AppRoutes.projects}/'.length)));
+      case String name when name.startsWith('${AppRoutes.courses}/'):
+        page = _AuthGuard(
+            child: CourseDetailView(
+                courseId: name.substring('${AppRoutes.courses}/'.length)));
     }
     return MaterialPageRoute(builder: (_) => page, settings: settings);
   }
@@ -151,6 +165,20 @@ class _RoleGuard extends StatelessWidget {
     if (!auth.isLoggedIn || auth.currentUser!.role != role) {
       return const LoginView();
     }
+    return child;
+  }
+}
+
+/// Igual que [_RoleGuard] pero sin exigir un rol específico — para rutas de
+/// detalle (Proyecto, Curso) enlazadas desde varios portales a la vez.
+class _AuthGuard extends StatelessWidget {
+  final Widget child;
+  const _AuthGuard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    if (!auth.isLoggedIn) return const LoginView();
     return child;
   }
 }

@@ -47,6 +47,14 @@ class PortalShell extends StatefulWidget {
 class _PortalShellState extends State<PortalShell> {
   late int _selected = widget.initialSelectedIndex;
 
+  /// Si `contentOverride` llegó activo (deep link a un detalle), se
+  /// respeta hasta que el usuario toque explícitamente una pestaña de la
+  /// barra lateral — a partir de ahí la navegación vuelve a ser normal
+  /// para el resto de la vida de esta pantalla. Sin esto, `contentOverride`
+  /// (una prop inmutable del padre) se seguía mostrando encima de
+  /// cualquier pestaña nueva, dejando la barra lateral sin efecto.
+  late bool _overrideDismissed = widget.contentOverride == null;
+
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 900;
@@ -71,7 +79,10 @@ class _PortalShellState extends State<PortalShell> {
                           tab: widget.tabs[i],
                           selected: i == _selected,
                           compact: !isWide,
-                          onTap: () => setState(() => _selected = i),
+                          onTap: () => setState(() {
+                            _selected = i;
+                            _overrideDismissed = true;
+                          }),
                         ),
                     ],
                   ),
@@ -82,11 +93,13 @@ class _PortalShellState extends State<PortalShell> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: KeyedSubtree(
-                      key: ValueKey(widget.contentOverride != null
-                          ? 'override-$_selected'
-                          : _selected),
-                      child: widget.contentOverride ??
-                          widget.tabs[_selected].builder(context),
+                      key: ValueKey(
+                          widget.contentOverride != null && !_overrideDismissed
+                              ? 'override-$_selected'
+                              : _selected),
+                      child: (widget.contentOverride != null && !_overrideDismissed)
+                          ? widget.contentOverride!
+                          : widget.tabs[_selected].builder(context),
                     ),
                   ),
                 ),

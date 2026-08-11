@@ -12,6 +12,7 @@ import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
 import '../shared/projects_directory_view.dart';
+import '../shared/student_detail_view.dart';
 
 /// Portal del Asesor Académico: ve el progreso completo (cursos, fases y
 /// laboratorios) de los estudiantes de SU universidad, y crea/edita los
@@ -254,6 +255,8 @@ class _StudentRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: HoverCard(
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => StudentDetailView(studentId: student.id))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -407,6 +410,11 @@ class _AdvisorProjects extends StatelessWidget {
           ...projects.map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: HoverCard(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          settings: RouteSettings(name: '${AppRoutes.projects}/${p.id}'),
+                          builder: (_) => ProjectDetailView(projectId: p.id))),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -574,6 +582,7 @@ class _AdvisorProjects extends StatelessWidget {
                   stage: stage,
                   impactIndicators: indicatorsCtrl.text.trim(),
                   expoEnabled: project?.expoEnabled ?? false,
+                  createdAt: project?.createdAt ?? DateTime.now(),
                 );
                 await data.saveProject(saved);
                 if (ctx.mounted) Navigator.pop(ctx);

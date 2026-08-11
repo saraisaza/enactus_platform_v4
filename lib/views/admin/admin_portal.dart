@@ -316,6 +316,27 @@ class _ImpactMetrics extends StatelessWidget {
                   HoverCard(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
+                    onTap: () {
+                      AppUser? company;
+                      for (final c in data.usersByRole(Roles.company)) {
+                        if (c.companyName == e.key) {
+                          company = c;
+                          break;
+                        }
+                      }
+                      if (company != null) {
+                        showUserDialog(context, company, const [
+                          Roles.admin,
+                          Roles.student,
+                          Roles.alumni,
+                          Roles.lxd,
+                          Roles.mentor,
+                          Roles.advisor,
+                          Roles.company,
+                          Roles.donor,
+                        ]);
+                      }
+                    },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

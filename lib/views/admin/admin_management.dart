@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
@@ -10,6 +11,8 @@ import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
 import '../lxd/course_editor_view.dart';
 import '../lxd/course_tracking_view.dart';
+import '../shared/projects_directory_view.dart' show ProjectDetailView;
+import '../shared/student_detail_view.dart';
 import 'lab_ruta_editor.dart';
 
 // ---------------------------------------------------------------------------
@@ -42,6 +45,11 @@ class AdminProjects extends StatelessWidget {
           ...data.projects.map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: HoverCard(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          settings: RouteSettings(name: '${AppRoutes.projects}/${p.id}'),
+                          builder: (_) => ProjectDetailView(projectId: p.id))),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -241,6 +249,7 @@ class AdminProjects extends StatelessWidget {
                   stage: stage,
                   impactIndicators: indicatorsCtrl.text.trim(),
                   expoEnabled: expoEnabled,
+                  createdAt: project?.createdAt ?? DateTime.now(),
                 );
                 await data.saveProject(saved);
                 // Al habilitar EXPO se crea el curso RUTA del proyecto si falta
@@ -303,6 +312,7 @@ class AdminGroups extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
+                onTap: () => _editGroup(context, g),
                 child: Row(
                   children: [
                     const Icon(Icons.groups,
@@ -527,6 +537,8 @@ class AdminAssignments extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),
@@ -858,6 +870,8 @@ class AdminLabs extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: HoverCard(
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => LabRutaEditorView(labId: l.id))),
               child: Row(
                 children: [
                   const Icon(Icons.science_outlined,
@@ -1118,6 +1132,8 @@ class _AdminCourseCard extends StatelessWidget {
     };
 
     return HoverCard(
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => CourseEditorView(courseId: course.id))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1296,6 +1312,7 @@ class AdminEvidences extends StatelessWidget {
               child: HoverCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
+                onTap: () => _showEvidenceDetail(context, e, donor),
                 child: Row(
                   children: [
                     Icon(_typeIcon(e.type),
@@ -1344,6 +1361,42 @@ class AdminEvidences extends StatelessWidget {
         'reporte' => Icons.description_outlined,
         _ => Icons.auto_stories_outlined,
       };
+
+  /// La tarjeta trunca la descripción a 2 líneas — este diálogo muestra el
+  /// texto completo (dato ya existente, sin campo nuevo).
+  Future<void> _showEvidenceDetail(
+      BuildContext context, Evidence e, AppUser? donor) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(children: [
+          Icon(_typeIcon(e.type), color: AppColors.gold, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(e.title)),
+        ]),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tipo: ${e.type}',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+              Text('Donante: ${donor?.name ?? '—'}',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+              Text('Fecha: ${DateFormat('d MMM yyyy', 'es').format(e.date)}',
+                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+              const SizedBox(height: 12),
+              Text(e.description, style: const TextStyle(fontSize: 14, height: 1.5)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+        ],
+      ),
+    );
+  }
 
   Future<void> _editEvidence(BuildContext context) async {
     final data = context.read<DataProvider>();

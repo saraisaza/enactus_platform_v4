@@ -2,14 +2,18 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/app_footer.dart';
+import '../../widgets/app_header.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import 'lab_progress_view.dart';
 
 /// Directorio de todos los proyectos Enactus de la plataforma, sin
 /// importar laboratorio, universidad o equipo — para que estudiantes y
@@ -176,11 +180,13 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
                   project: projects[i],
                   groups: groups.where((g) => g.projectId == projects[i].id).toList(),
                   colors: colors,
-                  onTap: () => showProjectDetailDialog(
+                  onTap: () => Navigator.push(
                     context,
-                    projects[i],
-                    groups.where((g) => g.projectId == projects[i].id).toList(),
-                    colors,
+                    MaterialPageRoute(
+                      settings:
+                          RouteSettings(name: '${AppRoutes.projects}/${projects[i].id}'),
+                      builder: (_) => ProjectDetailView(projectId: projects[i].id),
+                    ),
                   ),
                 ),
               ),
@@ -560,110 +566,364 @@ List<Widget> _detailSection(String title, String body, ContentColors colors) => 
       Text(body, style: TextStyle(fontSize: 14, color: colors.text2, height: 1.5)),
     ];
 
-/// Diálogo de solo lectura con la info básica de un proyecto: no existía
-/// ninguna vista de detalle en la app para reutilizar, así que este
-/// diálogo (contenido a esta pantalla) cumple ese propósito sin introducir
-/// una ruta/página nueva.
-Future<void> showProjectDetailDialog(
-    BuildContext context, Project project, List<Group> groups, ContentColors colors) {
-  return showDialog<void>(
-    context: context,
-    builder: (ctx) => Dialog(
-      backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      insetPadding: const EdgeInsets.all(24),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 640),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+/// Detalle de un proyecto: pantalla propia con URL real (`/proyectos/:id`)
+/// y botón atrás, reemplaza al antiguo diálogo (que se quedaba corto:
+/// nombre/descripción/equipo, sin mentor ni progreso). Reutiliza la
+/// portada/etiquetas ODS/secciones de texto ya construidas para la tarjeta
+/// y el `StageRail` de la etapa del proyecto.
+///
+/// "Mentor asignado", "fase" y "módulos" del pedido original en realidad
+/// viven en el Laboratorio de cada integrante, no en el Proyecto — los
+/// integrantes de un mismo equipo pueden estar en laboratorios distintos
+/// (confirmado en los datos: en Equipo AquaVida, Est1/Alum1 están en IA e
+/// Impacto pero Est2 está en Emprendimiento). Por eso el equipo muestra lo
+/// real a nivel de proyecto (nombre, universidad, integrantes, etapa,
+/// fecha de creación) y, junto a cada integrante, un enlace a SU
+/// laboratorio real con mentor/fases/módulos (decidido con el usuario).
+class ProjectDetailView extends StatefulWidget {
+  final String projectId;
+  const ProjectDetailView({super.key, required this.projectId});
+
+  @override
+  State<ProjectDetailView> createState() => _ProjectDetailViewState();
+}
+
+class _ProjectDetailViewState extends State<ProjectDetailView> {
+  bool _isDark = true;
+  ContentColors get _colors => _isDark ? ContentColors.dark : ContentColors.light;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final project = data.projectById(widget.projectId);
+    final colors = _colors;
+
+    if (project == null) {
+      return Scaffold(
+        backgroundColor: colors.bg,
+        body: Column(
           children: [
-            _buildProjectCover(project, colors, height: 140),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(project.name.toUpperCase(),
-                        style: knockoutHeading(
-                            fontSize: 32, fontWeight: FontWeight.w800, color: colors.text)),
-                    if (project.description.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(project.description,
-                          style:
-                              TextStyle(fontSize: 14.5, color: colors.text2, height: 1.5)),
-                    ],
-                    if (project.problem.isNotEmpty)
-                      ..._detailSection('Problema', project.problem, colors),
-                    if (project.solution.isNotEmpty)
-                      ..._detailSection('Solución', project.solution, colors),
-                    if (project.impactIndicators.isNotEmpty)
-                      ..._detailSection(
-                          'Indicadores de impacto', project.impactIndicators, colors),
-                    if (project.community.isNotEmpty)
-                      ..._detailSection('Comunidad', project.community, colors),
-                    if (project.ods.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Text('ODS',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: colors.text3,
-                              letterSpacing: 1)),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 7,
-                        runSpacing: 7,
-                        children: [
-                          for (final o in project.ods) _OdsTag(label: o, colors: colors)
-                        ],
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    Text('EQUIPO',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: colors.text3,
-                            letterSpacing: 1)),
-                    const SizedBox(height: 8),
-                    if (groups.isEmpty)
-                      Text('Sin equipo asignado todavía.',
-                          style: TextStyle(fontSize: 13, color: colors.text3))
-                    else
-                      for (final g in groups)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Row(children: [
-                            Icon(Icons.groups_outlined, size: 16, color: colors.text3),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                  '${g.name} · ${g.university.isEmpty ? "Universidad sin definir" : g.university} · '
-                                  '${g.studentIds.length} estudiante${g.studentIds.length == 1 ? '' : 's'}',
-                                  style: TextStyle(fontSize: 13, color: colors.text2)),
-                            ),
-                          ]),
-                        ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cerrar'),
-                ),
-              ),
+            const AppHeader(portalTitle: 'Proyecto'),
+            Expanded(
+              child: EmptyState(
+                  icon: Icons.lightbulb_outline,
+                  message: 'Este proyecto ya no existe o fue eliminado.',
+                  colors: colors),
             ),
           ],
         ),
+      );
+    }
+
+    final groups = data.groups.where((g) => g.projectId == project.id).toList();
+    final stageIndex = projectStages.indexOf(project.stage);
+    final currentIndex = stageIndex < 0 ? 0 : stageIndex;
+    final odsColor = project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
+
+    return Scaffold(
+      backgroundColor: colors.bg,
+      body: Column(
+        children: [
+          const AppHeader(portalTitle: 'Proyecto'),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 860),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back),
+                                  color: colors.goldInk,
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                const Spacer(),
+                                _ThemeToggleButton(
+                                  isDark: _isDark,
+                                  colors: colors,
+                                  onTap: () => setState(() => _isDark = !_isDark),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: _buildProjectCover(project, colors, height: 160),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(project.name.toUpperCase(),
+                                style: knockoutHeading(
+                                    fontSize: 36, fontWeight: FontWeight.w800, color: colors.text)),
+                            if (project.description.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(project.description,
+                                  style: TextStyle(fontSize: 15, height: 1.5, color: colors.text2)),
+                            ],
+                            const SizedBox(height: 18),
+                            StageRail(
+                                accentColor: odsColor, colors: colors, currentIndex: currentIndex),
+                            const SizedBox(height: 10),
+                            Text(
+                              project.createdAt == null
+                                  ? 'Fecha no registrada'
+                                  : 'Creado el ${DateFormat('d MMM yyyy', 'es').format(project.createdAt!)}',
+                              style: TextStyle(fontSize: 12.5, color: colors.text3),
+                            ),
+                            if (project.problem.isNotEmpty)
+                              ..._detailSection('Problema', project.problem, colors),
+                            if (project.solution.isNotEmpty)
+                              ..._detailSection('Solución', project.solution, colors),
+                            if (project.impactIndicators.isNotEmpty)
+                              ..._detailSection(
+                                  'Indicadores de impacto', project.impactIndicators, colors),
+                            if (project.community.isNotEmpty)
+                              ..._detailSection('Comunidad', project.community, colors),
+                            if (project.ods.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              Text('ODS',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: colors.text3,
+                                      letterSpacing: 1)),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 7,
+                                runSpacing: 7,
+                                children: [
+                                  for (final o in project.ods) _OdsTag(label: o, colors: colors)
+                                ],
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            Text('EQUIPO',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: colors.text3,
+                                    letterSpacing: 1)),
+                            const SizedBox(height: 10),
+                            if (groups.isEmpty)
+                              Text('Sin equipo asignado todavía.',
+                                  style: TextStyle(fontSize: 13, color: colors.text3))
+                            else
+                              for (final g in groups)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 18),
+                                  child: _GroupBlock(group: g, colors: colors),
+                                ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _ThemeToggleButton extends StatelessWidget {
+  final bool isDark;
+  final ContentColors colors;
+  final VoidCallback onTap;
+  const _ThemeToggleButton({required this.isDark, required this.colors, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hover) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: hover ? colors.surface2 : colors.surface,
+            border: Border.all(color: colors.border),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  size: 16, color: colors.text2),
+              const SizedBox(width: 6),
+              Text(isDark ? 'Claro' : 'Oscuro',
+                  style: TextStyle(fontSize: 12.5, color: colors.text2)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Un equipo del proyecto: nombre, universidad y sus integrantes con
+/// enlace a su propio laboratorio real (mentor/fases/módulos) — decidido
+/// con el usuario en vez de un "mentor del proyecto" que no existe en el
+/// modelo (ver comentario de [ProjectDetailView]).
+class _GroupBlock extends StatelessWidget {
+  final Group group;
+  final ContentColors colors;
+  const _GroupBlock({required this.group, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final advisor = group.advisorId.isEmpty ? null : data.userById(group.advisorId);
+    final members =
+        group.studentIds.map(data.userById).whereType<AppUser>().toList();
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.groups_outlined, size: 17, color: colors.text3),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                  '${group.name} · ${group.university.isEmpty ? "Universidad sin definir" : group.university}',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
+            ),
+          ]),
+          if (advisor != null) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 25),
+              child: Text('Asesor académico: ${advisor.name}',
+                  style: TextStyle(fontSize: 12.5, color: colors.text3)),
+            ),
+          ],
+          const SizedBox(height: 14),
+          if (members.isEmpty)
+            Text('Sin integrantes asignados.', style: TextStyle(fontSize: 13, color: colors.text3))
+          else
+            for (final m in members)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _MemberRow(student: m, colors: colors),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MemberRow extends StatelessWidget {
+  final AppUser student;
+  final ContentColors colors;
+  const _MemberRow({required this.student, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final labs = data.labsForStudent(student);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            InitialsAvatar(student.name),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(student.name,
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: colors.text)),
+                  Text(student.university.isEmpty ? 'Universidad sin definir' : student.university,
+                      style: TextStyle(fontSize: 12, color: colors.text3)),
+                ],
+              ),
+            ),
+          ]),
+          if (labs.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final lab in labs)
+                  _LabChip(
+                    student: student,
+                    lab: lab,
+                    colors: colors,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              LabProgressView(studentId: student.id, labId: lab.id)),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LabChip extends StatelessWidget {
+  final AppUser student;
+  final Laboratory lab;
+  final ContentColors colors;
+  final VoidCallback onTap;
+  const _LabChip(
+      {required this.student, required this.lab, required this.colors, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final done = lab.phases.where((p) => data.isPhaseComplete(student.id, lab.id, p)).length;
+    final accent = labColorFor(lab.id);
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hover) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: hover ? accent.withValues(alpha: 0.16) : colors.surface,
+            border: Border.all(color: accent),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 8, height: 8, decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
+              const SizedBox(width: 7),
+              Text('${lab.name} · Fase $done/${lab.phases.length}',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.text2)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

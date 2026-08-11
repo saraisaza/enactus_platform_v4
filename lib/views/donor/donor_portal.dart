@@ -8,6 +8,7 @@ import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/student_detail_view.dart';
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
 
@@ -113,8 +114,8 @@ class _DonorDashboard extends StatelessWidget {
   }
 }
 
-/// Tarjeta de perfil: identidad y proyecto del estudiante apoyado, sin
-/// detalle de progreso ni de fases (eso lo ve el Asesor).
+/// Tarjeta de perfil: identidad y proyecto del estudiante apoyado. Abre
+/// su detalle completo (laboratorios, cursos, certificados).
 class _StudentProfileCard extends StatelessWidget {
   final AppUser student;
   const _StudentProfileCard({required this.student});
@@ -126,6 +127,8 @@ class _StudentProfileCard extends StatelessWidget {
     final project = group == null ? null : data.projectById(group.projectId);
 
     return HoverCard(
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => StudentDetailView(studentId: student.id))),
       child: Row(
         children: [
           InitialsAvatar(student.name,

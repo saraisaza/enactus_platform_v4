@@ -7,6 +7,7 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import 'course_detail_view.dart';
@@ -122,8 +123,11 @@ class _CourseCard extends StatelessWidget {
     final accent = labColorFor(course.labId);
     final labLabel = course.isRutaExpo ? 'Ruta National Expo' : (lab?.name ?? '');
 
-    void open() => Navigator.push(context,
-        MaterialPageRoute(builder: (_) => CourseDetailView(courseId: course.id)));
+    void open() => Navigator.push(
+        context,
+        MaterialPageRoute(
+            settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
+            builder: (_) => CourseDetailView(courseId: course.id)));
 
     return HoverBuilder(
       cursor: SystemMouseCursors.click,

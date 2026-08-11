@@ -11,6 +11,7 @@ import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/student_detail_view.dart';
 import 'course_editor_view.dart';
 import 'course_tracking_view.dart';
 
@@ -152,6 +153,8 @@ class _LxdDashboardState extends State<_LxdDashboard> {
           states.contains(WidgetState.hovered)
               ? AppColors.gold.withValues(alpha: 0.06)
               : null),
+      onSelectChanged: (_) => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
       cells: [
         DataCell(Tooltip(
           message: summary,

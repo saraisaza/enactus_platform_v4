@@ -74,6 +74,8 @@ class AppRoutes {
   static const advisor = '/advisor';
   static const company = '/company';
   static const donor = '/donor';
+  static const projects = '/proyectos';
+  static const courses = '/cursos';
 
   static String forRole(String role) => switch (role) {
         Roles.superAdmin => superAdmin,

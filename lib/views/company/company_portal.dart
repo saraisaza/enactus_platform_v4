@@ -9,6 +9,7 @@ import '../../utils/constants.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/student_detail_view.dart';
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
 
@@ -476,6 +477,8 @@ class _CompanyLabSection extends StatelessWidget {
               child: HoverCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
                 child: Row(
                   children: [
                     SizedBox(
@@ -552,6 +555,8 @@ class _CompanyStudents extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),

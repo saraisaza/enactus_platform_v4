@@ -79,6 +79,18 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Proyectos reales de un conjunto de estudiantes (vía su equipo/grupo),
+  /// sin duplicados — la fuente única para "mis proyectos" en Mentor, LXD
+  /// y Empresa, cada uno con su propio criterio de "mis estudiantes".
+  List<Project> projectsForStudents(List<AppUser> students) {
+    final projectIds = <String>{};
+    for (final s in students) {
+      final group = groupById(s.groupId);
+      if (group != null) projectIds.add(group.projectId);
+    }
+    return projectIds.map(projectById).whereType<Project>().toList();
+  }
+
   // ---------------- Grupos ----------------
   List<Group> get groups => db.getAll('groups').map(Group.fromJson).toList();
 

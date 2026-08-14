@@ -9,6 +9,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
 import '../shared/student_detail_view.dart';
 
 /// Portal del Mentor (rol nuevo, sin relación con el "mentor" anterior,
@@ -28,6 +29,10 @@ class MentorPortal extends StatelessWidget {
             icon: Icons.science_outlined,
             builder: (_) => const _MentorLabs()),
         PortalTab(
+            label: 'Proyectos',
+            icon: Icons.lightbulb_outline,
+            builder: (_) => const _MentorProjects()),
+        PortalTab(
             label: 'Calendario',
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _MentorCalendar()),
@@ -39,6 +44,45 @@ class MentorPortal extends StatelessWidget {
             label: 'Mi Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _MentorProfile()),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Proyectos: equipos reales de los estudiantes de mis laboratorios
+// ---------------------------------------------------------------------------
+
+class _MentorProjects extends StatelessWidget {
+  const _MentorProjects();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final mentor = context.watch<AuthProvider>().currentUser!;
+    final students = data.studentsForMentor(mentor);
+    final projects = data.projectsForStudents(students);
+
+    return TabBody(
+      title: 'Proyectos',
+      subtitle: 'Equipos y avance en la Ruta de Impacto de tus estudiantes',
+      children: [
+        if (projects.isEmpty)
+          const EmptyState(
+              icon: Icons.lightbulb_outline,
+              message:
+                  'Ninguno de tus estudiantes tiene proyecto asignado todavía.')
+        else
+          for (final p in projects)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ProjectSummaryCard(
+                project: p,
+                relevantStudentCount: students
+                    .where((s) => data.groupById(s.groupId)?.projectId == p.id)
+                    .length,
+              ),
+            ),
       ],
     );
   }

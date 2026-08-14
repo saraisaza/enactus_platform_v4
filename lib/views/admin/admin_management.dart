@@ -605,11 +605,13 @@ class AdminAssignments extends StatelessWidget {
     final companies = data.usersByRole(Roles.company);
     final donors = data.usersByRole(Roles.donor);
     final labs = data.labs;
+    final groups = data.groups;
     var studentType = student.studentType;
     final selectedLabIds = {...student.labIds};
     final selectedCourses = {...student.courseIds};
     String? companyId = student.companyId;
     String? donorId = student.donorId;
+    String? groupId = student.groupId;
 
     // Cursos que este diálogo gestiona para el tipo actual (excluye el
     // legado RUTA NATIONAL EXPO, que se conserva pero ya no se edita aquí).
@@ -656,6 +658,7 @@ class AdminAssignments extends StatelessWidget {
                                 selectedLabIds.clear();
                                 companyId = null;
                                 donorId = null;
+                                groupId = null;
                               }
                             }),
                           ),
@@ -785,6 +788,24 @@ class AdminAssignments extends StatelessWidget {
                         ],
                         onChanged: (v) => setState(() => donorId = v),
                       ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: groupId,
+                        decoration: const InputDecoration(
+                            labelText: 'Proyecto (equipo)',
+                            helperText:
+                                'Da acceso al detalle del proyecto y a los avances de todo el equipo'),
+                        items: [
+                          const DropdownMenuItem(
+                              value: null, child: Text('Ninguno')),
+                          for (final g in groups)
+                            DropdownMenuItem(
+                                value: g.id,
+                                child: Text(
+                                    '${g.name} · ${data.projectById(g.projectId)?.name ?? "Proyecto eliminado"}')),
+                        ],
+                        onChanged: (v) => setState(() => groupId = v),
+                      ),
                     ],
                   ],
                 ),
@@ -815,6 +836,45 @@ class AdminAssignments extends StatelessWidget {
                   student.labIds = isOpenLearning ? [] : selectedLabIds.toList();
                   student.extra['companyId'] = isOpenLearning ? null : companyId;
                   student.extra['donorId'] = isOpenLearning ? null : donorId;
+
+                  // Sincroniza el equipo/proyecto en ambas direcciones,
+                  // igual que ya hace "Grupos" al editar desde el otro
+                  // lado — incluye el curso RUTA NATIONAL EXPO automático.
+                  final newGroupId = isOpenLearning ? null : groupId;
+                  if (newGroupId != student.groupId) {
+                    final oldGroup = data.groupById(student.groupId);
+                    if (oldGroup != null && oldGroup.id != newGroupId) {
+                      oldGroup.studentIds = oldGroup.studentIds
+                          .where((id) => id != student.id)
+                          .toList();
+                      await data.saveGroup(oldGroup);
+                    }
+                    if (newGroupId != null) {
+                      final newGroup = data.groupById(newGroupId);
+                      if (newGroup != null &&
+                          !newGroup.studentIds.contains(student.id)) {
+                        newGroup.studentIds = [
+                          ...newGroup.studentIds,
+                          student.id
+                        ];
+                        await data.saveGroup(newGroup);
+                      }
+                      final expoCourse = data.courses
+                          .where((c) =>
+                              c.isRutaExpo &&
+                              c.projectId == newGroup?.projectId)
+                          .toList();
+                      if (expoCourse.isNotEmpty &&
+                          !student.courseIds.contains(expoCourse.first.id)) {
+                        student.courseIds = [
+                          ...student.courseIds,
+                          expoCourse.first.id
+                        ];
+                      }
+                    }
+                  }
+                  student.extra['groupId'] = newGroupId;
+
                   await data.saveUser(student);
                   await data.notify(student.id, 'Asignaciones actualizadas',
                       'Tu administrador actualizó tus laboratorios, cursos y beneficios.');

@@ -566,8 +566,79 @@ List<Widget> _detailSection(String title, String body, ContentColors colors) => 
       Text(body, style: TextStyle(fontSize: 14, color: colors.text2, height: 1.5)),
     ];
 
-/// Detalle de un proyecto: pantalla propia con URL real (`/proyectos/:id`)
-/// y botón atrás, reemplaza al antiguo diálogo (que se quedaba corto:
+/// Tarjeta de solo lectura para portales que solo necesitan enlazar a un
+/// proyecto sin poder editarlo (Mentor, LXD, Empresa) — mismo destino real
+/// (`ProjectDetailView`, con URL) que ya usan las tarjetas editables de
+/// Admin/Asesor, sin duplicar esa navegación en cada portal.
+class ProjectSummaryCard extends StatelessWidget {
+  final Project project;
+
+  /// Cuántos de "mis" estudiantes (del rol que mira esta tarjeta) están en
+  /// este proyecto — opcional, se omite si no aplica.
+  final int? relevantStudentCount;
+  const ProjectSummaryCard({super.key, required this.project, this.relevantStudentCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverCard(
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.projects}/${project.id}'),
+              builder: (_) => ProjectDetailView(projectId: project.id))),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: AppColors.gold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(project.name,
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    ),
+                    StatusChip(
+                        label: project.stage, color: AppColors.gold, icon: Icons.flag_outlined),
+                  ],
+                ),
+                if (project.description.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(project.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
+                ],
+                if (relevantStudentCount != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                      '$relevantStudentCount estudiante${relevantStudentCount == 1 ? '' : 's'} en tu alcance',
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                ],
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward, size: 18, color: AppColors.gold),
+        ],
+      ),
+    );
+  }
+}
+
+/// Detalle completo de un proyecto, con URL real (`/proyectos/:id`) y
+/// botón atrás, reemplaza al antiguo diálogo (que se quedaba corto:
 /// nombre/descripción/equipo, sin mentor ni progreso). Reutiliza la
 /// portada/etiquetas ODS/secciones de texto ya construidas para la tarjeta
 /// y el `StageRail` de la etapa del proyecto.

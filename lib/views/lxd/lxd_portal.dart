@@ -11,6 +11,7 @@ import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
 import '../shared/student_detail_view.dart';
 import 'course_editor_view.dart';
 import 'course_tracking_view.dart';
@@ -27,6 +28,10 @@ class LxdPortal extends StatelessWidget {
             label: 'Mis Estudiantes',
             icon: Icons.groups_outlined,
             builder: (_) => const _LxdDashboard()),
+        PortalTab(
+            label: 'Proyectos',
+            icon: Icons.lightbulb_outline,
+            builder: (_) => const _LxdProjects()),
         PortalTab(
             label: 'Calendario',
             icon: Icons.calendar_month_outlined,
@@ -47,6 +52,45 @@ class LxdPortal extends StatelessWidget {
             label: 'Mi Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _LxdProfile()),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Proyectos: equipos reales de los estudiantes de mis cursos
+// ---------------------------------------------------------------------------
+
+class _LxdProjects extends StatelessWidget {
+  const _LxdProjects();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final lxd = context.watch<AuthProvider>().currentUser!;
+    final students = data.studentsForCreator(lxd.id);
+    final projects = data.projectsForStudents(students);
+
+    return TabBody(
+      title: 'Proyectos',
+      subtitle: 'Equipos y avance en la Ruta de Impacto de tus estudiantes',
+      children: [
+        if (projects.isEmpty)
+          const EmptyState(
+              icon: Icons.lightbulb_outline,
+              message:
+                  'Ninguno de tus estudiantes tiene proyecto asignado todavía.')
+        else
+          for (final p in projects)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ProjectSummaryCard(
+                project: p,
+                relevantStudentCount: students
+                    .where((s) => data.groupById(s.groupId)?.projectId == p.id)
+                    .length,
+              ),
+            ),
       ],
     );
   }

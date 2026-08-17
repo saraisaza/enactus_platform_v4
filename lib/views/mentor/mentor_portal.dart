@@ -9,6 +9,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/communication_resources_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
 import '../shared/student_detail_view.dart';
 
@@ -44,6 +45,10 @@ class MentorPortal extends StatelessWidget {
             label: 'Mi Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _MentorProfile()),
+        PortalTab(
+            label: 'Recursos Comunicaciones',
+            icon: Icons.perm_media_outlined,
+            builder: (_) => const CommunicationResourcesView()),
       ],
     );
   }

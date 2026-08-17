@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// Construye un widget en función de si el mouse está encima.
 /// Base de todos los efectos "reveal on hover" de la plataforma.
@@ -716,6 +717,97 @@ Future<bool> confirmDialog(
     ),
   );
   return result ?? false;
+}
+
+/// Diálogo de formulario (3+ campos: crear/editar usuario, proyecto,
+/// grupo, laboratorio, quiz...) adaptado al tamaño de pantalla: en
+/// compact (<600dp) ocupa toda la pantalla ([Dialog.fullscreen], ya trae
+/// `resizeToAvoidBottomInset` para el teclado, cosa que ningún
+/// `showDialog` suelto tenía); en medium/expanded sigue siendo el
+/// `AlertDialog` centrado de siempre, solo que con
+/// `ConstrainedBox(maxWidth: ...)` en vez de un ancho fijo, así sí encoge
+/// en ventanas angostas de escritorio en vez de desbordar.
+///
+/// No reemplaza a [confirmDialog]/[confirmDoubleDialog]: esos diálogos de
+/// 2-3 líneas ya caben cómodos en cualquier tamaño y no necesitan pantalla
+/// completa.
+///
+/// [contentBuilder] arma los campos del formulario — típicamente los
+/// mismos widgets que ya vivían dentro del `content:` de un `AlertDialog`,
+/// sin el `SizedBox(width: N)`/`SingleChildScrollView` que ya pone este
+/// helper. [actionsBuilder] arma los botones (p. ej. Cancelar/Guardar)
+/// exactamente como en `AlertDialog.actions` — cada botón sigue haciendo
+/// su propio `Navigator.pop(context, valor)`, así que el resultado se
+/// recibe igual con `await showAdaptiveFormDialog(...)` sin importar cuál
+/// de las dos variantes se mostró.
+Future<T?> showAdaptiveFormDialog<T>({
+  required BuildContext context,
+  required String title,
+  required WidgetBuilder contentBuilder,
+  required List<Widget> Function(BuildContext) actionsBuilder,
+  double maxWidth = 480,
+}) {
+  if (context.isCompact) {
+    return Navigator.of(context).push<T>(MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (routeContext) => Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: 'Cerrar',
+            onPressed: () => Navigator.pop(routeContext),
+          ),
+          title: Text(title, style: const TextStyle(fontSize: 17)),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: contentBuilder(routeContext),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                decoration: const BoxDecoration(
+                  color: AppColors.background,
+                  border: Border(top: BorderSide(color: AppColors.border)),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      for (final (i, action)
+                          in actionsBuilder(routeContext).indexed) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        action,
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ));
+  }
+  return showDialog<T>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(title, style: const TextStyle(fontSize: 18)),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: SingleChildScrollView(child: contentBuilder(dialogContext)),
+      ),
+      actions: actionsBuilder(dialogContext),
+    ),
+  );
 }
 
 /// Doble verificación para acciones destructivas (eliminar usuarios,

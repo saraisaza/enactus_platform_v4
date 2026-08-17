@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
@@ -21,21 +22,26 @@ class LandingView extends StatelessWidget {
     final data = context.watch<DataProvider>();
     final content = data.siteContent;
     final labs = data.labs;
+    final isCompact = context.isCompact;
 
     return Scaffold(
       body: Column(
         children: [
-          // Barra superior pública
+          // Barra superior pública. Con el logo a 135px de alto (~esa
+          // proporción de ancho) más el botón, la fila ya no cabe en un
+          // teléfono aunque tenga un Spacer entre los dos — un Spacer
+          // absorbe espacio sobrante, pero no encoge a sus vecinos cuando
+          // ni siquiera hay espacio sobrante que absorber.
           Container(
-            height: 160,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            height: isCompact ? 64 : 160,
+            padding: EdgeInsets.symmetric(horizontal: isCompact ? 16 : 24),
             decoration: const BoxDecoration(
               color: AppColors.background,
               border: Border(bottom: BorderSide(color: AppColors.border)),
             ),
             child: Row(
               children: [
-                const AnimatedLogo(height: 135),
+                AnimatedLogo(height: isCompact ? 36 : 135),
                 const Spacer(),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.login, size: 18),

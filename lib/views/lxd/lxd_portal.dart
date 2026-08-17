@@ -11,6 +11,7 @@ import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/communication_resources_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
 import '../shared/student_detail_view.dart';
 import 'course_editor_view.dart';
@@ -52,6 +53,10 @@ class LxdPortal extends StatelessWidget {
             label: 'Mi Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _LxdProfile()),
+        PortalTab(
+            label: 'Recursos Comunicaciones',
+            icon: Icons.perm_media_outlined,
+            builder: (_) => const CommunicationResourcesView()),
       ],
     );
   }

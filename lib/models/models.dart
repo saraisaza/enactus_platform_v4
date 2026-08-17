@@ -1092,6 +1092,70 @@ class Evidence {
       );
 }
 
+/// Valores posibles de [CommunicationResource.type].
+class CommunicationResourceType {
+  static const file = 'archivo';
+  static const link = 'enlace';
+}
+
+/// Recurso de comunicaciones/diseño (plantillas) que el Admin publica desde
+/// "Recursos Comunicaciones" para que Asesor, Mentor y LXD lo usen —
+/// archivo (PDF/imagen/SVG) o enlace externo. Igual que
+/// [AppUser.avatarBase64]: no hay backend de archivos, así que el
+/// contenido del archivo vive codificado en base64 dentro del propio
+/// registro.
+class CommunicationResource {
+  final String id;
+  String title;
+  String description;
+  String type; // CommunicationResourceType.file | .link
+  String fileName; // solo type == file (con extensión, ej. "plantilla.pdf")
+  String fileBase64; // solo type == file
+  String url; // solo type == link
+  final String uploadedBy;
+  final DateTime date;
+
+  CommunicationResource({
+    required this.id,
+    required this.title,
+    this.description = '',
+    required this.type,
+    this.fileName = '',
+    this.fileBase64 = '',
+    this.url = '',
+    required this.uploadedBy,
+    DateTime? date,
+  }) : date = date ?? DateTime.now();
+
+  String get fileExt =>
+      fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'type': type,
+        'fileName': fileName,
+        'fileBase64': fileBase64,
+        'url': url,
+        'uploadedBy': uploadedBy,
+        'date': date.toIso8601String(),
+      };
+
+  factory CommunicationResource.fromJson(Map<String, dynamic> j) =>
+      CommunicationResource(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        description: (j['description'] as String?) ?? '',
+        type: j['type'] as String,
+        fileName: (j['fileName'] as String?) ?? '',
+        fileBase64: (j['fileBase64'] as String?) ?? '',
+        url: (j['url'] as String?) ?? '',
+        uploadedBy: j['uploadedBy'] as String,
+        date: DateTime.parse(j['date'] as String),
+      );
+}
+
 class AppNotification {
   final String id;
   final String userId;

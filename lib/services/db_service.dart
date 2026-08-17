@@ -20,6 +20,7 @@ class DbService {
     'certificates',
     'expo_checklists',
     'evidences',
+    'comm_resources',
     'notifications',
     'content',
     'session',

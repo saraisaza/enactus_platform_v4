@@ -666,6 +666,24 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------------- Recursos de Comunicaciones ----------------
+  List<CommunicationResource> get communicationResources {
+    final list =
+        db.getAll('comm_resources').map(CommunicationResource.fromJson).toList();
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
+  }
+
+  Future<void> saveCommunicationResource(CommunicationResource r) async {
+    await db.put('comm_resources', r.id, r.toJson());
+    notifyListeners();
+  }
+
+  Future<void> deleteCommunicationResource(String id) async {
+    await db.delete('comm_resources', id);
+    notifyListeners();
+  }
+
   // ---------------- Notificaciones ----------------
   List<AppNotification> notificationsFor(String userId) {
     final list = db

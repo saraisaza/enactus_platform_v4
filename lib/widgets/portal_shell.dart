@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 import 'app_footer.dart';
 import 'app_header.dart';
 import 'common.dart';
@@ -57,56 +58,111 @@ class _PortalShellState extends State<PortalShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 900;
+    final breakpoint = context.breakpoint;
+    final compact = breakpoint == AppBreakpoint.compact;
+    // "wide" conserva el nombre/comportamiento de siempre (sidebar de
+    // 230px con texto vs. 64px solo íconos) — antes cortaba en 900px con
+    // un solo umbral; ahora es exactamente "expanded" de Material 3
+    // (≥840px), y "medium" (600-839) sigue recibiendo el mismo riel de
+    // 64px de siempre, ya que ese caso no cambia de fondo.
+    final wide = breakpoint == AppBreakpoint.expanded;
+
+    // El footer vive dentro del scroll de cada pestaña: solo aparece al
+    // desplazarse hasta el final.
+    final content = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      child: KeyedSubtree(
+        key: ValueKey(widget.contentOverride != null && !_overrideDismissed
+            ? 'override-$_selected'
+            : _selected),
+        child: (widget.contentOverride != null && !_overrideDismissed)
+            ? widget.contentOverride!
+            : widget.tabs[_selected].builder(context),
+      ),
+    );
 
     return Scaffold(
+      // Compact no tiene espacio para una barra lateral permanente (ni
+      // siquiera de 64px solo-íconos) — la navegación pasa a un Drawer
+      // activado desde el ícono de menú de AppHeader.
+      drawer: compact ? _buildDrawer() : null,
       body: Column(
         children: [
-          AppHeader(portalTitle: widget.portalTitle),
+          AppHeader(portalTitle: widget.portalTitle, showMenuButton: compact),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Barra lateral
-                Container(
-                  width: isWide ? 230 : 64,
-                  color: AppColors.slate,
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+            child: compact
+                ? content
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (var i = 0; i < widget.tabs.length; i++)
-                        _SidebarItem(
-                          tab: widget.tabs[i],
-                          selected: i == _selected,
-                          compact: !isWide,
-                          onTap: () => setState(() {
-                            _selected = i;
-                            _overrideDismissed = true;
-                          }),
+                      // Barra lateral
+                      Container(
+                        width: wide ? 230 : 64,
+                        color: AppColors.slate,
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          children: [
+                            for (var i = 0; i < widget.tabs.length; i++)
+                              _SidebarItem(
+                                tab: widget.tabs[i],
+                                selected: i == _selected,
+                                compact: !wide,
+                                onTap: () => _selectTab(i),
+                              ),
+                          ],
                         ),
+                      ),
+                      Expanded(child: content),
                     ],
                   ),
-                ),
-                // Contenido (el footer vive dentro del scroll de cada
-                // pestaña: solo aparece al desplazarse hasta el final)
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: KeyedSubtree(
-                      key: ValueKey(
-                          widget.contentOverride != null && !_overrideDismissed
-                              ? 'override-$_selected'
-                              : _selected),
-                      child: (widget.contentOverride != null && !_overrideDismissed)
-                          ? widget.contentOverride!
-                          : widget.tabs[_selected].builder(context),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _selectTab(int i) {
+    setState(() {
+      _selected = i;
+      _overrideDismissed = true;
+    });
+  }
+
+  /// Mismas pestañas que la barra lateral, en un `Drawer` a ancho completo
+  /// para compact. `Builder` da un context propio, ya descendiente del
+  /// `Drawer`, para poder cerrarlo con `Navigator.pop` al elegir una
+  /// pestaña (el context de `_PortalShellState.build` está por encima del
+  /// `Scaffold`/`Drawer`, no sirve para eso).
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: AppColors.slate,
+      child: SafeArea(
+        child: Builder(
+          builder: (drawerContext) => ListView(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
+                child: Text(widget.portalTitle.toUpperCase(),
+                    style: const TextStyle(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: 1)),
+              ),
+              for (var i = 0; i < widget.tabs.length; i++)
+                _SidebarItem(
+                  tab: widget.tabs[i],
+                  selected: i == _selected,
+                  compact: false,
+                  onTap: () {
+                    Navigator.pop(drawerContext);
+                    _selectTab(i);
+                  },
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -145,7 +201,11 @@ class _SidebarItemState extends State<_SidebarItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          // vertical:14 (no 12) para que el área táctil real — el padding
+          // queda dentro del BoxDecoration, que sí es lo que hit-testea —
+          // alcance el mínimo de 48dp: 14+22+14=50 en modo ícono,
+          // 14+20+14=48 en modo ícono+texto.
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
             color: active
                 ? AppColors.gold.withValues(alpha: 0.12)
@@ -204,6 +264,43 @@ class TabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title.toUpperCase(),
+            style: knockoutHeading(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+                color: AppColors.gold)),
+        if (subtitle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(subtitle!,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14)),
+          ),
+      ],
+    );
+    // En compact, título y acciones compartiendo la misma fila aprietan
+    // tanto la columna del título (Knockout 30px) que llega a partir
+    // palabras a la mitad — se apilan en vez de compartir fila. Sin
+    // acciones no hay nada que lo apriete, así que ahí se conserva el
+    // mismo Row de siempre en cualquier ancho.
+    final header = context.isCompact && actions.isNotEmpty
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              titleBlock,
+              const SizedBox(height: 16),
+              Wrap(spacing: 8, runSpacing: 8, children: actions),
+            ],
+          )
+        : Row(
+            children: [
+              Expanded(child: titleBlock),
+              ...actions,
+            ],
+          );
     // El footer va al final del scroll: no ocupa pantalla hasta que el
     // usuario baja del todo. Si el contenido es corto, SliverFillRemaining
     // lo ancla al borde inferior del viewport.
@@ -215,31 +312,7 @@ class TabBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title.toUpperCase(),
-                              style: knockoutHeading(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.gold)),
-                          if (subtitle != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(subtitle!,
-                                  style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 14)),
-                            ),
-                        ],
-                      ),
-                    ),
-                    ...actions,
-                  ],
-                ),
+                header,
                 const SizedBox(height: 20),
                 ...children,
               ],

@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
+import '../utils/responsive.dart';
 import 'animated_logo.dart';
 import 'common.dart';
 
@@ -14,6 +15,25 @@ class AppFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final socialButtons = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        _SocialButton(
+            icon: Icons.facebook,
+            label: 'Facebook',
+            url: SocialLinks.facebook),
+        SizedBox(width: 10),
+        _SocialButton(
+            icon: Icons.camera_alt_outlined,
+            label: 'Instagram',
+            url: SocialLinks.instagram),
+        SizedBox(width: 10),
+        _SocialButton(
+            icon: Icons.business_center_outlined,
+            label: 'LinkedIn',
+            url: SocialLinks.linkedin),
+      ],
+    );
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -35,60 +55,75 @@ class AppFooter extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               runSpacing: 14,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AnimatedLogo(height: 95),
-                    const SizedBox(width: 18),
-                    Container(
-                      width: 1,
-                      height: 75,
-                      color: Colors.white.withValues(alpha: 0.12),
-                    ),
-                    const SizedBox(width: 18),
-                    const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          InstitutionalInfo.footerText,
-                          style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Formamos líderes que transforman comunidades 💛',
-                          style: TextStyle(
-                              color: AppColors.textMuted, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Transform.translate(
-                  offset: const Offset(100, 0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      _SocialButton(
-                          icon: Icons.facebook,
-                          label: 'Facebook',
-                          url: SocialLinks.facebook),
-                      SizedBox(width: 10),
-                      _SocialButton(
-                          icon: Icons.camera_alt_outlined,
-                          label: 'Instagram',
-                          url: SocialLinks.instagram),
-                      SizedBox(width: 10),
-                      _SocialButton(
-                          icon: Icons.business_center_outlined,
-                          label: 'LinkedIn',
-                          url: SocialLinks.linkedin),
-                    ],
-                  ),
-                ),
+                // El logo (95px alto) + divisor + texto en una sola fila
+                // sin envoltura ya desborda por sí solo en compact (el
+                // texto no tiene ancho acotado); en vez de forzarlos a
+                // compartir una fila que no cabe, en compact se apilan
+                // verticalmente — un `Column` sí ajusta el texto al ancho
+                // disponible (lo hace pasar a más líneas) en vez de exigir
+                // su ancho intrínseco completo como un `Row` sin `Expanded`.
+                context.isCompact
+                    ? const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedLogo(height: 64),
+                          SizedBox(height: 12),
+                          Text(
+                            InstitutionalInfo.footerText,
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Formamos líderes que transforman comunidades 💛',
+                            style: TextStyle(
+                                color: AppColors.textMuted, fontSize: 12),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const AnimatedLogo(height: 95),
+                          const SizedBox(width: 18),
+                          Container(
+                            width: 1,
+                            height: 75,
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                          const SizedBox(width: 18),
+                          const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                InstitutionalInfo.footerText,
+                                style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                'Formamos líderes que transforman comunidades 💛',
+                                style: TextStyle(
+                                    color: AppColors.textMuted, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                // El corrimiento de 100px es un ajuste visual deliberado en
+                // escritorio; dentro de este mismo Wrap, en compact las dos
+                // filas se apilan y ese corrimiento saca los íconos del
+                // viewport — se aplica solo fuera de compact.
+                context.isCompact
+                    ? socialButtons
+                    : Transform.translate(
+                        offset: const Offset(100, 0), child: socialButtons),
               ],
             ),
           ),
@@ -147,29 +182,39 @@ class _SocialButtonState extends State<_SocialButton> {
         message: widget.label,
         child: GestureDetector(
           onTap: () => launchUrl(Uri.parse(widget.url)),
-          child: AnimatedScale(
-            scale: _hover ? 1.15 : 1.0,
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutBack,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: _hover ? AppColors.gold : AppColors.slateLight,
-                shape: BoxShape.circle,
-                boxShadow: _hover
-                    ? [
-                        BoxShadow(
-                          color: AppColors.gold.withValues(alpha: 0.45),
-                          blurRadius: 16,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : const [],
+          // El círculo visible mide 36×36 (9px de padding + ícono de 18) —
+          // por debajo del mínimo de 48×48dp. En vez de agrandar el círculo
+          // (cambiaría el diseño), se centra dentro de un área táctil
+          // invisible de 48×48.
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: AnimatedScale(
+                scale: _hover ? 1.15 : 1.0,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutBack,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: _hover ? AppColors.gold : AppColors.slateLight,
+                    shape: BoxShape.circle,
+                    boxShadow: _hover
+                        ? [
+                            BoxShadow(
+                              color: AppColors.gold.withValues(alpha: 0.45),
+                              blurRadius: 16,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : const [],
+                  ),
+                  child: Icon(widget.icon,
+                      size: 18,
+                      color: _hover ? const Color(0xFF1A1400) : Colors.white),
+                ),
               ),
-              child: Icon(widget.icon,
-                  size: 18,
-                  color: _hover ? const Color(0xFF1A1400) : Colors.white),
             ),
           ),
         ),

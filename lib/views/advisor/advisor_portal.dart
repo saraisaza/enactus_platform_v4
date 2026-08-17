@@ -10,6 +10,7 @@ import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/communication_resources_view.dart';
 import '../shared/forum_view.dart';
 import '../shared/projects_directory_view.dart';
 import '../shared/student_detail_view.dart';
@@ -49,6 +50,10 @@ class AdvisorPortal extends StatelessWidget {
             label: 'Foro',
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
+        PortalTab(
+            label: 'Recursos Comunicaciones',
+            icon: Icons.perm_media_outlined,
+            builder: (_) => const CommunicationResourcesView()),
       ],
     );
   }

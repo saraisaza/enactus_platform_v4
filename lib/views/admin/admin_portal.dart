@@ -15,6 +15,7 @@ import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../shared/communication_resources_view.dart';
 import '../shared/forum_view.dart';
 import 'admin_backup.dart';
 import 'admin_management.dart';
@@ -78,6 +79,10 @@ class AdminPortal extends StatelessWidget {
             label: 'Datos y respaldos',
             icon: Icons.storage_outlined,
             builder: (_) => const AdminBackup()),
+        PortalTab(
+            label: 'Recursos Comunicaciones',
+            icon: Icons.perm_media_outlined,
+            builder: (_) => const AdminCommunicationResources()),
       ],
     );
   }
@@ -1162,13 +1167,24 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                         Positioned(
                           top: -8,
                           right: -8,
+                          // El círculo visible (24×24) queda igual — se
+                          // ancla en la misma esquina dentro de un área
+                          // táctil invisible de 48×48 que crece hacia
+                          // adentro de la miniatura (no hacia la vecina).
                           child: GestureDetector(
                             onTap: () => setState(() => _gallery.removeAt(i)),
-                            child: const CircleAvatar(
-                              radius: 12,
-                              backgroundColor: AppColors.statusCritical,
-                              child: Icon(Icons.close,
-                                  size: 14, color: Colors.white),
+                            child: const SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Align(
+                                alignment: Alignment.topRight,
+                                child: CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: AppColors.statusCritical,
+                                  child: Icon(Icons.close,
+                                      size: 14, color: Colors.white),
+                                ),
+                              ),
                             ),
                           ),
                         ),

@@ -1466,73 +1466,70 @@ class AdminEvidences extends StatelessWidget {
     String? donorId = donors.isEmpty ? null : donors.first.id;
     var type = _types.first;
 
-    await showDialog<void>(
+    // Primer uso real de showAdaptiveFormDialog (antes: showDialog +
+    // AlertDialog con SizedBox(width:460) fijo y sin scroll — desbordaba
+    // en compact y no tenía red de seguridad vertical en ningún tamaño).
+    await showAdaptiveFormDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title:
-              const Text('Nueva evidencia', style: TextStyle(fontSize: 18)),
-          content: SizedBox(
-            width: 460,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  initialValue: donorId,
-                  decoration: const InputDecoration(labelText: 'Donante'),
-                  items: [
-                    for (final d in donors)
-                      DropdownMenuItem(value: d.id, child: Text(d.name)),
-                  ],
-                  onChanged: (v) => setState(() => donorId = v),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: const InputDecoration(labelText: 'Tipo'),
-                  items: [
-                    for (final t in _types)
-                      DropdownMenuItem(value: t, child: Text(t)),
-                  ],
-                  onChanged: (v) => setState(() => type = v!),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                    controller: titleCtrl,
-                    decoration:
-                        const InputDecoration(labelText: 'Título')),
-                const SizedBox(height: 12),
-                TextField(
-                    controller: descCtrl,
-                    maxLines: 3,
-                    decoration:
-                        const InputDecoration(labelText: 'Descripción')),
+      title: 'Nueva evidencia',
+      maxWidth: 460,
+      contentBuilder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: donorId,
+              decoration: const InputDecoration(labelText: 'Donante'),
+              items: [
+                for (final d in donors)
+                  DropdownMenuItem(value: d.id, child: Text(d.name)),
               ],
+              onChanged: (v) => setState(() => donorId = v),
             ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () async {
-                if (titleCtrl.text.trim().isEmpty || donorId == null) {
-                  return;
-                }
-                await data.saveEvidence(Evidence(
-                  id: data.newId('ev'),
-                  donorId: donorId!,
-                  type: type,
-                  title: titleCtrl.text.trim(),
-                  description: descCtrl.text.trim(),
-                ));
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Guardar'),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: type,
+              decoration: const InputDecoration(labelText: 'Tipo'),
+              items: [
+                for (final t in _types)
+                  DropdownMenuItem(value: t, child: Text(t)),
+              ],
+              onChanged: (v) => setState(() => type = v!),
             ),
+            const SizedBox(height: 12),
+            TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: 'Título')),
+            const SizedBox(height: 12),
+            TextField(
+                controller: descCtrl,
+                maxLines: 3,
+                decoration:
+                    const InputDecoration(labelText: 'Descripción')),
           ],
         ),
       ),
+      actionsBuilder: (ctx) => [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: () async {
+            if (titleCtrl.text.trim().isEmpty || donorId == null) {
+              return;
+            }
+            await data.saveEvidence(Evidence(
+              id: data.newId('ev'),
+              donorId: donorId!,
+              type: type,
+              title: titleCtrl.text.trim(),
+              description: descCtrl.text.trim(),
+            ));
+            if (ctx.mounted) Navigator.pop(ctx);
+          },
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 }

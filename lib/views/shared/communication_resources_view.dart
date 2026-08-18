@@ -11,6 +11,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/responsive.dart';
+import '../../widgets/app_image.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 
@@ -297,8 +298,8 @@ class _ResourceCard extends StatelessWidget {
                     height: 100,
                     width: double.infinity,
                     child: isImage
-                        ? Image.memory(base64Decode(resource.fileBase64),
-                            fit: BoxFit.cover)
+                        ? AppImage(
+                            source: resource.fileBase64, fit: BoxFit.cover)
                         : Container(
                             color: AppColors.surfaceAlt,
                             alignment: Alignment.center,
@@ -419,8 +420,7 @@ Future<void> _showResourceDetail(BuildContext context, CommunicationResource r) 
               const SizedBox(height: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child:
-                    Image.memory(base64Decode(r.fileBase64), fit: BoxFit.contain),
+                child: AppImage(source: r.fileBase64, fit: BoxFit.contain),
               ),
             ],
           ],

@@ -11,6 +11,7 @@ import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/app_image.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
@@ -407,8 +408,13 @@ class _IdentityBand extends StatelessWidget {
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: student.avatarBase64 != null
-                        ? Image.memory(base64Decode(student.avatarBase64!),
-                            fit: BoxFit.cover, width: 110, height: 110)
+                        ? SizedBox(
+                            width: 110,
+                            height: 110,
+                            child: AppImage(
+                                source: student.avatarBase64,
+                                fit: BoxFit.cover),
+                          )
                         : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
                             style: knockoutHeading(
                                 fontSize: 52,
@@ -918,8 +924,7 @@ Future<void> showEditProfileDialog(
                       CircleAvatar(
                         radius: 42,
                         backgroundColor: AppColors.gold,
-                        backgroundImage:
-                            avatarBase64 == null ? null : MemoryImage(base64Decode(avatarBase64!)),
+                        backgroundImage: appImageProvider(avatarBase64),
                         child: avatarBase64 != null
                             ? null
                             : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),

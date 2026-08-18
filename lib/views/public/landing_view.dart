@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +7,7 @@ import '../../utils/constants.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
+import '../../widgets/app_image.dart';
 import '../../widgets/common.dart';
 import '../../widgets/contact_dialog.dart';
 
@@ -205,11 +204,12 @@ class LandingView extends StatelessWidget {
                               delayMs: 90 * i,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(14),
-                                child: Image.memory(
-                                  base64Decode(content.galleryImages[i]),
+                                child: SizedBox(
                                   width: 220,
                                   height: 160,
-                                  fit: BoxFit.cover,
+                                  child: AppImage(
+                                      source: content.galleryImages[i],
+                                      fit: BoxFit.cover),
                                 ),
                               ),
                             ),

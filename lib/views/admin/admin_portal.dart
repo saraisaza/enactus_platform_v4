@@ -11,6 +11,7 @@ import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/colombia_cities.dart';
 import '../../utils/constants.dart';
+import '../../widgets/app_image.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
@@ -1157,11 +1158,11 @@ class _AdminSiteContentState extends State<AdminSiteContent> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.memory(
-                            base64Decode(_gallery[i]),
+                          child: SizedBox(
                             width: 100,
                             height: 100,
-                            fit: BoxFit.cover,
+                            child: AppImage(
+                                source: _gallery[i], fit: BoxFit.cover),
                           ),
                         ),
                         Positioned(

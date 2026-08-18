@@ -5,15 +5,16 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import '../models/models.dart';
-import '../services/db_service.dart';
+import '../services/data_store.dart';
 import '../utils/constants.dart';
 
 /// Estado global de datos: expone todas las entidades y las operaciones CRUD.
 ///
-/// Toda mutación pasa por aquí y notifica a la UI. Al migrar a AWS, esta capa
-/// se conecta a la API en lugar de a Hive sin tocar las vistas.
+/// Toda mutación pasa por aquí y notifica a la UI. [db] es un [DataStore]
+/// (hoy siempre [DbService]/Hive) — ver ahí la nota completa sobre cómo
+/// migrar a AWS sin tocar Providers ni Vistas.
 class DataProvider extends ChangeNotifier {
-  final DbService db;
+  final DataStore db;
   DataProvider(this.db);
 
   static final _rnd = Random();

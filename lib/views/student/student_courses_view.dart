@@ -129,11 +129,9 @@ class _CourseCard extends StatelessWidget {
             settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
             builder: (_) => CourseDetailView(courseId: course.id)));
 
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: open,
-        child: AnimatedContainer(
+    return KeyboardHoverBuilder(
+      onTap: open,
+      builder: (context, hover) => AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           clipBehavior: Clip.antiAlias,
           transform: Matrix4.translationValues(0, hover ? -5 : 0, 0),
@@ -257,8 +255,7 @@ class _CourseCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

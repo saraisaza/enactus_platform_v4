@@ -649,26 +649,24 @@ class _ProjectCard extends StatelessWidget {
     final stageIndex = projectStages.indexOf(project!.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                settings: RouteSettings(name: '${AppRoutes.projects}/${project!.id}'),
-                builder: (_) => ProjectDetailView(projectId: project!.id))),
-        child: Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
+    return KeyboardHoverBuilder(
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.projects}/${project!.id}'),
+              builder: (_) => ProjectDetailView(projectId: project!.id))),
+      builder: (context, hover) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          border: Border.all(color: hover ? AppColors.gold : colors.border),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
             height: 96,
             child: Stack(
               fit: StackFit.expand,
@@ -744,8 +742,7 @@ class _ProjectCard extends StatelessWidget {
               ],
             ),
           ),
-        ],
-          ),
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import '../utils/app_theme.dart';
 import '../utils/responsive.dart';
@@ -81,12 +82,72 @@ class _EntranceState extends State<Entrance> {
   }
 }
 
-/// Tarjeta interactiva: al pasar el mouse se eleva (sombra), escala 1.02,
-/// aclara el fondo y el borde se tiñe de un color de acento. Por defecto
-/// usa los tokens fijos de tema oscuro de [AppColors] (como siempre); las
-/// pantallas con tema claro/oscuro propio ([ContentColors]) o con acento
-/// por dato (ODS, laboratorio) pueden pasar [bg]/[bgHover]/[borderColor]/
-/// [borderHoverColor] sin bifurcar el widget.
+/// Como [HoverBuilder], pero además hace que [onTap] se pueda activar con
+/// teclado: `Tab` enfoca la tarjeta y `Enter`/`Espacio` la activa (antes
+/// estas tarjetas solo usaban `GestureDetector`, que no participa del orden
+/// de foco de Flutter — Tab nunca las alcanzaba). El `builder` recibe
+/// `true` tanto en hover como en foco, así que cualquier estilo reactivo
+/// (borde, elevación, escala…) que ya tuvieras también se ve al navegar
+/// con teclado, sin tocar la lógica visual de cada call site. Si [onTap]
+/// es `null`, se comporta exactamente igual que [HoverBuilder] (sin foco
+/// ni `Semantics` de botón — no hay nada que activar).
+class KeyboardHoverBuilder extends StatefulWidget {
+  final Widget Function(BuildContext context, bool highlighted) builder;
+  final VoidCallback? onTap;
+  const KeyboardHoverBuilder({super.key, required this.builder, this.onTap});
+
+  @override
+  State<KeyboardHoverBuilder> createState() => _KeyboardHoverBuilderState();
+}
+
+class _KeyboardHoverBuilderState extends State<KeyboardHoverBuilder> {
+  bool _hover = false;
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final onTap = widget.onTap;
+    final child = MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: onTap,
+        child: widget.builder(context, _hover || _focused),
+      ),
+    );
+    if (onTap == null) return child;
+    return FocusableActionDetector(
+      onShowFocusHighlight: (show) => setState(() => _focused = show),
+      // `FocusableActionDetector` NO trae por sí solo un atajo de teclado
+      // que dispare `ActivateIntent` — sin este `shortcuts:` explícito, el
+      // `actions:` de abajo queda enchufado a la nada: la tarjeta SÍ recibe
+      // foco con Tab (se ve el resaltado), pero Enter/Espacio no hacían
+      // nada (confirmado con un test real: el foco llegaba, la URL no
+      // cambiaba). `InkWell`/`ElevatedButton` traen este mapeo de fábrica;
+      // como esto no es ninguno de los dos, hay que declararlo a mano.
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(onInvoke: (_) {
+          onTap();
+          return null;
+        }),
+      },
+      child: Semantics(button: true, onTap: onTap, child: child),
+    );
+  }
+}
+
+/// Tarjeta interactiva: al pasar el mouse (o enfocar con teclado — ver
+/// [KeyboardHoverBuilder]) se eleva (sombra), escala 1.02, aclara el fondo
+/// y el borde se tiñe de un color de acento. Por defecto usa los tokens
+/// fijos de tema oscuro de [AppColors] (como siempre); las pantallas con
+/// tema claro/oscuro propio ([ContentColors]) o con acento por dato (ODS,
+/// laboratorio) pueden pasar [bg]/[bgHover]/[borderColor]/[borderHoverColor]
+/// sin bifurcar el widget.
 class HoverCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -112,40 +173,35 @@ class HoverCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: onTap != null
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedScale(
-          scale: hover ? hoverScale : 1.0,
+    return KeyboardHoverBuilder(
+      onTap: onTap,
+      builder: (context, active) => AnimatedScale(
+        scale: active ? hoverScale : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: padding,
-            decoration: BoxDecoration(
-              color: hover
-                  ? (bgHover ?? AppColors.surfaceAlt)
-                  : (bg ?? AppColors.surface),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                  color: hover
-                      ? (borderHoverColor ?? AppColors.gold)
-                      : (borderColor ?? AppColors.border),
-                  width: hover ? 1.2 : 1),
-              boxShadow: hover
-                  ? const [
-                      BoxShadow(
-                          color: Colors.black45,
-                          blurRadius: 18,
-                          offset: Offset(0, 6)),
-                    ]
-                  : const [],
-            ),
-            child: child,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: active
+                ? (bgHover ?? AppColors.surfaceAlt)
+                : (bg ?? AppColors.surface),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: active
+                    ? (borderHoverColor ?? AppColors.gold)
+                    : (borderColor ?? AppColors.border),
+                width: active ? 1.2 : 1),
+            boxShadow: active
+                ? const [
+                    BoxShadow(
+                        color: Colors.black45,
+                        blurRadius: 18,
+                        offset: Offset(0, 6)),
+                  ]
+                : const [],
           ),
+          child: child,
         ),
       ),
     );

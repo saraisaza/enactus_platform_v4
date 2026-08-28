@@ -19,6 +19,8 @@ import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../lxd/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
+import '../shared/lab_detail_view.dart';
+import '../shared/user_detail_view.dart';
 import 'course_detail_view.dart';
 
 /// Flujo completo de la Ruta de Impacto del estudiante:
@@ -406,50 +408,58 @@ class _OtherLabCard extends StatelessWidget {
     final accent = labColorFor(lab.id);
     final teams = data.teamsInLabArea(lab.id);
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 3, color: accent),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          color: accent.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(10)),
-                      child: Icon(Icons.science_outlined, size: 19, color: accent),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(lab.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
-                    if (lab.description.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(lab.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12.5, color: colors.text3)),
+    return KeyboardHoverBuilder(
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.labs}/${lab.id}'),
+              builder: (_) => LabDetailView(labId: lab.id))),
+      builder: (context, hover) => AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: hover ? colors.surface2 : colors.surface,
+          border: Border.all(color: hover ? accent : colors.border),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 3, color: accent),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(10)),
+                        child: Icon(Icons.science_outlined, size: 19, color: accent),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(lab.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
+                      if (lab.description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(lab.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                      ],
+                      const SizedBox(height: 8),
+                      Text(teams == 1 ? '1 equipo en la red' : '$teams equipos en la red',
+                          style: TextStyle(fontSize: 11.5, color: colors.text3)),
                     ],
-                    const SizedBox(height: 8),
-                    Text(teams == 1 ? '1 equipo en la red' : '$teams equipos en la red',
-                        style: TextStyle(fontSize: 11.5, color: colors.text3)),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1236,30 +1246,41 @@ class _LabLxdCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                      child: Text(lxd.name.isEmpty ? '?' : lxd.name[0].toUpperCase(),
-                          style: knockoutHeading(fontSize: 22, fontWeight: AppWeights.display, color: Colors.white)),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(lxd.name,
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colors.text)),
-                          Text('Learning Experience Designer',
-                              style: TextStyle(fontSize: 12.5, color: colors.text3)),
-                        ],
+                KeyboardHoverBuilder(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          settings: RouteSettings(name: '${AppRoutes.users}/${lxd.id}'),
+                          builder: (_) => UserDetailView(userId: lxd.id))),
+                  builder: (context, hover) => Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                        child: Text(lxd.name.isEmpty ? '?' : lxd.name[0].toUpperCase(),
+                            style: knockoutHeading(fontSize: 22, fontWeight: AppWeights.display, color: Colors.white)),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(lxd.name,
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: hover ? accent : colors.text)),
+                            Text('Learning Experience Designer',
+                                style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward, size: 18, color: hover ? accent : colors.text3),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Divider(height: 1, color: colors.border),

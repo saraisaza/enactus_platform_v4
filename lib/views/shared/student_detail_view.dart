@@ -278,7 +278,13 @@ class _CourseSummaryRow extends StatelessWidget {
           context,
           MaterialPageRoute(
               settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
-              builder: (_) => CourseDetailView(courseId: course.id))),
+              // studentId: quien mira este perfil casi nunca es el propio
+              // estudiante (llegó aquí desde LXD/Mentor/Asesor/Empresa/
+              // Donante/Admin) — sin esto, CourseDetailView mostraba el
+              // progreso de QUIEN MIRA, no el de `student` (bug real, ver
+              // AUDITORIA_FRONT.md § 1.2).
+              builder: (_) => CourseDetailView(
+                  courseId: course.id, studentId: student.id))),
       child: Row(
         children: [
           Expanded(

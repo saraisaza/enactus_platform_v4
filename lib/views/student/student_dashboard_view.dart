@@ -317,31 +317,28 @@ class _CourseProgressCard extends StatelessWidget {
           for (final c in courses)
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          settings: RouteSettings(name: '${AppRoutes.courses}/${c.id}'),
-                          builder: (_) => CourseDetailView(courseId: c.id))),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(c.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 14, color: colors.text)),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 3,
-                        child: ThinProgressBar(
-                            value: data.courseProgress(student.id, c), color: labColorFor(c.labId)),
-                      ),
-                    ],
-                  ),
+              child: KeyboardHoverBuilder(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.courses}/${c.id}'),
+                        builder: (_) => CourseDetailView(courseId: c.id))),
+                builder: (context, hover) => Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(c.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14, color: colors.text)),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 3,
+                      child: ThinProgressBar(
+                          value: data.courseProgress(student.id, c), color: labColorFor(c.labId)),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -470,38 +467,33 @@ class _PendingCard extends StatelessWidget {
             for (final item in items)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: MouseRegion(
-                  cursor: item.onTap == null
-                      ? MouseCursor.defer
-                      : SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: item.onTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                      decoration: BoxDecoration(
-                        color: colors.surface2,
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border(left: BorderSide(color: item.color, width: 3)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(item.icon, size: 19, color: item.color),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(item.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 13.5, color: colors.text)),
-                                Text(item.meta, style: TextStyle(fontSize: 12, color: colors.text3)),
-                              ],
-                            ),
+                child: KeyboardHoverBuilder(
+                  onTap: item.onTap,
+                  builder: (context, hover) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                    decoration: BoxDecoration(
+                      color: colors.surface2,
+                      borderRadius: BorderRadius.circular(11),
+                      border: Border(left: BorderSide(color: item.color, width: 3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(item.icon, size: 19, color: item.color),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(item.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 13.5, color: colors.text)),
+                              Text(item.meta, style: TextStyle(fontSize: 12, color: colors.text3)),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -641,16 +633,13 @@ class _RecentActivityCard extends StatelessWidget {
                 ],
               );
               if (course == null) return content;
-              return MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
-                          builder: (_) => CourseDetailView(courseId: course.id))),
-                  child: content,
-                ),
+              return KeyboardHoverBuilder(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
+                        builder: (_) => CourseDetailView(courseId: course.id))),
+                builder: (context, hover) => content,
               );
             }),
         ],
@@ -671,39 +660,36 @@ class _ProjectCard extends StatelessWidget {
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                settings: RouteSettings(name: '${AppRoutes.projects}/${project.id}'),
-                builder: (_) => ProjectDetailView(projectId: project.id))),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Tu proyecto'.toUpperCase(),
-                  style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w700, color: colors.text3, letterSpacing: 1)),
-              const SizedBox(height: 8),
-              Text(project.name.toUpperCase(),
-                  style: knockoutHeading(fontSize: 30, fontWeight: AppWeights.display, color: colors.text)),
+    return KeyboardHoverBuilder(
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.projects}/${project.id}'),
+              builder: (_) => ProjectDetailView(projectId: project.id))),
+      builder: (context, hover) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          border: Border.all(color: hover ? AppColors.gold : colors.border),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Tu proyecto'.toUpperCase(),
+                style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w700, color: colors.text3, letterSpacing: 1)),
+            const SizedBox(height: 8),
+            Text(project.name.toUpperCase(),
+                style: knockoutHeading(fontSize: 30, fontWeight: AppWeights.display, color: colors.text)),
+            const SizedBox(height: 14),
+            StageRail(accentColor: odsColor, colors: colors, currentIndex: currentIndex),
+            if (project.impactIndicators.isNotEmpty) ...[
               const SizedBox(height: 14),
-              StageRail(accentColor: odsColor, colors: colors, currentIndex: currentIndex),
-              if (project.impactIndicators.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                Text(project.impactIndicators, style: TextStyle(fontSize: 13, color: colors.text2)),
-              ],
+              Text(project.impactIndicators, style: TextStyle(fontSize: 13, color: colors.text2)),
             ],
-          ),
+          ],
         ),
       ),
     );

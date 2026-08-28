@@ -20,7 +20,9 @@ import 'views/lxd/lxd_portal.dart';
 import 'views/mentor/mentor_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
+import 'views/shared/lab_detail_view.dart';
 import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
+import 'views/shared/user_detail_view.dart';
 import 'views/student/course_detail_view.dart';
 import 'views/student/student_portal.dart';
 
@@ -144,6 +146,17 @@ class EnactusApp extends StatelessWidget {
         page = _AuthGuard(
             child: CourseDetailView(
                 courseId: name.substring('${AppRoutes.courses}/'.length)));
+      // Perfil de usuario y detalle de laboratorio: mismo criterio que
+      // Proyecto/Curso arriba — URL real, alcanzables desde cualquier
+      // portal con sesión activa.
+      case String name when name.startsWith('${AppRoutes.users}/'):
+        page = _AuthGuard(
+            child: UserDetailView(
+                userId: name.substring('${AppRoutes.users}/'.length)));
+      case String name when name.startsWith('${AppRoutes.labs}/'):
+        page = _AuthGuard(
+            child: LabDetailView(
+                labId: name.substring('${AppRoutes.labs}/'.length)));
     }
     return MaterialPageRoute(builder: (_) => page, settings: settings);
   }

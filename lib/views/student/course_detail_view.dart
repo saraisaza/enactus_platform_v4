@@ -13,24 +13,40 @@ import '../../widgets/common.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../lxd/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
 
-/// Detalle de un curso para el estudiante: módulos y lecciones de todos los
-/// tipos (video, PDF, recurso, enlace, quiz, actividad, encuesta), progreso
-/// y entregas.
+/// Detalle de un curso: módulos y lecciones de todos los tipos (video, PDF,
+/// recurso, enlace, quiz, actividad, encuesta), progreso y entregas.
+///
+/// Por defecto ([studentId] nulo, el caso de siempre: el propio estudiante
+/// entrando a SU curso) muestra y permite editar el progreso de quien tiene
+/// la sesión abierta. Si [studentId] viene informado (otro rol — LXD,
+/// Mentor, Asesor, Empresa, Donante, Admin — abrió este curso desde el
+/// perfil de un estudiante puntual, ver `StudentDetailView`), muestra el
+/// progreso de ESE estudiante en modo de solo lectura: antes, sin este
+/// parámetro, la pantalla siempre leía `AuthProvider.currentUser` sin
+/// importar cómo se llegó, así que un Mentor viendo el curso de su
+/// estudiante en realidad veía (y podía escribir) su propio progreso
+/// inexistente, no el del estudiante.
 class CourseDetailView extends StatelessWidget {
   final String courseId;
-  const CourseDetailView({super.key, required this.courseId});
+  final String? studentId;
+  const CourseDetailView({super.key, required this.courseId, this.studentId});
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
+    final viewer = context.watch<AuthProvider>().currentUser!;
     final course = data.courseById(courseId);
     if (course == null) {
       return const Scaffold(body: Center(child: Text('Curso no encontrado')));
     }
-    final progress = data.progressFor(student.id, course.id);
+    // readOnly: alguien que no es el propio estudiante está mirando su
+    // progreso — puede ver todo, pero no completar lecciones, responder
+    // quizzes/encuestas ni entregar actividades en su nombre.
+    final readOnly = studentId != null && studentId != viewer.id;
+    final target = readOnly ? (data.userById(studentId!) ?? viewer) : viewer;
+    final progress = data.progressFor(target.id, course.id);
     final mySubmissions = data
-        .submissionsForStudent(student.id)
+        .submissionsForStudent(target.id)
         .where((s) => s.courseId == course.id)
         .toList();
 
@@ -135,12 +151,41 @@ class CourseDetailView extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (readOnly) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 56, right: 16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceAlt,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.visibility_outlined,
+                                      size: 17, color: AppColors.textMuted),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                        'Estás viendo el progreso de ${target.name} — modo de solo lectura.',
+                                        style: const TextStyle(
+                                            fontSize: 12.5,
+                                            color: AppColors.textMuted)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 8),
                         Padding(
                           padding:
                               const EdgeInsets.only(left: 56, right: 16),
                           child: ThinProgressBar(
-                            value: data.courseProgress(student.id, course),
+                            value: data.courseProgress(target.id, course),
                             tooltip:
                                 '${progress.completedLessonIds.length} de '
                                 '${course.lessonCount} lecciones',
@@ -156,12 +201,13 @@ class CourseDetailView extends StatelessWidget {
                               course: course,
                               done: progress.completedLessonIds
                                   .contains(lesson.id),
+                              readOnly: readOnly,
                               onToggle: () {
                                 final wasDone = progress
                                     .completedLessonIds
                                     .contains(lesson.id);
                                 data.toggleLesson(
-                                    student.id, course.id, lesson.id);
+                                    target.id, course.id, lesson.id);
                                 if (!wasDone) {
                                   showSuccessCheck(
                                       context, '¡Lección completada!');
@@ -172,8 +218,9 @@ class CourseDetailView extends StatelessWidget {
                         const SectionTitle('Mis entregas'),
                         _SubmissionsSection(
                             course: course,
-                            student: student,
-                            submissions: mySubmissions),
+                            student: target,
+                            submissions: mySubmissions,
+                            readOnly: readOnly),
                       ],
                     ),
                   ),
@@ -213,12 +260,14 @@ class _LessonTile extends StatelessWidget {
   final Lesson lesson;
   final Course course;
   final bool done;
+  final bool readOnly;
   final VoidCallback onToggle;
   const _LessonTile(
       {required this.lesson,
       required this.course,
       required this.done,
-      required this.onToggle});
+      required this.onToggle,
+      this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -247,14 +296,17 @@ class _LessonTile extends StatelessWidget {
               ),
             ),
             Tooltip(
-              message:
-                  done ? 'Marcar como pendiente' : 'Marcar como completada',
+              message: readOnly
+                  ? (done ? 'Completada' : 'Pendiente')
+                  : (done ? 'Marcar como pendiente' : 'Marcar como completada'),
               child: IconButton(
                 icon: Icon(
                   done ? Icons.check_circle : Icons.radio_button_unchecked,
                   color: done ? AppColors.statusGood : AppColors.textMuted,
                 ),
-                onPressed: onToggle,
+                // En modo de solo lectura no se puede completar en nombre
+                // de otro estudiante — ver doc de [CourseDetailView].
+                onPressed: readOnly ? null : onToggle,
               ),
             ),
           ],
@@ -264,6 +316,19 @@ class _LessonTile extends StatelessWidget {
   }
 
   void _open(BuildContext context) {
+    // Video/PDF/recurso/enlace son solo lectura de por sí (no escriben
+    // nada): se pueden abrir igual estando en modo readOnly. Quiz/encuesta/
+    // actividad SÍ escriben una entrega a nombre de quien tiene la sesión
+    // abierta — si estamos viendo el progreso de otro estudiante, eso
+    // atribuiría la respuesta a la persona equivocada, así que se bloquean.
+    if (readOnly &&
+        (lesson.type == LessonType.quiz ||
+            lesson.type == LessonType.survey ||
+            lesson.type == LessonType.activity)) {
+      showAppSnack(context,
+          'Estás viendo el progreso de otro estudiante — no puedes responder en su nombre.');
+      return;
+    }
     switch (lesson.type) {
       case LessonType.video:
         VideoPlayerDialog.show(context, lesson.title, lesson.resourcePath);
@@ -903,10 +968,12 @@ class _SubmissionsSection extends StatelessWidget {
   final Course course;
   final AppUser student;
   final List<Submission> submissions;
+  final bool readOnly;
   const _SubmissionsSection(
       {required this.course,
       required this.student,
-      required this.submissions});
+      required this.submissions,
+      this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -968,12 +1035,14 @@ class _SubmissionsSection extends StatelessWidget {
               ),
             ),
           ),
-        const SizedBox(height: 8),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.upload_file, size: 18),
-          label: const Text('Nueva entrega libre'),
-          onPressed: () => _newSubmission(context),
-        ),
+        if (!readOnly) ...[
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.upload_file, size: 18),
+            label: const Text('Nueva entrega libre'),
+            onPressed: () => _newSubmission(context),
+          ),
+        ],
       ],
     );
   }

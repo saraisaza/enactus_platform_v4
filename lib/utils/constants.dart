@@ -77,6 +77,17 @@ class AppRoutes {
   static const projects = '/proyectos';
   static const courses = '/cursos';
 
+  /// Perfil de un usuario (cualquier rol) — ver `UserDetailView`. Antes
+  /// solo existía `StudentDetailView`, alcanzable con `Navigator.push` pero
+  /// sin URL con nombre.
+  static const users = '/usuarios';
+
+  /// Detalle de laboratorio, sin depender de un estudiante puntual — ver
+  /// `LabDetailView`. Antes solo existía la vista embebida del propio
+  /// portal Estudiante (`/student/lab/:id`, ligada siempre al usuario con
+  /// sesión) y `LabProgressView` (progreso de UN estudiante puntual).
+  static const labs = '/laboratorios';
+
   static String forRole(String role) => switch (role) {
         Roles.superAdmin => superAdmin,
         Roles.admin => admin,

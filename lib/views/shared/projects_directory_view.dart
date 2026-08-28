@@ -14,6 +14,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import 'lab_progress_view.dart';
+import 'user_detail_view.dart';
 
 /// Directorio de todos los proyectos Enactus de la plataforma, sin
 /// importar laboratorio, universidad o equipo — para que estudiantes y
@@ -917,22 +918,32 @@ class _MemberRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            InitialsAvatar(student.name),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(student.name,
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: colors.text)),
-                  Text(student.university.isEmpty ? 'Universidad sin definir' : student.university,
-                      style: TextStyle(fontSize: 12, color: colors.text3)),
-                ],
+          KeyboardHoverBuilder(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    settings: RouteSettings(name: '${AppRoutes.users}/${student.id}'),
+                    builder: (_) => UserDetailView(userId: student.id))),
+            builder: (context, hover) => Row(children: [
+              InitialsAvatar(student.name),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(student.name,
+                        style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: hover ? AppColors.gold : colors.text)),
+                    Text(student.university.isEmpty ? 'Universidad sin definir' : student.university,
+                        style: TextStyle(fontSize: 12, color: colors.text3)),
+                  ],
+                ),
               ),
-            ),
-          ]),
+            ]),
+          ),
           if (labs.isNotEmpty) ...[
             const SizedBox(height: 10),
             Wrap(

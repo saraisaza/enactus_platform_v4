@@ -13,7 +13,7 @@ import '../../widgets/portal_shell.dart';
 import '../shared/communication_resources_view.dart';
 import '../shared/forum_view.dart';
 import '../shared/projects_directory_view.dart';
-import '../shared/student_detail_view.dart';
+import '../shared/user_detail_view.dart';
 
 /// Portal del Asesor Académico: ve el progreso completo (cursos, fases y
 /// laboratorios) de los estudiantes de SU universidad, y crea/edita los
@@ -260,8 +260,11 @@ class _StudentRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: HoverCard(
-        onTap: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => StudentDetailView(studentId: student.id))),
+        onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                settings: RouteSettings(name: '${AppRoutes.users}/${student.id}'),
+                builder: (_) => UserDetailView(userId: student.id))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

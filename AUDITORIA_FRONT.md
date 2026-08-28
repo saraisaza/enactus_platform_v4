@@ -9,8 +9,8 @@
 | **Estudiante** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f8e3dce` |
 | **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | `431c67a` |
 | **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | `34f600b` |
-| **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Asesor Académico | No empezado | — |
+| **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f1edbeb` |
+| **Asesor Académico** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Empresa | No empezado | — |
 | Donante | No empezado | — |
 | Público / Auth | No empezado | — |
@@ -124,6 +124,20 @@ Mismo patrón que LXD/Admin: un único punto de corrección.
 **Verificación ejecutada:** `flutter analyze` (19 issues, baseline),
 `flutter test` (2/2), `flutter build web --release` (compila). En vivo:
 login real como Mentor → "Mis Laboratorios" → clic en estudiante →
+`/usuarios/alum1` con perfil real. 0 excepciones de consola.
+
+### Portal Asesor Académico — completado
+
+Mismo patrón: un único punto de corrección.
+
+- **`lib/views/advisor/advisor_portal.dart`**: `_StudentRow` en "Seguimiento
+  Estudiantes" pasó de `StudentDetailView` push-only a `/usuarios/:id`.
+  StatTiles del Dashboard (4) quedan como contadores agregados, misma
+  decisión de alcance que en Admin. Resto de pestañas ya estaban OK.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como Asesor → "Seguimiento Estudiantes" → clic en estudiante →
 `/usuarios/alum1` con perfil real. 0 excepciones de consola.
 
 ## 0. Metodología (léela antes que la tabla)
@@ -318,8 +332,8 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
-| Dashboard | 4× `StatTile` | No | — | — | MUERTA ×4 — ver 1.3 |
-| Mis Estudiantes | `_StudentRow` | Sí | `StudentDetailView` push-only | Sí | PARCIAL (sin ruta con nombre) |
+| Dashboard | 4× `StatTile` | No (decisión de alcance) | — | — | Contadores agregados — ver nota en tabla 3.3 |
+| Mis Estudiantes | `_StudentRow` | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
 | Proyectos | Tarjeta de proyecto | Sí | `/proyectos/:id` | Sí | OK |
 | Calendario | Eventos | Acción | — | Sí | OK |
 

@@ -6,12 +6,13 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/communication_resources_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
-import '../shared/student_detail_view.dart';
+import '../shared/user_detail_view.dart';
 
 /// Portal del Mentor (rol nuevo, sin relación con el "mentor" anterior,
 /// que ahora es LXD). El Mentor no crea cursos: revisa la Ruta de Impacto
@@ -153,8 +154,11 @@ class _LabStudents extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: HoverCard(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${s.id}'),
+                        builder: (_) => UserDetailView(userId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),

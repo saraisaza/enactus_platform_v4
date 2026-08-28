@@ -8,8 +8,8 @@
 |---|---|---|
 | **Estudiante** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f8e3dce` |
 | **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | `431c67a` |
-| **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Mentor | No empezado | — |
+| **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | `34f600b` |
+| **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Asesor Académico | No empezado | — |
 | Empresa | No empezado | — |
 | Donante | No empezado | — |
@@ -111,6 +111,20 @@ login real como Admin, clic en tarjeta de estudiante en Asignaciones →
 `/usuarios/alum1` con perfil real (el botón "Asignar" de al lado se dejó
 sin tocar, confirmado que sigue abriendo su diálogo). 0 excepciones de
 consola.
+
+### Portal Mentor — completado
+
+Mismo patrón que LXD/Admin: un único punto de corrección.
+
+- **`lib/views/mentor/mentor_portal.dart`**: la fila de estudiante en "Mis
+  Laboratorios" (`_LabStudents`) pasó de `StudentDetailView` push-only a
+  `/usuarios/:id`. Resto de pestañas (Proyectos, Calendario, Entregas, Mi
+  Perfil) ya estaban OK, sin cambios.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como Mentor → "Mis Laboratorios" → clic en estudiante →
+`/usuarios/alum1` con perfil real. 0 excepciones de consola.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -295,7 +309,7 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
 | Proyectos | `ProjectSummaryCard` | Sí | `/proyectos/:id` | Sí | OK |
-| Mis Laboratorios | Fila de estudiante (`_LabStudents`) | Sí | `StudentDetailView` push-only | Sí | PARCIAL (sin ruta con nombre) |
+| Mis Laboratorios | Fila de estudiante (`_LabStudents`) | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
 | Calendario | Eventos | Acción | — | Sí | OK |
 | Entregas | Tarjeta de entrega | Botón "Comentar/Editar" (diálogo) | — | Sí | OK (acción real, no necesita ruta) |
 | Mi Perfil | — | — | — | Sí, de solo lectura | OK |

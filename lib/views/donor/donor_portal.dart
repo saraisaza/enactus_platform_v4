@@ -6,11 +6,12 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
-import '../shared/student_detail_view.dart';
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
+import '../shared/user_detail_view.dart';
 
 /// Portal del donante: transparencia total sobre el uso de su aporte.
 class DonorPortal extends StatelessWidget {
@@ -127,8 +128,11 @@ class _StudentProfileCard extends StatelessWidget {
     final project = group == null ? null : data.projectById(group.projectId);
 
     return HoverCard(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => StudentDetailView(studentId: student.id))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.users}/${student.id}'),
+              builder: (_) => UserDetailView(userId: student.id))),
       child: Row(
         children: [
           InitialsAvatar(student.name,
@@ -191,11 +195,9 @@ class _DonorEvidences extends StatelessWidget {
                     width: width,
                     // Al pasar el mouse la tarjeta se oscurece ligeramente
                     // y aparece "Ver historia →"; clic abre el detalle.
-                    child: HoverBuilder(
-                      cursor: SystemMouseCursors.click,
-                      builder: (context, hover) => GestureDetector(
-                        onTap: () => _showStory(context, e),
-                        child: Stack(
+                    child: KeyboardHoverBuilder(
+                      onTap: () => _showStory(context, e),
+                      builder: (context, hover) => Stack(
                           children: [
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
@@ -275,7 +277,6 @@ class _DonorEvidences extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
               ],
             );
           }),

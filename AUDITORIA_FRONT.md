@@ -11,8 +11,8 @@
 | **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | `34f600b` |
 | **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f1edbeb` |
 | **Asesor Académico** | ✅ Ciclo cerrado en verde — ver detalle abajo | `04e27c2` |
-| **Empresa** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Donante | No empezado | — |
+| **Empresa** | ✅ Ciclo cerrado en verde — ver detalle abajo | `57f4cb4` |
+| **Donante** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Público / Auth | No empezado | — |
 
 ### Portal Estudiante — completado
@@ -179,6 +179,23 @@ login real como Empresa (Bancolombia), recorridas las 6 correcciones una
 por una — cada clic confirmado con la URL resultante real (`/cursos/crs_ia_1`,
 `/usuarios/lxd1`, `/usuarios/ment1`, `/usuarios/alum1`). 0 excepciones de
 consola en las ~8 rutas recorridas.
+
+### Portal Donante — completado
+
+- **`lib/views/donor/donor_portal.dart`**: `_StudentProfileCard` (Mi
+  Impacto) pasó de `StudentDetailView` push-only a `/usuarios/:id`.
+  `_DonorEvidences` (tarjetas "Ver historia →") migrado de
+  `HoverBuilder`+`GestureDetector` suelto a `KeyboardHoverBuilder` — cierra
+  también la accesibilidad de teclado para esta pantalla puntual (el resto
+  del portal ya la tenía gratis por usar `HoverCard`). El diálogo de
+  historia se sigue abriendo igual, verificado en vivo.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como Donante → "Mi Impacto" → clic en estudiante apoyado →
+`/usuarios/alum1` con perfil real; "Evidencias" → clic en "La historia de
+Sara" → diálogo abre con el contenido real, sin romper nada. 0 excepciones
+de consola.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -398,8 +415,8 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
 | Dashboard | Banner de código de impacto | No | — | Sí, informativo | OK (no es una entidad) |
-| Dashboard | `_StudentProfileCard` (estudiantes apoyados) | Sí | `StudentDetailView` push-only | Sí | PARCIAL (sin ruta con nombre) |
-| Evidencias | Tarjeta de evidencia | Sí | `_showStory` (diálogo) | Sí | PARCIAL (modal, no ruta — prioridad baja, Evidence no tiene ruta propia pedida) |
+| Dashboard | `_StudentProfileCard` (estudiantes apoyados) | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
+| Evidencias | Tarjeta de evidencia | Sí | `_showStory` (diálogo) | Sí | PARCIAL (modal, no ruta — prioridad baja, Evidence no tiene ruta propia pedida); teclado ✅ *(corregido)* |
 
 ### 3.8 Público / Auth
 

@@ -103,6 +103,11 @@ quedó nulable **y** el CHECK exige lo mismo que se pedía —"exactamente uno d
 `video` sí tenga origen. Es la misma garantía sin inventar un `video_type` para
 lecciones que no son video. Probado en `tests/schema-constraints.test.ts`.
 
+> **Actualización (Fase 4, migración 0002):** esa regla extra se quitó de la
+> base. Hacía imposible el flujo de subida de archivos propios y se movió a
+> `POST /courses/:id/publish`. `lessons_video_source` —la coherencia entre
+> `video_type` y su origen— sigue vigente. Ver la sección de la Fase 4.
+
 ### Completitud: en la base, no en el cliente
 
 `drizzle/0001_completeness.sql` traduce a vistas las líneas 178-311 de

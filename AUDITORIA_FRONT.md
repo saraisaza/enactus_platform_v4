@@ -12,8 +12,8 @@
 | **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f1edbeb` |
 | **Asesor Académico** | ✅ Ciclo cerrado en verde — ver detalle abajo | `04e27c2` |
 | **Empresa** | ✅ Ciclo cerrado en verde — ver detalle abajo | `57f4cb4` |
-| **Donante** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Público / Auth | No empezado | — |
+| **Donante** | ✅ Ciclo cerrado en verde — ver detalle abajo | `cdbe325` |
+| **Público / Auth** | ✅ Sin cambios necesarios — ya estaba OK, confirmado | — (nada que commitear) |
 
 ### Portal Estudiante — completado
 
@@ -196,6 +196,24 @@ login real como Donante → "Mi Impacto" → clic en estudiante apoyado →
 `/usuarios/alum1` con perfil real; "Evidencias" → clic en "La historia de
 Sara" → diálogo abre con el contenido real, sin romper nada. 0 excepciones
 de consola.
+
+### Portal Público / Auth — confirmado sin cambios necesarios
+
+`landing_view.dart`, `login_view.dart` y `not_found_view.dart` — cero
+`GestureDetector`/`MouseRegion` sueltos (ya usan botones Material
+estándar, que ya son accesibles por teclado de fábrica) y todas sus
+navegaciones ya eran reales (`/login`, portal según rol, `/`). No había
+nada que arreglar; se confirma explícitamente en vez de asumirlo, tal
+como pide la regla de oro.
+
+---
+
+## Cierre de Fase 1 — los 8 portales
+
+Los 8 portales cerraron su ciclo (implementar → analyze → test → build
+--release → verificación funcional en vivo → auditoría actualizada →
+commit) en verde. Ver la sección "Resumen final" al fondo de este
+documento para el balance completo.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -450,4 +468,99 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 4. **Confirmar si toca el modelo de datos** para 1.7 (rol por integrante) y 1.8 (`projectId` en Evidence), dado que el prompt dice "no se toca el backend ni `DbService`" — technically el cambio de forma del JSON en Hive no es `DbService`, pero quiero luz verde explícita antes de tocar `models.dart`.
 5. Los 5 archivos "no auditados en profundidad" (sección 4) — ¿los reviso a fondo ahora, antes de aprobar, o quedan para revisarse al llegar a su portal en el bucle de Fase 1?
 
-Quedo a la espera de tu aprobación antes de escribir cualquier código.
+> **Actualización:** aprobado ("corrige todo, que quede listo para empezar el back") y ejecutado — ver "Estado de ejecución" al inicio del documento y el "Resumen final" al cierre para el balance completo de la Fase 1.
+
+---
+
+## Resumen final — Fase 1
+
+### Cuántas tarjetas se arreglaron
+
+**19 puntos de navegación corregidos**, todos verificados en vivo con datos
+reales (no solo compilación):
+
+| Portal | Correcciones |
+|---|---|
+| Estudiante | 3 tarjetas muertas → navegables (`_OtherLabCard`, `_LabLxdCard`, integrantes de `/proyectos/:id`) + 1 bug de identidad corregido (`CourseDetailView`) + accesibilidad de teclado en 5 sitios propios |
+| LXD | 1 ruta sin nombre → con nombre |
+| Admin | 1 ruta sin nombre → con nombre |
+| Mentor | 1 ruta sin nombre → con nombre |
+| Asesor Académico | 1 ruta sin nombre → con nombre |
+| Empresa | 6 tarjetas muertas → navegables |
+| Donante | 1 ruta sin nombre → con nombre + accesibilidad de teclado en 1 sitio propio |
+| Público / Auth | 0 (ya estaba OK, confirmado) |
+
+Más la causa raíz compartida: `HoverCard` (usado en ~50 sitios de los 8
+portales) ganó accesibilidad de teclado real de una sola vez.
+
+### Qué rutas se crearon
+
+- **`/usuarios/:id`** → `UserDetailView` (nuevo) — perfil de cualquier rol;
+  delega a `StudentDetailView` para estudiantes/alumni, arma un resumen
+  propio para LXD/Mentor/Asesor/Empresa/Donante.
+- **`/laboratorios/:id`** → `LabDetailView` (nuevo) — detalle de
+  laboratorio sin depender de un estudiante puntual; muestra avance propio
+  si quien mira es un estudiante asignado, o avance agregado del grupo si
+  no.
+
+### Qué tests se agregaron
+
+`test/navigation_test.dart` — 9 widget tests nuevos (11 en total con los
+2 de modelos que ya existían):
+
+- `UserDetailView`: con ID real (datos reales) y con ID inexistente
+  (estado de error, sin excepción).
+- `LabDetailView`: mismo par (ID real / inexistente).
+- `CourseDetailView`: con `studentId` de otro usuario (banner de solo
+  lectura + progreso correcto de esa persona, no el de quien mira) y sin
+  `studentId` (sin banner) — cubre directamente el bug 1.2.
+- Navegación real desde una tarjeta: `StudentCoursesView` → clic en una
+  tarjeta → aterriza en el `CourseDetailView` real.
+- Permisos por rol: sin sesión, y con la sesión de un rol distinto, una
+  ruta de portal (`/admin`) cae a `LoginView`, nunca al portal.
+
+Usan un `FakeDataStore` en memoria (mismo contrato `DataStore` que
+`DbService`/Hive) para no depender de plugins nativos en el entorno de
+test. De paso destaparon un problema real de infraestructura de test (no
+de la app): `AnimatedLogo` anima en loop infinito, así que
+`pumpAndSettle()` nunca termina en ninguna pantalla con header/footer —
+documentado en la cabecera del archivo de test para quien lo toque después.
+
+### Salida de las herramientas (estado final, todo el proyecto junto)
+
+```
+flutter analyze   → 19 issues, el mismo baseline preexistente de antes de
+                     empezar, 0 nuevos.
+flutter test      → 11/11 verde (2 preexistentes + 9 nuevos).
+flutter build web --release → compila sin errores.
+```
+
+Cada uno de los 8 ciclos de portal corrió esta misma verificación por
+separado (ver los commits individuales) antes de darse por cerrado.
+
+### Lo que NO quedó terminado, y por qué
+
+Ver `BLOQUEOS.md` para el detalle completo. Resumen:
+
+1. **`StatTile` (23+ contadores agregados en 4 portales) siguen sin
+   `onTap`** — decisión de alcance, no un olvido: no representan una
+   entidad con un solo ID, y hacerlos navegables exigiría que
+   `PortalShell` soportara cambiar de pestaña desde un widget hijo (cambio
+   de arquitectura compartida, no una corrección puntual). Pendiente de tu
+   decisión.
+2. **2 brechas de modelo de datos sin resolver**: `Group` no guarda el rol
+   de cada integrante en el proyecto; `Evidence` no tiene `projectId`.
+   Ninguna se resolvió porque implica ampliar `models.dart` y preferí no
+   hacerlo sin luz verde explícita (aunque no toca `DbService` en sí).
+3. **`lesson_editor.dart` y `lab_ruta_editor.dart`** compilan y pasan
+   `flutter analyze`, pero no se ejercitaron con clics reales en esta
+   fase.
+4. Un puñado de detalles menores reportados en `BLOQUEOS.md` §4 (un
+   overflow preexistente de `AppFooter` en pantallas angostas, encontrado
+   por accidente al escribir los tests; y un caso menor de
+   `CourseDetailView` sin `studentId` con un rol no-estudiante).
+
+Todo lo demás — las 19 correcciones de navegación, las 2 rutas nuevas, el
+bug de identidad, la accesibilidad de teclado compartida, y los 9 tests
+nuevos — está commiteado y verificado en vivo, no solo "debería
+funcionar".

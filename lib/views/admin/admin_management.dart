@@ -1144,7 +1144,7 @@ class _AdminCoursesState extends State<AdminCourses> {
           children: [
             for (final f in const {
               'todos': 'Todos',
-              'enactus': 'Enactus',
+              'enactus': 'eduXaction',
               'open': 'Open Learning',
               'sinVincular': 'Sin vincular a Ruta',
             }.entries)
@@ -1220,7 +1220,7 @@ class _AdminCourseCard extends StatelessWidget {
                 ),
               ),
               StatusChip(
-                  label: course.isOpenLearning ? 'Open Learning' : 'Enactus',
+                  label: course.isOpenLearning ? 'Open Learning' : 'eduXaction',
                   color: course.isOpenLearning
                       ? AppColors.slateLight
                       : AppColors.gold,

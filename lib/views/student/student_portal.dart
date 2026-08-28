@@ -301,7 +301,7 @@ class _StudentProfile extends StatelessWidget {
                 colors: colors,
               );
               final enactusLife = _GroupCard(
-                title: 'Vida Enactus',
+                title: 'Vida eduXaction',
                 icon: Icons.workspaces_outlined,
                 rows: [
                   ('Universidad', student.university),
@@ -419,7 +419,7 @@ class _IdentityBand extends StatelessWidget {
                             style: knockoutHeading(
                                 fontSize: 52,
                                 fontWeight: FontWeight.w800,
-                                color: const Color(0xFF1A1400))),
+                                color: AppColors.ink)),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
@@ -929,7 +929,7 @@ Future<void> showEditProfileDialog(
                             ? null
                             : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
                                 style: const TextStyle(
-                                    color: Color(0xFF1A1400),
+                                    color: AppColors.ink,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 26)),
                       ),

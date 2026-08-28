@@ -8,10 +8,11 @@ import 'common.dart';
 
 /// Paleta semántica por tipo de evento del calendario. Elegida (y medida)
 /// para leerse con claridad como relleno/barra sobre fondo casi negro
-/// (#111315) y sobre las tarjetas (#22262B): las tres pasan AA (>=4.5:1)
-/// contra ambos — sesión 5.8:1, ruta 10.0:1, mentoría 6.8:1 — y son
-/// visualmente distintas del dorado de marca (reservado para "hoy", nunca
-/// se usa como color de evento para no competir con esa señal).
+/// (#161316) y sobre las tarjetas (#251E1B): las tres pasan AA (>=4.5:1)
+/// contra ambos — sesión 5.8:1, ruta 9.9:1, mentoría 6.8:1 (recalculado
+/// contra la paleta cálida) — y son visualmente distintas del naranja de
+/// marca (reservado para "hoy", nunca se usa como color de evento para no
+/// competir con esa señal).
 Color calendarEventColor(CalendarEventType t) => switch (t) {
       CalendarEventType.openLearningSync => const Color(0xFF4C8DFF), // azul
       CalendarEventType.rutaImpacto => const Color(0xFF2DD4BF), // verde azulado
@@ -539,7 +540,7 @@ Future<void> showCalendarEventDialog(
                 else
                   const Text(
                       'Evento global: lo verán todos los estudiantes y '
-                      'alumni Enactus de la plataforma, sin importar su '
+                      'alumni eduXaction de la plataforma, sin importar su '
                       'laboratorio.',
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),

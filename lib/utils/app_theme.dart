@@ -2,34 +2,48 @@ import 'package:flutter/material.dart';
 
 /// Sistema de color de la plataforma.
 ///
-/// UI: tema oscuro con acento amarillo dorado de marca.
+/// UI: tema oscuro cálido con acento naranja de marca.
 /// Gráficos: paleta categórica validada (contraste >= 3:1 sobre la superficie
-/// oscura, separación CVD adyacente ΔE 61.6) — NO usar el amarillo de marca
-/// (#F4C430) como color de serie: es demasiado claro para la banda de
-/// luminosidad de datos; usar [AppColors.chartSeries] en orden fijo.
+/// oscura, separación CVD adyacente ΔE 61.6) — NO usar el naranja de marca
+/// (#FF6D29) como color de serie: se confunde con el acento de UI; usar
+/// [AppColors.chartSeries] en orden fijo.
 class AppColors {
   // Marca / UI
-  static const gold = Color(0xFFF4C430);
-  static const goldBright = Color(0xFFFFD700);
-  static const slate = Color(0xFF2D3E50); // barras laterales, tarjetas secundarias
-  static const slateLight = Color(0xFF3D5166);
+  static const gold = Color(0xFFFF6D29);
+  static const goldBright = Color(0xFFFF8647);
+  static const slate = Color(0xFF453027); // barras laterales, tarjetas secundarias
+  static const slateLight = Color(0xFF573D31);
 
-  /// Colores oficiales de la bandera de Colombia, para acentos de identidad
-  /// nacional (borde tricolor de header/footer, partículas del hero).
-  static const colombiaYellow = Color(0xFFFCD116);
-  static const colombiaBlue = Color(0xFF003893);
-  static const colombiaRed = Color(0xFFCE1126);
+  /// Variante oscurecida de [slate] (~82%) para el segundo punto del
+  /// degradado del footer — antes #243342, derivado del mismo modo del
+  /// slate anterior.
+  static const slateDark = Color(0xFF392720);
+
+  /// "Tinta sobre acento": texto/íconos oscuros sobre fondos [gold]/
+  /// [goldBright] (iniciales de avatar, banner, contador de notificaciones,
+  /// botones). Mismo valor que el onPrimary del ColorScheme — reunido acá
+  /// para que ningún widget lo hardcodee suelto.
+  static const ink = Color(0xFF21120A);
 
   // Superficies (tema oscuro)
-  static const background = Color(0xFF111315);
-  static const surface = Color(0xFF1A1D21); // superficie de tarjetas y gráficos
-  static const surfaceAlt = Color(0xFF22262B);
-  static const border = Color(0xFF33383F);
+  static const background = Color(0xFF161316);
+  static const surface = Color(0xFF1D1817); // superficie de tarjetas y gráficos
+  static const surfaceAlt = Color(0xFF251E1B);
+  static const border = Color(0xFF2E2522);
 
   // Texto
-  static const textPrimary = Color(0xFFF5F5F2);
-  static const textSecondary = Color(0xFFB8BcbF);
-  static const textMuted = Color(0xFF8A9099);
+  static const textPrimary = Color(0xFFFFFFFF);
+  static const textSecondary = Color(0xFFBABABA);
+  static const textMuted = Color(0xFF8C817C);
+
+  /// Partículas del hero de la landing (antes: tricolor de la bandera de
+  /// Colombia — chocaba con la paleta cálida). Tonos de marca + neutros.
+  static const heroParticleColors = [
+    Color(0xFFFF6D29),
+    Color(0xFFFF9A5A),
+    Color(0xFFFFFFFF),
+    Color(0xFFBABABA),
+  ];
 
   /// Paleta categórica para gráficos, en orden FIJO (nunca ciclar ni
   /// reordenar): amarillo, azul, rojo, violeta, verde agua.
@@ -72,18 +86,19 @@ class AppColors {
     17: Color(0xFF19486A),
   };
 
-  /// Color por laboratorio (handoff `design_handoff_portal_estudiante`),
-  /// derivado de la paleta ODS para que cada laboratorio sea reconocible en
-  /// Dashboard, Mis Cursos y Ruta de Impacto: el color viene del dato (el
-  /// laboratorio del curso/fase), no de un acento fijo. Asignación
-  /// confirmada con el equipo de Enactus.
+  /// Color por laboratorio (handoff `design_handoff_portal_estudiante`):
+  /// rampa cálida de seis tonos, legibles sobre [background], que distingue
+  /// cada laboratorio en Dashboard, Mis Cursos y Ruta de Impacto — el color
+  /// viene del dato (el laboratorio del curso/fase), no de un acento fijo.
+  /// Ya no deriva de la paleta ODS (chocaba con azules/verdes/magentas
+  /// contra la paleta naranja/marrón).
   static const labColors = {
-    'lab_ia': Color(0xFFFD6925), // ODS 9
-    'lab_agua': Color(0xFF26BDE2), // ODS 6
-    'lab_energia': Color(0xFFFCC30B), // ODS 7
-    'lab_impacto': Color(0xFFDD1367), // ODS 10
-    'lab_emprendimiento': Color(0xFFA21942), // ODS 8
-    'lab_agricultura': Color(0xFF56C02B), // ODS 15
+    'lab_ia': Color(0xFFFF6D29),
+    'lab_agua': Color(0xFFE0522B),
+    'lab_energia': Color(0xFFD8A24A),
+    'lab_impacto': Color(0xFFF0964A),
+    'lab_emprendimiento': Color(0xFFC4573A),
+    'lab_agricultura': Color(0xFFC9762F),
   };
 
   /// El número de ODS detrás de cada [labColors] — para la marca de agua
@@ -107,7 +122,7 @@ int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 /// Color de un laboratorio para acentos por dato (cabeceras de curso,
 /// barras de progreso, riel de fases). Sin match — incluye la Ruta National
 /// Expo, cuyos cursos no tienen laboratorio (`Course.labId` vacío) — cae al
-/// amarillo de marca, tal como pide el README para "Ruta National Expo".
+/// naranja de marca, tal como pide el README para "Ruta National Expo".
 Color labColorFor(String labId) => AppColors.labColors[labId] ?? AppColors.gold;
 
 /// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
@@ -166,15 +181,15 @@ class ContentColors {
   });
 
   static const dark = ContentColors(
-    bg: Color(0xFF111315),
-    surface: Color(0xFF1A1D21),
-    surface2: Color(0xFF22262B),
-    border: Color(0xFF33383F),
-    text: Color(0xFFF5F5F2),
-    text2: Color(0xFFB8BCBF),
-    text3: Color(0xFF8A9099),
+    bg: Color(0xFF161316),
+    surface: Color(0xFF1D1817),
+    surface2: Color(0xFF251E1B),
+    border: Color(0xFF2E2522),
+    text: Color(0xFFFFFFFF),
+    text2: Color(0xFFBABABA),
+    text3: Color(0xFF8C817C),
     goldInk: AppColors.gold,
-    goldSoft: Color(0x24F4C430), // rgba(244,196,48,.14)
+    goldSoft: Color(0x29FF6D29), // rgba(255,109,41,.16)
     alertInk: Color(0xFFFF8A9B),
     shadow: [
       BoxShadow(
@@ -183,18 +198,18 @@ class ContentColors {
     veil: Color(0x47000000), // rgba(0,0,0,.28)
   );
 
-  /// El dorado de marca (#F4C430) no alcanza AA sobre blanco, así que en
-  /// tema claro el texto/ink dorado se oscurece a #8A6A00 (ver README).
+  /// El naranja de marca (#FF6D29) no alcanza AA sobre blanco (~2.9:1), así
+  /// que en tema claro el texto/ink se oscurece a #B03D06.
   static const light = ContentColors(
-    bg: Color(0xFFF2F2EC),
+    bg: Color(0xFFF7F1EC),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFF0F0E9),
-    border: Color(0xFFDEDED4),
-    text: Color(0xFF15181B),
-    text2: Color(0xFF4C525A),
-    text3: Color(0xFF787F88),
-    goldInk: Color(0xFF8A6A00),
-    goldSoft: Color(0x3DF4C430), // rgba(244,196,48,.24)
+    surface2: Color(0xFFF0E7E0),
+    border: Color(0xFFE2D5CB),
+    text: Color(0xFF1B1614),
+    text2: Color(0xFF5B4E48),
+    text3: Color(0xFF8C817C),
+    goldInk: Color(0xFFB03D06),
+    goldSoft: Color(0x3DFF6D29), // rgba(255,109,41,.24)
     alertInk: Color(0xFFA8101C),
     shadow: [
       BoxShadow(
@@ -235,7 +250,7 @@ ThemeData buildAppTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   const scheme = ColorScheme.dark(
     primary: AppColors.gold,
-    onPrimary: Color(0xFF1A1400),
+    onPrimary: Color(0xFF21120A),
     secondary: AppColors.slateLight,
     onSecondary: Colors.white,
     surface: AppColors.surface,
@@ -275,7 +290,7 @@ ThemeData buildAppTheme() {
                 ? AppColors.goldBright
                 : AppColors.gold),
         foregroundColor:
-            const WidgetStatePropertyAll(Color(0xFF1A1400)),
+            const WidgetStatePropertyAll(Color(0xFF21120A)),
         elevation: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) return 1;
           if (states.contains(WidgetState.hovered)) return 8;

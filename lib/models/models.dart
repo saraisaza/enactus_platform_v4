@@ -150,7 +150,7 @@ class StudentType {
 
   static String label(String type) => switch (type) {
         openLearning => 'Open Learning',
-        _ => 'Enactus',
+        _ => 'eduXaction',
       };
 }
 
@@ -1327,14 +1327,14 @@ class SiteContent {
   List<String> galleryImages;
 
   SiteContent({
-    this.heroTitle = 'Enactus Colombia',
+    this.heroTitle = 'eduXaction Colombia',
     this.heroSubtitle =
         'Formamos líderes que transforman comunidades a través del emprendimiento social.',
     this.bannerText = 'Convocatoria National Expo 2026 abierta',
     this.aboutText =
         'Conectamos estudiantes, mentores, universidades, empresas y donantes '
         'para crear proyectos de impacto social en toda Colombia.',
-    this.meetingLink = 'https://meet.google.com/enactus-mentoria',
+    this.meetingLink = 'https://meet.google.com/eduxaction-mentoria',
     this.statStudents = 6,
     this.statProjects = 2,
     this.statLabs = 6,
@@ -1356,12 +1356,12 @@ class SiteContent {
       };
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
-        heroTitle: (j['heroTitle'] as String?) ?? 'Enactus Colombia',
+        heroTitle: (j['heroTitle'] as String?) ?? 'eduXaction Colombia',
         heroSubtitle: (j['heroSubtitle'] as String?) ?? '',
         bannerText: (j['bannerText'] as String?) ?? '',
         aboutText: (j['aboutText'] as String?) ?? '',
         meetingLink: (j['meetingLink'] as String?) ??
-            'https://meet.google.com/enactus-mentoria',
+            'https://meet.google.com/eduxaction-mentoria',
         statStudents: (j['statStudents'] as num?)?.toInt() ?? 6,
         statProjects: (j['statProjects'] as num?)?.toInt() ?? 2,
         statLabs: (j['statLabs'] as num?)?.toInt() ?? 6,

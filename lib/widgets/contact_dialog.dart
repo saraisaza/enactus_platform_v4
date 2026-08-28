@@ -119,7 +119,7 @@ class _ContactDialogState extends State<_ContactDialog> {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Color(0xFF1A1400)),
+                      strokeWidth: 2, color: AppColors.ink),
                 )
               : const Icon(Icons.send_outlined, size: 18),
           label: Text(_sending ? 'Enviando…' : 'Enviar mensaje'),

@@ -40,7 +40,7 @@ class LandingView extends StatelessWidget {
             ),
             child: Row(
               children: [
-                AnimatedLogo(height: isCompact ? 36 : 135),
+                AnimatedLogo(height: isCompact ? 36 : 135, compact: isCompact),
                 const Spacer(),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.login, size: 18),
@@ -65,7 +65,7 @@ class LandingView extends StatelessWidget {
                         content.bannerText,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            color: Color(0xFF1A1400),
+                            color: AppColors.ink,
                             fontWeight: AppWeights.uiSemibold,
                             fontSize: 13),
                       ),
@@ -190,7 +190,7 @@ class LandingView extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                               color: AppColors.gold)),
                     ),
-                    const Text('Momentos de la comunidad Enactus Colombia',
+                    const Text('Momentos de la comunidad eduXaction Colombia',
                         style: TextStyle(color: AppColors.textMuted)),
                     Padding(
                       padding: const EdgeInsets.all(32),
@@ -250,7 +250,7 @@ class LandingView extends StatelessWidget {
                           constraints: const BoxConstraints(maxWidth: 480),
                           child: const Text(
                             'Sin importar si eres estudiante, mentor, empresa o donante: '
-                            'hay un lugar para ti en Enactus Colombia.',
+                            'hay un lugar para ti en eduXaction Colombia.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -308,7 +308,7 @@ class _ExpoShowcase extends StatelessWidget {
                   fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.gold)),
           const SizedBox(height: 6),
           const Text(
-              'Santa Marta, julio 2026 — nuestros equipos rumbo al Enactus World Cup en São Paulo',
+              'Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textMuted)),
           const SizedBox(height: 26),
@@ -322,7 +322,7 @@ class _ExpoShowcase extends StatelessWidget {
                   aspectRatio: 1600 / 1107,
                   height: photoHeight,
                   fillWidth: !wide,
-                  caption: 'Delegación Enactus Colombia · National Expo 2026',
+                  caption: 'Delegación eduXaction Colombia · National Expo 2026',
                 ),
               ),
               Entrance(
@@ -508,12 +508,8 @@ class _ParticlesPainter extends CustomPainter {
 
   static const _count = 14;
 
-  // Tricolor de la bandera de Colombia: cada partícula toma uno de los tres.
-  static const _colors = [
-    AppColors.colombiaYellow,
-    AppColors.colombiaBlue,
-    AppColors.colombiaRed,
-  ];
+  // Tonos cálidos de marca: cada partícula toma uno de los cuatro.
+  static const _colors = AppColors.heroParticleColors;
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -51,7 +51,7 @@ class LabsView extends StatelessWidget {
           : '${myLabs.length} ${myLabs.length == 1 ? 'laboratorio asignado' : 'laboratorios asignados'} '
               '· ${data.labs.length} en la red',
       title: 'Laboratorios',
-      subtitle: 'Un laboratorio es un área de trabajo de Enactus Colombia: '
+      subtitle: 'Un laboratorio es un área de trabajo de eduXaction Colombia: '
           'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
           'acompaña. Entra al tuyo para ver qué sigue.',
       bodyBuilder: (context, colors, isDark) {
@@ -209,7 +209,7 @@ class _LabCard extends StatelessWidget {
                             height: 38,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                                color: const Color(0x6B0A0C0E),
+                                color: AppColors.background.withValues(alpha: 0.42),
                                 borderRadius: BorderRadius.circular(11)),
                             child: const Icon(Icons.science_outlined, size: 21, color: Colors.white),
                           ),
@@ -221,7 +221,7 @@ class _LabCard extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                    color: const Color(0x800A0C0E),
+                                    color: AppColors.background.withValues(alpha: 0.50),
                                     borderRadius: BorderRadius.circular(999)),
                                 child: Text(overdue ? 'ENTREGA VENCIDA' : 'EN CURSO',
                                     style: const TextStyle(
@@ -722,8 +722,9 @@ class _LabIdentityBand extends StatelessWidget {
                     filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration:
-                          BoxDecoration(color: const Color(0x6B0A0C0E), borderRadius: BorderRadius.circular(14)),
+                      decoration: BoxDecoration(
+                          color: AppColors.background.withValues(alpha: 0.42),
+                          borderRadius: BorderRadius.circular(14)),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -879,13 +880,13 @@ class _PhaseDetailCard extends StatelessWidget {
 
     final (chipBg, chipColor, chipIcon, chipLabel) = switch (state) {
       _PhaseUiState.complete => (
-          const Color(0x294C9F38),
-          const Color(0xFF4C9F38),
+          AppColors.statusGood.withValues(alpha: 0.16),
+          AppColors.statusGood,
           Icons.check_circle,
           'Completa'
         ),
       _PhaseUiState.overdue => (
-          const Color(0x29CE1126),
+          colors.alertInk.withValues(alpha: 0.16),
           colors.alertInk,
           Icons.warning_amber_rounded,
           'Vencida'
@@ -895,7 +896,11 @@ class _PhaseDetailCard extends StatelessWidget {
     };
 
     final (circleBg, circleBorder, circleTextColor) = switch (state) {
-      _PhaseUiState.complete => (const Color(0x294C9F38), const Color(0xFF4C9F38), const Color(0xFF4C9F38)),
+      _PhaseUiState.complete => (
+          AppColors.statusGood.withValues(alpha: 0.16),
+          AppColors.statusGood,
+          AppColors.statusGood
+        ),
       _PhaseUiState.overdue || _PhaseUiState.available => (accent, accent, Colors.white),
       _PhaseUiState.locked => (colors.surface2, colors.border, colors.text3),
     };
@@ -1566,11 +1571,13 @@ class _PhaseRow extends StatelessWidget {
     final alertColor = colors.alertInk;
 
     final (chipBg, chipColor, chipIcon, chipLabel) = complete
-        ? (const Color(0x264C9F38), AppColors.statusGood, Icons.check_circle, 'Completa')
+        ? (AppColors.statusGood.withValues(alpha: 0.15), AppColors.statusGood, Icons.check_circle,
+            'Completa')
         : !unlocked
             ? (colors.surface2, colors.text3, Icons.lock_outline, 'Sin abrir')
             : deadlineStatus == DeadlineStatus.overdue
-                ? (const Color(0x29CE1126), alertColor, Icons.warning_amber_rounded, 'Vencida')
+                ? (alertColor.withValues(alpha: 0.16), alertColor, Icons.warning_amber_rounded,
+                    'Vencida')
                 : (colors.goldSoft, colors.goldInk, Icons.play_circle_outline, 'En curso');
 
     return Row(
@@ -1747,7 +1754,7 @@ class _ModuleSummaryRow extends StatelessWidget {
     final totalItems = module.ownLessons.length + module.courseIds.length;
 
     final (iconBg, iconColor) = complete
-        ? (const Color(0x264C9F38), AppColors.statusGood)
+        ? (AppColors.statusGood.withValues(alpha: 0.15), AppColors.statusGood)
         : !unlocked
             ? (colors.surface2, colors.text3)
             : (colors.goldSoft, colors.goldInk);
@@ -1858,13 +1865,13 @@ class _ExpoCard extends StatelessWidget {
                             fontSize: 11.5,
                             letterSpacing: 11.5 * 0.16,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A1400).withValues(alpha: 0.7))),
+                            color: AppColors.ink.withValues(alpha: 0.7))),
                     const SizedBox(height: 8),
                     Text('National Expo',
                         style: knockoutHeading(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1A1400))),
+                            color: AppColors.ink)),
                   ],
                 ),
               ],

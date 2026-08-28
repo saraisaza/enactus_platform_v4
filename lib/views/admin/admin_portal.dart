@@ -208,7 +208,7 @@ class AdminDashboard extends StatelessWidget {
                   Entrance(delayMs: 350, child: byStage),
                 ]);
         }),
-        const SectionTitle('Impacto formativo Enactus'),
+        const SectionTitle('Impacto formativo eduXaction'),
         const _ImpactMetrics(),
       ],
     );
@@ -593,7 +593,7 @@ class _AdminUsersState extends State<AdminUsers> {
   String _gradingContexts(AppUser lxd) {
     final contexts = [
       if (lxd.canGradeOpenLearning) 'Open Learning',
-      if (lxd.canGradeEnactus) 'Enactus',
+      if (lxd.canGradeEnactus) 'eduXaction',
     ];
     return contexts.isEmpty ? 'ninguno' : contexts.join(', ');
   }
@@ -764,7 +764,7 @@ Future<void> showUserDialog(
                             'Si este LXD es de una empresa aliada, sus cursos quedan atribuidos a ella.'),
                     items: [
                       const DropdownMenuItem(
-                          value: null, child: Text('Ninguna (LXD de Enactus)')),
+                          value: null, child: Text('Ninguna (LXD de eduXaction)')),
                       for (final c in data.usersByRole(Roles.company))
                         DropdownMenuItem(
                             value: c.id, child: Text(c.companyName)),
@@ -818,9 +818,9 @@ Future<void> showUserDialog(
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Enactus',
+                    title: const Text('eduXaction',
                         style: TextStyle(fontSize: 14)),
-                    subtitle: const Text('Desactivado por defecto: en Enactus no califica',
+                    subtitle: const Text('Desactivado por defecto: en eduXaction no califica',
                         style: TextStyle(fontSize: 12)),
                     value: canGradeEnactus,
                     activeThumbColor: AppColors.gold,
@@ -845,7 +845,7 @@ Future<void> showUserDialog(
                             'Si este Mentor es de una empresa aliada, queda atribuido a ella.'),
                     items: [
                       const DropdownMenuItem(
-                          value: null, child: Text('Ninguna (Mentor de Enactus)')),
+                          value: null, child: Text('Ninguna (Mentor de eduXaction)')),
                       for (final c in data.usersByRole(Roles.company))
                         DropdownMenuItem(
                             value: c.id, child: Text(c.companyName)),

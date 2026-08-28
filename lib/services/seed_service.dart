@@ -867,7 +867,7 @@ class SeedService {
         id: 'post1',
         authorId: 'adm1',
         body:
-            '¡Bienvenidos al foro de la comunidad Enactus Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.',
+            '¡Bienvenidos al foro de la comunidad eduXaction Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.',
         date: DateTime(2026, 6, 2, 9, 0),
         category: ForumCategory.anuncio,
         pinned: true,

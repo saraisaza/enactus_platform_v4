@@ -69,7 +69,7 @@ class EnactusApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: auth),
       ],
       child: MaterialApp(
-        title: 'Enactus Colombia',
+        title: 'eduXaction Colombia',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
         initialRoute: initialRoute,

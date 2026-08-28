@@ -135,7 +135,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                                     fontSize: 58, fontWeight: FontWeight.w800, color: colors.goldInk, height: 0.94)),
                             const SizedBox(height: 12),
                             Text(
-                                'Dónde están los estudiantes registrados en Enactus Colombia. '
+                                'Dónde están los estudiantes registrados en eduXaction Colombia. '
                                 'Cada punto es una ciudad con al menos una universidad activa en la red.',
                                 style: TextStyle(fontSize: 15.5, color: colors.text2, height: 1.4)),
                           ],
@@ -227,19 +227,13 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               height: 22,
                               width: 4,
-                              child: Column(
-                                children: const [
-                                  Expanded(child: ColoredBox(color: AppColors.colombiaYellow)),
-                                  Expanded(child: ColoredBox(color: AppColors.colombiaBlue)),
-                                  Expanded(child: ColoredBox(color: AppColors.colombiaRed)),
-                                ],
-                              ),
+                              child: ColoredBox(color: AppColors.gold),
                             ),
                             const SizedBox(width: 14),
-                            Text('Portal de aliados · Enactus Colombia',
+                            Text('Portal de aliados · eduXaction Colombia',
                                 style: TextStyle(fontSize: 12.5, color: colors.text3)),
                           ],
                         ),
@@ -285,9 +279,11 @@ class StudentCountTier {
 List<StudentCountTier> studentCountTiers(int maxValue) {
   if (maxValue <= 1) {
     return [
-      const StudentCountTier(min: 2, color: Color(0xFFCE1126), label: '2 o más estudiantes'),
-      const StudentCountTier(min: 1, color: Color(0xFFFCD116), label: '1 estudiante'),
-      const StudentCountTier(min: 0, color: Color(0xFF2F6BE0), label: 'Sin estudiantes'),
+      StudentCountTier(
+          min: 2, color: AppColors.chartSeries[2], label: '2 o más estudiantes'),
+      const StudentCountTier(min: 1, color: AppColors.gold, label: '1 estudiante'),
+      StudentCountTier(
+          min: 0, color: AppColors.chartSeries[1], label: 'Sin estudiantes'),
     ];
   }
   final high = (maxValue * 0.417).round().clamp(2, maxValue);
@@ -298,9 +294,10 @@ List<StudentCountTier> studentCountTiers(int maxValue) {
       ? '$mid estudiante${mid == 1 ? '' : 's'}'
       : 'Entre $mid y ${high - 1}';
   return [
-    StudentCountTier(min: high, color: const Color(0xFFCE1126), label: '$high o más estudiantes'),
-    StudentCountTier(min: mid, color: const Color(0xFFFCD116), label: midLabel),
-    StudentCountTier(min: 0, color: const Color(0xFF2F6BE0), label: 'Menos de $mid'),
+    StudentCountTier(
+        min: high, color: AppColors.chartSeries[2], label: '$high o más estudiantes'),
+    StudentCountTier(min: mid, color: AppColors.gold, label: midLabel),
+    StudentCountTier(min: 0, color: AppColors.chartSeries[1], label: 'Menos de $mid'),
   ];
 }
 
@@ -338,11 +335,11 @@ class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixi
           width: 7,
           height: 7,
           decoration: BoxDecoration(
-            color: const Color(0xFF4C9F38),
+            color: AppColors.gold,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                  color: const Color(0xFF4C9F38).withValues(alpha: 0.55 * (1 - t)), spreadRadius: 5 * t),
+                  color: AppColors.gold.withValues(alpha: 0.55 * (1 - t)), spreadRadius: 5 * t),
             ],
           ),
         );

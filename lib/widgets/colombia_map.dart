@@ -344,7 +344,7 @@ class _CityDot extends StatelessWidget {
     final haloR = math.max(6.0, radius) * 1.9;
     final box = haloR * 2 + 40; // margen extra para que la etiqueta no se corte
     final coreBorderColor =
-        highlighted ? colors.text : (isDark ? const Color(0xFF0D0F11) : Colors.white);
+        highlighted ? colors.text : (isDark ? AppColors.background : Colors.white);
     final coreBorderWidth = highlighted ? 2.0 : (isDark ? 1.3 : 1.6);
 
     return Positioned(
@@ -440,7 +440,7 @@ class _CityTooltip extends StatelessWidget {
             constraints: const BoxConstraints(minWidth: 172),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             decoration: BoxDecoration(
-              color: const Color(0xEB0A0C0E),
+              color: AppColors.background.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(11),
               border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
@@ -512,7 +512,8 @@ class _MapLegend extends StatelessWidget {
     // `body.light .legend` en el prototipo: el vidrio pasa de negro a
     // blanco translúcido en tema claro, el texto sigue los tokens
     // (colors.text3/text2) en vez de un hex fijo.
-    final panelColor = isDark ? const Color(0xB80A0C0E) : const Color(0xDBFFFFFF);
+    final panelColor =
+        isDark ? AppColors.background.withValues(alpha: 0.72) : const Color(0xDBFFFFFF);
     final panelBorder = isDark ? Colors.white.withValues(alpha: 0.1) : colors.border;
     final dividerColor = isDark ? Colors.white.withValues(alpha: 0.14) : colors.border;
 
@@ -584,8 +585,9 @@ class _LegendSize extends StatelessWidget {
         Container(
           width: radius * 2,
           height: radius * 2,
-          decoration:
-              BoxDecoration(shape: BoxShape.circle, color: const Color(0xFFF4C430).withValues(alpha: 0.85)),
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.gold.withValues(alpha: 0.85)),
         ),
         const SizedBox(height: 5),
         Text('$value', style: TextStyle(fontSize: 10.5, color: colors.text3)),

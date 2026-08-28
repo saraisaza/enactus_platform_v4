@@ -160,7 +160,7 @@ class _CourseCard extends StatelessWidget {
                           height: 40,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                              color: const Color(0x6B0A0C0E),
+                              color: AppColors.background.withValues(alpha: 0.42),
                               borderRadius: BorderRadius.circular(11)),
                           child: Icon(
                               course.isRutaExpo ? Icons.emoji_events : Icons.play_circle_outline,

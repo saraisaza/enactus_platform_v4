@@ -177,7 +177,7 @@ class InitialsAvatar extends StatelessWidget {
             ? TextStyle(
                 fontSize: fontSize ?? 19,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1400))
+                color: AppColors.ink)
             : const TextStyle(
                 color: AppColors.gold, fontWeight: FontWeight.w700),
       ),
@@ -502,8 +502,9 @@ class _DashedBorderPainter extends CustomPainter {
 /// arriba/abajo fijo: al ser el único widget de encabezado de sección de
 /// toda la app, mantenerlo centralizado aquí es lo que garantiza que ese
 /// espaciado quede consistente sitio-wide sin repetirlo en cada vista.
-/// Borde delgado tricolor (amarillo, azul, rojo) que evoca la bandera de
-/// Colombia, izquierda a derecha. Usado como acento superior en header/footer.
+/// Filete delgado de un solo tono (naranja de marca). Reemplaza el borde
+/// tricolor original (bandera de Colombia) — el tricolor peleaba con la
+/// paleta cálida naranja/marrón. Usado como acento superior en header/footer.
 class ColombiaFlagBar extends StatelessWidget {
   final double height;
   const ColombiaFlagBar({super.key, this.height = 4});
@@ -513,14 +514,7 @@ class ColombiaFlagBar extends StatelessWidget {
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(flex: 2, child: ColoredBox(color: AppColors.colombiaYellow)),
-          Expanded(child: ColoredBox(color: AppColors.colombiaBlue)),
-          Expanded(child: ColoredBox(color: AppColors.colombiaRed)),
-        ],
-      ),
+      child: const ColoredBox(color: AppColors.gold),
     );
   }
 }

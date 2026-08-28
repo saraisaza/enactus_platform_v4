@@ -64,6 +64,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
               AnimatedLogo(
                 height: compact ? 34 : 135,
+                compact: compact,
                 onTap: () => Navigator.of(context)
                     .pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
               ),
@@ -471,7 +472,7 @@ class _AvatarMenu extends StatelessWidget {
             backgroundColor: AppColors.gold,
             child: Text(user.name[0].toUpperCase(),
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700)),
+                    color: AppColors.ink, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(user.name, style: const TextStyle(fontSize: 18))),
@@ -529,7 +530,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                     ? widget.user.name[0].toUpperCase()
                     : '?',
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700),
+                    color: AppColors.ink, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -602,7 +603,7 @@ class _NotificationBell extends StatelessWidget {
                     color: AppColors.gold, shape: BoxShape.circle),
                 child: Text('$unread',
                     style: const TextStyle(
-                        color: Color(0xFF1A1400),
+                        color: AppColors.ink,
                         fontSize: 10,
                         fontWeight: FontWeight.w700)),
               ),

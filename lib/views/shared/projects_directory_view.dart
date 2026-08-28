@@ -77,7 +77,7 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
         allProjects.where((p) => p.stage == 'National Expo').length;
 
     return ContentScreenShell(
-      eyebrow: 'Comunidad Enactus Colombia',
+      eyebrow: 'Comunidad eduXaction Colombia',
       title: 'Directorio de Proyectos',
       subtitle:
           'Todos los proyectos activos de la red. Filtra por etapa, explora '
@@ -371,7 +371,7 @@ Widget _buildProjectCover(Project project, ContentColors colors,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(9, 6, 12, 6),
                 decoration: BoxDecoration(
-                  color: const Color(0x8C0A0C0E),
+                  color: AppColors.background.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Row(

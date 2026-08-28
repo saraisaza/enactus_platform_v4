@@ -170,7 +170,7 @@ class _CompanyDashboardState extends State<_CompanyDashboard> {
 
     return TabBody(
       title: 'Impacto de ${company.companyName}',
-      subtitle: 'Resultados de tu alianza con Enactus Colombia',
+      subtitle: 'Resultados de tu alianza con eduXaction Colombia',
       actions: [
         DropdownButton<String>(
           value: _period,
@@ -193,7 +193,7 @@ class _CompanyDashboardState extends State<_CompanyDashboard> {
               Expanded(
                 child: Text(
                   labs.isEmpty
-                      ? '${company.companyName} está formando parte del cambio con Enactus Colombia 💛'
+                      ? '${company.companyName} está formando parte del cambio con eduXaction Colombia 💛'
                       : '${company.companyName} está financiando la formación de '
                           '${labParticipants.length} joven(es) en $labNames: hasta hoy, '
                           '${(lessonsDone * 1.5).round()} horas de formación, $phasesCompleted '

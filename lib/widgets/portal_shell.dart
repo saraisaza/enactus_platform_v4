@@ -492,11 +492,11 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4C9F38),
+                          color: AppColors.gold,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4C9F38)
+                              color: AppColors.gold
                                   .withValues(alpha: 0.55 * (1 - t)),
                               spreadRadius: 5 * t,
                             ),

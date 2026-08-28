@@ -80,7 +80,7 @@ class _AdvisorDashboard extends StatelessWidget {
 
     return TabBody(
       title: advisor.university,
-      subtitle: 'Resumen de la actividad Enactus en tu universidad',
+      subtitle: 'Resumen de la actividad eduXaction en tu universidad',
       children: [
         StatRow(tiles: [
           StatTile(

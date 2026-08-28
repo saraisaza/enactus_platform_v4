@@ -1,11 +1,11 @@
 {
-    "name": "enactus_platform",
-    "short_name": "enactus_platform",
+    "name": "eduXaction Colombia",
+    "short_name": "eduXaction",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#161316",
+    "theme_color": "#161316",
+    "description": "Plataforma educativa de eduXaction Colombia",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

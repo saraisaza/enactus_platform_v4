@@ -10,11 +10,15 @@ import '../../utils/constants.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 
+// Antes "recurso" usaba un naranja (#FD6925) casi idéntico al nuevo
+// naranja de marca (#FF6D29) — se reasigna a un tono de la paleta
+// categórica de gráficos para que las 4 categorías se distingan entre sí
+// y de "anuncio" (que sí usa el acento de marca a propósito).
 Color forumCategoryColor(String category) => switch (category) {
-      ForumCategory.avance => const Color(0xFF4C9F38),
-      ForumCategory.recurso => const Color(0xFFFD6925),
+      ForumCategory.avance => AppColors.statusGood,
+      ForumCategory.recurso => AppColors.chartSeries[3],
       ForumCategory.anuncio => AppColors.gold,
-      _ => const Color(0xFF26BDE2),
+      _ => AppColors.chartSeries[1],
     };
 
 IconData forumCategoryIcon(String category) => switch (category) {
@@ -279,7 +283,7 @@ class _Composer extends StatelessWidget {
             backgroundColor: AppColors.gold,
             child: Text(me.name.isEmpty ? '?' : me.name[0].toUpperCase(),
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700, fontSize: 17)),
+                    color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -517,22 +521,61 @@ class _PostCardState extends State<_PostCard> {
     final visibleReplies =
         _repliesExpanded ? post.replies : post.replies.take(2).toList();
 
+    // Nota: un Border con colores no uniformes (el filete izquierdo de
+    // catColor vs. los otros 3 lados en colors.border) no se puede combinar
+    // con borderRadius — Flutter lo rechaza en tiempo de ejecución ("A
+    // borderRadius can only be given on borders with uniform colors"),
+    // dejando la tarjeta completamente en blanco (bug preexistente, no
+    // introducido por el cambio de paleta). Se resuelve recortando con
+    // ClipRRect y pintando el filete como una franja aparte en vez de
+    // como un lado del Border.
     return HoverBuilder(
-      builder: (context, hover) => AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      builder: (context, hover) => Container(
         decoration: BoxDecoration(
-          color: colors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border(
-            left: BorderSide(color: catColor, width: 3),
-            top: BorderSide(color: colors.border),
-            right: BorderSide(color: colors.border),
-            bottom: BorderSide(color: colors.border),
-          ),
           boxShadow: hover ? colors.shadow : const [],
         ),
-        child: Column(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  border: Border.all(color: colors.border),
+                ),
+                child: _postCardBody(context, colors, post, author, name, isStaff, org,
+                    catColor, data, liked, canDelete, visibleReplies),
+              ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(width: 3, color: catColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _postCardBody(
+      BuildContext context,
+      ContentColors colors,
+      ForumPost post,
+      AppUser? author,
+      String name,
+      bool isStaff,
+      String org,
+      Color catColor,
+      DataProvider data,
+      bool liked,
+      bool canDelete,
+      List<ForumReply> visibleReplies) {
+    return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -559,7 +602,7 @@ class _PostCardState extends State<_PostCard> {
                   backgroundColor: AppColors.gold,
                   child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
                       style: const TextStyle(
-                          color: Color(0xFF1A1400), fontWeight: FontWeight.w700, fontSize: 17)),
+                          color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -643,7 +686,7 @@ class _PostCardState extends State<_PostCard> {
                   _IconOnlyButton(
                     icon: Icons.delete_outline,
                     colors: colors,
-                    hoverColor: const Color(0xFFFF8A9B),
+                    hoverColor: colors.alertInk,
                     tooltip: 'Eliminar',
                     onTap: () async {
                       if (await confirmDialog(context, 'Eliminar publicación',
@@ -712,8 +755,6 @@ class _PostCardState extends State<_PostCard> {
                 ),
             ],
           ],
-        ),
-      ),
     );
   }
 }
@@ -848,7 +889,7 @@ class _ReplyTile extends StatelessWidget {
             backgroundColor: AppColors.gold,
             child: Text(authorName.isEmpty ? '?' : authorName[0].toUpperCase(),
                 style: const TextStyle(
-                    color: Color(0xFF1A1400), fontWeight: FontWeight.w700, fontSize: 12)),
+                    color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 12)),
           ),
           const SizedBox(width: 10),
           Expanded(

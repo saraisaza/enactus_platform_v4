@@ -294,7 +294,7 @@ class _LxdCourses extends StatelessWidget {
     return TabBody(
       title: 'Mis Cursos',
       subtitle:
-          'Cursos que creaste — Enactus (asignados o no a un laboratorio) y Open Learning',
+          'Cursos que creaste — eduXaction (asignados o no a un laboratorio) y Open Learning',
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
@@ -905,7 +905,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
         if (!lxd.canGradeEnactus)
           const StatusChip(
               label:
-                  'Tu Admin no te ha dado permiso de calificar en Enactus: no puedes emitir certificados todavía',
+                  'Tu Admin no te ha dado permiso de calificar en eduXaction: no puedes emitir certificados todavía',
               color: AppColors.statusWarning,
               icon: Icons.lock_outline)
         else
@@ -1066,7 +1066,7 @@ class _LxdProfile extends StatelessWidget {
               const Divider(height: 32),
               row('Permiso de calificar · Open Learning',
                   lxd.canGradeOpenLearning ? 'Activado' : 'Desactivado'),
-              row('Permiso de calificar · Enactus',
+              row('Permiso de calificar · eduXaction',
                   lxd.canGradeEnactus ? 'Activado' : 'Desactivado'),
               const Divider(height: 32),
               row('Empresa', (e['company'] as String?) ?? ''),

@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -8,20 +7,13 @@ import '../models/models.dart';
 
 /// Genera certificados en PDF con el logo institucional.
 class PdfService {
-  static const _gold = PdfColor.fromInt(0xFFF4C430);
-  static const _dark = PdfColor.fromInt(0xFF111315);
-  static const _slate = PdfColor.fromInt(0xFF2D3E50);
+  static const _gold = PdfColor.fromInt(0xFFFF6D29);
+  static const _dark = PdfColor.fromInt(0xFF161316);
+  static const _slate = PdfColor.fromInt(0xFF453027);
 
   /// Construye el documento del certificado.
   static Future<pw.Document> buildCertificate(Certificate cert) async {
     final doc = pw.Document();
-    pw.MemoryImage? logo;
-    try {
-      final bytes = await rootBundle.load('assets/media/mainlogo.png');
-      logo = pw.MemoryImage(bytes.buffer.asUint8List());
-    } catch (_) {
-      // Sin logo el certificado sigue siendo válido.
-    }
     final dateStr = DateFormat('d MMMM yyyy', 'es').format(cert.date);
 
     doc.addPage(
@@ -36,7 +28,29 @@ class PdfService {
           child: pw.Column(
             mainAxisAlignment: pw.MainAxisAlignment.center,
             children: [
-              if (logo != null) pw.Image(logo, height: 70),
+              // Wordmark tipográfico "eduXaction" (antes: logo en imagen).
+              pw.RichText(
+                text: pw.TextSpan(children: [
+                  pw.TextSpan(
+                      text: 'edu',
+                      style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 30,
+                          fontWeight: pw.FontWeight.normal)),
+                  pw.TextSpan(
+                      text: 'X',
+                      style: pw.TextStyle(
+                          color: _gold,
+                          fontSize: 30,
+                          fontWeight: pw.FontWeight.bold)),
+                  pw.TextSpan(
+                      text: 'action',
+                      style: pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 30,
+                          fontWeight: pw.FontWeight.normal)),
+                ]),
+              ),
               pw.SizedBox(height: 24),
               pw.Text(
                 'CERTIFICADO DE FINALIZACIÓN',
@@ -119,7 +133,7 @@ class PdfService {
               ),
               pw.SizedBox(height: 12),
               pw.Text(
-                'Enactus Colombia · Entidad sin ánimo de lucro · Bogotá D. C.',
+                'eduXaction Colombia · Entidad sin ánimo de lucro · Bogotá D. C.',
                 style: const pw.TextStyle(color: PdfColors.grey500, fontSize: 9),
               ),
             ],

@@ -40,7 +40,7 @@ class AppFooter extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.slate, Color(0xFF243342)],
+          colors: [AppColors.slate, AppColors.slateDark],
         ),
       ),
       child: Column(
@@ -67,7 +67,7 @@ class AppFooter extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AnimatedLogo(height: 64),
+                          AnimatedLogo(height: 64, compact: true),
                           SizedBox(height: 12),
                           Text(
                             InstitutionalInfo.footerText,
@@ -140,7 +140,7 @@ class AppFooter extends StatelessWidget {
               alignment: WrapAlignment.spaceBetween,
               children: [
                 Text(
-                  '© ${DateTime.now().year} Enactus Colombia — Todos los derechos reservados',
+                  '© ${DateTime.now().year} eduXaction Colombia — Todos los derechos reservados',
                   style: const TextStyle(
                       color: AppColors.textMuted, fontSize: 11),
                 ),
@@ -212,7 +212,7 @@ class _SocialButtonState extends State<_SocialButton> {
                   ),
                   child: Icon(widget.icon,
                       size: 18,
-                      color: _hover ? const Color(0xFF1A1400) : Colors.white),
+                      color: _hover ? AppColors.ink : Colors.white),
                 ),
               ),
             ),

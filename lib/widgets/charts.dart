@@ -47,13 +47,13 @@ class SimpleBarChart extends StatelessWidget {
   final Color color;
   final String Function(double)? valueFormat;
 
-  const SimpleBarChart({
+  SimpleBarChart({
     super.key,
     required this.data,
     required this.maxY,
     Color? color,
     this.valueFormat,
-  }) : color = color ?? const Color(0xFFC98500); // serie 1 de la paleta
+  }) : color = color ?? AppColors.chartSeries[0]; // serie 1 de la paleta
 
   @override
   Widget build(BuildContext context) {
@@ -224,8 +224,8 @@ class SimpleLineChart extends StatelessWidget {
   final List<({String label, double value})> data;
   final Color color;
 
-  const SimpleLineChart({super.key, required this.data, Color? color})
-      : color = color ?? const Color(0xFF3987E5); // serie 2 (azul)
+  SimpleLineChart({super.key, required this.data, Color? color})
+      : color = color ?? AppColors.chartSeries[1]; // serie 2 (azul)
 
   @override
   Widget build(BuildContext context) {

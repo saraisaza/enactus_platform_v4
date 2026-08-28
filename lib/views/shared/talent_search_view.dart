@@ -26,12 +26,12 @@ class TalentSearchView extends StatelessWidget {
     return TabBody(
       title: 'BuscaTalento',
       subtitle:
-          'Estudiantes Enactus que ya demostraron sus habilidades en la Ruta de Impacto — contáctalos para oportunidades futuras 💛',
+          'Estudiantes eduXaction que ya demostraron sus habilidades en la Ruta de Impacto — contáctalos para oportunidades futuras 💛',
       children: [
         if (students.isEmpty)
           const EmptyState(
               icon: Icons.people_outline,
-              message: 'Todavía no hay estudiantes Enactus en la plataforma.')
+              message: 'Todavía no hay estudiantes eduXaction en la plataforma.')
         else
           ...students.map((s) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),

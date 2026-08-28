@@ -7,8 +7,8 @@
 | Portal | Estado | Commit |
 |---|---|---|
 | **Estudiante** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f8e3dce` |
-| **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Admin | No empezado | — |
+| **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | `431c67a` |
+| **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Mentor | No empezado | — |
 | Asesor Académico | No empezado | — |
 | Empresa | No empezado | — |
@@ -73,6 +73,44 @@ login real como LXD, clic en fila de estudiante → `/usuarios/alum1` con
 perfil real, clic en "Constructor" → formulario del curso real, clic en
 "Seguimiento" → tabla de estudiantes con progreso/notas reales y gráficos.
 0 excepciones de consola.
+
+### Portal Admin — completado
+
+Tampoco tenía `GestureDetector`/`MouseRegion` sueltos fuera de `HoverCard`
+(el único, en `admin_portal.dart:1175`, es el botón de quitar una imagen de
+la galería del editor de contenido — una acción, no una tarjeta de
+navegación, se dejó tal cual). Accesibilidad de teclado ya resuelta por el
+fix compartido.
+
+- **`lib/views/admin/admin_management.dart`**: la tarjeta de estudiante en
+  "Asignaciones" pasó de `StudentDetailView` push-only a `/usuarios/:id`
+  (mismo patrón que Estudiante/LXD). El botón "Asignar" (que abre el
+  diálogo real de edición) no se tocó — sigue siendo la acción correcta
+  para asignar laboratorios/cursos/patrocinador.
+- **Verificado, no modificado** (ya estaban bien): "Usuarios" y "Grupos"
+  navegan a un diálogo de edición al hacer clic — apropiado para Admin,
+  que gestiona esas entidades en vez de solo verlas (mismo criterio que
+  "Asignar"). "Laboratorios" abre `LabRutaEditorView(labId)` real (edición,
+  no `/laboratorios/:id` — decisión correcta: Admin necesita EDITAR la Ruta
+  de Impacto, no verla de solo lectura). "Cursos" → `_AdminCourseCard` con
+  "Constructor"/"Seguimiento" verificados con datos reales.
+- **Dashboard General** (8 `StatTile`) y **Datos y respaldos** (4
+  `StatTile`) — decisión de alcance: se dejan como contadores agregados no
+  clickeables. Son cifras de conteo ("45 estudiantes", "12 proyectos"), no
+  una entidad con un solo ID al que navegar — el criterio de "tarjeta
+  terminada" pedido (navega a una ruta CON parámetro de ID) no aplica
+  literalmente a un contador. Convertirlos en accionables requeriría que
+  `StatTile` supiera cambiar de pestaña dentro de `PortalShell` (un cambio
+  de arquitectura del shell compartido por los 8 portales, no una
+  corrección de navegación puntual) — lo señalo para que decidas si lo
+  quieres como alcance nuevo, no lo hice por mi cuenta.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, mismo baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como Admin, clic en tarjeta de estudiante en Asignaciones →
+`/usuarios/alum1` con perfil real (el botón "Asignar" de al lado se dejó
+sin tocar, confirmado que sigue abriendo su diálogo). 0 excepciones de
+consola.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -240,17 +278,17 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
-| Dashboard | 8× `StatTile` (Estudiantes/Proyectos/Equipos/Cursos/Certificados/Universidades/Mentores/Laboratorios) | **No, estructuralmente imposible** | — | — | **MUERTA** ×8 — ver 1.3 |
+| Dashboard | 8× `StatTile` (Estudiantes/Proyectos/Equipos/Cursos/Certificados/Universidades/Mentores/Laboratorios) | No (decisión de alcance) | — | — | Contadores agregados, no entidades — ver nota de alcance arriba |
 | Dashboard | Gráficos (usuarios por rol, proyectos por etapa) | No | — | Sí, son gráficos, no tarjetas de entidad | OK (no aplica navegación) |
-| Usuarios | Fila de usuario (según lo visto en `admin_management.dart`/`admin_portal.dart`) | No auditado en detalle esta sub-pantalla específica | — | — | No verificado |
+| Usuarios | Fila de usuario | Sí | Diálogo de edición (`showUserDialog`) | Sí | OK (gestión CRUD, apropiado para Admin) |
 | Proyectos | Cada tarjeta de proyecto | Sí | `/proyectos/:id` | Sí | OK |
 | Grupos | Tarjeta de grupo | Sí | Diálogo de edición (`_editGroup`) | Sí | OK (es gestión CRUD, no vista de detalle — apropiado para Admin) |
-| Asignaciones | Fila | Sí | `Navigator.push` (destino no confirmado en detalle) | — | No verificado |
-| Laboratorios | Tarjeta de laboratorio | Sí | `Navigator.push` (probablemente editor de Ruta de Impacto, no `/laboratorios/:id`) | — | No verificado a fondo, pero **confirma** que no usa la ruta general pedida (ver 1.5) |
-| Cursos | `_AdminCourseCard` | Sí | Editor/seguimiento (igual patrón que LXD) | — | No verificado a fondo |
+| Asignaciones | Tarjeta de estudiante | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** — botón "Asignar" (edición) verificado aparte, intacto |
+| Laboratorios | Tarjeta de laboratorio | Sí | `LabRutaEditorView(labId)` (edición real) | Sí | OK (Admin edita la Ruta de Impacto, no la ve de solo lectura — decisión correcta) |
+| Cursos | `_AdminCourseCard`, "Constructor"/"Seguimiento" | Sí | `CourseEditorView`/`CourseTrackingView` | Sí ✅ *(verificado en vivo desde LXD, mismo componente)* | **OK** |
 | Evidencias donantes | Tarjeta de evidencia | Sí | Diálogo (`_showEvidenceDetail`) | Sí | PARCIAL (modal, no ruta — Evidence no tiene ruta propia pedida, prioridad baja) |
-| Datos y respaldos | 4× `StatTile` | No | — | — | MUERTA ×4 — ver 1.3 (impacto bajo, es una pantalla de operación, no de exploración) |
-| Contenido página, Recursos Comunicaciones | No auditadas en profundidad | — | — | — | No verificado |
+| Datos y respaldos | 4× `StatTile` | No (decisión de alcance) | — | — | Contadores agregados — ver nota arriba |
+| Contenido página, Recursos Comunicaciones | Editores de contenido, no pantallas de tarjetas | — | — | — | Fuera de alcance de "navegación por tarjetas" |
 
 ### 3.4 Portal Mentor
 

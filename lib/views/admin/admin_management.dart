@@ -12,7 +12,7 @@ import '../../widgets/portal_shell.dart';
 import '../lxd/course_editor_view.dart';
 import '../lxd/course_tracking_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectDetailView;
-import '../shared/student_detail_view.dart';
+import '../shared/user_detail_view.dart';
 import 'lab_ruta_editor.dart';
 
 // ---------------------------------------------------------------------------
@@ -537,8 +537,11 @@ class AdminAssignments extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${s.id}'),
+                        builder: (_) => UserDetailView(userId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),

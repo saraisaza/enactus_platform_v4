@@ -284,10 +284,11 @@ export const lessons = pgTable(
        or (${t.videoType} = 'external' and ${t.videoUrl} is not null and ${t.videoS3Key} is null)
        or (${t.videoType} = 'uploaded' and ${t.videoS3Key} is not null and ${t.videoUrl} is null)`,
     ),
-    check(
-      'lessons_video_type_requires_source',
-      sql`${t.type} <> 'video' or ${t.videoType} is not null`,
-    ),
+    // Ojo: NO hay un CHECK que exija que una lección de tipo `video` tenga
+    // origen. Se quitó en la migración 0002 porque hacía imposible el flujo
+    // de subida (no se puede crear la lección sin la key, ni obtener la key
+    // sin la lección). Esa regla vive ahora en `POST /courses/:id/publish`:
+    // una lección a medio construir puede estar vacía, un curso publicado no.
     check(
       'lessons_link_requires_url',
       sql`${t.type} <> 'link' or ${t.externalUrl} is not null`,

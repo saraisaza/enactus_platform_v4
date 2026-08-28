@@ -9,7 +9,7 @@ verificación y pegado su salida real.
 | 1 — Esquema Postgres | ✅ Cerrada | 28 ago 2026 |
 | 2 — Migraciones y seed | ✅ Cerrada | 28 ago 2026 |
 | 3 — Auth y autorización | ✅ Cerrada | 28 ago 2026 |
-| 4 — API REST | ⬜ Pendiente | — |
+| 4 — API REST | 🟡 En curso | Grupo 1 de 4 cerrado |
 | 5 — Cliente Flutter | ⬜ Pendiente | — |
 | 6 — Infraestructura y CI/CD | ⬜ Pendiente | — |
 
@@ -450,3 +450,135 @@ El `exp` del token emitido es exactamente `iat + 43200` (12 h).
 Los tres últimos se ejercitan sobre rutas de prueba que montan los middlewares
 reales, porque los endpoints de negocio llegan en la Fase 4. Cuando existan,
 las mismas guardias se prueban sobre ellos.
+
+---
+
+## Fase 4 — API REST 🟡 (Grupo 1 de 4 cerrado)
+
+### Grupo 1 — CRUD de cursos, módulos y lecciones ✅
+
+| Método | Ruta | Quién |
+|---|---|---|
+| GET | `/courses` | todos (alcance por rol) |
+| GET | `/courses/:id` | todos (alcance por rol) |
+| POST | `/courses` | lxd, admin, superadmin |
+| PATCH | `/courses/:id` | su creador o admin |
+| POST | `/courses/:id/publish` | su creador o admin |
+| POST | `/courses/:id/archive` | su creador o admin |
+| DELETE | `/courses/:id` | su creador o admin (lógico, con reglas) |
+| POST | `/courses/:id/modules` | su creador o admin |
+| PUT | `/courses/:id/modules/order` | su creador o admin |
+| PATCH · DELETE | `/modules/:id` | su creador o admin |
+| POST | `/modules/:id/lessons` | su creador o admin |
+| PUT | `/modules/:id/lessons/order` | su creador o admin |
+| PATCH · DELETE | `/lessons/:id` | su creador o admin |
+| POST | `/lessons/:id/video-upload-url` | lxd, admin |
+| POST | `/lessons/:id/video` | lxd, admin (confirma la subida) |
+| POST | `/lessons/:id/video-external` | lxd, admin |
+
+**El alcance de lectura es del servidor, no de la pantalla.**
+`visibleCoursesFilter` traduce a SQL lo que hoy las vistas de Flutter hacen por
+convención: el estudiante solo ve lo publicado y visible de sus laboratorios;
+el LXD ve además sus propios borradores; el mentor lo que revisa; la empresa lo
+de sus LXD; el asesor lo de los laboratorios de sus estudiantes; el donante,
+nada. Pedir un id fuera del alcance devuelve **404, no 403**: un 403 ya
+confirmaría que ese curso existe.
+
+**Reordenamiento en un solo endpoint, no un PATCH por elemento.** Con
+`unique(course_id, order_index)`, intercambiar dos módulos uno por uno falla en
+el primer paso. Se hace en una transacción y en dos pasadas (primero índices
+negativos, después los definitivos). Si la lista no incluye exactamente los
+módulos del curso, responde 409 en vez de dejar el orden a medias.
+
+**Borrado con la regla B.7.** Un curso con progreso de estudiantes o vinculado a
+módulos de la Ruta devuelve **409** con el detalle de qué lo bloquea y sugiere
+`POST /courses/:id/archive`. Sin eso, borrar un curso deja el objetivo
+—y con él el módulo, la fase y la Ruta entera— bloqueado en silencio para todos
+los estudiantes del laboratorio. Cuando sí se puede borrar, es lógico.
+
+### Cambio de decisión respecto de la Fase 1 (migración 0002)
+
+Se quitó el CHECK `lessons_video_type_requires_source`. **Hacía imposible el
+flujo de subida**: el navegador necesita una lección existente para pedir la URL
+firmada, pero la lección no se podía crear sin la key de S3, y la key no existe
+hasta pedir la URL. La regla se movió a `POST /courses/:id/publish` — una
+lección a medio construir puede estar vacía, un curso publicado no.
+
+No se relajó nada más: `lessons_video_source` sigue vigente, así que la base
+sigue impidiendo los dos orígenes a la vez o un origen que no corresponda al
+`video_type`.
+
+### Subida de video
+
+Tres pasos, con el archivo **nunca** pasando por la API (API Gateway corta en
+10 MB):
+
+1. `POST /lessons/:id/video-upload-url` → valida **antes de firmar** (mp4/webm,
+   ≤ 500 MB, rol con permiso de contenido) y devuelve la URL firmada.
+2. El navegador hace `PUT` directo a S3.
+3. `POST /lessons/:id/video` confirma; la key tiene que empezar por
+   `lessons/<id>/`, para que nadie apunte su lección a un archivo ajeno.
+
+**Sin S3 configurado responde 503 `storage_not_configured` diciendo qué falta**,
+en vez de devolver una URL falsa que reventaría recién al subir.
+
+### Un error que encontré y corregí en esta fase
+
+Al escribir la migración 0002 a mano, el *snapshot* de Drizzle quedó
+desactualizado y `db:generate` produjo una `0003` que volvía a borrar el mismo
+CHECK — pero sin `IF EXISTS`. Sobre una base limpia eso abortaba la migración
+entera con `42704` y dejaba **0 tablas**. Lo detectó el ciclo de verificación,
+no la lectura del código. Se rehicieron ambas migraciones para que el snapshot
+coincida con el esquema; ahora `db:generate` dice "No schema changes".
+
+Un test de la Fase 1 quedó obsoleto por el cambio de 0002 (afirmaba que la base
+rechaza una lección de video sin origen). **No se borró**: se reescribió para
+afirmar el comportamiento nuevo y apunta a dónde vive ahora la regla.
+
+### Verificación — salida real
+
+```
+$ npm run typecheck → limpio     $ npm run lint → limpio
+
+$ npm test
+ ✓ tests/schema-constraints.test.ts (14)   ✓ tests/auth.test.ts        (36)
+ ✓ tests/courses.test.ts            (29)   ✓ tests/seed.test.ts        (14)
+ ✓ tests/completeness.test.ts       (16)
+ Test Files  5 passed (5)      Tests  109 passed (109)
+
+$ db:migrate → rollback ×3 → migrate
+inicio:    tablas=0  vistas=0  checks=0
+migrate:   tablas=52 vistas=7  checks=22
+rollback1: tablas=52 vistas=7  checks=23   ← 0002 restaura el CHECK
+rollback2: tablas=52 vistas=0  checks=23
+rollback3: tablas=0  vistas=0  checks=0
+migrate:   tablas=52 vistas=7  checks=22
+```
+
+Y contra el servidor corriendo, con `curl`:
+
+```
+estudiante crea curso            → HTTP 403
+LXD crea curso                   → 201, status=draft, creator=lxd1
+publicar sin lecciones           → HTTP 409
+lección + video externo          → videoType=external, videoS3Key=null
+publicar ahora                   → HTTP 200
+content-type video/quicktime     → HTTP 400
+archivo de 600 MB                → HTTP 413
+borrar curso con progreso        → 409 {rutaModules:1, objectives:2, …}
+listado del estudiante           → solo los 2 cursos de sus laboratorios
+```
+
+### Lo que falta de la Fase 4
+
+- **Grupo 2** — completitud: `POST /progress/lessons/:id/toggle`,
+  `GET /students/:id/ruta-progress`, `GET /students/:id/course-progress/:courseId`,
+  `POST /certificates/ruta`.
+- **Grupo 3** — aislamiento Enactus vs Open Learning en todos los endpoints.
+- **Grupo 4** — resto de entidades, `can-grade`, backup/restore, presigned URLs
+  de evidencias y recursos.
+- **OpenAPI** de todos los endpoints (entregable de la fase).
+
+**La firma real de S3 no está verificada**: en local no hay bucket, así que lo
+probado es la validación previa y el 503 de configuración. La firma se verifica
+en la Fase 6, con credenciales reales.

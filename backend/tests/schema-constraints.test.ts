@@ -169,13 +169,6 @@ describe('lessons', () => {
     `);
     expect(ambos).toContain('lessons_video_source');
 
-    // Una lección de video sin ningún origen tampoco sirve.
-    const videoSinOrigen = await expectRejected(`
-      insert into lessons (title, type, course_module_id)
-      values ('Video vacío', 'video', '${courseModuleId}')
-    `);
-    expect(videoSinOrigen).toContain('lessons_video_type_requires_source');
-
     // Los dos casos válidos sí entran.
     await sql.unsafe(`
       insert into lessons (title, type, course_module_id, video_type, video_url)
@@ -191,6 +184,24 @@ describe('lessons', () => {
       select count(*)::text as count from lessons where type = 'video'
     `;
     expect(Number(counted?.count)).toBe(2);
+  });
+
+  it('una lección de video SIN origen sí entra: la regla vive en la publicación', async () => {
+    // La base ya no lo impide (migración 0002): si lo hiciera, sería
+    // imposible crear la lección antes de subir el archivo, porque la key de
+    // S3 no existe hasta que se pide la URL firmada PARA esa lección.
+    //
+    // La exigencia se mueve a `POST /courses/:id/publish`, que es donde de
+    // verdad importa — y está probada en `courses.test.ts`:
+    // "no se puede publicar con una lección de video sin origen".
+    await sql.unsafe(`
+      insert into lessons (title, type, course_module_id)
+      values ('Video pendiente de subir', 'video', '${courseModuleId}')
+    `);
+    const [row] = await sql<{ video_type: string | null }[]>`
+      select video_type from lessons where title = 'Video pendiente de subir'
+    `;
+    expect(row?.video_type).toBeNull();
   });
 
   it('una lección de tipo link necesita su URL', async () => {

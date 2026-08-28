@@ -7,6 +7,8 @@ import { env } from './env';
 import { onError, onNotFound } from './middleware/error';
 import type { AppEnv } from './middleware/context';
 import { authRoutes } from './routes/auth';
+import { courseRoutes, moduleRoutes } from './routes/courses';
+import { lessonRoutes, moduleLessonRoutes } from './routes/lessons';
 
 /**
  * Arma la aplicación. Recibe la conexión por parámetro para que las pruebas
@@ -49,6 +51,13 @@ export function createApp(database: Database = defaultDb) {
   );
 
   app.route('/auth', authRoutes);
+  app.route('/courses', courseRoutes);
+  // Dos routers en la misma base: uno maneja el módulo en sí, el otro sus
+  // lecciones. Se separan por archivo para que `courses.ts` no tenga que
+  // importar `lessons.ts` y al revés.
+  app.route('/modules', moduleRoutes);
+  app.route('/modules', moduleLessonRoutes);
+  app.route('/lessons', lessonRoutes);
 
   return app;
 }

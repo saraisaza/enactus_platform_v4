@@ -1,0 +1,21 @@
+-- Cambio de decisión respecto de la Fase 1, con motivo.
+--
+-- `lessons_video_type_requires_source` exigía que toda lección de tipo
+-- `video` tuviera ya su origen (URL externa o key de S3). Suena razonable,
+-- pero hace IMPOSIBLE el flujo de subida de un archivo propio:
+--
+--   1. el navegador necesita una lección existente para pedir la URL firmada
+--      (`POST /lessons/:id/video-upload-url`),
+--   2. pero la lección no se puede crear sin el `video_s3_key`,
+--   3. y el `video_s3_key` no existe hasta que se pide la URL firmada.
+--
+-- Se quita ese CHECK y la regla se mueve a la publicación del curso, que es
+-- donde de verdad corresponde: una lección a medio construir puede no tener
+-- video todavía; un curso PUBLICADO no puede tener lecciones de video vacías
+-- (ver `POST /courses/:id/publish` y `services/course-content.ts`).
+--
+-- Lo que NO se relaja: `lessons_video_source` sigue vigente, así que nunca
+-- puede haber los dos orígenes a la vez ni un origen que no corresponda al
+-- `video_type`. La coherencia la sigue garantizando la base.
+
+ALTER TABLE "lessons" DROP CONSTRAINT IF EXISTS "lessons_video_type_requires_source";

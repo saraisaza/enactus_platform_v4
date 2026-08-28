@@ -15,6 +15,13 @@
       "when": 1787951233514,
       "tag": "0001_completeness",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787953517477,
+      "tag": "0002_early_stellaris",
+      "breakpoints": true
     }
   ]
 }

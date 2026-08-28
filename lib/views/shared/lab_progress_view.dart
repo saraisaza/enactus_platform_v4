@@ -78,7 +78,7 @@ class LabProgressView extends StatelessWidget {
                                       Text(lab.name.toUpperCase(),
                                           style: knockoutHeading(
                                               fontSize: 30,
-                                              fontWeight: FontWeight.w800,
+                                              fontWeight: AppWeights.display,
                                               color: AppColors.textPrimary)),
                                       Text('Progreso de ${student.name}',
                                           style: const TextStyle(

@@ -457,7 +457,7 @@ class _CityTooltip extends StatelessWidget {
                         decoration: BoxDecoration(shape: BoxShape.circle, color: point.color)),
                     const SizedBox(width: 8),
                     Text(point.city.name.toUpperCase(),
-                        style: knockoutHeading(fontSize: 21, fontWeight: FontWeight.w800, color: Colors.white)),
+                        style: knockoutHeading(fontSize: 21, fontWeight: AppWeights.display, color: Colors.white)),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -470,7 +470,7 @@ class _CityTooltip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('${point.value}',
-                        style: knockoutHeading(fontSize: 26, fontWeight: FontWeight.w800, color: point.color)),
+                        style: knockoutHeading(fontSize: 26, fontWeight: AppWeights.display, color: point.color)),
                     const SizedBox(width: 8),
                     Text(suffix, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.72))),
                   ],

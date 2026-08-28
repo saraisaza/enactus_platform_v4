@@ -128,7 +128,7 @@ class LandingView extends StatelessWidget {
                     child: Text('Nuestros Laboratorios'.toUpperCase(),
                         style: knockoutHeading(
                             fontSize: 30,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: AppWeights.display,
                             color: AppColors.gold)),
                   ),
                   const Text('Áreas de conocimiento donde formamos a nuestros equipos',
@@ -187,7 +187,7 @@ class LandingView extends StatelessWidget {
                       child: Text('Nuestro trabajo en imágenes'.toUpperCase(),
                           style: knockoutHeading(
                               fontSize: 30,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: AppWeights.display,
                               color: AppColors.gold)),
                     ),
                     const Text('Momentos de la comunidad eduXaction Colombia',
@@ -243,7 +243,7 @@ class LandingView extends StatelessWidget {
                             textAlign: TextAlign.center,
                             style: knockoutHeading(
                                 fontSize: 24,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: AppWeights.display,
                                 color: AppColors.textPrimary)),
                         const SizedBox(height: 10),
                         ConstrainedBox(
@@ -305,7 +305,7 @@ class _ExpoShowcase extends StatelessWidget {
           Text('Campeones National Expo 2026'.toUpperCase(),
               textAlign: TextAlign.center,
               style: knockoutHeading(
-                  fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.gold)),
+                  fontSize: 30, fontWeight: AppWeights.display, color: AppColors.gold)),
           const SizedBox(height: 6),
           const Text(
               'Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo',
@@ -555,9 +555,9 @@ class _HeroContent extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: knockoutHeading(
                     fontSize: 54,
-                    fontWeight: FontWeight.w900,
                     color: AppColors.gold,
-                    height: 1.1)),
+                    height: 0.98,
+                    letterSpacing: 54 * 0.002)),
             const SizedBox(height: 18),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
@@ -614,9 +614,9 @@ class _AnimatedCounter extends StatelessWidget {
               v.round().toString(),
               style: knockoutHeading(
                   fontSize: 36,
-                  fontWeight: FontWeight.w900,
                   color: AppColors.gold,
-                  height: 1.0),
+                  height: 1.0,
+                  letterSpacing: 0),
             ),
           ),
           const SizedBox(height: 2),

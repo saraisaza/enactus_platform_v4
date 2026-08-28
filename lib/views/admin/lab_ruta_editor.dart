@@ -53,7 +53,7 @@ class LabRutaEditorView extends StatelessWidget {
                               child: Text('RUTA DE IMPACTO'.toUpperCase(),
                                   style: knockoutHeading(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: AppWeights.display,
                                       color: AppColors.gold)),
                             ),
                           ],

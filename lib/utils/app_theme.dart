@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 
 /// Sistema de color de la plataforma.
 ///
-/// UI: tema oscuro cálido con acento naranja de marca.
+/// UI: tema oscuro neutro con acento naranja de marca.
 /// Gráficos: paleta categórica validada (contraste >= 3:1 sobre la superficie
 /// oscura, separación CVD adyacente ΔE 61.6) — NO usar el naranja de marca
-/// (#FF6D29) como color de serie: se confunde con el acento de UI; usar
+/// (#FA6A1E) como color de serie: se confunde con el acento de UI; usar
 /// [AppColors.chartSeries] en orden fijo.
 class AppColors {
   // Marca / UI
-  static const gold = Color(0xFFFF6D29);
+  /// Acento de marca eduXaction (identidad `assets/media/eduxaction-logo.css`).
+  /// Único sitio donde vive este valor — todo lo demás lo referencia por acá
+  /// en vez de repetir el hex (certificados PDF y `ContentColors.dark` son
+  /// las dos excepciones documentadas, por no poder referenciar esta
+  /// constante desde su contexto).
+  static const gold = Color(0xFFFA6A1E);
   static const goldBright = Color(0xFFFF8647);
   static const slate = Color(0xFF453027); // barras laterales, tarjetas secundarias
   static const slateLight = Color(0xFF573D31);
@@ -25,21 +30,30 @@ class AppColors {
   /// para que ningún widget lo hardcodee suelto.
   static const ink = Color(0xFF21120A);
 
-  // Superficies (tema oscuro)
-  static const background = Color(0xFF161316);
-  static const surface = Color(0xFF1D1817); // superficie de tarjetas y gráficos
-  static const surfaceAlt = Color(0xFF251E1B);
-  static const border = Color(0xFF2E2522);
+  // Superficies (tema oscuro) — página / tarjetas / paneles, identidad
+  // eduXaction (ver assets/media/eduxaction-logo.css § "Fondo recomendado").
+  static const background = Color(0xFF08080A); // página
+  static const surface = Color(0xFF0B0B0D); // tarjetas y gráficos
+  static const surfaceAlt = Color(0xFF121214); // paneles (campos, chips, diálogos)
+  static const border = Color(0x12FFFFFF); // rgba(255,255,255,.07)
 
   // Texto
-  static const textPrimary = Color(0xFFFFFFFF);
-  static const textSecondary = Color(0xFFBABABA);
+  static const textPrimary = Color(0xFFE9E9EE);
+  static const textSecondary = Color(0xFF8A8A93);
+
+  /// No forma parte de la identidad eduXaction nueva (que solo define un
+  /// tono "secundario") — se dejó en su valor anterior en vez de fusionarlo
+  /// a ciegas con [textSecondary]; tiene 175 usos en la app y un tono
+  /// distinto (cálido) al nuevo gris neutro. Ver reporte de la tarea de
+  /// identidad visual.
   static const textMuted = Color(0xFF8C817C);
 
   /// Partículas del hero de la landing (antes: tricolor de la bandera de
   /// Colombia — chocaba con la paleta cálida). Tonos de marca + neutros.
+  /// Solo el primer tono es el acento de marca en sí — el segundo es un
+  /// tinte decorativo derivado, no un token de marca, y quedó sin retocar.
   static const heroParticleColors = [
-    Color(0xFFFF6D29),
+    Color(0xFFFA6A1E),
     Color(0xFFFF9A5A),
     Color(0xFFFFFFFF),
     Color(0xFFBABABA),
@@ -181,15 +195,15 @@ class ContentColors {
   });
 
   static const dark = ContentColors(
-    bg: Color(0xFF161316),
-    surface: Color(0xFF1D1817),
-    surface2: Color(0xFF251E1B),
-    border: Color(0xFF2E2522),
-    text: Color(0xFFFFFFFF),
-    text2: Color(0xFFBABABA),
+    bg: Color(0xFF08080A),
+    surface: Color(0xFF0B0B0D),
+    surface2: Color(0xFF121214),
+    border: Color(0x12FFFFFF), // rgba(255,255,255,.07)
+    text: Color(0xFFE9E9EE),
+    text2: Color(0xFF8A8A93),
     text3: Color(0xFF8C817C),
     goldInk: AppColors.gold,
-    goldSoft: Color(0x29FF6D29), // rgba(255,109,41,.16)
+    goldSoft: Color(0x29FA6A1E), // rgba(250,106,30,.16)
     alertInk: Color(0xFFFF8A9B),
     shadow: [
       BoxShadow(
@@ -209,7 +223,7 @@ class ContentColors {
     text2: Color(0xFF5B4E48),
     text3: Color(0xFF8C817C),
     goldInk: Color(0xFFB03D06),
-    goldSoft: Color(0x3DFF6D29), // rgba(255,109,41,.24)
+    goldSoft: Color(0x3DFA6A1E), // rgba(250,106,30,.24)
     alertInk: Color(0xFFA8101C),
     shadow: [
       BoxShadow(
@@ -221,29 +235,50 @@ class ContentColors {
 
 /// Tokens tipográficos — el equivalente Flutter de --font-display / --font-ui
 /// en CSS. Referencia esto (o mejor, usa el textTheme del Theme) en vez de
-/// escribir 'Knockout' o 'SpaceGrotesk' directo en un widget.
+/// escribir 'Oswald' o 'DMSans' directo en un widget.
 ///
 /// Reglas de uso:
-/// - [display] (Knockout 92): SOLO títulos principales — h1/h2, hero titles,
-///   nombres de sección grandes ([SectionTitle] en widgets/common.dart). Va
-///   siempre en mayúsculas (.toUpperCase() al renderizar, no en los datos) y
-///   con tracking vía [knockoutTracking] — es una fuente condensada.
-/// - [ui] (Space Grotesk): todo lo demás — botones, navegación, labels,
-///   body text, formularios, badges, footer. Ya viene aplicada por defecto
-///   a todo el textTheme, así que no hace falta declararla a mano salvo en
-///   TextStyle sueltos que no heredan del tema.
+/// - [display] (Oswald): SOLO títulos principales — hero, encabezados de
+///   sección ([SectionTitle] en widgets/common.dart), saludo/título de
+///   portal ([ContentScreenShell] en widgets/portal_shell.dart), títulos de
+///   tarjeta, cifras de métrica. Va siempre en mayúsculas (.toUpperCase()
+///   al renderizar, no en los datos) y con tracking vía [knockoutTracking]
+///   — es una fuente condensada y de altura-x alta, necesita menos
+///   interlínea que Knockout.
+/// - [ui] (DM Sans): todo lo demás — botones, navegación, labels, body
+///   text, formularios, badges, footer, tablas. Ya viene aplicada por
+///   defecto a todo el textTheme, así que no hace falta declararla a mano
+///   salvo en TextStyle sueltos que no heredan del tema.
 class AppFonts {
-  static const display = 'Knockout';
-  static const ui = 'SpaceGrotesk';
+  static const display = 'Oswald';
+
+  /// Manrope — SOLO el wordmark "eduXaction" ([AnimatedLogo] en
+  /// widgets/animated_logo.dart), pesos 700/800 (los únicos dos
+  /// registrados en pubspec.yaml). No es un tercer rol de texto general:
+  /// nunca lo uses en un título ([display]) ni en texto de interfaz ([ui]).
+  static const logo = 'Manrope';
+  static const ui = 'DMSans';
 }
 
-/// Pesos de Space Grotesk realmente cargados en pubspec.yaml (variable font,
-/// eje wght 300-700): 400 para texto normal, 500-600 para botones y labels
-/// destacados — nunca "regular" en un botón, se ve débil al lado de Knockout.
+/// Pesos realmente cargados en pubspec.yaml.
 class AppWeights {
+  /// DM Sans (rol interfaz): 400 texto normal, 500 navegación (sidebar),
+  /// 600 botones y labels/eyebrows destacados — nunca "regular" en un
+  /// botón, se ve débil al lado de Oswald.
   static const uiRegular = FontWeight.w400;
   static const uiMedium = FontWeight.w500;
   static const uiSemibold = FontWeight.w600;
+
+  /// Oswald (rol display): el diseño pide SemiBold (600), pero
+  /// `assets/media/oswald/` solo trae Light/Regular/Bold — no hay archivo
+  /// 600 descargado. Se usa Bold (700, el peso real más cercano) en vez de
+  /// dejar que Flutter sintetice un 600 falso (se ve mal, contraformas
+  /// cerradas). En cuanto se agregue Oswald-SemiBold.ttf a
+  /// assets/media/oswald/ y a pubspec.yaml, este único valor pasa a
+  /// FontWeight.w600 y corrige TODOS los títulos de la app a la vez — por
+  /// eso [knockoutHeading] usa esto como default en vez de que cada
+  /// pantalla escriba FontWeight.w700/w800/w900 suelto.
+  static const display = FontWeight.w700;
 }
 
 ThemeData buildAppTheme() {
@@ -262,8 +297,8 @@ ThemeData buildAppTheme() {
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.background,
     // Sistema de dos fuentes (ver AppFonts arriba): display/headline en
-    // Knockout (títulos principales), title/body/label en Space Grotesk
-    // (todo lo demás) — ver _buildTextTheme más abajo.
+    // Oswald (títulos principales), title/body/label en DM Sans (todo lo
+    // demás) — ver _buildTextTheme más abajo.
     textTheme: _buildTextTheme(base.textTheme),
     primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
     cardTheme: const CardThemeData(
@@ -374,7 +409,14 @@ ThemeData buildAppTheme() {
           color: AppColors.gold,
           fontWeight: AppWeights.uiSemibold,
           fontSize: 13),
-      dataTextStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+      // DM Sans no trae numerales tabulares por defecto (Oswald sí) — se
+      // activan a mano acá para que las columnas numéricas de las 3
+      // DataTable de la app (Usuarios, dashboard LXD, seguimiento de
+      // curso) alineen bien.
+      dataTextStyle: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 13,
+          fontFeatures: [FontFeature.tabularFigures()]),
       dividerThickness: 0.5,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
     ),
@@ -402,41 +444,52 @@ OutlineInputBorder OutlineInputBorderWith(Color color) => OutlineInputBorder(
       borderSide: BorderSide(color: color),
     );
 
-/// Tracking (letter-spacing) como fracción del tamaño de fuente. Knockout es
-/// condensada; sin esto las letras se ven pegadas entre sí.
-const double kKnockoutTrackingRatio = 0.045;
+/// Tracking (letter-spacing) como fracción del tamaño de fuente, para
+/// títulos genéricos que no piden un valor propio — corresponde al rol
+/// "Título de tarjeta" de la tabla tipográfica (+0.014em), el más común
+/// entre los ~60 títulos de la app que no son hero/encabezado de
+/// sección/saludo de portal/cifra (esos 5 roles pasan su propio
+/// [letterSpacing] a [knockoutHeading]). Oswald es condensada y de
+/// altura-x alta; sin tracking las mayúsculas se ven pegadas entre sí.
+const double kKnockoutTrackingRatio = 0.014;
 
-/// Letter-spacing sugerido para un tamaño de fuente dado, usando Knockout.
-/// Útil para TextStyle sueltos que no vienen del textTheme (títulos hero,
-/// SectionTitle) — ver knockoutHeading() más abajo.
+/// Letter-spacing sugerido para un tamaño de fuente dado, usando Oswald.
+/// Útil para TextStyle sueltos que no vienen del textTheme. Ver
+/// knockoutHeading() más abajo.
 double knockoutTracking(double fontSize) => fontSize * kKnockoutTrackingRatio;
 
-/// Construye un TextStyle de título en Knockout listo para usar: familia,
-/// tracking proporcional y el texto pasado por .toUpperCase() se aplican
-/// consistentemente. Para el texto, usa knockoutHeadingText() al armar el
-/// widget Text (el transform es solo visual, no toca los datos).
+/// Construye un TextStyle de título en Oswald listo para usar: familia,
+/// tracking (proporcional por defecto vía [kKnockoutTrackingRatio], o el
+/// valor explícito de [letterSpacing] para los roles con tabla propia:
+/// hero, encabezado de sección, saludo de portal, cifra de métrica) y el
+/// texto pasado por .toUpperCase() se aplican consistentemente. Para el
+/// texto, usa .toUpperCase() al armar el widget Text (el transform es solo
+/// visual, no toca los datos). [height] por defecto 1.08 (rol "Título de
+/// tarjeta" — Oswald necesita menos interlínea que Knockout).
 TextStyle knockoutHeading({
   required double fontSize,
-  FontWeight fontWeight = FontWeight.w700,
+  FontWeight fontWeight = AppWeights.display,
   Color? color,
-  double? height,
+  double? height = 1.08,
+  double? letterSpacing,
 }) =>
     TextStyle(
       fontFamily: AppFonts.display,
       fontSize: fontSize,
       fontWeight: fontWeight,
-      letterSpacing: knockoutTracking(fontSize),
+      letterSpacing: letterSpacing ?? knockoutTracking(fontSize),
       color: color,
       height: height,
     );
 
-/// Sistema de dos fuentes: display/headline en Knockout (títulos
-/// principales), title/body/label en Space Grotesk con los pesos de
-/// AppWeights (regular en body, medium/semibold en title y label — así
-/// botones y labels destacados no se ven débiles al lado de Knockout).
+/// Sistema de dos fuentes: display/headline en Oswald (títulos
+/// principales), title/body/label en DM Sans con los pesos de AppWeights
+/// (regular en body, medium en navegación, semibold en botones y labels
+/// destacados — así no se ven débiles al lado de Oswald).
 TextTheme _buildTextTheme(TextTheme theme) {
   TextStyle? display(TextStyle? style) => style?.copyWith(
         fontFamily: AppFonts.display,
+        fontWeight: AppWeights.display,
         letterSpacing: knockoutTracking(style.fontSize ?? 24),
       );
   TextStyle? ui(TextStyle? style, FontWeight weight) => style?.copyWith(

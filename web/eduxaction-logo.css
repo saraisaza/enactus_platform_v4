@@ -1,0 +1,83 @@
+/* eduXaction - logotipo neon animado (variante "barrido de luz") */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap');
+
+.exa-logo,
+.exa-mark {
+  --exa-accent: #FA6A1E;   /* color del neon */
+  --exa-glow: 1;           /* intensidad del brillo (0 = apagado) */
+  --exa-size: 64px;        /* tamano del logo / lado del icono */
+  --exa-sweep: 2.9s;       /* duracion del barrido */
+  font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Logotipo horizontal --- */
+.exa-logo {
+  display: inline-block;
+  font-size: var(--exa-size);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+/* Sobre fondo claro */
+.exa-logo--on-light {
+  color: #101014;
+  --exa-glow: 0.45;
+}
+
+/* --- La X de neon --- */
+.exa-x {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  color: var(--exa-accent);
+  text-shadow: 0 0 calc(0.16em * var(--exa-glow)) var(--exa-accent);
+}
+.exa-x::before,
+.exa-x::after {
+  content: 'X';
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  pointer-events: none;
+}
+.exa-x::before {            /* halo de gas */
+  color: var(--exa-accent);
+  filter: blur(calc(0.22em * var(--exa-glow)));
+  opacity: calc(0.8 * var(--exa-glow));
+}
+.exa-x::after {             /* destello que recorre la X */
+  color: transparent;
+  background-image: linear-gradient(102deg, rgba(255,255,255,0) 38%, #FFF4EA 50%, rgba(255,255,255,0) 62%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: exa-sweep var(--exa-sweep) linear infinite;
+}
+
+/* --- Icono cuadrado (avatar, app, favicon) --- */
+.exa-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--exa-size);
+  height: var(--exa-size);
+  border-radius: 25%;
+  background: #0B0B0D;
+  font-size: calc(var(--exa-size) * 0.5);
+  font-weight: 800;
+}
+
+@keyframes exa-sweep {
+  from { background-position: 210% 0; }
+  to   { background-position: -110% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exa-x::after { animation: none; opacity: 0; }
+}

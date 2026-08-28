@@ -178,7 +178,7 @@ class _CourseCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: knockoutHeading(
                                       fontSize: 27,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: AppWeights.display,
                                       color: Colors.white,
                                       height: 1.02)),
                               if (labLabel.isNotEmpty)

@@ -250,7 +250,7 @@ class _StatCard extends StatelessWidget {
               v.round().toString(),
               style: knockoutHeading(
                   fontSize: 40,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: AppWeights.display,
                   color: isPrimary ? colors.goldInk : colors.text,
                   height: 1.0),
             ),
@@ -357,7 +357,7 @@ Widget _buildProjectCover(Project project, ContentColors colors,
           child: Text('$odsNum',
               style: knockoutHeading(
                   fontSize: 82,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: AppWeights.display,
                   color: Colors.white.withValues(alpha: 0.32),
                   height: 1.0)),
         ),
@@ -450,7 +450,7 @@ class _ProjectCard extends StatelessWidget {
                     Text(project.name.toUpperCase(),
                         style: knockoutHeading(
                             fontSize: 29,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: AppWeights.display,
                             color: colors.text,
                             height: 1.0)),
                     if (project.description.isNotEmpty)
@@ -731,7 +731,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                             const SizedBox(height: 20),
                             Text(project.name.toUpperCase(),
                                 style: knockoutHeading(
-                                    fontSize: 36, fontWeight: FontWeight.w800, color: colors.text)),
+                                    fontSize: 36, fontWeight: AppWeights.display, color: colors.text)),
                             if (project.description.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Text(project.description,

@@ -106,7 +106,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                         DateFormat('MMMM yyyy', 'es').format(_visibleMonth).toUpperCase(),
                         textAlign: TextAlign.center,
                         style: knockoutHeading(
-                            fontSize: 20, fontWeight: FontWeight.w800, color: colors.text)),
+                            fontSize: 20, fontWeight: AppWeights.display, color: colors.text)),
                   ),
                   IconButton(
                       icon: Icon(Icons.chevron_right, color: colors.text2),
@@ -132,7 +132,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
             children: [
               Text('Próximos eventos'.toUpperCase(),
                   style: knockoutHeading(
-                      fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+                      fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
               const SizedBox(height: 14),
               if (upcoming.isEmpty)
                 Text('No tienes próximos eventos.',
@@ -338,7 +338,7 @@ class _UpcomingRow extends StatelessWidget {
                   children: [
                     Text('${event.start.day}',
                         style: knockoutHeading(
-                            fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+                            fontSize: 22, fontWeight: AppWeights.display, color: color)),
                     Text(DateFormat('EEE', 'es').format(event.start).toUpperCase(),
                         style: TextStyle(
                             fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),

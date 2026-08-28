@@ -383,7 +383,7 @@ class _IdentityBand extends StatelessWidget {
                     child: Text(project!.name.toUpperCase(),
                         style: knockoutHeading(
                             fontSize: 104,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: AppWeights.display,
                             color: AppColors.gold.withValues(alpha: 0.16),
                             height: 1.0)),
                   ),
@@ -418,7 +418,7 @@ class _IdentityBand extends StatelessWidget {
                         : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
                             style: knockoutHeading(
                                 fontSize: 52,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: AppWeights.display,
                                 color: AppColors.ink)),
                   ),
                   const SizedBox(width: 24),
@@ -429,7 +429,7 @@ class _IdentityBand extends StatelessWidget {
                       children: [
                         Text(student.name.toUpperCase(),
                             style: knockoutHeading(
-                                fontSize: 44, fontWeight: FontWeight.w800, color: colors.text)),
+                                fontSize: 44, fontWeight: AppWeights.display, color: colors.text)),
                         const SizedBox(height: 6),
                         Row(
                           children: [
@@ -550,7 +550,7 @@ class _ProfileStatCard extends StatelessWidget {
           Text(stat.value,
               style: knockoutHeading(
                   fontSize: 40,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: AppWeights.display,
                   color: isPrimary ? colors.goldInk : colors.text,
                   height: 1.0)),
           const SizedBox(height: 6),
@@ -594,7 +594,7 @@ class _GroupCard extends StatelessWidget {
               ),
               const SizedBox(width: 11),
               Text(title.toUpperCase(),
-                  style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+                  style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
             ],
           ),
           const SizedBox(height: 10),
@@ -691,7 +691,7 @@ class _ProjectCard extends StatelessWidget {
                   child: Text('$odsNum',
                       style: knockoutHeading(
                           fontSize: 78,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: AppWeights.display,
                           color: Colors.white.withValues(alpha: 0.32),
                           height: 1.0)),
                 ),
@@ -710,7 +710,7 @@ class _ProjectCard extends StatelessWidget {
                   bottom: 14,
                   child: Text(project!.name.toUpperCase(),
                       style: knockoutHeading(
-                          fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white)),
+                          fontSize: 32, fontWeight: AppWeights.display, color: Colors.white)),
                 ),
               ],
             ),
@@ -808,7 +808,7 @@ class _CertificatesCard extends StatelessWidget {
               Icon(Icons.workspace_premium_outlined, size: 19, color: colors.goldInk),
               const SizedBox(width: 10),
               Text('Certificados'.toUpperCase(),
-                  style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+                  style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
             ],
           ),
           const SizedBox(height: 16),

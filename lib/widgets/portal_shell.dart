@@ -270,7 +270,7 @@ class TabBody extends StatelessWidget {
         Text(title.toUpperCase(),
             style: knockoutHeading(
                 fontSize: 30,
-                fontWeight: FontWeight.w800,
+                fontWeight: AppWeights.display,
                 color: AppColors.gold)),
         if (subtitle != null)
           Padding(
@@ -333,7 +333,7 @@ class TabBody extends StatelessWidget {
 
 /// Contenedor de pantalla con tema claro/oscuro propio (el header y la
 /// barra lateral del portal — [PortalShell] — siguen oscuros siempre: el
-/// logo de Enactus es blanco). Reproduce el patrón repetido en las 5
+/// wordmark de eduXaction es blanco). Reproduce el patrón repetido en las 5
 /// pantallas rediseñadas del portal estudiante
 /// (`design_handoff_portal_estudiante/README.md`): fondo `colors.bg`,
 /// buscador opcional + botón de tema, encabezado (punto con "glow" +
@@ -518,9 +518,9 @@ class _ContentScreenShellState extends State<ContentScreenShell>
               Text(widget.title.toUpperCase(),
                   style: knockoutHeading(
                       fontSize: 58,
-                      fontWeight: FontWeight.w800,
                       color: colors.goldInk,
-                      height: 0.94)),
+                      height: 1.00,
+                      letterSpacing: 58 * 0.004)),
               if (widget.subtitle != null) ...[
                 const SizedBox(height: 12),
                 Text(widget.subtitle!,

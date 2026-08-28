@@ -249,7 +249,10 @@ class _AnimatedValue extends StatelessWidget {
   Widget build(BuildContext context) {
     final match = RegExp(r'^(\d+)(.*)$').firstMatch(value);
     final style = knockoutHeading(
-        fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.textPrimary);
+        fontSize: 26,
+        color: AppColors.textPrimary,
+        height: 1.0,
+        letterSpacing: 0);
     if (match == null) return Text(value, style: style);
     final number = int.parse(match.group(1)!);
     final suffix = match.group(2)!;
@@ -410,7 +413,7 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(title!.toUpperCase(),
                 style: knockoutHeading(
-                    fontSize: 38, fontWeight: FontWeight.w800, color: c.text)),
+                    fontSize: 38, fontWeight: AppWeights.display, color: c.text)),
             const SizedBox(height: 16),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
@@ -530,8 +533,9 @@ class SectionTitle extends StatelessWidget {
       child: Text(text.toUpperCase(),
           style: knockoutHeading(
               fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary)),
+              color: AppColors.textPrimary,
+              height: 1.05,
+              letterSpacing: 26 * 0.012)),
     );
   }
 }

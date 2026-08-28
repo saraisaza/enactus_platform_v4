@@ -132,7 +132,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                             const SizedBox(height: 10),
                             Text('Estudiantes en el país'.toUpperCase(),
                                 style: knockoutHeading(
-                                    fontSize: 58, fontWeight: FontWeight.w800, color: colors.goldInk, height: 0.94)),
+                                    fontSize: 58, fontWeight: AppWeights.display, color: colors.goldInk, height: 0.94)),
                             const SizedBox(height: 12),
                             Text(
                                 'Dónde están los estudiantes registrados en eduXaction Colombia. '
@@ -373,7 +373,7 @@ class _CountUpStat extends StatelessWidget {
             curve: Curves.easeOutCubic,
             builder: (context, v, _) => Text('${v.round()}',
                 style: knockoutHeading(
-                    fontSize: 40, fontWeight: FontWeight.w800, color: primary ? colors.goldInk : colors.text, height: 1.0)),
+                    fontSize: 40, fontWeight: AppWeights.display, color: primary ? colors.goldInk : colors.text, height: 1.0)),
           ),
           const SizedBox(height: 6),
           Text(label, style: TextStyle(fontSize: 12.5, color: colors.text3)),
@@ -524,7 +524,7 @@ class _CityListCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Ciudades'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 4),
           Text(hint, style: TextStyle(fontSize: 12.5, color: colors.text3)),
           const SizedBox(height: 16),
@@ -635,7 +635,7 @@ class _CityRow extends StatelessWidget {
               width: 30,
               child: Text('${point.value}',
                   textAlign: TextAlign.right,
-                  style: knockoutHeading(fontSize: 19, fontWeight: FontWeight.w800, color: colors.text2)),
+                  style: knockoutHeading(fontSize: 19, fontWeight: AppWeights.display, color: colors.text2)),
             ),
           ],
         ),

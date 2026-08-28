@@ -229,7 +229,7 @@ class _ContinueCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(course.name.toUpperCase(),
                         style: knockoutHeading(
-                            fontSize: 38, fontWeight: FontWeight.w800, color: Colors.white)),
+                            fontSize: 38, fontWeight: AppWeights.display, color: Colors.white)),
                     if (lab != null) ...[
                       const SizedBox(height: 4),
                       Text(lab.name,
@@ -312,7 +312,7 @@ class _CourseProgressCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Progreso por curso'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 16),
           for (final c in courses)
             Padding(
@@ -461,7 +461,7 @@ class _PendingCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Pendientes'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           if (items.isEmpty)
             Text('¡Estás al día! No tienes pendientes.',
@@ -583,7 +583,7 @@ class _RecentActivityCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Actividad reciente'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: FontWeight.w800, color: colors.text)),
+              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           if (graded.isEmpty)
             Text('Aún no tienes entregas calificadas.',
@@ -608,7 +608,10 @@ class _RecentActivityCard extends StatelessWidget {
                             color: colors.goldSoft, borderRadius: BorderRadius.circular(14)),
                         child: Text(sub.grade!.toStringAsFixed(1),
                             style: knockoutHeading(
-                                fontSize: 26, fontWeight: FontWeight.w800, color: colors.goldInk)),
+                                fontSize: 26,
+                                color: colors.goldInk,
+                                height: 1.0,
+                                letterSpacing: 0)),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -692,7 +695,7 @@ class _ProjectCard extends StatelessWidget {
                       fontSize: 12, fontWeight: FontWeight.w700, color: colors.text3, letterSpacing: 1)),
               const SizedBox(height: 8),
               Text(project.name.toUpperCase(),
-                  style: knockoutHeading(fontSize: 30, fontWeight: FontWeight.w800, color: colors.text)),
+                  style: knockoutHeading(fontSize: 30, fontWeight: AppWeights.display, color: colors.text)),
               const SizedBox(height: 14),
               StageRail(accentColor: odsColor, colors: colors, currentIndex: currentIndex),
               if (project.impactIndicators.isNotEmpty) ...[

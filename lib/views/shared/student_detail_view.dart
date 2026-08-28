@@ -148,7 +148,7 @@ class _IdentityHeader extends StatelessWidget {
             children: [
               Text(student.name,
                   style: knockoutHeading(
-                      fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                      fontSize: 30, fontWeight: AppWeights.display, color: AppColors.textPrimary)),
               if (subtitleParts.isNotEmpty)
                 Text(subtitleParts.join(' · '),
                     style: const TextStyle(fontSize: 13.5, color: AppColors.textMuted)),

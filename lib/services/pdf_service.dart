@@ -7,8 +7,8 @@ import '../models/models.dart';
 
 /// Genera certificados en PDF con el logo institucional.
 class PdfService {
-  static const _gold = PdfColor.fromInt(0xFFFF6D29);
-  static const _dark = PdfColor.fromInt(0xFF161316);
+  static const _gold = PdfColor.fromInt(0xFFFA6A1E);
+  static const _dark = PdfColor.fromInt(0xFF08080A);
   static const _slate = PdfColor.fromInt(0xFF453027);
 
   /// Construye el documento del certificado.

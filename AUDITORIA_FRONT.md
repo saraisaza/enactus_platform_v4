@@ -10,8 +10,8 @@
 | **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | `431c67a` |
 | **Admin** | ✅ Ciclo cerrado en verde — ver detalle abajo | `34f600b` |
 | **Mentor** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f1edbeb` |
-| **Asesor Académico** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| Empresa | No empezado | — |
+| **Asesor Académico** | ✅ Ciclo cerrado en verde — ver detalle abajo | `04e27c2` |
+| **Empresa** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Donante | No empezado | — |
 | Público / Auth | No empezado | — |
 
@@ -139,6 +139,46 @@ Mismo patrón: un único punto de corrección.
 `flutter test` (2/2), `flutter build web --release` (compila). En vivo:
 login real como Asesor → "Seguimiento Estudiantes" → clic en estudiante →
 `/usuarios/alum1` con perfil real. 0 excepciones de consola.
+
+### Portal Empresa — completado
+
+El portal con más tarjetas MUERTAS reales de toda la auditoría (1.4) — 6
+puntos corregidos, todos en `lib/views/company/company_portal.dart`:
+
+- "Mis Laboratorios" → "Contenido del laboratorio": cada curso ahora
+  navega a `/cursos/:id` (antes sin `onTap` en absoluto).
+- "Mis Laboratorios" → "Participantes y su avance": pasó de
+  `StudentDetailView` push-only a `/usuarios/:id`.
+- "Mis Laboratorios" → "Mentores y su labor": cada mentor ahora navega a
+  `/usuarios/:id` (antes sin `onTap`).
+- "Estudiantes Patrocinados" (`_CompanyStudents`): pasó de
+  `StudentDetailView` push-only a `/usuarios/:id`.
+- "Mi Equipo LXD" (pestaña completa): cada LXD ahora navega a
+  `/usuarios/:id` (antes sin `onTap` en ninguna fila).
+- "Mi Equipo Mentor" (pestaña completa): cada mentor ahora navega a
+  `/usuarios/:id` (antes sin `onTap` en ninguna fila). El botón "Asignar
+  cursos" de al lado (acción de edición real) no se tocó.
+
+Sin `GestureDetector`/`MouseRegion` sueltos — accesibilidad de teclado ya
+resuelta por el fix compartido.
+
+**Nota verificada, no corregida:** al abrir un curso desde este portal
+(rol no-estudiante, sin `studentId`), la barra de progreso muestra 0% y el
+botón de completar lección queda habilitado — mismo comportamiento que
+tenía la pantalla para cualquier rol no-estudiante que llegara a
+`/cursos/:id` sin pasar `studentId` (Admin, LXD, etc.), de antes de este
+trabajo. No es el bug 1.2 (que era mostrar el progreso de la persona
+EQUIVOCADA) — acá simplemente no hay ningún estudiante real involucrado,
+así que no hay identidad que confundir. Lo señalo por transparencia, no lo
+amplié a "bloquear completar lecciones para todo rol no-estudiante" porque
+no estaba en el alcance de lo reportado en la Fase 0.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como Empresa (Bancolombia), recorridas las 6 correcciones una
+por una — cada clic confirmado con la URL resultante real (`/cursos/crs_ia_1`,
+`/usuarios/lxd1`, `/usuarios/ment1`, `/usuarios/alum1`). 0 excepciones de
+consola en las ~8 rutas recorridas.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -342,16 +382,16 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
 | Proyectos | Tarjeta de proyecto | Sí | `/proyectos/:id` | Sí | OK |
-| Dashboard de Impacto | 7× `StatTile` | No | — | — | MUERTA ×7 — ver 1.3 |
+| Dashboard de Impacto | 7× `StatTile` | No (decisión de alcance) | — | — | Contadores agregados — ver nota en tabla 3.3 |
 | Laboratorios | Banner "horas patrocinadas" | No | — | Sí, informativo | OK (no es una entidad) |
 | Laboratorios | Tarjeta "Objetivos" del lab | No | — | Sí, informativo | OK (no es una entidad con detalle propio) |
-| Laboratorios | "Contenido del laboratorio", fila de curso | **No** | — | — | **MUERTA** — ver 1.4 (inconsistente: 2 secciones más abajo, en el mismo archivo, "Participantes" sí navega) |
+| Laboratorios | "Contenido del laboratorio", fila de curso | Sí ✅ *(corregido)* | `/cursos/:id` | Sí | **OK** |
 | Laboratorios | "Objetivos de la Ruta de Impacto", tarjeta de fase | No | — | Sí, informativo con contador real | OK |
-| Laboratorios | "Participantes y su avance", fila de estudiante | Sí | `StudentDetailView` push-only | Sí | PARCIAL (sin ruta con nombre) |
-| Laboratorios | "Mentores y su labor", fila de mentor | **No** | — | — | **MUERTA** — ver 1.4 |
-| Patrocinados | Fila de estudiante | Sí | `StudentDetailView` push-only | Sí | PARCIAL |
-| Mi Equipo LXD | Cada LXD | **No** | — | — | **MUERTA** — ver 1.4 |
-| Mi Equipo Mentor | Cada Mentor | **No** | — | — | **MUERTA** — ver 1.4 |
+| Laboratorios | "Participantes y su avance", fila de estudiante | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
+| Laboratorios | "Mentores y su labor", fila de mentor | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
+| Patrocinados | Fila de estudiante | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
+| Mi Equipo LXD | Cada LXD | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
+| Mi Equipo Mentor | Cada Mentor | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
 
 ### 3.7 Portal Donante
 

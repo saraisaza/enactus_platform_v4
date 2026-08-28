@@ -10,9 +10,10 @@ import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
-import '../shared/student_detail_view.dart';
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
+import '../shared/user_detail_view.dart';
+import '../student/course_detail_view.dart';
 
 /// Portal corporativo: indicadores de impacto y laboratorio patrocinado.
 class CompanyPortal extends StatelessWidget {
@@ -428,6 +429,11 @@ class _CompanyLabSection extends StatelessWidget {
               child: HoverCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 12),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.courses}/${c.id}'),
+                        builder: (_) => CourseDetailView(courseId: c.id))),
                 child: Row(
                   children: [
                     const Icon(Icons.video_library_outlined,
@@ -520,8 +526,11 @@ class _CompanyLabSection extends StatelessWidget {
               child: HoverCard(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${s.id}'),
+                        builder: (_) => UserDetailView(userId: s.id))),
                 child: Row(
                   children: [
                     SizedBox(
@@ -549,6 +558,11 @@ class _CompanyLabSection extends StatelessWidget {
               child: HoverCard(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${m.id}'),
+                        builder: (_) => UserDetailView(userId: m.id))),
                 child: Row(
                   children: [
                     const Icon(Icons.psychology_alt_outlined,
@@ -598,8 +612,11 @@ class _CompanyStudents extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${s.id}'),
+                        builder: (_) => UserDetailView(userId: s.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(s.name),
@@ -677,6 +694,11 @@ class _CompanyLxdTeam extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${lxd.id}'),
+                        builder: (_) => UserDetailView(userId: lxd.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(lxd.name),
@@ -848,6 +870,11 @@ class _CompanyMentorTeam extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: HoverCard(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        settings: RouteSettings(name: '${AppRoutes.users}/${mentor.id}'),
+                        builder: (_) => UserDetailView(userId: mentor.id))),
                 child: Row(
                   children: [
                     InitialsAvatar(mentor.name),

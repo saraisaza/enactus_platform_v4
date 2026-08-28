@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787951143701,
+      "tag": "0000_calm_thena",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787951233514,
+      "tag": "0001_completeness",
+      "breakpoints": true
+    }
+  ]
+}

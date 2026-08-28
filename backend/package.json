@@ -21,6 +21,7 @@
     "dev": "tsx watch src/local.ts"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.9.10",
     "jose": "^6.1.0",

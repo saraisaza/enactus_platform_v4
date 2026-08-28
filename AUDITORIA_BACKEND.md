@@ -414,7 +414,7 @@ personalizó** — detecta "sin tocar" por `subtitle` vacío + `competencies` va
 
 Con la BD vacía siembra, en este orden:
 
-**Usuarios (13).** 2 superadmin (`sa1`, `sa2`) · 1 admin (`adm1`) · 3 lxd
+**Usuarios (16).** 2 superadmin (`sa1`, `sa2`) · 1 admin (`adm1`) · 3 lxd
 (`lxd1` Bancolombia/IA, `lxd2` EPM/agua, `lxd3` Bancolombia/impacto) · 1 mentor
 (`ment1`) · 1 advisor (`adv1`, Uniandes) · 1 company (`emp1` Bancolombia) ·
 1 donor (`don1`, `impactCode ENACTUS-2026-4589`) · 4 student (`est1`-`est4`) ·

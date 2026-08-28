@@ -7,7 +7,7 @@ verificación y pegado su salida real.
 |---|---|---|
 | 0 — Auditoría y requerimientos | ✅ Cerrada | 28 ago 2026 · aprobada |
 | 1 — Esquema Postgres | ✅ Cerrada | 28 ago 2026 |
-| 2 — Migraciones y seed | ⬜ Pendiente | — |
+| 2 — Migraciones y seed | ✅ Cerrada | 28 ago 2026 |
 | 3 — Auth y autorización | ⬜ Pendiente | — |
 | 4 — API REST | ⬜ Pendiente | — |
 | 5 — Cliente Flutter | ⬜ Pendiente | — |
@@ -237,3 +237,100 @@ marca nada como revertido.
 5. **Sin verificar contra RDS real.** Todo se probó contra PostgreSQL 16.15
    local. Las migraciones deberían aplicar igual en RDS, pero no lo puedo
    afirmar hasta correrlas allá — queda como primera tarea de la Fase 6.
+
+---
+
+## Fase 2 — Migraciones y seed ✅
+
+### Qué cambió
+
+`src/db/seed.ts` replica `lib/services/seed_service.dart`: **16 usuarios**
+(los 9 roles), 6 laboratorios con la Ruta real de `lab_ia`, 2 proyectos, 2
+equipos con checklist Expo, 9 cursos con 25 lecciones, el quiz de 4 tipos de
+pregunta, la actividad con rúbrica de 5 criterios, la encuesta, y la actividad
+de demostración (progreso, 3 entregas, 3 evidencias, 2 notificaciones, 4
+publicaciones de foro, contenido del sitio).
+
+**Ids determinísticos.** `seedId('est1')` deriva un UUID v5 estable de la clave
+que la entidad tenía en Hive (`src/db/seed-ids.ts`). `db:reset` dos veces da
+exactamente los mismos ids, así que una URL o un test escrito ayer sigue
+valiendo hoy, y las pruebas apuntan a las entidades por su nombre de siempre.
+
+**Contraseñas con bcrypt** (`bcryptjs`, cost 10). Las credenciales son las
+mismas del seed de Flutter porque son de demostración, pero ahora se guardan
+hasheadas: hay un test que confirma que el hash no es el texto plano y que
+`verifyPassword` acepta la correcta y rechaza otra.
+
+### Los tres agregados que pedía la fase
+
+El seed de Flutter no los tiene, y se armaron con entidades que ya existen —
+no con datos inventados:
+
+1. **`lxd1` con `can_grade_enactus = true`** y `lxd2` con los dos permisos en
+   `false`. Hace falta decirlo: hoy en la app **ningún** LXD puede calificar
+   Enactus ni emitir certificados, porque los tres usan el default implícito.
+2. **`est1` con la Ruta parcialmente completa**: termina el curso `crs_ia_1`
+   entero y la lectura propia del módulo 1 → ese módulo queda completo y el de
+   mentoría pendiente, así que la fase 1 sigue incompleta (1/2 módulos). Es el
+   estado que permite probar tanto el rechazo como la emisión del certificado.
+3. **`alum1` conserva el avance original** (2 de 6 lecciones), para tener un
+   segundo estudiante en el mismo laboratorio con menos avance.
+
+### Dos huecos del seed original que hubo que resolver
+
+- **La nota 4.5 de `sub1` no decía en qué escala estaba ni quién la puso.** El
+  CHECK `submissions_grade_has_scale_and_author` no la deja entrar así. Se
+  reconstruyó como `scale5` (entrega libre, sin actividad asociada) calificada
+  por `lxd1`, el LXD dueño del curso — el único que podía haberla puesto.
+- **Las evidencias no tenían proyecto.** Ahora `ev1` y `ev3`, que hablan
+  explícitamente de AquaVida, apuntan a `prj1`; `ev2` es un reporte trimestral
+  general y queda sin proyecto (la columna es nulable a propósito).
+
+### Cómo correrlo en local
+
+```bash
+cd backend
+npm run db:reset     # borra, migra y siembra
+npm run db:seed      # solo siembra (sobre un esquema ya migrado)
+```
+
+`db:reset` se niega a correr con `NODE_ENV=production`.
+
+### Verificación — salida real
+
+```
+$ npm run db:reset
+Reiniciando postgres://***@localhost:5432/enactus_dev…
+Esquema recreado. Sembrando…
+Base lista.
+
+$ psql "$DATABASE_URL" -c "SELECT role, count(*) FROM users GROUP BY role;"
+    role    | count
+------------+-------
+ superadmin |     2
+ admin      |     1
+ advisor    |     1
+ donor      |     1
+ lxd        |     3
+ mentor     |     1
+ company    |     1
+ student    |     5
+ alumni     |     1
+(9 rows)          ← los 9 roles presentes
+
+$ npm test
+ ✓ tests/completeness.test.ts        (16 tests)
+ ✓ tests/schema-constraints.test.ts  (13 tests)
+ ✓ tests/seed.test.ts                (14 tests)
+ Test Files  3 passed (3)
+      Tests  43 passed (43)
+```
+
+Los tests de completitud corren contra el seed y confirman el estado parcial:
+fase 1 en 1/2 módulos, curso `crs_ia_1` al 100% para `est1` y al 33% para
+`alum1`, Ruta incompleta.
+
+### Pendiente
+
+- La auditoría decía "13 usuarios" en su resumen del seed; el desglose que la
+  acompañaba sumaba 16, que es lo correcto. Corregido en AUDITORIA_BACKEND.md.

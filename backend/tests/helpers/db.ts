@@ -4,6 +4,8 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
 import * as schema from '../../src/db/schema';
+import { seed } from '../../src/db/seed';
+import { seedId } from '../../src/db/seed-ids';
 
 const url = process.env.TEST_DATABASE_URL;
 if (!url) {
@@ -39,4 +41,15 @@ export async function resetTestDatabase() {
   }
 }
 
-export { schema };
+/** Esquema limpio + el seed completo, para las pruebas que necesitan datos. */
+export async function seedTestDatabase() {
+  await resetTestDatabase();
+  const sql = makeTestClient();
+  try {
+    await seed(drizzle(sql, { schema, casing: 'snake_case' }));
+  } finally {
+    await sql.end();
+  }
+}
+
+export { schema, seedId };

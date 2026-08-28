@@ -1,0 +1,190 @@
+import { and, eq, isNull, sql as raw } from 'drizzle-orm';
+import { Hono } from 'hono';
+import { z } from 'zod';
+
+import type { Database } from '../db/client';
+import { refreshTokens, users } from '../db/schema';
+import { publicUser } from '../lib/dto';
+import { badRequest, unauthorized } from '../lib/errors';
+import {
+  generateRefreshToken,
+  hashRefreshToken,
+  signAccessToken,
+  ttlToMs,
+} from '../lib/jwt';
+import { verifyPassword } from '../lib/password';
+import { requireAuth, currentUser } from '../middleware/auth';
+import type { AppEnv } from '../middleware/context';
+import { rateLimit } from '../middleware/rate-limit';
+import { env } from '../env';
+
+const loginSchema = z.object({
+  email: z.string().trim().min(1, 'El correo es obligatorio.'),
+  password: z.string().min(1, 'La contraseña es obligatoria.'),
+});
+
+const refreshSchema = z.object({
+  refreshToken: z.string().min(1, 'Falta el refresh token.'),
+});
+
+export const authRoutes = new Hono<AppEnv>();
+
+/**
+ * Límite de intentos de login: 10 por IP+correo cada 5 minutos.
+ *
+ * Se agrupa por IP **y** correo para que un atacante que prueba contraseñas
+ * contra una cuenta conocida se frene, sin bloquear a toda una universidad
+ * que sale por la misma IP.
+ */
+authRoutes.use(
+  '/login',
+  rateLimit({
+    max: 10,
+    windowMs: 5 * 60 * 1000,
+    keyOf: (c, body) => {
+      const email =
+        typeof body === 'object' && body !== null && 'email' in body
+          ? String(body.email).toLowerCase()
+          : '';
+      return `login:${c.get('requestIp')}:${email}`;
+    },
+  }),
+);
+
+authRoutes.post('/login', async (c) => {
+  const { email, password } = loginSchema.parse(await c.req.json());
+  const db = c.get('db');
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(
+      and(
+        raw`lower(${users.email}) = lower(${email})`,
+        isNull(users.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  // Mismo mensaje exista o no la cuenta: si dijéramos "ese correo no existe"
+  // estaríamos regalando un enumerador de usuarios.
+  const invalid = unauthorized('Correo o contraseña incorrectos.');
+  if (!user) {
+    // Se compara igual contra un hash falso para que el tiempo de respuesta
+    // no delate si la cuenta existe.
+    await verifyPassword(password, '$2b$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidi');
+    throw invalid;
+  }
+  if (!(await verifyPassword(password, user.passwordHash))) throw invalid;
+
+  const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
+  // Campos explícitos: `tokens` trae además `refreshTokenId`, que es interno
+  // y no tiene por qué salir en la respuesta.
+  return c.json({
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    expiresIn: tokens.expiresIn,
+    user: publicUser(user),
+  });
+});
+
+/**
+ * Refresh con rotación: el token usado se marca como reemplazado y se emite
+ * uno nuevo. Si llega un token YA revocado, es señal de que alguien está
+ * reusando uno robado, así que se revoca la cadena entera del usuario y hay
+ * que volver a iniciar sesión.
+ */
+authRoutes.post('/refresh', async (c) => {
+  const { refreshToken } = refreshSchema.parse(await c.req.json());
+  const db = c.get('db');
+  const hash = hashRefreshToken(refreshToken);
+
+  const [stored] = await db
+    .select()
+    .from(refreshTokens)
+    .where(eq(refreshTokens.tokenHash, hash))
+    .limit(1);
+
+  if (!stored) throw unauthorized('Refresh token inválido.');
+
+  if (stored.revokedAt) {
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date(), updatedAt: new Date() })
+      .where(
+        and(
+          eq(refreshTokens.userId, stored.userId),
+          isNull(refreshTokens.revokedAt),
+        ),
+      );
+    throw unauthorized(
+      'Ese refresh token ya se había usado. Por seguridad se cerraron todas las sesiones.',
+    );
+  }
+
+  if (stored.expiresAt.getTime() <= Date.now()) {
+    throw unauthorized('El refresh token expiró. Iniciá sesión de nuevo.');
+  }
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.id, stored.userId), isNull(users.deletedAt)))
+    .limit(1);
+  if (!user) throw unauthorized('La cuenta ya no existe.');
+
+  const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
+  await db
+    .update(refreshTokens)
+    .set({
+      revokedAt: new Date(),
+      replacedBy: tokens.refreshTokenId,
+      updatedAt: new Date(),
+    })
+    .where(eq(refreshTokens.id, stored.id));
+
+  return c.json({
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    expiresIn: tokens.expiresIn,
+    user: publicUser(user),
+  });
+});
+
+authRoutes.post('/logout', async (c) => {
+  const parsed = refreshSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) throw badRequest('Falta el refresh token.');
+  const db = c.get('db');
+  await db
+    .update(refreshTokens)
+    .set({ revokedAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(refreshTokens.tokenHash, hashRefreshToken(parsed.data.refreshToken)),
+        isNull(refreshTokens.revokedAt),
+      ),
+    );
+  // Siempre 204, exista o no el token: cerrar sesión nunca falla.
+  return c.body(null, 204);
+});
+
+authRoutes.get('/me', requireAuth, (c) => c.json(publicUser(currentUser(c))));
+
+/** Emite el par de tokens y guarda el refresh hasheado. */
+async function issueTokens(db: Database, ip: string, userId: string, role: string) {
+  const accessToken = await signAccessToken({ sub: userId, role });
+  const { token, hash } = generateRefreshToken();
+  const expiresAt = new Date(Date.now() + ttlToMs(env.REFRESH_TOKEN_TTL));
+
+  const [row] = await db
+    .insert(refreshTokens)
+    .values({ userId, tokenHash: hash, expiresAt, ip })
+    .returning({ id: refreshTokens.id });
+
+  return {
+    accessToken,
+    refreshToken: token,
+    refreshTokenId: row?.id ?? null,
+    expiresIn: Math.floor(ttlToMs(env.ACCESS_TOKEN_TTL) / 1000),
+  };
+}

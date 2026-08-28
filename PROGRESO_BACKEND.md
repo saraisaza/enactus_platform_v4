@@ -8,7 +8,7 @@ verificación y pegado su salida real.
 | 0 — Auditoría y requerimientos | ✅ Cerrada | 28 ago 2026 · aprobada |
 | 1 — Esquema Postgres | ✅ Cerrada | 28 ago 2026 |
 | 2 — Migraciones y seed | ✅ Cerrada | 28 ago 2026 |
-| 3 — Auth y autorización | ⬜ Pendiente | — |
+| 3 — Auth y autorización | ✅ Cerrada | 28 ago 2026 |
 | 4 — API REST | ⬜ Pendiente | — |
 | 5 — Cliente Flutter | ⬜ Pendiente | — |
 | 6 — Infraestructura y CI/CD | ⬜ Pendiente | — |
@@ -334,3 +334,119 @@ fase 1 en 1/2 módulos, curso `crs_ia_1` al 100% para `est1` y al 33% para
 
 - La auditoría decía "13 usuarios" en su resumen del seed; el desglose que la
   acompañaba sumaba 16, que es lo correcto. Corregido en AUDITORIA_BACKEND.md.
+
+---
+
+## Fase 3 — Auth y autorización ✅
+
+### Endpoints
+
+| Método | Ruta | Qué hace |
+|---|---|---|
+| POST | `/auth/login` | correo + contraseña → access (12 h) + refresh |
+| POST | `/auth/refresh` | rota el refresh y emite un par nuevo |
+| POST | `/auth/logout` | revoca el refresh; siempre 204 |
+| GET | `/auth/me` | usuario de la sesión |
+| GET | `/health` | sin sesión |
+
+### Decisiones que importan
+
+**El access token dura 12 h, igual que la sesión de Flutter** hoy
+(`AuthProvider.sessionDuration`), para que el cambio de backend no cambie el
+comportamiento que la gente ya conoce.
+
+**`requireAuth` carga el usuario de la base en cada petición**, no solo
+verifica la firma. No es redundante: con un token de 12 h, sin esa consulta
+una cuenta eliminada —o alguien a quien le acaban de quitar `can_grade`—
+seguiría teniendo acceso hasta que el token venciera. **Los permisos se leen
+del registro vivo, nunca del claim.** Es la respuesta a la observación 3 de la
+auditoría.
+
+**Refresh con rotación y detección de reuso.** Cada uso emite un par nuevo y
+marca el anterior como reemplazado. Si llega un refresh **ya revocado**, se
+interpreta como token robado y se revocan **todas** las sesiones de esa
+persona. Hay un test que lo comprueba: se rota el token de una sesión, se
+reusa el viejo, y la *otra* sesión —que no tenía nada que ver— también queda
+cerrada.
+
+**El refresh se guarda hasheado (SHA-256), nunca en claro.** Filtrar la tabla
+`refresh_tokens` no permite iniciar sesión con ella. Hay un test que busca el
+token literal en la tabla y confirma que no está.
+
+**Login que no delata cuentas.** Mismo mensaje y mismo tiempo de respuesta
+exista o no el correo — si no, el endpoint es un enumerador de usuarios. Con
+un correo inexistente se compara igual contra un hash falso para no acortar la
+respuesta.
+
+**`assertCanGrade` distingue los dos contextos.** Open Learning y Enactus por
+separado, contra el registro vivo. Admin y superadmin califican sin pasar por
+el permiso (decisión C.5), y queda en `audit_log`.
+
+**`requireEnactus` devuelve 403, no una respuesta vacía.** Una respuesta vacía
+haría ver un bug de permisos como si fuera "no hay datos".
+
+### Rate limiting — con una limitación que hay que decir
+
+`/auth/login` acepta 10 intentos por **IP + correo** cada 5 minutos. Se agrupa
+por los dos para frenar a quien prueba contraseñas contra una cuenta conocida
+sin bloquear a toda una universidad que sale por la misma IP.
+
+**El contador vive en memoria del proceso.** En Lambda cada instancia tiene la
+suya, así que con N instancias vivas el límite efectivo es N veces el
+configurado: esto frena un ataque ingenuo desde una IP, **no uno distribuido**.
+El límite de verdad va en API Gateway (throttling) o WAF — anotado para la
+Fase 6. Se implementó igual porque es la diferencia entre "cualquiera puede
+probar mil contraseñas por segundo" y "no puede".
+
+### Formato de error, único en toda la API
+
+```json
+{ "error": { "code": "forbidden", "message": "…", "details": … } }
+```
+
+`code` es el identificador estable que el cliente Flutter va a mirar; `message`
+es para la persona. Un error inesperado se registra entero en el log del
+servidor y al cliente le llega un mensaje genérico — nunca un detalle interno
+de PostgreSQL.
+
+### Verificación — salida real
+
+```
+$ npm run typecheck   → limpio
+$ npm run lint        → limpio
+$ npm test
+ ✓ tests/auth.test.ts               (36 tests)
+ ✓ tests/seed.test.ts               (14 tests)
+ ✓ tests/completeness.test.ts       (16 tests)
+ ✓ tests/schema-constraints.test.ts (13 tests)
+ Test Files  4 passed (4)
+      Tests  79 passed (79)
+```
+
+Y contra el servidor corriendo (`npm run dev`):
+
+```
+GET  /health                       → {"status":"ok",…}
+POST /auth/login  (correcta)       → accessToken + refreshToken + user
+POST /auth/login  (incorrecta)     → HTTP 401
+GET  /auth/me     (con token)      → el usuario, SIN passwordHash
+GET  /auth/me     (sin token)      → HTTP 401
+GET  /no-existe                    → {"error":{"code":"not_found",…}}
+```
+
+El `exp` del token emitido es exactamente `iat + 43200` (12 h).
+
+### Cobertura de los tests pedidos
+
+| Pedido | Dónde |
+|---|---|
+| Login correcto e incorrecto | ✅ `auth.test.ts` |
+| Token expirado → 401 | ✅ (se firma uno vencido con `signAccessTokenWithExpiry`) |
+| Refresh rota el anterior | ✅ + detección de reuso |
+| Cada rol contra endpoint protegido | ✅ los 9 roles contra `requireRole` |
+| `can_grade = false` → 403 | ✅ con `lxd2` del seed |
+| Un estudiante no lee datos de otro | ✅ `assertSelfOr` por HTTP |
+
+Los tres últimos se ejercitan sobre rutas de prueba que montan los middlewares
+reales, porque los endpoints de negocio llegan en la Fase 4. Cuando existan,
+las mismas guardias se prueban sobre ellos.

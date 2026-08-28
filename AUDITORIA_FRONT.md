@@ -6,8 +6,8 @@
 
 | Portal | Estado | Commit |
 |---|---|---|
-| **Estudiante** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
-| LXD | No empezado | — |
+| **Estudiante** | ✅ Ciclo cerrado en verde — ver detalle abajo | `f8e3dce` |
+| **LXD** | ✅ Ciclo cerrado en verde — ver detalle abajo | (pendiente de commit en este mismo cambio) |
 | Admin | No empezado | — |
 | Mentor | No empezado | — |
 | Asesor Académico | No empezado | — |
@@ -44,6 +44,35 @@ Cambios de infraestructura compartida (usados por Estudiante ahora; el resto de 
 **No verificado todavía / fuera de este ciclo** (quedan explícitamente para cuando les toque turno, no se tocaron sus archivos):
 - Los 8 sitios `StudentDetailView` push-only en **otros** portales (Asesor, Admin, Mentor, BuscaTalento, LXD, Donante, Empresa×2) — seguirán funcionando (no se rompió nada), pero no se migraron a la ruta con nombre `/usuarios/:id` porque están en archivos de otros portales.
 - Widget tests (pantallas de detalle renderizan con datos válidos / muestran error con ID inválido / navegación desde tarjeta) — no se agregaron todavía; quedan pendientes, ver sección de Tests más abajo antes del cierre general.
+
+### Portal LXD — completado
+
+Mucho más liviano que Estudiante: `lxd_portal.dart` no tenía ningún patrón
+`GestureDetector`/`MouseRegion` suelto (todo pasa por `HoverCard`), así que
+la accesibilidad de teclado ya quedó resuelta gratis con el fix compartido
+del portal Estudiante — no hubo que tocar nada para eso acá.
+
+- **`lib/views/lxd/lxd_portal.dart`**: la fila de estudiante en la `DataTable`
+  de "Mis Estudiantes" (`onSelectChanged`) pasó de `StudentDetailView`
+  push-only a `/usuarios/:id` (misma corrección que en Estudiante — cierra
+  el hallazgo de "PARCIAL: sin ruta con nombre" de la tabla 3.2).
+- El resto de "Mis Estudiantes", "Proyectos" (`ProjectSummaryCard`),
+  "Calificaciones", "Certificaciones" y "Mi Perfil" ya estaban bien: son
+  paneles de acción real (calificar, emitir certificado) o formularios, no
+  tarjetas que debieran navegar a una entidad — no se tocaron.
+- **Verificado en profundidad lo que la Fase 0 había dejado "no verificado"**:
+  los botones "Constructor" (`CourseEditorView`) y "Seguimiento"
+  (`CourseTrackingView`) de cada curso en "Mis Cursos" — confirmado en vivo
+  que ambos cargan el curso real (formulario prellenado con sus datos, y
+  tabla de seguimiento con estudiantes/progreso/notas reales), no son
+  pantallas rotas ni vacías.
+
+**Verificación ejecutada:** `flutter analyze` (19 issues, mismo baseline),
+`flutter test` (2/2), `flutter build web --release` (compila). En vivo:
+login real como LXD, clic en fila de estudiante → `/usuarios/alum1` con
+perfil real, clic en "Constructor" → formulario del curso real, clic en
+"Seguimiento" → tabla de estudiantes con progreso/notas reales y gráficos.
+0 excepciones de consola.
 
 ## 0. Metodología (léela antes que la tabla)
 
@@ -197,13 +226,15 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 
 | Pestaña | Componente | ¿Navega? | ¿A dónde? | ¿Destino con datos reales? | Estado |
 |---|---|---|---|---|---|
-| Mis Estudiantes | Fila de la `DataTable` | Sí | `StudentDetailView` push-only | Sí | PARCIAL (sin ruta con nombre, ver 1.5) |
+| Mis Estudiantes | Fila de la `DataTable` | Sí ✅ *(corregido)* | `/usuarios/:id` | Sí | **OK** |
 | Proyectos | `ProjectSummaryCard` | Sí | `/proyectos/:id` | Sí | OK |
-| Mis Cursos | `_CourseAdminCard`, botón "Constructor" | Sí | `CourseEditorView(courseId)` | No auditado en profundidad (ver metodología) | No verificado |
-| Mis Cursos | `_CourseAdminCard`, botón "Seguimiento" | Sí | `CourseTrackingView(courseId)` | No auditado en profundidad | No verificado |
+| Mis Cursos | `_CourseAdminCard`, botón "Constructor" | Sí | `CourseEditorView(courseId)` | Sí ✅ *(verificado en vivo)* | **OK** |
+| Mis Cursos | `_CourseAdminCard`, botón "Seguimiento" | Sí | `CourseTrackingView(courseId)` | Sí ✅ *(verificado en vivo)* | **OK** |
 | Mis Cursos | `_CourseAdminCard`, botón "Vincular a Ruta de Impacto" | Diálogo | — | Sí | OK |
 | Calendario | Eventos Open Learning | Acción (CRUD inline) | — | Sí | OK |
-| Calificaciones | No auditado en profundidad | — | — | — | No verificado |
+| Calificaciones | Tarjeta de entrega + botón "Calificar/Editar" | Diálogo (acción real) | — | Sí | OK |
+| Certificaciones | Formulario de emisión + lista de emitidos | — | — | Sí | OK (no son entidades navegables) |
+| Mi Perfil | Tarjeta de datos propios | — | — | Sí | OK (perfil propio, sin necesidad de navegar) |
 
 ### 3.3 Portal Admin
 

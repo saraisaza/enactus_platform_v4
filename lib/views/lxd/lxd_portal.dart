@@ -7,13 +7,14 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/constants.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/link_to_ruta_dialog.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/communication_resources_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectSummaryCard;
-import '../shared/student_detail_view.dart';
+import '../shared/user_detail_view.dart';
 import 'course_editor_view.dart';
 import 'course_tracking_view.dart';
 
@@ -202,8 +203,11 @@ class _LxdDashboardState extends State<_LxdDashboard> {
           states.contains(WidgetState.hovered)
               ? AppColors.gold.withValues(alpha: 0.06)
               : null),
-      onSelectChanged: (_) => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => StudentDetailView(studentId: s.id))),
+      onSelectChanged: (_) => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings: RouteSettings(name: '${AppRoutes.users}/${s.id}'),
+              builder: (_) => UserDetailView(userId: s.id))),
       cells: [
         DataCell(Tooltip(
           message: summary,

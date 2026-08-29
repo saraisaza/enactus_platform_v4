@@ -115,14 +115,15 @@ labRoutes.get('/:id', async (c) => {
   // endpoint describe el laboratorio, no a quién lo está cursando.
   const phases = await db.execute<{
     id: string;
-    order_index: number;
+    orderIndex: number;
     title: string;
     description: string;
     deadline: string | null;
     objectives: unknown;
     modules: unknown;
   }>(sql`
-    select p.id, p.order_index, p.title, p.description, p.deadline::text,
+    select p.id, p.order_index as "orderIndex", p.title, p.description,
+           p.deadline::text as deadline,
            coalesce((select json_agg(json_build_object(
                         'id', o.id, 'category', o.category, 'text', o.text)
                       order by o.order_index)

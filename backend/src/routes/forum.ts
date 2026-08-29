@@ -75,23 +75,23 @@ forumRoutes.get('/', async (c) => {
 
   const rows = await db.execute<{
     id: string;
-    author_id: string;
-    author_name: string;
+    authorId: string;
+    authorName: string;
     body: string;
     category: string;
     pinned: boolean;
-    created_at: string;
-    reply_count: number;
-    like_count: number;
-    liked_by_me: boolean;
+    createdAt: string;
+    replyCount: number;
+    likeCount: number;
+    likedByMe: boolean;
   }>(sql`
-    select p.id, p.author_id, u.name as author_name, p.body,
-           p.category::text, p.pinned, p.created_at,
+    select p.id, p.author_id as "authorId", u.name as "authorName", p.body,
+           p.category::text as category, p.pinned, p.created_at as "createdAt",
            (select count(*)::int from forum_replies r
-             where r.post_id = p.id and r.deleted_at is null) as reply_count,
-           (select count(*)::int from forum_likes l where l.post_id = p.id) as like_count,
+             where r.post_id = p.id and r.deleted_at is null) as "replyCount",
+           (select count(*)::int from forum_likes l where l.post_id = p.id) as "likeCount",
            exists (select 1 from forum_likes l
-                    where l.post_id = p.id and l.user_id = ${user.id}) as liked_by_me
+                    where l.post_id = p.id and l.user_id = ${user.id}) as "likedByMe"
       from forum_posts p
       join users u on u.id = p.author_id
      where ${filtroCrudo}
@@ -118,12 +118,13 @@ forumRoutes.get('/:id', async (c) => {
 
   const replies = await db.execute<{
     id: string;
-    author_id: string;
-    author_name: string;
+    authorId: string;
+    authorName: string;
     body: string;
-    created_at: string;
+    createdAt: string;
   }>(sql`
-    select r.id, r.author_id, u.name as author_name, r.body, r.created_at
+    select r.id, r.author_id as "authorId", u.name as "authorName",
+           r.body, r.created_at as "createdAt"
       from forum_replies r
       join users u on u.id = r.author_id
      where r.post_id = ${post.id} and r.deleted_at is null

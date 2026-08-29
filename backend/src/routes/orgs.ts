@@ -108,18 +108,18 @@ projectRoutes.get('/:id', async (c) => {
   // Integrantes CON su rol dentro del proyecto: la brecha de modelo que
   // detectó la auditoría de frontend y que el esquema cerró.
   const team = await db.execute<{
-    group_id: string;
-    group_name: string;
-    user_id: string;
+    groupId: string;
+    groupName: string;
+    userId: string;
     name: string;
-    role_in_project: string;
+    roleInProject: string;
     university: string;
     career: string;
-    avatar_s3_key: string | null;
+    avatarS3Key: string | null;
   }>(sql`
-    select g.id as group_id, g.name as group_name,
-           u.id as user_id, u.name, gm.role_in_project,
-           u.university, u.career, u.avatar_s3_key
+    select g.id as "groupId", g.name as "groupName",
+           u.id as "userId", u.name, gm.role_in_project as "roleInProject",
+           u.university, u.career, u.avatar_s3_key as "avatarS3Key"
       from groups g
       join group_members gm on gm.group_id = g.id
       join users u on u.id = gm.user_id
@@ -239,11 +239,11 @@ groupRoutes.get('/:id', async (c) => {
   if (!group) throw notFound('No se encontró el equipo.');
 
   const members = await db.execute<{
-    user_id: string;
+    userId: string;
     name: string;
-    role_in_project: string;
+    roleInProject: string;
   }>(sql`
-    select u.id as user_id, u.name, gm.role_in_project
+    select u.id as "userId", u.name, gm.role_in_project as "roleInProject"
       from group_members gm
       join users u on u.id = gm.user_id
      where gm.group_id = ${group.id} and u.deleted_at is null

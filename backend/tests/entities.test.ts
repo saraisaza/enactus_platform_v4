@@ -81,11 +81,11 @@ describe('/projects', () => {
     expect(res.status).toBe(200);
     const p = await body<{
       ods: string[];
-      team: { name: string; role_in_project: string }[];
+      team: { name: string; roleInProject: string }[];
     }>(res);
     expect(p.ods).toContain('ods_6');
     expect(p.team).toHaveLength(3);
-    expect(p.team.map((m) => m.role_in_project)).toContain('leader');
+    expect(p.team.map((m) => m.roleInProject)).toContain('leader');
   });
 });
 
@@ -104,9 +104,9 @@ describe('/groups', () => {
     expect(res.status).toBe(200);
 
     const detalle = await req(`/groups/${seedId('grp2')}`, T.admin!);
-    const g = await body<{ members: { user_id: string; role_in_project: string }[] }>(detalle);
-    const est3 = g.members.find((m) => m.user_id === seedId('est3'));
-    expect(est3?.role_in_project).toBe('communications');
+    const g = await body<{ members: { userId: string; roleInProject: string }[] }>(detalle);
+    const est3 = g.members.find((m) => m.userId === seedId('est3'));
+    expect(est3?.roleInProject).toBe('communications');
   });
 
   it('un estudiante no puede cambiar los integrantes', async () => {
@@ -443,5 +443,34 @@ describe('/files/upload-url', () => {
       }),
     });
     expect(res.status).toBe(413);
+  });
+});
+
+describe('el contrato de la API es camelCase en TODAS las respuestas', () => {
+  it('ninguna respuesta filtra claves snake_case al cliente', async () => {
+    // El backend mezcla Drizzle (camelCase) con SQL crudo (snake_case). Si una
+    // consulta cruda se olvida de aliasar, el cliente Flutter tendría que
+    // manejar las dos formas. Esta prueba recorre las respuestas con SQL
+    // crudo y falla si aparece una clave con guión bajo.
+    //
+    // Se excluye /admin/backup a propósito: es un volcado de la base, y ahí
+    // los nombres de columna reales son justamente lo que se quiere.
+    const rutas = [
+      `/projects/${seedId('prj1')}`,
+      `/groups/${seedId('grp1')}`,
+      `/laboratories/${seedId('lab_ia')}`,
+      '/forum-posts',
+      `/forum-posts/${seedId('post1')}`,
+      `/students/${seedId('est1')}/ruta-progress`,
+    ];
+
+    const snake = /"[a-z]+(_[a-z0-9]+)+"\s*:/g;
+    for (const ruta of rutas) {
+      const res = await req(ruta, T.admin!);
+      expect(res.status, `${ruta} respondió ${res.status}`).toBe(200);
+      const raw = await res.text();
+      const encontradas = [...new Set(raw.match(snake) ?? [])];
+      expect(encontradas, `claves snake_case en ${ruta}`).toEqual([]);
+    }
   });
 });

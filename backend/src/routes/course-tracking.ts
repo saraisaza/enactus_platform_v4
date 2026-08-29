@@ -86,6 +86,8 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
     email: string;
     avatarS3Key: string | null;
     university: string;
+    career: string;
+    sponsorName: string | null;
     totalLessons: number;
     completedLessons: number;
     ratio: string;
@@ -97,7 +99,10 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
     note: string;
   }>(sql`
     select u.id, u.name, u.email, u.avatar_s3_key as "avatarS3Key",
-           u.university,
+           u.university, u.career,
+           -- El patrocinador, para agrupar el avance por empresa. Mismo
+           -- LEFT JOIN que resuelve sponsorName en /auth/me.
+           nullif(sp.company_name, '')             as "sponsorName",
            coalesce(cp.total_lessons, 0)::int      as "totalLessons",
            coalesce(cp.completed_lessons, 0)::int  as "completedLessons",
            coalesce(cp.ratio, 0)::text             as ratio,
@@ -127,6 +132,7 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
           join progress_lessons pl on pl.progress_id = p.id
          where p.student_id = u.id and p.course_id = a.course_id
       ) pl on true
+      left join users sp on sp.id = u.company_id and sp.deleted_at is null
       left join staff_notes n
              on n.student_id = u.id and n.course_id = a.course_id
      where a.course_id = ${course.id}
@@ -142,6 +148,8 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
       email: r.email,
       avatarS3Key: r.avatarS3Key,
       university: r.university,
+      career: r.career,
+      sponsorName: r.sponsorName,
       progress: {
         courseId: course.id,
         courseName: course.name,

@@ -311,6 +311,51 @@ describe('alta y edición', () => {
   });
 });
 
+describe('include=team,progress', () => {
+  it('trae equipo, patrocinador y avance en DOS consultas, no cuatro por fila',
+    async () => {
+      const page = await list(T.lxd!, '&include=team,progress');
+      expect(page.data.length).toBeGreaterThan(0);
+
+      const conEquipo = page.data.find(
+        (u) => (u as Record<string, unknown>).team !== null,
+      ) as Record<string, unknown> | undefined;
+      expect(conEquipo).toBeDefined();
+
+      const team = conEquipo!.team as Record<string, unknown>;
+      expect(team.projectName).toBeTruthy();
+      // La etapa va como identificador, no como etiqueta: el cliente traduce.
+      expect(team.projectStage).toMatch(/^[a-z_]+$/);
+
+      const progress = conEquipo!.overallProgress as Record<string, number>;
+      expect(progress.ratio).toBeGreaterThanOrEqual(0);
+      expect(progress.ratio).toBeLessThanOrEqual(1);
+      expect(progress.coursesDone).toBeLessThanOrEqual(progress.coursesTotal);
+    });
+
+  it('el avance general coincide con el promedio de sus cursos', async () => {
+    // Dos caminos al mismo dato: si discreparan, la tabla del LXD y la
+    // pantalla del estudiante dirían cosas distintas.
+    const page = await list(T.admin!, '&include=progress&role=student');
+    const fila = page.data.find((u) => u.id === seedId('est1')) as
+      | Record<string, unknown>
+      | undefined;
+    expect(fila).toBeDefined();
+
+    const [esperado] = await sql`
+      select coalesce(avg(ratio), 0)::float8 as ratio
+        from course_progress where student_id = ${seedId('est1')}
+    `;
+    const progress = fila!.overallProgress as Record<string, number>;
+    expect(progress.ratio).toBeCloseTo(esperado!.ratio, 4);
+  });
+
+  it('sin el include, no se agregan esos campos', async () => {
+    const page = await list(T.lxd!);
+    expect(page.data[0]).not.toHaveProperty('overallProgress');
+  });
+});
+
 describe('filtros', () => {
   it('por rol, aceptando varios', async () => {
     const page = await list(T.admin!, '&role=student,alumni');

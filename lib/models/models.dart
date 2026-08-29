@@ -81,9 +81,14 @@ class AppUser {
   /// terceros. En cualquier otro usuario es `null`.
   final UserTeam? team;
 
-  /// Nombre de la empresa que la patrocina, resuelto por el servidor. Mismo
-  /// alcance que [team]: solo en `GET /auth/me`.
+  /// Nombre de la empresa que la patrocina, resuelto por el servidor. Llega en
+  /// `GET /auth/me` y en `GET /users?include=team`.
   final String? sponsorName;
+
+  /// Avance general: el promedio de sus cursos. Solo con
+  /// `GET /users?include=progress` — lo usan las tablas de seguimiento del
+  /// LXD, el Mentor y el Asesor.
+  final OverallProgress? overallProgress;
 
   const AppUser({
     required this.id,
@@ -107,6 +112,7 @@ class AppUser {
     this.joinedAt,
     this.team,
     this.sponsorName,
+    this.overallProgress,
   });
 
   bool get isEnactusStudent => studentType == StudentType.enactus;
@@ -139,6 +145,10 @@ class AppUser {
             ? null
             : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
         sponsorName: j['sponsorName'] as String?,
+        overallProgress: j['overallProgress'] == null
+            ? null
+            : OverallProgress.fromJson(
+                Map<String, dynamic>.from(j['overallProgress'] as Map)),
       );
 
   Map<String, dynamic> toUpdateJson() => {
@@ -151,12 +161,18 @@ class AppUser {
       };
 }
 
-/// El equipo de una persona, tal como lo resuelve `GET /auth/me`.
+/// El equipo de una persona, tal como lo resuelve `GET /auth/me` o
+/// `GET /users?include=team`.
 class UserTeam {
   final String groupId;
   final String groupName;
   final String projectId;
   final String projectName;
+
+  /// Identificador de la etapa (`ideation`, …). La etiqueta la pone el
+  /// cliente con [ProjectStage.label]. Solo con `include=team`.
+  final String projectStage;
+
   final String roleInProject;
 
   const UserTeam({
@@ -164,17 +180,44 @@ class UserTeam {
     required this.groupName,
     required this.projectId,
     required this.projectName,
+    this.projectStage = 'ideation',
     this.roleInProject = 'member',
   });
 
   String get roleLabel => ProjectMemberRole.label(roleInProject);
+  String get stageLabel => ProjectStage.label(projectStage);
 
   factory UserTeam.fromJson(Map<String, dynamic> j) => UserTeam(
         groupId: (j['groupId'] as String?) ?? '',
         groupName: (j['groupName'] as String?) ?? '',
         projectId: (j['projectId'] as String?) ?? '',
         projectName: (j['projectName'] as String?) ?? '',
+        projectStage: (j['projectStage'] as String?) ?? 'ideation',
         roleInProject: (j['roleInProject'] as String?) ?? 'member',
+      );
+}
+
+/// Avance general de una persona: el promedio de sus cursos.
+///
+/// Sale de la misma vista de PostgreSQL que alimenta cada pantalla de
+/// estudiante, así que la tabla del LXD y el portal del estudiante no pueden
+/// discrepar.
+class OverallProgress {
+  /// 0..1.
+  final double ratio;
+  final int coursesTotal;
+  final int coursesDone;
+
+  const OverallProgress({
+    this.ratio = 0,
+    this.coursesTotal = 0,
+    this.coursesDone = 0,
+  });
+
+  factory OverallProgress.fromJson(Map<String, dynamic> j) => OverallProgress(
+        ratio: (j['ratio'] as num?)?.toDouble() ?? 0,
+        coursesTotal: (j['coursesTotal'] as num?)?.toInt() ?? 0,
+        coursesDone: (j['coursesDone'] as num?)?.toInt() ?? 0,
       );
 }
 

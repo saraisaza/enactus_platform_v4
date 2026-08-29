@@ -355,6 +355,9 @@ class DataProvider extends ChangeNotifier {
     String? laboratoryId,
     String? groupId,
     String? companyId,
+    /// `team` y/o `progress`: el equipo y el avance general de cada persona,
+    /// en dos consultas para toda la página en vez de cuatro por fila.
+    String? include,
   }) {
     final query = <String, dynamic>{
       'pageSize': 200,
@@ -362,6 +365,7 @@ class DataProvider extends ChangeNotifier {
       if (laboratoryId != null) 'laboratoryId': laboratoryId,
       if (groupId != null) 'groupId': groupId,
       if (companyId != null) 'companyId': companyId,
+      if (include != null) 'include': include,
     };
     final key = query.entries.map((e) => '${e.key}=${e.value}').join('&');
 

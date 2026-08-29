@@ -585,6 +585,11 @@ class CourseStudent {
   final String email;
   final String? avatarS3Key;
   final String university;
+  final String career;
+
+  /// Empresa que la patrocina, para agrupar el avance por patrocinador.
+  final String? sponsorName;
+
   final CourseProgress progress;
 
   /// `null` cuando esta persona no tiene ninguna entrega calificada. No es 0:
@@ -607,6 +612,8 @@ class CourseStudent {
     this.email = '',
     this.avatarS3Key,
     this.university = '',
+    this.career = '',
+    this.sponsorName,
     required this.progress,
     this.avgGrade,
     this.gradedCount = 0,
@@ -623,6 +630,8 @@ class CourseStudent {
         email: (j['email'] as String?) ?? '',
         avatarS3Key: j['avatarS3Key'] as String?,
         university: (j['university'] as String?) ?? '',
+        career: (j['career'] as String?) ?? '',
+        sponsorName: j['sponsorName'] as String?,
         progress: CourseProgress.fromJson(
             Map<String, dynamic>.from(j['progress'] as Map)),
         avgGrade: (j['avgGrade'] as num?)?.toDouble(),

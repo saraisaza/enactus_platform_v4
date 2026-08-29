@@ -248,6 +248,16 @@ paths:
         - { name: groupId, in: query, schema: { type: string, format: uuid } }
         - { name: companyId, in: query, schema: { type: string, format: uuid } }
         - { name: q, in: query, schema: { type: string }, description: 'Busca por nombre' }
+        - name: include
+          in: query
+          schema: { type: string }
+          description: |
+            `team` y/o `progress`, separados por coma. Agregan el equipo con su
+            proyecto y etapa, el patrocinador, y el avance general (promedio de
+            sus cursos) — en DOS consultas para toda la página.
+
+            Es lo que necesitan las tablas de seguimiento de LXD, Mentor y
+            Asesor: sin esto, cada fila haría cuatro peticiones.
       responses:
         '200': { description: Página de personas }
         '401': { $ref: '#/components/responses/Unauthorized' }

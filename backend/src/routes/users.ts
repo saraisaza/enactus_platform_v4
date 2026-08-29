@@ -6,7 +6,7 @@ import { auditLog, users } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
-import { paginated, paginationSchema } from '../lib/pagination';
+import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
 import {
   ADMIN_ROLES,
   currentUser,
@@ -37,6 +37,8 @@ const listQuery = paginationSchema.extend({
   groupId: z.uuid().optional(),
   companyId: z.uuid().optional(),
   q: z.string().trim().optional(),
+  /** `team` y/o `progress`. Ver el handler. */
+  include: z.string().optional(),
 });
 
 /**
@@ -172,7 +174,97 @@ userRoutes.get('/', async (c) => {
   ]);
 
   const shape = canSeeContactDetails(user) ? publicUser : limitedUser;
-  return c.json(paginated(rows.map(shape), total?.value ?? 0, query));
+  let data: Record<string, unknown>[] = rows.map(shape);
+
+  // `include=team,progress` agrega el equipo, el patrocinador y el avance
+  // general de cada persona, en DOS consultas para toda la página.
+  //
+  // Es lo que necesitan las tablas de seguimiento de LXD, Mentor y Asesor.
+  // Sin esto, cada fila haría cuatro peticiones: el equipo, el proyecto, el
+  // patrocinador y el avance — que es exactamente lo que hacía la versión con
+  // Hive, solo que contra memoria en vez de contra la red.
+  const include = parseInclude(query.include);
+  if (rows.length > 0 && (include.has('team') || include.has('progress'))) {
+    const ids = rows.map((r) => r.id);
+
+    if (include.has('team')) {
+      const teams = await db.execute<{
+        userId: string;
+        groupId: string;
+        groupName: string;
+        projectId: string;
+        projectName: string;
+        projectStage: string;
+        roleInProject: string;
+        sponsorName: string | null;
+      }>(sql`
+        select gm.user_id as "userId",
+               g.id as "groupId", g.name as "groupName",
+               pr.id as "projectId", pr.name as "projectName",
+               pr.stage as "projectStage",
+               gm.role_in_project as "roleInProject",
+               nullif(sp.company_name, '') as "sponsorName"
+          from group_members gm
+          join groups g on g.id = gm.group_id and g.deleted_at is null
+          join projects pr on pr.id = g.project_id and pr.deleted_at is null
+          join users u on u.id = gm.user_id
+          left join users sp on sp.id = u.company_id and sp.deleted_at is null
+         where gm.user_id = any(${sql.param(ids)}::uuid[])
+      `);
+      const byUser = new Map(teams.map((t) => [t.userId, t]));
+      data = data.map((u) => {
+        const team = byUser.get(u.id as string);
+        return {
+          ...u,
+          team: team
+            ? {
+                groupId: team.groupId,
+                groupName: team.groupName,
+                projectId: team.projectId,
+                projectName: team.projectName,
+                projectStage: team.projectStage,
+                roleInProject: team.roleInProject,
+              }
+            : null,
+          sponsorName: team?.sponsorName ?? null,
+        };
+      });
+    }
+
+    if (include.has('progress')) {
+      // Avance GENERAL: el promedio de sus cursos accesibles. Se calcula
+      // sobre `course_progress`, la misma vista que alimenta cada pantalla
+      // de estudiante — no hay una segunda definición de "cómo va".
+      const overall = await db.execute<{
+        studentId: string;
+        ratio: string;
+        coursesTotal: number;
+        coursesDone: number;
+      }>(sql`
+        select student_id as "studentId",
+               coalesce(avg(ratio), 0)::text            as ratio,
+               count(*)::int                            as "coursesTotal",
+               count(*) filter (where is_complete)::int as "coursesDone"
+          from course_progress
+         where student_id = any(${sql.param(ids)}::uuid[])
+         group by student_id
+      `);
+      const byStudent = new Map(overall.map((r) => [r.studentId, r]));
+      data = data.map((u) => {
+        const row = byStudent.get(u.id as string);
+        return {
+          ...u,
+          overallProgress: {
+            ratio: Number(row?.ratio ?? 0),
+            coursesTotal: row?.coursesTotal ?? 0,
+            coursesDone: row?.coursesDone ?? 0,
+          },
+        };
+      });
+    }
+  }
+
+  return c.json(paginated(data, total?.value ?? 0, query));
 });
 
 userRoutes.get('/:id', async (c) => {

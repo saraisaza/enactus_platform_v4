@@ -96,17 +96,28 @@ courseRoutes.get('/', async (c) => {
   ]);
 
   const include = parseInclude(query.include);
-  if (!include.has('modules')) {
-    return c.json(paginated(rows, total?.value ?? 0, query));
+
+  // Nombre del laboratorio y del creador SIEMPRE: una tarjeta de curso los
+  // muestra, y sin esto el cliente tendría que pedir un laboratorio y un
+  // usuario por cada tarjeta de la grilla.
+  let data: Record<string, unknown>[] = await withNames(db, rows);
+
+  // `include=progress` agrega el avance de QUIEN PREGUNTA. Es una consulta
+  // más, no una por tarjeta.
+  if (include.has('progress')) {
+    data = await withProgress(db, user.id, data);
   }
 
-  const withModules = await Promise.all(
-    rows.map(async (course) => ({
-      ...course,
-      modules: await loadModules(db, course.id, include.has('lessons')),
-    })),
-  );
-  return c.json(paginated(withModules, total?.value ?? 0, query));
+  if (include.has('modules')) {
+    data = await Promise.all(
+      data.map(async (course) => ({
+        ...course,
+        modules: await loadModules(db, course.id as string, include.has('lessons')),
+      })),
+    );
+  }
+
+  return c.json(paginated(data, total?.value ?? 0, query));
 });
 
 courseRoutes.get('/:id', async (c) => {
@@ -126,12 +137,83 @@ courseRoutes.get('/:id', async (c) => {
   if (!course) throw notFound('No se encontró el curso.');
 
   const include = parseInclude(c.req.query('include'));
-  if (!include.has('modules')) return c.json(course);
-  return c.json({
-    ...course,
-    modules: await loadModules(db, course.id, include.has('lessons')),
-  });
+  const [named] = await withNames(db, [course]);
+  let result: Record<string, unknown> = named ?? { ...course };
+
+  if (include.has('progress')) {
+    const [conProgreso] = await withProgress(db, user.id, [result]);
+    if (conProgreso) result = conProgreso;
+  }
+  if (include.has('modules')) {
+    result = {
+      ...result,
+      modules: await loadModules(db, course.id, include.has('lessons')),
+    };
+  }
+  return c.json(result);
 });
+
+/** Agrega `laboratoryName` y `creatorName` a una lista de cursos. */
+async function withNames(
+  db: Db,
+  rows: (typeof courses.$inferSelect)[],
+): Promise<Record<string, unknown>[]> {
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id);
+  const extra = await db.execute<{
+    id: string;
+    laboratoryName: string | null;
+    creatorName: string | null;
+  }>(sql`
+    select c.id,
+           l.name as "laboratoryName",
+           u.name as "creatorName"
+      from courses c
+      left join laboratories l on l.id = c.laboratory_id
+      left join users u on u.id = c.creator_id
+     where c.id in ${sql`(${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`}
+  `);
+  const byId = new Map(extra.map((e) => [e.id, e]));
+  return rows.map((r) => ({
+    ...r,
+    laboratoryName: byId.get(r.id)?.laboratoryName ?? null,
+    creatorName: byId.get(r.id)?.creatorName ?? null,
+  }));
+}
+
+/** Agrega el avance del estudiante a cada curso, en UNA consulta. */
+async function withProgress(
+  db: Db,
+  studentId: string,
+  rows: Record<string, unknown>[],
+): Promise<Record<string, unknown>[]> {
+  if (rows.length === 0) return [];
+  const progress = await db.execute<{
+    course_id: string;
+    total_lessons: number;
+    completed_lessons: number;
+    ratio: string;
+    is_complete: boolean;
+  }>(sql`
+    select course_id, total_lessons::int, completed_lessons::int,
+           ratio::text, is_complete
+      from course_progress where student_id = ${studentId}
+  `);
+  const byId = new Map(progress.map((p) => [p.course_id, p]));
+  return rows.map((r) => {
+    const p = byId.get(r.id as string);
+    return {
+      ...r,
+      progress: {
+        courseId: r.id,
+        totalLessons: p?.total_lessons ?? 0,
+        completedLessons: p?.completed_lessons ?? 0,
+        ratio: Number(p?.ratio ?? 0),
+        isComplete: p?.is_complete ?? false,
+      },
+    };
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Crear, editar, publicar, borrar

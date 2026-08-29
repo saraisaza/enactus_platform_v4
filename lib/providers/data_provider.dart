@@ -118,12 +118,30 @@ class DataProvider extends ChangeNotifier {
   Future<void> reloadCourses() =>
       _refresh((v) => _courses = v, _fetchCourses, _courses.valueOrNull);
 
+  /// Trae el progreso junto con los cursos: una tarjeta de curso muestra su
+  /// avance, y pedirlo por separado sería una petición por tarjeta.
   Future<List<Course>> _fetchCourses() async {
-    final json = await api.get('/courses', query: {'pageSize': 100});
-    return Page.fromJson(
-      Map<String, dynamic>.from(json as Map),
-      Course.fromJson,
-    ).data;
+    final json = await api
+        .get('/courses', query: {'pageSize': 100, 'include': 'progress'});
+    final page = Map<String, dynamic>.from(json as Map);
+
+    // El avance viene anidado en cada curso; se guarda en la caché de
+    // progreso para que la pantalla de detalle no lo vuelva a pedir.
+    for (final raw in (page['data'] as List? ?? const [])) {
+      final item = Map<String, dynamic>.from(raw as Map);
+      final progress = item['progress'];
+      if (progress is Map) {
+        final parsed =
+            CourseProgress.fromJson(Map<String, dynamic>.from(progress));
+        // Sin pisar un progreso ya cargado con sus lecciones marcadas: ese
+        // trae más detalle que este resumen.
+        if (_courseProgress[parsed.courseId]?.valueOrNull == null) {
+          _courseProgress[parsed.courseId] = AsyncValue.data(parsed);
+        }
+      }
+    }
+
+    return Page.fromJson(page, Course.fromJson).data;
   }
 
   /// Un curso con sus módulos y lecciones.

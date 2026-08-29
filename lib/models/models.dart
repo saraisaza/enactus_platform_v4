@@ -721,6 +721,12 @@ class Course {
   /// Solo con `?include=modules` (y `lessons` para las lecciones).
   final List<CourseModule> modules;
 
+  /// Nombre del laboratorio y del LXD que lo creó. Vienen siempre en la
+  /// respuesta: una tarjeta de curso los muestra, y sin ellos el cliente
+  /// tendría que pedir un laboratorio y un usuario por cada tarjeta.
+  final String? laboratoryName;
+  final String? creatorName;
+
   const Course({
     required this.id,
     required this.name,
@@ -742,6 +748,8 @@ class Course {
     this.visible = true,
     this.sponsorCompanyId,
     this.modules = const [],
+    this.laboratoryName,
+    this.creatorName,
   });
 
   bool get isPublished => status == CourseStatus.published;
@@ -789,6 +797,8 @@ class Course {
             .map((e) =>
                 CourseModule.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        laboratoryName: j['laboratoryName'] as String?,
+        creatorName: j['creatorName'] as String?,
       );
 
   Map<String, dynamic> toJson() => {

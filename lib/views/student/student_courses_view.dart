@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
-import '../../providers/auth_provider.dart';
+import '../../models/progress.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import 'course_detail_view.dart';
@@ -36,33 +37,56 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
-    final labs = data.labsForStudent(student);
-    // `coursesForStudent` solo empareja por laboratorio (Course.labId), así
-    // que nunca incluye la Ruta National Expo (labId vacío, isRutaExpo:
-    // true, asignada por courseIds) — se suma aparte, solo en esta
-    // pantalla, para no alterar el conteo de "cursos activos" del
-    // Dashboard ni de otras pantallas que también llaman a
-    // coursesForStudent.
-    final expoCourses = data.courses
-        .where((c) => c.isRutaExpo && student.courseIds.contains(c.id));
-    final allCourses = [...data.coursesForStudent(student), ...expoCourses];
 
+    // El alcance ya viene resuelto del servidor: un estudiante recibe solo lo
+    // publicado y visible de sus laboratorios, más lo que tenga asignado
+    // directamente. Antes esto era `coursesForStudent(student)` recorriendo
+    // Hive entero y agregando a mano la Ruta National Expo.
+    return data.courses.when(
+      loading: () => const ContentScreenShell(
+        eyebrow: 'Cursos asignados',
+        title: 'Mis Cursos',
+        subtitle: 'Cargando tus cursos…',
+        bodyBuilder: _loadingBody,
+      ),
+      error: (e) => ContentScreenShell(
+        eyebrow: 'Cursos asignados',
+        title: 'Mis Cursos',
+        subtitle: 'No pudimos traer tus cursos.',
+        bodyBuilder: (context, colors, isDark) =>
+            ErrorState(e, onRetry: data.reloadCourses),
+      ),
+      data: (allCourses) => _buildCourses(context, data, allCourses),
+    );
+  }
+
+  Widget _buildCourses(
+    BuildContext context,
+    DataProvider data,
+    List<Course> allCourses,
+  ) {
     var courses = allCourses;
     if (_query.trim().isNotEmpty) {
       final q = _query.trim().toLowerCase();
       courses = courses.where((c) {
-        final lab = data.labById(c.labId);
-        final teacher = c.creatorId.isEmpty ? null : data.userById(c.creatorId);
-        final haystack = [c.name, c.description, lab?.name ?? '', teacher?.name ?? '']
-            .join(' ')
-            .toLowerCase();
+        final haystack = [
+          c.name,
+          c.description,
+          c.laboratoryName ?? '',
+          c.creatorName ?? '',
+        ].join(' ').toLowerCase();
         return haystack.contains(q);
       }).toList();
     }
 
+    final labNames = allCourses
+        .map((c) => c.laboratoryName)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
     return ContentScreenShell(
-      eyebrow: labs.isEmpty ? 'Cursos asignados' : labs.map((l) => l.name).join(' · '),
+      eyebrow: labNames.isEmpty ? 'Cursos asignados' : labNames.join(' · '),
       title: 'Mis Cursos',
       subtitle: 'Cursos de laboratorio asignados por tu administrador, más la '
           'ruta de preparación de tu equipo para National Expo.',
@@ -76,8 +100,9 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
             message: allCourses.isEmpty
                 ? 'Aún no tienes cursos asignados por tu administrador.'
                 : 'Ningún curso coincide con tu búsqueda. Prueba con otro término.',
-            primaryLabel: 'Limpiar búsqueda',
-            onPrimary: () => setState(() => _query = ''),
+            primaryLabel: allCourses.isEmpty ? null : 'Limpiar búsqueda',
+            onPrimary:
+                allCourses.isEmpty ? null : () => setState(() => _query = ''),
             colors: colors,
           );
         }
@@ -96,7 +121,7 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
                   width: cardWidth,
                   child: Entrance(
                     delayMs: 55 * i,
-                    child: _CourseCard(course: courses[i], studentId: student.id, colors: colors),
+                    child: _CourseCard(course: courses[i], colors: colors),
                   ),
                 ),
             ],
@@ -107,21 +132,45 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
   }
 }
 
+/// Esqueleto de la grilla mientras cargan los cursos.
+Widget _loadingBody(BuildContext context, ContentColors colors, bool isDark) {
+  return LayoutBuilder(builder: (context, constraints) {
+    const minCard = 392.0;
+    const gap = 20.0;
+    final columns =
+        math.max(1, ((constraints.maxWidth + gap) / (minCard + gap)).floor());
+    final cardWidth = (constraints.maxWidth - gap * (columns - 1)) / columns;
+    return Wrap(
+      spacing: gap,
+      runSpacing: gap,
+      children: [
+        for (var i = 0; i < 4; i++)
+          SizedBox(width: cardWidth, child: const CardSkeleton(height: 300)),
+      ],
+    );
+  });
+}
+
 class _CourseCard extends StatelessWidget {
   final Course course;
-  final String studentId;
   final ContentColors colors;
-  const _CourseCard({required this.course, required this.studentId, required this.colors});
+  const _CourseCard({required this.course, required this.colors});
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final lab = data.labById(course.labId);
-    final teacher = course.creatorId.isEmpty ? null : data.userById(course.creatorId);
-    final progress = data.courseProgress(studentId, course);
-    final done = data.progressFor(studentId, course.id).completedLessonIds.length;
-    final accent = labColorFor(course.labId);
-    final labLabel = course.isRutaExpo ? 'Ruta National Expo' : (lab?.name ?? '');
+    // El avance llega junto con el curso (`include=progress`), así que la
+    // grilla no dispara una petición por tarjeta.
+    final progressState = data.courseProgress(course.id);
+    final progressInfo =
+        progressState.valueOrNull ?? CourseProgress.empty(course.id);
+    final progress = progressInfo.ratio;
+    final done = progressInfo.completedLessons;
+    final totalLessons =
+        progressInfo.totalLessons > 0 ? progressInfo.totalLessons : course.lessonCount;
+    final accent = labColorFor(course.laboratoryId ?? '');
+    final labLabel =
+        course.isRutaExpo ? 'Ruta National Expo' : (course.laboratoryName ?? '');
 
     void open() => Navigator.push(
         context,
@@ -208,15 +257,15 @@ class _CourseCard extends StatelessWidget {
                       runSpacing: 7,
                       children: [
                         _MetaChip(icon: Icons.view_module, label: '${course.modules.length} módulos', colors: colors),
-                        _MetaChip(icon: Icons.play_lesson, label: '${course.lessonCount} lecciones', colors: colors),
-                        _MetaChip(icon: Icons.signal_cellular_alt, label: course.level, colors: colors),
+                        _MetaChip(icon: Icons.play_lesson, label: '$totalLessons lecciones', colors: colors),
+                        _MetaChip(icon: Icons.signal_cellular_alt, label: course.levelLabel, colors: colors),
                         _MetaChip(icon: Icons.schedule, label: _durationLabel(course), colors: colors),
                         if (course.generatesCertificate)
                           _MetaChip(icon: Icons.workspace_premium, label: 'Certificado', colors: colors),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    Text('$done de ${course.lessonCount} lecciones · ${(progress * 100).round()}%',
+                    Text('$done de $totalLessons lecciones · ${(progress * 100).round()}%',
                         style: TextStyle(fontSize: 12, color: colors.text3)),
                     const SizedBox(height: 6),
                     ThinProgressBar(value: progress, color: accent),
@@ -229,7 +278,7 @@ class _CourseCard extends StatelessWidget {
                           child: Text(
                               course.isRutaExpo
                                   ? 'Trabajo en equipo'
-                                  : 'Docente: ${teacher?.name ?? '—'}',
+                                  : 'Docente: ${course.creatorName ?? '—'}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontSize: 12.5, color: colors.text3)),

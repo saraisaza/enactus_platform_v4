@@ -744,7 +744,8 @@ class DataProvider extends ChangeNotifier {
       );
 
   Future<SiteContent> _fetchSiteContent() async {
-    final json = await api.get('/site-content');
+    // Sin sesión: es el único endpoint público además de `/health`.
+    final json = await api.get('/site-content', authenticated: false);
     return SiteContent.fromJson(Map<String, dynamic>.from(json as Map));
   }
 

@@ -80,11 +80,16 @@ authRoutes.post('/login', async (c) => {
   const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
   // Campos explícitos: `tokens` trae además `refreshTokenId`, que es interno
   // y no tiene por qué salir en la respuesta.
+  //
+  // El usuario va con la MISMA forma que `/auth/me` —equipo y patrocinador
+  // incluidos— y no con `publicUser` a secas: si no, recién entrada la
+  // persona a su portal, el perfil se vería sin equipo ni proyecto hasta que
+  // algo volviera a pedir `/auth/me`.
   return c.json({
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken,
     expiresIn: tokens.expiresIn,
-    user: publicUser(user),
+    user: await meResponse(db, user),
   });
 });
 
@@ -143,11 +148,13 @@ authRoutes.post('/refresh', async (c) => {
     })
     .where(eq(refreshTokens.id, stored.id));
 
+  // Misma forma que en el login: renovar la sesión no puede devolver un
+  // usuario más pobre que el que ya tenía el cliente.
   return c.json({
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken,
     expiresIn: tokens.expiresIn,
-    user: publicUser(user),
+    user: await meResponse(db, user),
   });
 });
 

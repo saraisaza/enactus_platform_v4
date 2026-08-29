@@ -339,6 +339,29 @@ describe('PATCH /auth/me y la foto de perfil', () => {
     expect(b).toHaveProperty('sponsorName');
   });
 
+  it('LOGIN y REFRESH devuelven la misma forma que GET /auth/me', async () => {
+    // Si el login devolviera `publicUser` a secas, recién entrada la persona
+    // a su portal el perfil se vería sin equipo ni proyecto hasta que algo
+    // volviera a pedir /auth/me. Lo detectó la prueba de punta a punta.
+    const login = await app.request(
+      '/auth/login',
+      json({ email: 'estudiante1@uniandes.edu.co', password: 'Est123' }),
+    );
+    const sesion = await body<{
+      refreshToken: string;
+      user: { team: unknown; sponsorName: unknown };
+    }>(login);
+    expect(sesion.user.team).not.toBeNull();
+    expect(sesion.user).toHaveProperty('sponsorName');
+
+    const renovada = await app.request(
+      '/auth/refresh',
+      json({ refreshToken: sesion.refreshToken }),
+    );
+    const b = await body<{ user: { team: unknown } }>(renovada);
+    expect(b.user.team).not.toBeNull();
+  });
+
   it('PATCH devuelve la MISMA forma que GET, con equipo incluido', async () => {
     // Si PATCH devolviera solo el usuario base, guardar el teléfono borraría
     // el equipo del modelo en el cliente y el perfil se quedaría sin proyecto

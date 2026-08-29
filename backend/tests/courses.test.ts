@@ -395,11 +395,18 @@ describe('URL de subida de video', () => {
   });
 
   it('con datos válidos llega hasta la firma', async () => {
-    // Este es el único punto de la suite que depende de infraestructura: sin
-    // un bucket configurado no hay nada que firmar. Se afirman las dos ramas
-    // explícitamente en vez de dar por sentado el entorno — y la rama sin
-    // configurar exige que se diga QUÉ falta, no una URL falsa que reventaría
-    // recién cuando el navegador intente subir.
+    // Este es el único punto de la suite que depende de infraestructura, y
+    // tiene TRES estados posibles, no dos. Se afirman los tres en vez de dar
+    // por sentado el entorno:
+    //
+    // 1. Sin bucket configurado → 503 `storage_not_configured`, diciendo QUÉ
+    //    falta, no una URL falsa que reventaría recién cuando el navegador
+    //    intente subir.
+    // 2. Con bucket pero sin poder firmar (credenciales vencidas, que es lo
+    //    que pasa con las temporales de una sesión SSO) → 503
+    //    `storage_unavailable`. Antes esto salía como 500 «error interno» y
+    //    quien lo recibía no podía distinguirlo de un servidor roto.
+    // 3. Todo en orden → 200 con una URL firmada de verdad.
     const res = await req(`/lessons/${lessonId}/video-upload-url`, lxdToken, {
       ...json({ contentType: 'video/mp4', sizeBytes: 10 * 1024 * 1024 }),
     });
@@ -409,6 +416,12 @@ describe('URL de subida de video', () => {
       const b = await body<{ error: { code: string; message: string } }>(res);
       expect(b.error.code).toBe('storage_not_configured');
       expect(b.error.message).toContain('S3_BUCKET');
+      return;
+    }
+
+    if (res.status === 503) {
+      const b = await body<{ error: { code: string } }>(res);
+      expect(b.error.code).toBe('storage_unavailable');
       return;
     }
 

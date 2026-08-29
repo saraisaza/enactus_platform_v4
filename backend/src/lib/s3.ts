@@ -91,9 +91,9 @@ export async function createUploadUrl(input: {
     ContentLength: input.sizeBytes,
   });
 
-  const uploadUrl = await getSignedUrl(s3(), command, {
-    expiresIn: UPLOAD_URL_TTL_SECONDS,
-  });
+  const uploadUrl = await signOrFail(() =>
+    getSignedUrl(s3(), command, { expiresIn: UPLOAD_URL_TTL_SECONDS }),
+  );
 
   return { uploadUrl, key: input.key, expiresInSeconds: UPLOAD_URL_TTL_SECONDS };
 }
@@ -137,11 +137,38 @@ export async function createDownloadUrl(input: {
       : {}),
   });
 
-  const url = await getSignedUrl(s3(), command, {
-    expiresIn: DOWNLOAD_URL_TTL_SECONDS,
-  });
+  const url = await signOrFail(() =>
+    getSignedUrl(s3(), command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS }),
+  );
 
   return { url, expiresInSeconds: DOWNLOAD_URL_TTL_SECONDS };
+}
+
+/**
+ * Traduce un fallo de FIRMA a un 503 con causa clara.
+ *
+ * Sin esto, unas credenciales de AWS vencidas —el caso más común: las
+ * temporales de una sesión SSO— salen como 500 «error interno», y quien lo
+ * recibe no puede distinguir "el servidor está roto" de "el almacenamiento no
+ * está disponible ahora". Es exactamente lo que pasó al correr las pruebas con
+ * la sesión de AWS caducada.
+ *
+ * 503 y no 500 porque es transitorio: se arregla renovando credenciales, no
+ * tocando código.
+ */
+async function signOrFail<T>(sign: () => Promise<T>): Promise<T> {
+  try {
+    return await sign();
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new AppError(
+      503,
+      'storage_unavailable',
+      'No pudimos preparar el archivo: el almacenamiento no está disponible ' +
+        'en este momento. Si el problema sigue, avisá al equipo técnico.',
+      { detail },
+    );
+  }
 }
 
 /** Tope para documentos (evidencias, recursos, entregas). */

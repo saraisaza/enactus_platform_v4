@@ -59,8 +59,12 @@ class ApiService {
   // Verbos
   // -------------------------------------------------------------------------
 
-  Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
-      _send('GET', path, query: query);
+  /// [authenticated] en falso para los dos endpoints públicos (`/health` y
+  /// `/site-content`): la portada se ve sin sesión, así que no tiene sentido
+  /// —ni debe hacer falta— tocar el almacenamiento de tokens para pedirla.
+  Future<dynamic> get(String path,
+          {Map<String, dynamic>? query, bool authenticated = true}) =>
+      _send('GET', path, query: query, authenticated: authenticated);
 
   Future<dynamic> post(String path, {Object? body}) =>
       _send('POST', path, body: body);

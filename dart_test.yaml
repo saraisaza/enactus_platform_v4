@@ -1,0 +1,11 @@
+# Etiquetas de la suite.
+#
+# `e2e` marca las pruebas que salen a la red contra el backend real. Se saltan
+# solas si está apagado, así que `flutter test` sigue funcionando sin él; la
+# etiqueta existe para poder excluirlas a propósito:
+#
+#   flutter test -x e2e        # solo las que no tocan la red
+#   flutter test -t e2e        # solo el recorrido de punta a punta
+tags:
+  e2e:
+    timeout: 2x

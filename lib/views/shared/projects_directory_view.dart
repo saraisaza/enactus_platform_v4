@@ -11,10 +11,9 @@ import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
+import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
-import 'lab_progress_view.dart';
-import 'user_detail_view.dart';
 
 /// Directorio de todos los proyectos Enactus de la plataforma, sin
 /// importar laboratorio, universidad o equipo — para que estudiantes y
@@ -39,43 +38,33 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
   String _stageFilter = 'todas';
   String _query = '';
 
+  /// Etapa primero, luego búsqueda — encadenado, como pide el handoff.
+  ///
+  /// Las universidades del equipo vienen con el proyecto (`?include=teams`):
+  /// antes se cruzaban contra la lista completa de equipos de la plataforma,
+  /// que el cliente ya no tiene —ni debería tener— cargada.
+  List<Project> _filter(List<Project> all) {
+    var projects = _stageFilter == 'todas'
+        ? all
+        : all.where((p) => p.stage == _stageFilter).toList();
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return projects;
+    return projects.where((p) {
+      final haystack = [
+        p.name,
+        p.description,
+        p.community,
+        p.stageLabel,
+        ...p.ods,
+        ...p.universities,
+      ].join(' ').toLowerCase();
+      return haystack.contains(q);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final allProjects = data.projects;
-    final groups = data.groups;
-
-    // Etapa primero, luego búsqueda — encadenado, como pide el handoff.
-    var projects = _stageFilter == 'todas'
-        ? allProjects
-        : allProjects.where((p) => p.stage == _stageFilter).toList();
-    if (_query.trim().isNotEmpty) {
-      final q = _query.trim().toLowerCase();
-      projects = projects.where((p) {
-        final teamUniversities =
-            groups.where((g) => g.projectId == p.id).map((g) => g.university);
-        final haystack = [
-          p.name,
-          p.description,
-          p.community,
-          p.stage,
-          ...p.ods,
-          ...teamUniversities
-        ].join(' ').toLowerCase();
-        return haystack.contains(q);
-      }).toList();
-    }
-
-    // Las 4 estadísticas se calculan de los datos reales, siempre sobre
-    // TODOS los proyectos (no sobre el resultado filtrado).
-    final universities = <String>{
-      for (final p in allProjects)
-        for (final g in groups.where((g) => g.projectId == p.id))
-          if (g.university.isNotEmpty) g.university,
-    }.length;
-    final odsCovered = <String>{for (final p in allProjects) ...p.ods}.length;
-    final expoCount =
-        allProjects.where((p) => p.stage == 'National Expo').length;
 
     return ContentScreenShell(
       eyebrow: 'Comunidad eduXaction Colombia',
@@ -86,48 +75,30 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
           'de los equipos.',
       searchHint: 'Buscar proyecto, comunidad u ODS',
       onSearchChanged: (v) => setState(() => _query = v),
-      trailingBuilder: (context, colors, isDark) => ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 440),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                  child: _StatCard(
-                      value: allProjects.length,
-                      label: 'Proyectos activos',
-                      colors: colors,
-                      isPrimary: true)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _StatCard(
-                      value: universities,
-                      label: 'Universidades',
-                      colors: colors)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _StatCard(
-                      value: odsCovered, label: 'ODS cubiertos', colors: colors)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: _StatCard(
-                      value: expoCount,
-                      label: 'En National Expo',
-                      colors: colors)),
-            ],
-          ),
-        ),
+      trailingBuilder: (context, colors, isDark) => data.projects.when(
+        loading: () => const _StatsSkeleton(),
+        // Las cifras no tienen dónde poner un botón de reintentar: el cuerpo
+        // de la pantalla ya muestra el error con el suyo.
+        error: (_) => const SizedBox.shrink(),
+        data: (all) => _StatsRow(projects: all, colors: colors),
       ),
-      bodyBuilder: (context, colors, isDark) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStageChips(colors, allProjects),
-          const SizedBox(height: 26),
-          if (projects.isEmpty)
-            _buildEmptyState(colors, allProjects.isEmpty)
-          else
-            _buildGrid(colors, projects, groups),
-        ],
+      bodyBuilder: (context, colors, isDark) => data.projects.when(
+        loading: () => const CardListSkeleton(count: 4),
+        error: (e) => ErrorState(e, onRetry: data.reloadProjects),
+        data: (all) {
+          final projects = _filter(all);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStageChips(colors, all),
+              const SizedBox(height: 26),
+              if (projects.isEmpty)
+                _buildEmptyState(colors, all.isEmpty)
+              else
+                _buildGrid(colors, projects),
+            ],
+          );
+        },
       ),
     );
   }
@@ -148,20 +119,21 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
           colors: colors,
           onTap: () => setState(() => _stageFilter = 'todas'),
         ),
-        for (final s in projectStages)
+        // El filtro compara identificadores de la API; lo que se muestra es
+        // la etiqueta en español.
+        for (final stage in projectStages)
           _StageChip(
-            label: s,
-            count: countFor(s),
-            active: _stageFilter == s,
+            label: ProjectStage.label(stage),
+            count: countFor(stage),
+            active: _stageFilter == stage,
             colors: colors,
-            onTap: () => setState(() => _stageFilter = s),
+            onTap: () => setState(() => _stageFilter = stage),
           ),
       ],
     );
   }
 
-  Widget _buildGrid(
-      ContentColors colors, List<Project> projects, List<Group> groups) {
+  Widget _buildGrid(ContentColors colors, List<Project> projects) {
     return LayoutBuilder(builder: (context, constraints) {
       const minCard = 348.0;
       const gap = 20.0;
@@ -179,7 +151,6 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
                 delayMs: 55 * i,
                 child: _ProjectCard(
                   project: projects[i],
-                  groups: groups.where((g) => g.projectId == projects[i].id).toList(),
                   colors: colors,
                   onTap: () => Navigator.push(
                     context,
@@ -398,22 +369,17 @@ Widget _buildProjectCover(Project project, ContentColors colors,
 
 class _ProjectCard extends StatelessWidget {
   final Project project;
-  final List<Group> groups;
   final ContentColors colors;
   final VoidCallback onTap;
   const _ProjectCard(
-      {required this.project,
-      required this.groups,
-      required this.colors,
-      required this.onTap});
+      {required this.project, required this.colors, required this.onTap});
 
   String get _teamLine {
-    if (groups.isEmpty) return 'Sin equipo asignado todavía.';
-    return groups
-        .map((g) =>
-            '${g.name} · ${g.university.isEmpty ? "Universidad sin definir" : g.university} · '
-            '${g.studentIds.length} estudiante${g.studentIds.length == 1 ? '' : 's'}')
-        .join(' · ');
+    if (project.teamSize == 0) return 'Sin equipo asignado todavía.';
+    final people =
+        '${project.teamSize} estudiante${project.teamSize == 1 ? '' : 's'}';
+    if (project.universities.isEmpty) return people;
+    return '${project.universities.join(' · ')} · $people';
   }
 
   @override
@@ -667,27 +633,39 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final project = data.projectById(widget.projectId);
     final colors = _colors;
 
-    if (project == null) {
-      return Scaffold(
-        backgroundColor: colors.bg,
-        body: Column(
-          children: [
-            const AppHeader(portalTitle: 'Proyecto'),
-            Expanded(
-              child: EmptyState(
-                  icon: Icons.lightbulb_outline,
-                  message: 'Este proyecto ya no existe o fue eliminado.',
-                  colors: colors),
+    return data.projectById(widget.projectId).when(
+          loading: () => Scaffold(
+            backgroundColor: colors.bg,
+            body: const Column(
+              children: [
+                AppHeader(portalTitle: 'Proyecto'),
+                Expanded(child: Center(child: BrandLoader())),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+          ),
+          error: (e) => Scaffold(
+            backgroundColor: colors.bg,
+            body: Column(
+              children: [
+                const AppHeader(portalTitle: 'Proyecto'),
+                Expanded(
+                  child: ErrorState(e,
+                      onRetry: () => data.reloadProject(widget.projectId)),
+                ),
+              ],
+            ),
+          ),
+          data: (project) => _buildDetail(context, project, colors),
+        );
+  }
 
-    final groups = data.groups.where((g) => g.projectId == project.id).toList();
+  Widget _buildDetail(
+      BuildContext context, Project project, ContentColors colors) {
+    // El equipo llega DENTRO del proyecto, con el rol de cada integrante —
+    // esa es la brecha de modelo que cerró el esquema: antes un equipo era una
+    // lista de ids sin rol, y había que cruzarla contra todos los usuarios.
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
     final odsColor = project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
@@ -782,14 +760,21 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                                     color: colors.text3,
                                     letterSpacing: 1)),
                             const SizedBox(height: 10),
-                            if (groups.isEmpty)
+                            if (project.teams.isEmpty)
                               Text('Sin equipo asignado todavía.',
-                                  style: TextStyle(fontSize: 13, color: colors.text3))
+                                  style: TextStyle(
+                                      fontSize: 13, color: colors.text3))
                             else
-                              for (final g in groups)
+                              for (final team in project.teams)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 18),
-                                  child: _GroupBlock(group: g, colors: colors),
+                                  child: _GroupBlock(
+                                    team: team,
+                                    members: project.team
+                                        .where((m) => m.groupId == team.groupId)
+                                        .toList(),
+                                    colors: colors,
+                                  ),
                                 ),
                           ],
                         ),
@@ -845,22 +830,24 @@ class _ThemeToggleButton extends StatelessWidget {
   }
 }
 
-/// Un equipo del proyecto: nombre, universidad y sus integrantes con
-/// enlace a su propio laboratorio real (mentor/fases/módulos) — decidido
-/// con el usuario en vez de un "mentor del proyecto" que no existe en el
-/// modelo (ver comentario de [ProjectDetailView]).
+
+/// Un equipo del proyecto: nombre, universidad, asesor académico e
+/// integrantes con su rol.
+///
+/// **Ya no muestra el avance de cada integrante en su laboratorio.** No es un
+/// recorte de diseño: leer la Ruta de Impacto de otra persona exige ser su
+/// mentor, asesor o administrador, y el servidor responde 403 a un estudiante
+/// que lo intente. La versión anterior lo mostraba solo porque Hive tenía
+/// todos los datos de todo el mundo en el navegador.
 class _GroupBlock extends StatelessWidget {
-  final Group group;
+  final ProjectTeam team;
+  final List<ProjectMember> members;
   final ContentColors colors;
-  const _GroupBlock({required this.group, required this.colors});
+  const _GroupBlock(
+      {required this.team, required this.members, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final advisor = group.advisorId.isEmpty ? null : data.userById(group.advisorId);
-    final members =
-        group.studentIds.map(data.userById).whereType<AppUser>().toList();
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -876,26 +863,31 @@ class _GroupBlock extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                  '${group.name} · ${group.university.isEmpty ? "Universidad sin definir" : group.university}',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
+                  '${team.groupName} · '
+                  '${team.university.isEmpty ? "Universidad sin definir" : team.university}',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: colors.text)),
             ),
           ]),
-          if (advisor != null) ...[
+          if (team.advisorName != null) ...[
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.only(left: 25),
-              child: Text('Asesor académico: ${advisor.name}',
+              child: Text('Asesor académico: ${team.advisorName}',
                   style: TextStyle(fontSize: 12.5, color: colors.text3)),
             ),
           ],
           const SizedBox(height: 14),
           if (members.isEmpty)
-            Text('Sin integrantes asignados.', style: TextStyle(fontSize: 13, color: colors.text3))
+            Text('Sin integrantes asignados.',
+                style: TextStyle(fontSize: 13, color: colors.text3))
           else
-            for (final m in members)
+            for (final member in members)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _MemberRow(student: m, colors: colors),
+                child: _MemberRow(member: member, colors: colors),
               ),
         ],
       ),
@@ -904,108 +896,125 @@ class _GroupBlock extends StatelessWidget {
 }
 
 class _MemberRow extends StatelessWidget {
-  final AppUser student;
+  final ProjectMember member;
   final ContentColors colors;
-  const _MemberRow({required this.student, required this.colors});
+  const _MemberRow({required this.member, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final labs = data.labsForStudent(student);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(10)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          KeyboardHoverBuilder(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    settings: RouteSettings(name: '${AppRoutes.users}/${student.id}'),
-                    builder: (_) => UserDetailView(userId: student.id))),
-            builder: (context, hover) => Row(children: [
-              InitialsAvatar(student.name),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(student.name,
-                        style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: hover ? AppColors.gold : colors.text)),
-                    Text(student.university.isEmpty ? 'Universidad sin definir' : student.university,
-                        style: TextStyle(fontSize: 12, color: colors.text3)),
-                  ],
-                ),
-              ),
-            ]),
+      decoration: BoxDecoration(
+          color: colors.surface2, borderRadius: BorderRadius.circular(10)),
+      child: Row(children: [
+        InitialsAvatar(member.name),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(member.name,
+                  style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: colors.text)),
+              Text(
+                  [
+                    member.university.isEmpty
+                        ? 'Universidad sin definir'
+                        : member.university,
+                    if (member.career.isNotEmpty) member.career,
+                  ].join(' · '),
+                  style: TextStyle(fontSize: 12, color: colors.text3)),
+            ],
           ),
-          if (labs.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final lab in labs)
-                  _LabChip(
-                    student: student,
-                    lab: lab,
-                    colors: colors,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              LabProgressView(studentId: student.id, labId: lab.id)),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ),
+        ),
+        const SizedBox(width: 10),
+        // El rol dentro del proyecto: la brecha de modelo que cerró el
+        // esquema. Antes un equipo era una lista de ids sin rol.
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: colors.goldSoft,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(member.roleLabel,
+              style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: colors.goldInk)),
+        ),
+      ]),
     );
   }
 }
 
-class _LabChip extends StatelessWidget {
-  final AppUser student;
-  final Laboratory lab;
+/// Las cuatro cifras del encabezado, sobre TODOS los proyectos — no sobre el
+/// resultado filtrado: son el tamaño de la comunidad, no del filtro.
+class _StatsRow extends StatelessWidget {
+  final List<Project> projects;
   final ContentColors colors;
-  final VoidCallback onTap;
-  const _LabChip(
-      {required this.student, required this.lab, required this.colors, required this.onTap});
+  const _StatsRow({required this.projects, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final done = lab.phases.where((p) => data.isPhaseComplete(student.id, lab.id, p)).length;
-    final accent = labColorFor(lab.id);
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: hover ? accent.withValues(alpha: 0.16) : colors.surface,
-            border: Border.all(color: accent),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 8, height: 8, decoration: BoxDecoration(color: accent, shape: BoxShape.circle)),
-              const SizedBox(width: 7),
-              Text('${lab.name} · Fase $done/${lab.phases.length}',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.text2)),
-            ],
-          ),
-        ),
-      ),
-    );
+    final universities = <String>{
+      for (final p in projects) ...p.universities,
+    }.length;
+    final odsCovered = <String>{for (final p in projects) ...p.ods}.length;
+    final expoCount =
+        projects.where((p) => p.stage == 'national_expo').length;
+
+    final cards = [
+      (projects.length, 'Proyectos activos', true),
+      (universities, 'Universidades', false),
+      (odsCovered, 'ODS cubiertos', false),
+      (expoCount, 'En National Expo', false),
+    ];
+
+    return LayoutBuilder(builder: (context, c) {
+      // Sin ancho mínimo: el bloque tiene que poder encogerse. Con un
+      // `minWidth` de 440 los cuatro `Expanded` internos no podían achicarlo
+      // por debajo de ese piso y desbordaba en cualquier teléfono.
+      final perRow = c.maxWidth > 420 ? 4 : 2;
+      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final (value, label, primary) in cards)
+            SizedBox(
+              width: width,
+              child: _StatCard(
+                  value: value,
+                  label: label,
+                  colors: colors,
+                  isPrimary: primary),
+            ),
+        ],
+      );
+    });
+  }
+}
+
+class _StatsSkeleton extends StatelessWidget {
+  const _StatsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      final perRow = c.maxWidth > 420 ? 4 : 2;
+      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (var i = 0; i < 4; i++)
+            Skeleton(
+                width: width, height: 86, radius: BorderRadius.circular(14)),
+        ],
+      );
+    });
   }
 }

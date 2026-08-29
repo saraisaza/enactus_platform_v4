@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../models/models.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import '../utils/responsive.dart';
@@ -633,7 +634,8 @@ class StageRail extends StatelessWidget {
                 Text(
                     currentIndex >= total - 1
                         ? 'Etapa final'
-                        : 'Sigue: ${projectStages[currentIndex + 1]}',
+                        : 'Sigue: '
+                            '${ProjectStage.label(projectStages[currentIndex + 1])}',
                     style: TextStyle(fontSize: 11.5, color: colors.text3)),
               ],
             ),

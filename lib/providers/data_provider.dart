@@ -312,9 +312,11 @@ class DataProvider extends ChangeNotifier {
   Future<void> reloadProjects() =>
       _refresh((v) => _projects = v, _fetchProjects, _projects.valueOrNull);
 
+  /// Los proyectos con sus ODS y el resumen de sus equipos: es lo que el
+  /// directorio necesita para filtrar y contar sin pedir nada más.
   Future<List<Project>> _fetchProjects() async {
     final json = await api
-        .get('/projects', query: {'pageSize': 100, 'include': 'ods'});
+        .get('/projects', query: {'pageSize': 100, 'include': 'ods,teams'});
     return Page.fromJson(
       Map<String, dynamic>.from(json as Map),
       Project.fromJson,

@@ -89,9 +89,39 @@ projectRoutes.get('/', async (c) => {
   ]);
 
   const include = parseInclude(query.include);
-  const data = include.has('ods')
+  let data: Record<string, unknown>[] = include.has('ods')
     ? await Promise.all(rows.map(async (p) => ({ ...p, ods: await odsOf(db, p.id) })))
     : rows;
+
+  // `include=teams` agrega las universidades del equipo y su tamaño, en UNA
+  // consulta para toda la página. El directorio de proyectos los necesita para
+  // sus filtros y sus cifras; sin esto tendría que pedir la lista completa de
+  // equipos —de toda la plataforma— y cruzarla en el navegador.
+  if (include.has('teams') && rows.length > 0) {
+    const teams = await db.execute<{
+      projectId: string;
+      universities: string[];
+      teamSize: number;
+    }>(sql`
+      select g.project_id as "projectId",
+             array_remove(array_agg(distinct g.university), '') as universities,
+             count(distinct gm.user_id)::int as "teamSize"
+        from groups g
+        left join group_members gm on gm.group_id = g.id
+       where g.deleted_at is null
+         and g.project_id = any(${sql.param(rows.map((r) => r.id))}::uuid[])
+       group by g.project_id
+    `);
+    const byProject = new Map(teams.map((t) => [t.projectId, t]));
+    data = data.map((p) => {
+      const team = byProject.get(p.id as string);
+      return {
+        ...p,
+        universities: team?.universities ?? [],
+        teamSize: team?.teamSize ?? 0,
+      };
+    });
+  }
 
   return c.json(paginated(data, total?.value ?? 0, query));
 });
@@ -128,10 +158,28 @@ projectRoutes.get('/:id', async (c) => {
      order by gm.role_in_project, u.name
   `);
 
+  // Los equipos del proyecto, con su asesor académico ya resuelto. Un mismo
+  // proyecto puede tener más de un equipo (una universidad cada uno), y el
+  // asesor está en el equipo, no en el proyecto.
+  const teams = await db.execute<{
+    groupId: string;
+    groupName: string;
+    university: string;
+    advisorName: string | null;
+  }>(sql`
+    select g.id as "groupId", g.name as "groupName", g.university,
+           a.name as "advisorName"
+      from groups g
+      left join users a on a.id = g.advisor_id and a.deleted_at is null
+     where g.project_id = ${project.id} and g.deleted_at is null
+     order by g.name
+  `);
+
   return c.json({
     ...project,
     ods: await odsOf(db, project.id),
     team,
+    teams,
   });
 });
 

@@ -1,6 +1,8 @@
 /// Constantes globales de la plataforma Enactus Colombia.
 library;
 
+import '../models/models.dart';
+
 class Roles {
   static const superAdmin = 'superadmin';
   static const admin = 'admin';
@@ -134,15 +136,15 @@ const List<String> odsList = [
   'ODS 17: Alianzas para lograr los objetivos',
 ];
 
-/// Etapas posibles de un proyecto Enactus.
-const List<String> projectStages = [
-  'Ideación',
-  'Validación',
-  'Prototipo',
-  'Piloto',
-  'Escalamiento',
-  'National Expo',
-];
+/// Etapas de un proyecto, **en identificadores de la API** (`ideation`,
+/// `validation`, …), en su orden real.
+///
+/// Antes esta lista tenía las etiquetas en español y se comparaba directo
+/// contra `Project.stage`. Con la API eso deja de coincidir: el servidor
+/// guarda el identificador, así que el filtro por etapa no encontraría nunca
+/// nada y el riel de etapas quedaría siempre en la primera — sin que nada
+/// falle ni se vea un error. Para mostrar, se usa `ProjectStage.label`.
+const List<String> projectStages = ProjectStage.all;
 
 /// Ruta local (relativa al directorio del repositorio) donde viven los
 /// recursos de los cursos. En producción se reemplaza por URLs de AWS S3.

@@ -247,6 +247,21 @@ class Project {
   /// Integrantes con su rol. Solo en el detalle.
   final List<ProjectMember> team;
 
+  /// Los equipos del proyecto con su asesor académico. Solo en el detalle.
+  ///
+  /// Un proyecto puede tener más de un equipo —una universidad cada uno— y el
+  /// asesor está en el equipo, no en el proyecto.
+  final List<ProjectTeam> teams;
+
+  /// Universidades de los equipos que trabajan el proyecto, y cuánta gente lo
+  /// integra. Solo con `?include=teams`.
+  ///
+  /// Vienen resumidas con el proyecto porque el directorio las necesita para
+  /// filtrar y contar; la alternativa era traerse todos los equipos de la
+  /// plataforma y cruzarlos en el navegador.
+  final List<String> universities;
+  final int teamSize;
+
   final DateTime? createdAt;
 
   const Project({
@@ -261,6 +276,9 @@ class Project {
     this.expoEnabled = false,
     this.ods = const [],
     this.team = const [],
+    this.teams = const [],
+    this.universities = const [],
+    this.teamSize = 0,
     this.createdAt,
   });
 
@@ -281,6 +299,13 @@ class Project {
             .map((e) =>
                 ProjectMember.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        teams: (j['teams'] as List? ?? const [])
+            .map((e) =>
+                ProjectTeam.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        universities:
+            List<String>.from(j['universities'] as List? ?? const []),
+        teamSize: (j['teamSize'] as num?)?.toInt() ?? 0,
         createdAt: _date(j['createdAt']),
       );
 
@@ -295,6 +320,28 @@ class Project {
         'expoEnabled': expoEnabled,
         'ods': ods,
       };
+}
+
+/// Un equipo de un proyecto, con su asesor académico.
+class ProjectTeam {
+  final String groupId;
+  final String groupName;
+  final String university;
+  final String? advisorName;
+
+  const ProjectTeam({
+    required this.groupId,
+    required this.groupName,
+    this.university = '',
+    this.advisorName,
+  });
+
+  factory ProjectTeam.fromJson(Map<String, dynamic> j) => ProjectTeam(
+        groupId: (j['groupId'] as String?) ?? '',
+        groupName: (j['groupName'] as String?) ?? '',
+        university: (j['university'] as String?) ?? '',
+        advisorName: j['advisorName'] as String?,
+      );
 }
 
 /// Integrante del equipo de un proyecto, con su rol.

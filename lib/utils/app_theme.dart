@@ -140,18 +140,23 @@ int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 Color labColorFor(String labId) => AppColors.labColors[labId] ?? AppColors.gold;
 
 /// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
-/// Los `ods` de [Project]/[Course] se guardan como texto completo
-/// ("ODS N: Etiqueta"), nunca como número suelto.
-int odsNumberFrom(String odsLabel) {
-  final match = RegExp(r'ODS\s*(\d+)').firstMatch(odsLabel);
+/// Número de un ODS a partir de su código.
+///
+/// La API los guarda como `ods_6`, no como el rótulo completo "ODS 6: Agua
+/// limpia…" que usaba Hive. Se aceptan las dos formas porque el rótulo largo
+/// sigue apareciendo en textos escritos a mano, y sacar el número de cualquiera
+/// de las dos es un solo regex: cambiar el formato no puede volver a dejar
+/// todos los acentos en dorado sin que nada falle.
+int odsNumberFrom(String ods) {
+  final match = RegExp(r'(\d+)').firstMatch(ods);
   return match != null ? int.parse(match.group(1)!) : 1;
 }
 
-/// Color oficial del ODS de un rótulo ("ODS 6: ..." -> #26BDE2). Usado
-/// dondequiera que el acento venga del ODS principal de un proyecto
-/// (Directorio de Proyectos, tarjeta "Tu proyecto" del Dashboard).
-Color odsColorFor(String odsLabel) =>
-    AppColors.odsColors[odsNumberFrom(odsLabel)] ?? AppColors.gold;
+/// Color oficial del ODS (`ods_6` -> #26BDE2). Usado dondequiera que el acento
+/// venga del ODS principal de un proyecto (Directorio de Proyectos, tarjeta
+/// "Tu proyecto" del Dashboard).
+Color odsColorFor(String ods) =>
+    AppColors.odsColors[odsNumberFrom(ods)] ?? AppColors.gold;
 
 /// Paleta clara/oscura del contenido del portal estudiante (handoffs
 /// `design_handoff_directorio_proyectos/README.md` y

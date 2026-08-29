@@ -1,5 +1,6 @@
 import { and, asc, count, eq, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { z } from 'zod';
 
 import { laboratories } from '../db/schema';
 import { notFound } from '../lib/errors';
@@ -22,7 +23,19 @@ import type { AppEnv, AuthUser } from '../middleware/context';
 export const labRoutes = new Hono<AppEnv>();
 labRoutes.use('*', requireAuth, requireEnactus);
 
-const listQuery = paginationSchema;
+const listQuery = paginationSchema.extend({
+  /** `all` trae toda la red en versión reducida (ver el handler). */
+  scope: z.enum(['all']).optional(),
+});
+
+/** Mentor o LXD de un laboratorio, con lo justo para poder contactarlo. */
+type LabStaff = {
+  id: string;
+  name: string;
+  email: string;
+  avatarS3Key: string | null;
+  availability: string;
+};
 
 /** Alcance de lectura por rol, igual criterio que el de cursos. */
 function scopeFor(user: AuthUser) {
@@ -79,6 +92,33 @@ function scopeFor(user: AuthUser) {
 labRoutes.get('/', async (c) => {
   const user = currentUser(c);
   const query = listQuery.parse(c.req.query());
+
+  // `scope=all`: TODOS los laboratorios de la red, en versión reducida.
+  //
+  // La pantalla de Laboratorios muestra "otros laboratorios de la red" para
+  // que un estudiante sepa qué existe y pueda pedirle uno a su administrador.
+  // No filtra nada sensible: el nombre y la descripción de cada laboratorio ya
+  // salen SIN sesión en `/site-content`, para la portada. Lo que no se
+  // devuelve acá es la estructura de la Ruta ni el avance de nadie.
+  if (query.scope === 'all') {
+    const rows = await c.get('db').execute<{
+      id: string;
+      name: string;
+      description: string;
+      teamCount: number;
+    }>(sql`
+      select l.id, l.name, l.description,
+             (select count(distinct gm.group_id)::int
+                from student_laboratories sl
+                join group_members gm on gm.user_id = sl.student_id
+               where sl.laboratory_id = l.id) as "teamCount"
+        from laboratories l
+       where l.deleted_at is null
+       order by l.name
+    `);
+    return c.json(paginated(rows, rows.length, query));
+  }
+
   const scope = scopeFor(user);
   if (!scope) return c.json(paginated([], 0, query));
 
@@ -145,15 +185,30 @@ labRoutes.get('/:id', async (c) => {
   // pantalla de detalle tendría que listar TODOS los usuarios de la
   // plataforma y filtrar en el navegador — que es exactamente lo que hacía
   // con Hive, y por qué cualquier rol podía enumerar a todo el mundo.
-  const mentors = await db.execute<{
-    id: string;
-    name: string;
-    avatarS3Key: string | null;
-  }>(sql`
-    select u.id, u.name, u.avatar_s3_key as "avatarS3Key"
+  // Se incluyen correo y disponibilidad: son las personas que ACOMPAÑAN este
+  // laboratorio, y coordinar una mentoría necesita cómo contactarlas. Es
+  // información de contacto acotada a quienes ya trabajan con esta persona,
+  // no un directorio de la plataforma.
+  const staffColumns = sql`u.id, u.name, u.email,
+           u.avatar_s3_key as "avatarS3Key",
+           coalesce(u.profile ->> 'availability', '') as availability`;
+
+  const mentors = await db.execute<LabStaff>(sql`
+    select ${staffColumns}
       from laboratory_mentors lm
       join users u on u.id = lm.user_id and u.deleted_at is null
      where lm.laboratory_id = ${lab.id}
+     order by u.name
+  `);
+
+  // El LXD de un laboratorio no es una asignación explícita: es quien creó
+  // sus cursos. Misma definición que usa `scopeFor` para decidir qué
+  // laboratorios ve un LXD — una sola regla, no dos que puedan discrepar.
+  const lxds = await db.execute<LabStaff>(sql`
+    select distinct ${staffColumns}
+      from courses c
+      join users u on u.id = c.creator_id and u.deleted_at is null
+     where c.laboratory_id = ${lab.id} and c.deleted_at is null
      order by u.name
   `);
 
@@ -200,6 +255,7 @@ labRoutes.get('/:id', async (c) => {
       completedByCount: doneByPhase.get(p.id) ?? 0,
     })),
     mentors,
+    lxds,
     sponsorName,
     studentsAssigned: assigned?.value ?? 0,
   });

@@ -22,6 +22,22 @@ export interface CourseProgress {
   isComplete: boolean;
 }
 
+/** Una lectura o entrega propia de un módulo de la Ruta. */
+export interface OwnLessonProgress {
+  id: string;
+  title: string;
+  type: string;
+  description: string;
+  orderIndex: number;
+  resourceS3Key: string | null;
+  resourceFileName: string | null;
+  externalUrl: string | null;
+  videoType: string | null;
+  videoUrl: string | null;
+  videoS3Key: string | null;
+  isComplete: boolean;
+}
+
 export interface ModuleProgress {
   moduleId: string;
   title: string;
@@ -34,6 +50,7 @@ export interface ModuleProgress {
   isComplete: boolean;
   isUnlocked: boolean;
   courses: CourseProgress[];
+  ownLessons: OwnLessonProgress[];
 }
 
 export interface ObjectiveProgress {
@@ -47,6 +64,7 @@ export interface PhaseProgress {
   phaseId: string;
   orderIndex: number;
   title: string;
+  description: string;
   deadline: string | null;
   deadlineStatus: 'none' | 'on_track' | 'approaching' | 'overdue';
   modulesTotal: number;
@@ -121,6 +139,7 @@ export async function rutaProgressFor(
     laboratory_id: string;
     order_index: number;
     title: string;
+    description: string;
     deadline: string | null;
     modules_total: number;
     modules_done: number;
@@ -128,7 +147,7 @@ export async function rutaProgressFor(
     is_unlocked: boolean;
   }>(sql`
     select pc.phase_id, pc.laboratory_id, pc.order_index, p.title,
-           p.deadline::text,
+           p.description, p.deadline::text,
            pc.modules_total::int, pc.modules_done::int,
            pc.is_complete, pu.is_unlocked
       from phase_completion pc
@@ -175,6 +194,42 @@ export async function rutaProgressFor(
      order by rm.phase_id, rm.order_index
   `);
 
+  // Las lecturas y entregas PROPIAS del módulo (las que no vienen de un
+  // curso), con si esta persona ya las marcó. La pantalla del módulo las
+  // lista una por una, así que no alcanza con el conteo del resumen.
+  const ownLessons = await db.execute<{
+    module_id: string;
+    id: string;
+    title: string;
+    type: string;
+    description: string;
+    order_index: number;
+    resource_s3_key: string | null;
+    resource_file_name: string | null;
+    external_url: string | null;
+    video_type: string | null;
+    video_url: string | null;
+    video_s3_key: string | null;
+    is_complete: boolean;
+  }>(sql`
+    select l.ruta_module_id as module_id, l.id, l.title, l.type, l.description,
+           l.order_index, l.resource_s3_key, l.resource_file_name,
+           l.external_url, l.video_type, l.video_url, l.video_s3_key,
+           (rpl.lesson_id is not null) as is_complete
+      from lessons l
+      join ruta_modules rm on rm.id = l.ruta_module_id
+      join phases ph on ph.id = rm.phase_id
+      join student_laboratories sl
+        on sl.laboratory_id = ph.laboratory_id and sl.student_id = ${studentId}
+      left join ruta_progress rp
+             on rp.student_id = ${studentId}
+            and rp.laboratory_id = ph.laboratory_id
+      left join ruta_progress_lessons rpl
+             on rpl.ruta_progress_id = rp.id and rpl.lesson_id = l.id
+     where l.ruta_module_id is not null
+     order by l.order_index
+  `);
+
   const moduleCourses = await db.execute<{
     module_id: string;
     course_id: string;
@@ -200,6 +255,7 @@ export async function rutaProgressFor(
   const objectivesByPhase = groupBy(objectives, (o) => o.phase_id);
   const modulesByPhase = groupBy(modules, (m) => m.phase_id);
   const coursesByModule = groupBy(moduleCourses, (c) => c.module_id);
+  const ownByModule = groupBy(ownLessons, (l) => l.module_id);
   const phasesByLab = groupBy(phases, (p) => p.laboratory_id);
 
   return labs.map((lab) => ({
@@ -215,6 +271,7 @@ export async function rutaProgressFor(
         phaseId: p.phase_id,
         orderIndex: p.order_index,
         title: p.title,
+        description: p.description,
         deadline: p.deadline,
         deadlineStatus: deadlineStatus(p.deadline, p.is_complete),
         modulesTotal: p.modules_total,
@@ -247,6 +304,20 @@ export async function rutaProgressFor(
             completedLessons: c.completed_lessons,
             ratio: Number(c.ratio),
             isComplete: c.is_complete,
+          })),
+          ownLessons: (ownByModule.get(m.module_id) ?? []).map((l) => ({
+            id: l.id,
+            title: l.title,
+            type: l.type,
+            description: l.description,
+            orderIndex: l.order_index,
+            resourceS3Key: l.resource_s3_key,
+            resourceFileName: l.resource_file_name,
+            externalUrl: l.external_url,
+            videoType: l.video_type,
+            videoUrl: l.video_url,
+            videoS3Key: l.video_s3_key,
+            isComplete: l.is_complete,
           })),
         })),
       };

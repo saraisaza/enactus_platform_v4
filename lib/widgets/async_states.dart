@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
-import 'common.dart';
 
 /// Los tres estados que toda pantalla necesita ahora que los datos vienen de
 /// la red: cargando, error con reintentar, y vacío.
@@ -109,12 +108,22 @@ class _SkeletonState extends State<Skeleton>
 }
 
 /// Esqueleto con forma de tarjeta, para listados.
+///
+/// Se adapta a la altura que se le pida: con poco espacio muestra solo el
+/// título y una línea, y con el alto normal la tarjeta completa. Sin esto, una
+/// tarjeta baja (`height: 58`, por ejemplo) desbordaba su propio `Column` —
+/// un esqueleto que se ve roto es peor que no poner ninguno.
 class CardSkeleton extends StatelessWidget {
   final double height;
   const CardSkeleton({super.key, this.height = 132});
 
   @override
   Widget build(BuildContext context) {
+    // 16 de padding arriba y abajo. Lo que queda es lo que hay para pintar.
+    final inner = height - 32;
+    final showBody = inner >= 62;
+    final showChips = inner >= 100;
+
     return Container(
       height: height,
       padding: const EdgeInsets.all(16),
@@ -127,18 +136,23 @@ class CardSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Skeleton(width: 150, height: 18),
-          const SizedBox(height: 12),
-          const Skeleton(height: 12),
-          const SizedBox(height: 8),
-          const Skeleton(width: 220, height: 12),
+          if (showBody) ...[
+            const SizedBox(height: 12),
+            const Skeleton(height: 12),
+          ],
+          if (showChips) ...[
+            const SizedBox(height: 8),
+            const Skeleton(width: 220, height: 12),
+          ],
           const Spacer(),
-          Row(
-            children: const [
-              Skeleton(width: 70, height: 22, radius: null),
-              SizedBox(width: 8),
-              Skeleton(width: 54, height: 22),
-            ],
-          ),
+          if (showChips)
+            const Row(
+              children: [
+                Skeleton(width: 70, height: 22),
+                SizedBox(width: 8),
+                Skeleton(width: 54, height: 22),
+              ],
+            ),
         ],
       ),
     );

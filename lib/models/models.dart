@@ -460,13 +460,23 @@ class Laboratory {
   /// Estructura de las fases. Solo en el detalle.
   final List<Phase> phases;
 
+  /// Cuántos equipos de la red trabajan en esta área. Solo con
+  /// `?scope=all`, la vista reducida de "otros laboratorios de la red".
+  final int teamCount;
+
+  /// LXDs del laboratorio. Solo en el detalle.
+  ///
+  /// No es una asignación explícita: son quienes crearon sus cursos. Misma
+  /// definición que usa el servidor para decidir qué laboratorios ve un LXD.
+  final List<LabStaff> lxds;
+
   /// Mentores que acompañan el laboratorio. Solo en el detalle.
   ///
   /// Vienen resueltos con el laboratorio a propósito: la alternativa era pedir
   /// la lista completa de usuarios y filtrarla en el navegador, que es lo que
   /// hacía la versión con Hive — y por eso cualquier rol podía enumerar a toda
   /// la plataforma.
-  final List<LabMentor> mentors;
+  final List<LabStaff> mentors;
 
   /// Nombre de la empresa patrocinadora, ya resuelto. Solo en el detalle.
   final String? sponsorName;
@@ -483,8 +493,10 @@ class Laboratory {
     this.contentVersion = 1,
     this.phases = const [],
     this.mentors = const [],
+    this.lxds = const [],
     this.sponsorName,
     this.studentsAssigned = 0,
+    this.teamCount = 0,
   });
 
   factory Laboratory.fromJson(Map<String, dynamic> j) => Laboratory(
@@ -498,25 +510,45 @@ class Laboratory {
             .map((e) => Phase.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
         mentors: (j['mentors'] as List? ?? const [])
-            .map((e) => LabMentor.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map((e) => LabStaff.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        lxds: (j['lxds'] as List? ?? const [])
+            .map((e) => LabStaff.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
         sponsorName: j['sponsorName'] as String?,
         studentsAssigned: (j['studentsAssigned'] as num?)?.toInt() ?? 0,
+        teamCount: (j['teamCount'] as num?)?.toInt() ?? 0,
       );
 }
 
-/// Un mentor tal como aparece en el detalle de su laboratorio.
-class LabMentor {
+/// Un mentor o LXD tal como aparece en el detalle de SU laboratorio.
+///
+/// Incluye correo y disponibilidad: son las personas que acompañan a quien
+/// mira, y coordinar una mentoría necesita cómo contactarlas. Es contacto
+/// acotado a ese laboratorio, no un directorio de la plataforma.
+class LabStaff {
   final String id;
   final String name;
+  final String email;
   final String? avatarS3Key;
 
-  const LabMentor({required this.id, required this.name, this.avatarS3Key});
+  /// Horario que publicó, o vacío si no publicó ninguno.
+  final String availability;
 
-  factory LabMentor.fromJson(Map<String, dynamic> j) => LabMentor(
+  const LabStaff({
+    required this.id,
+    required this.name,
+    this.email = '',
+    this.avatarS3Key,
+    this.availability = '',
+  });
+
+  factory LabStaff.fromJson(Map<String, dynamic> j) => LabStaff(
         id: j['id'] as String,
         name: (j['name'] as String?) ?? '',
+        email: (j['email'] as String?) ?? '',
         avatarS3Key: j['avatarS3Key'] as String?,
+        availability: (j['availability'] as String?) ?? '',
       );
 }
 

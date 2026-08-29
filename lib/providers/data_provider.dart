@@ -87,6 +87,7 @@ class DataProvider extends ChangeNotifier {
     _courses = const AsyncValue.idle();
     _rutaProgress = const AsyncValue.idle();
     _laboratories = const AsyncValue.idle();
+    _allLaboratories = const AsyncValue.idle();
     _projects = const AsyncValue.idle();
     _certificates = const AsyncValue.idle();
     _notifications = const AsyncValue.idle();
@@ -302,6 +303,23 @@ class DataProvider extends ChangeNotifier {
     await toggleLesson(lessonId, courseId);
   }
 
+  /// Marca una lectura o entrega PROPIA de un módulo de la Ruta.
+  ///
+  /// No pertenece a ningún curso, así que no hay progreso de curso que
+  /// actualizar: la respuesta trae el recálculo de módulo, fase y Ruta, y con
+  /// eso se vuelve a pedir el árbol completo. `IfPending` y no un toggle:
+  /// volver a abrir una lectura no debería desmarcarla.
+  Future<void> toggleRutaLessonIfPending(String lessonId) async {
+    final alreadyDone = _rutaProgress.valueOrNull?.laboratories.any((lab) =>
+            lab.phases.any((phase) => phase.modules.any((module) =>
+                module.ownLessons.any((l) => l.id == lessonId && l.isComplete)))) ??
+        false;
+    if (alreadyDone) return;
+
+    await api.post('/progress/lessons/$lessonId/toggle');
+    await reloadRutaProgress();
+  }
+
   /// Envía las respuestas de un quiz y devuelve el resultado.
   ///
   /// **La nota la calcula el servidor.** La clave de respuestas nunca llega al
@@ -338,6 +356,26 @@ class DataProvider extends ChangeNotifier {
       Map<String, dynamic>.from(json as Map),
       Laboratory.fromJson,
     ).data;
+  }
+
+  AsyncValue<List<Laboratory>> _allLaboratories = const AsyncValue.idle();
+
+  /// TODOS los laboratorios de la red, en versión reducida (nombre,
+  /// descripción y cuántos equipos trabajan en el área).
+  ///
+  /// Es lo que alimenta "otros laboratorios de la red": qué existe, para poder
+  /// pedirle uno al administrador. No trae la estructura de la Ruta ni el
+  /// avance de nadie — y esos nombres ya salen sin sesión en la portada.
+  AsyncValue<List<Laboratory>> get allLaboratories {
+    _lazy(_allLaboratories, (v) => _allLaboratories = v, () async {
+      final json = await api
+          .get('/laboratories', query: {'pageSize': 100, 'scope': 'all'});
+      return Page.fromJson(
+        Map<String, dynamic>.from(json as Map),
+        Laboratory.fromJson,
+      ).data;
+    });
+    return _allLaboratories;
   }
 
   AsyncValue<Laboratory> labById(String id) {

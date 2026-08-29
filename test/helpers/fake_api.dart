@@ -1,0 +1,75 @@
+import 'dart:convert';
+
+import 'package:enactus_platform/services/api_service.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Una API falsa para los tests de widget.
+///
+/// **No sustituye a `ApiService`, lo alimenta**: se le inyecta un cliente HTTP
+/// que responde payloads iguales a los de la API real, así que las pruebas
+/// ejercitan el `ApiService` de verdad —su parseo, su manejo de errores, su
+/// inyección del token— y no un doble que se comporta como uno quisiera.
+///
+/// Si la forma de una respuesta cambia en el backend, estas pruebas fallan por
+/// la misma razón por la que fallaría la app.
+class FakeApi {
+  /// Respuestas por ruta, sin el prefijo de la URL base. La clave incluye la
+  /// query cuando importa (`/courses?...` se normaliza al camino solo).
+  final Map<String, Object?> routes;
+
+  /// Rutas que deben responder 404, para probar los estados de error.
+  final Set<String> notFound;
+
+  /// Qué se pidió, en orden. Sirve para afirmar que una pantalla NO pide algo
+  /// que no le corresponde.
+  final List<String> requested = [];
+
+  /// Retraso artificial de cada respuesta. En cero, `MockClient` resuelve tan
+  /// rápido que el estado de carga se pierde entre dos `pump`; con un retraso
+  /// se puede observar, que es justo lo que algunas pruebas necesitan.
+  final Duration delay;
+
+  FakeApi({
+    Map<String, Object?>? routes,
+    Set<String>? notFound,
+    this.delay = Duration.zero,
+  })  : routes = routes ?? {},
+        notFound = notFound ?? {};
+
+  ApiService build() {
+    final client = MockClient((request) async {
+      final path = request.url.path;
+      requested.add('${request.method} $path');
+      if (delay > Duration.zero) await Future<void>.delayed(delay);
+
+      if (notFound.contains(path)) {
+        return _error(404, 'not_found', 'No encontramos lo que buscabas.');
+      }
+
+      final body = routes[path];
+      if (body == null) {
+        // Falta una ruta en el fake: se falla ruidosamente en vez de devolver
+        // vacío, que haría pasar una prueba por la razón equivocada.
+        fail('El fake no tiene respuesta para $path. Agregala en `routes`.');
+      }
+      return http.Response(jsonEncode(body), 200,
+          headers: {'content-type': 'application/json'});
+    });
+
+    return ApiService(client: client);
+  }
+
+  http.Response _error(int status, String code, String message) =>
+      http.Response(jsonEncode({'error': {'code': code, 'message': message}}),
+          status,
+          headers: {'content-type': 'application/json'});
+}
+
+/// `TokenStore` usa `shared_preferences`, que en un test necesita valores
+/// simulados o lanza al primer acceso.
+void useFakeTokenStorage() {
+  SharedPreferences.setMockInitialValues({});
+}

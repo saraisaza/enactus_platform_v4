@@ -32,12 +32,14 @@ Future<void> main() async {
   runApp(EnactusApp(api: api, data: data, auth: auth));
 }
 
-class EnactusApp extends StatelessWidget {
+class EnactusApp extends StatefulWidget {
   final ApiService api;
   final DataProvider data;
   final AuthProvider auth;
 
-  /// Solo para pruebas: entrar directo a una ruta sin pasar por el arranque.
+  /// Entrar directo a una ruta sin pasar por la pantalla de arranque. Lo usan
+  /// las pruebas, y Flutter web lo llena solo cuando alguien abre la app en
+  /// una URL profunda (`/admin`, un enlace compartido).
   final String? initialRoute;
 
   const EnactusApp({
@@ -49,7 +51,35 @@ class EnactusApp extends StatelessWidget {
   });
 
   @override
+  State<EnactusApp> createState() => _EnactusAppState();
+}
+
+class _EnactusAppState extends State<EnactusApp> {
+  @override
+  void initState() {
+    super.initState();
+    // La sesión se recupera acá, en la raíz, y NO en la pantalla de arranque.
+    //
+    // Con `initialRoute` puesto —una URL profunda— `_Bootstrap` nunca se
+    // monta: si el `restoreSession` viviera ahí, cualquiera que abriera un
+    // enlace directo a su portal se quedaría mirando la ruedita para siempre,
+    // porque el guardia de rol espera a que `isRestoring` sea falso y nadie
+    // lo cambiaría nunca.
+    //
+    // Tras el primer frame: `restoreSession` notifica, y notificar durante
+    // `initState` dispara el error de "setState during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.auth.restoreSession();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final api = widget.api;
+    final data = widget.data;
+    final auth = widget.auth;
+    final initialRoute = widget.initialRoute;
+
     return MultiProvider(
       providers: [
         Provider<ApiService>.value(value: api),
@@ -62,88 +92,94 @@ class EnactusApp extends StatelessWidget {
         theme: buildAppTheme(),
         home: initialRoute == null ? const _Bootstrap() : null,
         initialRoute: initialRoute,
-        onGenerateRoute: _onGenerateRoute,
+        onGenerateRoute: _generateRoute,
       ),
     );
   }
 
-  static Route<dynamic> _onGenerateRoute(RouteSettings settings) {
-    Widget page = const NotFoundView();
-    switch (settings.name) {
-      case AppRoutes.landing:
-        page = const LandingView();
-      case AppRoutes.login:
-        page = const LoginView();
-      case AppRoutes.student:
-        page = const _RoleGuard(role: Roles.student, child: StudentPortal());
-      case AppRoutes.alumni:
-        page = const _RoleGuard(role: Roles.alumni, child: StudentPortal());
-      case String name when name.startsWith('${AppRoutes.student}/lab/'):
-        page = _RoleGuard(
-            role: Roles.student,
-            child: StudentPortal(
-                openLabId: name.substring('${AppRoutes.student}/lab/'.length)));
-      case String name when name.startsWith('${AppRoutes.alumni}/lab/'):
-        page = _RoleGuard(
-            role: Roles.alumni,
-            child: StudentPortal(
-                openLabId: name.substring('${AppRoutes.alumni}/lab/'.length)));
-      case '${AppRoutes.student}/laboratorios':
-        page = const _RoleGuard(
-            role: Roles.student,
-            child: StudentPortal(initialTabLabel: 'Laboratorios'));
-      case '${AppRoutes.alumni}/laboratorios':
-        page = const _RoleGuard(
-            role: Roles.alumni,
-            child: StudentPortal(initialTabLabel: 'Laboratorios'));
-      case AppRoutes.lxd:
-        page = const _RoleGuard(
-            role: Roles.lxd, child: PendingPortalView(portalName: 'Portal LXD'));
-      case AppRoutes.mentor:
-        page = const _RoleGuard(
-            role: Roles.mentor,
-            child: PendingPortalView(portalName: 'Portal Mentor'));
-      case AppRoutes.admin:
-        page = const _RoleGuard(
-            role: Roles.admin,
-            child: PendingPortalView(portalName: 'Portal Admin'));
-      case AppRoutes.superAdmin:
-        page = const _RoleGuard(
-            role: Roles.superAdmin,
-            child: PendingPortalView(portalName: 'Portal Super Admin'));
-      case AppRoutes.advisor:
-        page = const _RoleGuard(
-            role: Roles.advisor,
-            child: PendingPortalView(portalName: 'Portal Asesor Académico'));
-      case AppRoutes.company:
-        page = const _RoleGuard(
-            role: Roles.company,
-            child: PendingPortalView(portalName: 'Portal Empresa'));
-      case AppRoutes.donor:
-        page = const _RoleGuard(
-            role: Roles.donor,
-            child: PendingPortalView(portalName: 'Portal Donante'));
-      case String name when name.startsWith('${AppRoutes.projects}/'):
-        page = _AuthGuard(
-            child: ProjectDetailView(
-                projectId: name.substring('${AppRoutes.projects}/'.length)));
-      case String name when name.startsWith('${AppRoutes.courses}/'):
-        page = _AuthGuard(
-            child: CourseDetailView(
-                courseId: name.substring('${AppRoutes.courses}/'.length)));
-      // `/usuarios/:id` queda pendiente: el perfil de OTRA persona necesita
-      // un `GET /users/:id` que la API todavía no expone, y su vista es de
-      // personal (Mentor, Asesor, LXD, Admin), no del portal Estudiante.
-      case String name when name.startsWith('${AppRoutes.users}/'):
-        page = const _AuthGuard(
-            child: PendingPortalView(portalName: 'Perfil de usuario'));
-      case String name when name.startsWith('${AppRoutes.labs}/'):
-        page = _AuthGuard(
-            child: LabDetailView(
-                labId: name.substring('${AppRoutes.labs}/'.length)));
-    }
-    return MaterialPageRoute(builder: (_) => page, settings: settings);
+}
+
+/// Todas las rutas con nombre de la app, en un solo lugar.
+///
+/// Es una función suelta y no un método de `EnactusApp` porque la usan dos
+/// navegadores distintos: el de la app y el que arma `_Bootstrap` al entrar
+/// con sesión activa.
+Route<dynamic> _generateRoute(RouteSettings settings) {
+  Widget page = const NotFoundView();
+  switch (settings.name) {
+    case AppRoutes.landing:
+      page = const LandingView();
+    case AppRoutes.login:
+      page = const LoginView();
+    case AppRoutes.student:
+      page = const _RoleGuard(role: Roles.student, child: StudentPortal());
+    case AppRoutes.alumni:
+      page = const _RoleGuard(role: Roles.alumni, child: StudentPortal());
+    case String name when name.startsWith('${AppRoutes.student}/lab/'):
+      page = _RoleGuard(
+          role: Roles.student,
+          child: StudentPortal(
+              openLabId: name.substring('${AppRoutes.student}/lab/'.length)));
+    case String name when name.startsWith('${AppRoutes.alumni}/lab/'):
+      page = _RoleGuard(
+          role: Roles.alumni,
+          child: StudentPortal(
+              openLabId: name.substring('${AppRoutes.alumni}/lab/'.length)));
+    case '${AppRoutes.student}/laboratorios':
+      page = const _RoleGuard(
+          role: Roles.student,
+          child: StudentPortal(initialTabLabel: 'Laboratorios'));
+    case '${AppRoutes.alumni}/laboratorios':
+      page = const _RoleGuard(
+          role: Roles.alumni,
+          child: StudentPortal(initialTabLabel: 'Laboratorios'));
+    case AppRoutes.lxd:
+      page = const _RoleGuard(
+          role: Roles.lxd, child: PendingPortalView(portalName: 'Portal LXD'));
+    case AppRoutes.mentor:
+      page = const _RoleGuard(
+          role: Roles.mentor,
+          child: PendingPortalView(portalName: 'Portal Mentor'));
+    case AppRoutes.admin:
+      page = const _RoleGuard(
+          role: Roles.admin,
+          child: PendingPortalView(portalName: 'Portal Admin'));
+    case AppRoutes.superAdmin:
+      page = const _RoleGuard(
+          role: Roles.superAdmin,
+          child: PendingPortalView(portalName: 'Portal Super Admin'));
+    case AppRoutes.advisor:
+      page = const _RoleGuard(
+          role: Roles.advisor,
+          child: PendingPortalView(portalName: 'Portal Asesor Académico'));
+    case AppRoutes.company:
+      page = const _RoleGuard(
+          role: Roles.company,
+          child: PendingPortalView(portalName: 'Portal Empresa'));
+    case AppRoutes.donor:
+      page = const _RoleGuard(
+          role: Roles.donor,
+          child: PendingPortalView(portalName: 'Portal Donante'));
+    case String name when name.startsWith('${AppRoutes.projects}/'):
+      page = _AuthGuard(
+          child: ProjectDetailView(
+              projectId: name.substring('${AppRoutes.projects}/'.length)));
+    case String name when name.startsWith('${AppRoutes.courses}/'):
+      page = _AuthGuard(
+          child: CourseDetailView(
+              courseId: name.substring('${AppRoutes.courses}/'.length)));
+    // `/usuarios/:id` queda pendiente: el perfil de OTRA persona necesita
+    // un `GET /users/:id` que la API todavía no expone, y su vista es de
+    // personal (Mentor, Asesor, LXD, Admin), no del portal Estudiante.
+    case String name when name.startsWith('${AppRoutes.users}/'):
+      page = const _AuthGuard(
+          child: PendingPortalView(portalName: 'Perfil de usuario'));
+    case String name when name.startsWith('${AppRoutes.labs}/'):
+      page = _AuthGuard(
+          child: LabDetailView(
+              labId: name.substring('${AppRoutes.labs}/'.length)));
   }
+  return MaterialPageRoute(builder: (_) => page, settings: settings);
 }
 
 /// Pantalla de arranque: restaura la sesión guardada y decide a dónde entrar.
@@ -160,16 +196,6 @@ class _Bootstrap extends StatefulWidget {
 
 class _BootstrapState extends State<_Bootstrap> {
   @override
-  void initState() {
-    super.initState();
-    // Tras el primer frame: `restoreSession` notifica, y notificar durante
-    // `initState` dispara el error de "setState during build".
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<AuthProvider>().restoreSession();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
@@ -185,7 +211,7 @@ class _BootstrapState extends State<_Bootstrap> {
 
     // Con sesión activa, directo a su portal.
     return Navigator(
-      onGenerateRoute: (settings) => EnactusApp._onGenerateRoute(
+      onGenerateRoute: (settings) => _generateRoute(
         settings.name == null || settings.name == '/'
             ? RouteSettings(name: AppRoutes.forRole(user.role))
             : settings,

@@ -37,6 +37,7 @@ beforeAll(async () => {
     ['company', 'empresa@bancolombia.com', 'Empresa123'],
     ['student', 'estudiante1@uniandes.edu.co', 'Est123'],
     ['otroStudent', 'estudiante3@unal.edu.co', 'Est123'],
+    ['openLearning', 'camila.rivas@gmail.com', 'Est123'],
   ];
   for (const [key, email, password] of creds) {
     T[key] = (await login(app, email, password)).accessToken;
@@ -472,6 +473,34 @@ describe('el contrato de la API es camelCase en TODAS las respuestas', () => {
       const encontradas = [...new Set(raw.match(snake) ?? [])];
       expect(encontradas, `claves snake_case en ${ruta}`).toEqual([]);
     }
+  });
+
+  it('GET /laboratories?scope=all trae toda la red en versión reducida', async () => {
+    // La pantalla de Laboratorios muestra "otros laboratorios de la red" para
+    // que un estudiante sepa qué existe. No filtra nada sensible: nombre y
+    // descripción ya salen SIN sesión en /site-content.
+    const res = await req('/laboratories?scope=all', T.student!);
+    expect(res.status).toBe(200);
+    const page = await body<{
+      data: { id: string; name: string; teamCount: number }[];
+    }>(res);
+
+    // Más que los que tiene asignados: ese es el punto de la sección.
+    const mios = await req('/laboratories', T.student!);
+    const propios = await body<{ data: unknown[] }>(mios);
+    expect(page.data.length).toBeGreaterThan(propios.data.length);
+
+    // Pero sin la estructura de la Ruta ni el avance de nadie.
+    const raw = await new Response(JSON.stringify(page)).text();
+    expect(raw).not.toContain('phases');
+    expect(raw).not.toContain('objectives');
+  });
+
+  it('scope=all NO le abre la puerta a un Open Learning', async () => {
+    // Todo el router está detrás de requireEnactus: un parámetro de consulta
+    // no puede saltárselo.
+    const res = await req('/laboratories?scope=all', T.openLearning!);
+    expect(res.status).toBe(403);
   });
 
   it('el detalle de un laboratorio trae mentores, patrocinador y avance del grupo', async () => {

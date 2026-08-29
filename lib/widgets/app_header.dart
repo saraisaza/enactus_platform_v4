@@ -546,11 +546,9 @@ class _NotificationBell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final notifications = data.notifications.valueOrNull ?? const [];
     // El conteo lo da el servidor: es el mismo número en todas las
     // pestañas abiertas, sin depender de cuántas se hayan traído.
-    final unread = data.unreadNotifications;
+    final unread = context.watch<DataProvider>().unreadNotifications;
 
     return Stack(
       clipBehavior: Clip.none,

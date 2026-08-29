@@ -7,6 +7,8 @@
 /// solo la muestra.
 library;
 
+import 'models.dart';
+
 /// Estado del deadline de una fase para un estudiante puntual.
 /// Una fase ya completada nunca aparece atrasada, sin importar la fecha.
 enum DeadlineStatus {
@@ -121,6 +123,10 @@ class ModuleProgress {
 
   final List<CourseProgress> courses;
 
+  /// Las lecturas y entregas PROPIAS del módulo —las que no vienen de un
+  /// curso— con si esta persona ya las marcó.
+  final List<OwnLesson> ownLessons;
+
   const ModuleProgress({
     required this.moduleId,
     required this.title,
@@ -133,6 +139,7 @@ class ModuleProgress {
     required this.isComplete,
     required this.isUnlocked,
     required this.courses,
+    this.ownLessons = const [],
   });
 
   /// Un módulo sin nada configurado todavía. El servidor nunca lo cuenta como
@@ -159,6 +166,72 @@ class ModuleProgress {
             .map((e) =>
                 CourseProgress.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        ownLessons: (j['ownLessons'] as List? ?? const [])
+            .map((e) => OwnLesson.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+/// Una lectura o entrega propia de un módulo de la Ruta.
+///
+/// No pertenece a ningún curso: la crea el Admin dentro del módulo. Se marca
+/// con el mismo endpoint que cualquier lección.
+class OwnLesson {
+  final String id;
+  final String title;
+  final LessonType type;
+  final String description;
+  final String? resourceS3Key;
+  final String? resourceFileName;
+  final String? externalUrl;
+  final VideoSourceType? videoType;
+  final String? videoUrl;
+  final String? videoS3Key;
+  final bool isComplete;
+
+  const OwnLesson({
+    required this.id,
+    required this.title,
+    this.type = LessonType.resource,
+    this.description = '',
+    this.resourceS3Key,
+    this.resourceFileName,
+    this.externalUrl,
+    this.videoType,
+    this.videoUrl,
+    this.videoS3Key,
+    this.isComplete = false,
+  });
+
+  bool get isActivity => type == LessonType.activity;
+
+  /// La misma forma que [Lesson], para poder reutilizar los widgets que ya
+  /// saben abrir una lección (el reproductor de video, por ejemplo).
+  Lesson toLesson() => Lesson(
+        id: id,
+        title: title,
+        type: type,
+        description: description,
+        resourceS3Key: resourceS3Key,
+        resourceFileName: resourceFileName,
+        externalUrl: externalUrl,
+        videoType: videoType,
+        videoUrl: videoUrl,
+        videoS3Key: videoS3Key,
+      );
+
+  factory OwnLesson.fromJson(Map<String, dynamic> j) => OwnLesson(
+        id: j['id'] as String,
+        title: (j['title'] as String?) ?? '',
+        type: LessonType.fromJson(j['type'] as String?),
+        description: (j['description'] as String?) ?? '',
+        resourceS3Key: j['resourceS3Key'] as String?,
+        resourceFileName: j['resourceFileName'] as String?,
+        externalUrl: j['externalUrl'] as String?,
+        videoType: VideoSourceType.fromJson(j['videoType'] as String?),
+        videoUrl: j['videoUrl'] as String?,
+        videoS3Key: j['videoS3Key'] as String?,
+        isComplete: (j['isComplete'] as bool?) ?? false,
       );
 }
 
@@ -167,6 +240,7 @@ class PhaseProgress {
   final String phaseId;
   final int orderIndex;
   final String title;
+  final String description;
 
   /// ISO `yyyy-MM-dd`, o `null` si el Admin no la puso.
   final String? deadline;
@@ -184,6 +258,7 @@ class PhaseProgress {
     required this.phaseId,
     required this.orderIndex,
     required this.title,
+    this.description = '',
     required this.deadline,
     required this.deadlineStatus,
     required this.modulesTotal,
@@ -207,6 +282,7 @@ class PhaseProgress {
         phaseId: j['phaseId'] as String,
         orderIndex: (j['orderIndex'] as num?)?.toInt() ?? 0,
         title: (j['title'] as String?) ?? '',
+        description: (j['description'] as String?) ?? '',
         deadline: j['deadline'] as String?,
         deadlineStatus: DeadlineStatus.fromJson(j['deadlineStatus'] as String?),
         modulesTotal: (j['modulesTotal'] as num?)?.toInt() ?? 0,

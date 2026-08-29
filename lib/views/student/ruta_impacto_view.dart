@@ -1,26 +1,29 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
+import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
+import '../../widgets/async_states.dart';
 import '../../widgets/charts.dart' show ProgressRing;
 import '../../widgets/common.dart';
+import '../../widgets/file_upload_field.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../shared/lab_detail_view.dart';
-import '../shared/user_detail_view.dart';
 import 'course_detail_view.dart';
 
 /// Flujo completo de la Ruta de Impacto del estudiante:
@@ -43,60 +46,103 @@ class LabsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final myLabs = data.labsForStudent(student);
-    final otherLabs =
-        data.labs.where((l) => !myLabs.any((m) => m.id == l.id)).toList();
 
-    return ContentScreenShell(
-      eyebrow: myLabs.isEmpty
-          ? '${data.labs.length} en la red'
-          : '${myLabs.length} ${myLabs.length == 1 ? 'laboratorio asignado' : 'laboratorios asignados'} '
-              '· ${data.labs.length} en la red',
-      title: 'Laboratorios',
-      subtitle: 'Un laboratorio es un área de trabajo de eduXaction Colombia: '
-          'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
-          'acompaña. Entra al tuyo para ver qué sigue.',
-      bodyBuilder: (context, colors, isDark) {
-        if (myLabs.isEmpty) {
-          return EmptyState(
-            icon: Icons.science_outlined,
-            title: 'Sin laboratorios asignados',
-            message: 'Tu administrador todavía no te ha asignado un '
-                'laboratorio. Sin uno no tienes Ruta de Impacto ni cursos '
-                'de área.',
-            primaryLabel: 'Actualizar',
-            onPrimary: () => showAppSnack(context, 'Actualizado'),
-            colors: colors,
-          );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _LabsGrid(labs: myLabs, student: student, colors: colors),
-            if (otherLabs.isNotEmpty) ...[
-              const SizedBox(height: 36),
-              Text('OTROS LABORATORIOS DE LA RED',
-                  style: knockoutHeading(
-                      fontSize: 30, fontWeight: AppWeights.display, color: colors.text)),
-              const SizedBox(height: 6),
-              Text(
-                  'Pídele a tu administrador que te asigne uno si tu proyecto lo necesita.',
-                  style: TextStyle(fontSize: 13.5, color: colors.text3)),
-              const SizedBox(height: 16),
-              _OtherLabsGrid(labs: otherLabs, colors: colors),
-            ],
-          ],
+    // Dos fuentes distintas y a propósito: `laboratories` son LOS SUYOS, con
+    // su estructura completa; `allLaboratories` es la red entera en versión
+    // reducida. El avance sale de la Ruta, que lo calcula el servidor.
+    return combine3(
+      data.laboratories,
+      data.allLaboratories,
+      data.rutaProgress,
+    ).when(
+      loading: () => const _LabsShell(child: CardListSkeleton(count: 2)),
+      error: (e) => _LabsShell(
+        child: ErrorState(e, onRetry: data.reloadLaboratories),
+      ),
+      data: (values) {
+        final (myLabs, allLabs, ruta) = values;
+        final otherLabs = allLabs
+            .where((l) => !myLabs.any((m) => m.id == l.id))
+            .toList();
+
+        return ContentScreenShell(
+          eyebrow: myLabs.isEmpty
+              ? '${allLabs.length} en la red'
+              : '${myLabs.length} ${myLabs.length == 1 ? 'laboratorio asignado' : 'laboratorios asignados'} '
+                  '· ${allLabs.length} en la red',
+          title: 'Laboratorios',
+          subtitle:
+              'Un laboratorio es un área de trabajo de eduXaction Colombia: '
+              'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
+              'acompaña. Entra al tuyo para ver qué sigue.',
+          bodyBuilder: (context, colors, isDark) {
+            if (myLabs.isEmpty) {
+              return EmptyState(
+                icon: Icons.science_outlined,
+                title: 'Sin laboratorios asignados',
+                message: 'Tu administrador todavía no te ha asignado un '
+                    'laboratorio. Sin uno no tienes Ruta de Impacto ni cursos '
+                    'de área.',
+                primaryLabel: 'Actualizar',
+                onPrimary: data.reloadLaboratories,
+                colors: colors,
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LabsGrid(
+                    labs: myLabs,
+                    ruta: ruta,
+                    student: student,
+                    colors: colors),
+                if (otherLabs.isNotEmpty) ...[
+                  const SizedBox(height: 36),
+                  Text('OTROS LABORATORIOS DE LA RED',
+                      style: knockoutHeading(
+                          fontSize: 30,
+                          fontWeight: AppWeights.display,
+                          color: colors.text)),
+                  const SizedBox(height: 6),
+                  Text(
+                      'Pídele a tu administrador que te asigne uno si tu proyecto lo necesita.',
+                      style: TextStyle(fontSize: 13.5, color: colors.text3)),
+                  const SizedBox(height: 16),
+                  _OtherLabsGrid(labs: otherLabs, colors: colors),
+                ],
+              ],
+            );
+          },
         );
       },
     );
   }
 }
 
+/// El marco de la pantalla mientras carga o falla, para que el encabezado no
+/// aparezca y desaparezca entre estados.
+class _LabsShell extends StatelessWidget {
+  final Widget child;
+  const _LabsShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) => ContentScreenShell(
+        eyebrow: 'Laboratorios',
+        title: 'Laboratorios',
+        bodyBuilder: (context, colors, isDark) => child,
+      );
+}
+
 class _LabsGrid extends StatelessWidget {
   final List<Laboratory> labs;
+  final RutaProgress ruta;
   final AppUser student;
   final ContentColors colors;
-  const _LabsGrid({required this.labs, required this.student, required this.colors});
+  const _LabsGrid(
+      {required this.labs,
+      required this.ruta,
+      required this.student,
+      required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +161,11 @@ class _LabsGrid extends StatelessWidget {
               width: width,
               child: Entrance(
                   delayMs: 70 * i,
-                  child: _LabCard(lab: labs[i], student: student, colors: colors)),
+                  child: _LabCard(
+                      lab: labs[i],
+                      progress: ruta.labById(labs[i].id),
+                      student: student,
+                      colors: colors)),
             ),
         ],
       );
@@ -124,37 +174,47 @@ class _LabsGrid extends StatelessWidget {
 }
 
 /// Tarjeta de un laboratorio asignado. Toda la tarjeta es clicable y navega
-/// al detalle con una ruta con nombre real (`/student/lab/<id>` o
-/// `/alumni/lab/<id>`, ver `main.dart`) para que la URL cambie y el botón
-/// atrás del navegador funcione — la barra lateral sigue mostrando
-/// "Laboratorios" resaltado porque el detalle vive dentro del mismo
-/// [PortalShell] (ver [StudentPortal.openLabId]).
+/// al detalle con una ruta con nombre real (`/student/lab/<id>`) para que la
+/// URL cambie y el botón atrás del navegador funcione.
+///
+/// El avance —fase en curso, módulos hechos, si hay algo vencido— sale
+/// entero de [LabProgress], que calcula el servidor. Antes cada dato se
+/// recalculaba acá con una llamada distinta y podían no coincidir entre sí.
 class _LabCard extends StatelessWidget {
   final Laboratory lab;
+  final LabProgress? progress;
   final AppUser student;
   final ContentColors colors;
-  const _LabCard({required this.lab, required this.student, required this.colors});
+  const _LabCard(
+      {required this.lab,
+      required this.progress,
+      required this.student,
+      required this.colors});
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final accent = labColorFor(lab.id);
     final odsNum = labOdsNumberFor(lab.id);
-    final progress = data.labModuleProgress(student.id, lab);
-    final currentPhaseIdx = lab.phases
-        .indexWhere((p) => !data.isPhaseComplete(student.id, lab.id, p));
-    final allComplete = currentPhaseIdx == -1;
-    final currentPhaseDisplay = allComplete ? lab.phases.length : currentPhaseIdx + 1;
-    final overdue = lab.phases.asMap().entries.any((e) =>
-        data.isPhaseUnlocked(student.id, lab.id, lab, e.key) &&
-        data.phaseDeadlineStatus(student.id, lab.id, e.value) ==
-            DeadlineStatus.overdue);
-    final courses = data.coursesByLab(lab.id);
-    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
-    final lxd = data.lxdForLab(lab.id);
 
-    void open() =>
-        Navigator.pushNamed(context, '${AppRoutes.forRole(student.role)}/lab/${lab.id}');
+    final phases = progress?.phases ?? const <PhaseProgress>[];
+    final modules = progress?.moduleProgress ?? (done: 0, total: 0);
+    final currentPhaseIdx = phases.indexWhere((p) => !p.isComplete);
+    final allComplete = phases.isNotEmpty && currentPhaseIdx == -1;
+    final phaseCount = phases.isEmpty ? lab.phases.length : phases.length;
+    final currentPhaseDisplay =
+        allComplete ? phaseCount : currentPhaseIdx + 1;
+    final overdue = phases.any((p) =>
+        p.isUnlocked && p.deadlineStatus == DeadlineStatus.overdue);
+
+    final courses = (data.courses.valueOrNull ?? const <Course>[])
+        .where((c) => c.laboratoryId == lab.id)
+        .toList();
+    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
+    final lxd = lab.lxds.firstOrNull;
+
+    void open() => Navigator.pushNamed(
+        context, '${AppRoutes.forRole(student.role)}/lab/${lab.id}');
 
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
@@ -265,21 +325,23 @@ class _LabCard extends StatelessWidget {
                     StageRail(
                       accentColor: accent,
                       colors: colors,
-                      currentIndex: allComplete ? lab.phases.length - 1 : currentPhaseIdx,
-                      totalOverride: lab.phases.length,
+                      currentIndex: allComplete
+                          ? phaseCount - 1
+                          : math.max(0, currentPhaseIdx),
+                      totalOverride: phaseCount,
                       caption: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                               allComplete
-                                  ? 'Fase ${lab.phases.length} de ${lab.phases.length} completa'
-                                  : 'Fase $currentPhaseDisplay de ${lab.phases.length} en curso',
+                                  ? 'Fase $phaseCount de $phaseCount completa'
+                                  : 'Fase $currentPhaseDisplay de $phaseCount en curso',
                               style: TextStyle(fontSize: 12, color: colors.text3)),
                           const SizedBox(height: 2),
                           Text(
-                              progress.total == 0
+                              modules.total == 0
                                   ? 'Sin módulos aún'
-                                  : '${progress.done}/${progress.total} módulos',
+                                  : '${modules.done}/${modules.total} módulos',
                               style: TextStyle(fontSize: 12, color: colors.text3)),
                         ],
                       ),
@@ -289,7 +351,7 @@ class _LabCard extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _MetaChip(icon: Icons.route, label: '${lab.phases.length} fases', colors: colors),
+                        _MetaChip(icon: Icons.route, label: '$phaseCount fases', colors: colors),
                         _MetaChip(icon: Icons.school, label: '${courses.length} cursos', colors: colors),
                         _MetaChip(icon: Icons.schedule, label: '$hours h estimadas', colors: colors),
                       ],
@@ -404,9 +466,8 @@ class _OtherLabCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
     final accent = labColorFor(lab.id);
-    final teams = data.teamsInLabArea(lab.id);
+    final teams = lab.teamCount;
 
     return KeyboardHoverBuilder(
       onTap: () => Navigator.push(
@@ -499,100 +560,130 @@ class _LabDetailBodyState extends State<LabDetailBody> {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final lab = data.labById(widget.labId);
     final colors = _colors;
 
-    if (lab == null) {
-      return DecoratedBox(
-        decoration: BoxDecoration(color: colors.bg),
-        child: Center(
+    // La estructura del laboratorio y el avance de esta persona son dos
+    // fuentes distintas: la primera describe el laboratorio, la segunda dice
+    // cómo va quien lo mira. Se piden juntas para no dibujar media pantalla.
+    return DecoratedBox(
+      decoration: BoxDecoration(color: colors.bg),
+      child: combine2(data.labById(widget.labId), data.rutaProgress).when(
+        loading: () => const Center(child: BrandLoader()),
+        error: (e) => Center(
           child: Padding(
             padding: const EdgeInsets.all(40),
-            child: EmptyState(
-              icon: Icons.science_outlined,
-              title: 'Laboratorio no encontrado',
-              message: 'Puede que ya no exista o que el enlace esté mal escrito.',
-              primaryLabel: 'Todos los laboratorios',
-              onPrimary: () => _goBack(student),
-              colors: colors,
+            child: e is NotFoundError
+                ? EmptyState(
+                    icon: Icons.science_outlined,
+                    title: 'Laboratorio no encontrado',
+                    message:
+                        'Puede que ya no exista o que el enlace esté mal escrito.',
+                    primaryLabel: 'Todos los laboratorios',
+                    onPrimary: () => _goBack(student),
+                    colors: colors,
+                  )
+                : ErrorState(e, onRetry: data.reloadRutaProgress),
+          ),
+        ),
+        data: (values) {
+          final (lab, ruta) = values;
+          return _content(context, lab, ruta.labById(lab.id), student, colors);
+        },
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context, Laboratory lab, LabProgress? progress,
+      AppUser student, ContentColors colors) {
+    final data = context.watch<DataProvider>();
+
+    final phases = progress?.phases ?? const <PhaseProgress>[];
+    final modules = progress?.moduleProgress ?? (done: 0, total: 0);
+    final currentPhaseIdx = phases.indexWhere((p) => !p.isComplete);
+    final phaseCount = phases.isEmpty ? lab.phases.length : phases.length;
+    final currentPhaseDisplay =
+        currentPhaseIdx == -1 ? phaseCount : currentPhaseIdx + 1;
+
+    final courses = (data.courses.valueOrNull ?? const <Course>[])
+        .where((c) => c.laboratoryId == lab.id)
+        .toList();
+    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
+    final lxd = lab.lxds.firstOrNull;
+    final accent = labColorFor(lab.id);
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _BackButton(colors: colors, onTap: () => _goBack(student)),
+                    const Spacer(),
+                    _ContentThemeToggle(
+                        isDark: _isDark,
+                        colors: colors,
+                        onTap: () => setState(() => _isDark = !_isDark)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _LabIdentityBand(
+                    lab: lab,
+                    modules: modules,
+                    currentPhaseDisplay: currentPhaseDisplay,
+                    totalPhases: phaseCount,
+                    colors: colors),
+                const SizedBox(height: 20),
+                _LabStatsRow(
+                    phaseCount: phaseCount,
+                    modules: modules,
+                    courseCount: courses.length,
+                    hours: hours,
+                    colors: colors),
+                const SizedBox(height: 32),
+                Text('RUTA DE IMPACTO',
+                    style: knockoutHeading(
+                        fontSize: 34,
+                        fontWeight: AppWeights.display,
+                        color: colors.text)),
+                const SizedBox(height: 4),
+                Text(
+                    'Las fases se abren en orden. Tu LXD publica el contenido de cada una.',
+                    style: TextStyle(fontSize: 13.5, color: colors.text3)),
+                const SizedBox(height: 18),
+                _PhaseCardsGrid(
+                    lab: lab, phases: phases, student: student, colors: colors),
+                const SizedBox(height: 32),
+                LayoutBuilder(builder: (context, c) {
+                  final coursesCard = _LabCoursesCard(
+                      courses: courses, accent: accent, colors: colors);
+                  final lxdCard = _LabLxdCard(
+                      lab: lab, lxd: lxd, accent: accent, colors: colors);
+                  if (c.maxWidth > 760) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 150, child: coursesCard),
+                        const SizedBox(width: 20),
+                        Expanded(flex: 100, child: lxdCard),
+                      ],
+                    );
+                  }
+                  return Column(
+                      children: [coursesCard, const SizedBox(height: 20), lxdCard]);
+                }),
+              ],
             ),
           ),
         ),
-      );
-    }
-
-    final progress = data.labModuleProgress(student.id, lab);
-    final currentPhaseIdx = lab.phases
-        .indexWhere((p) => !data.isPhaseComplete(student.id, lab.id, p));
-    final currentPhaseDisplay = currentPhaseIdx == -1 ? lab.phases.length : currentPhaseIdx + 1;
-    final courses = data.coursesByLab(lab.id);
-    final hours = courses.fold<int>(0, (sum, c) => sum + c.estimatedHours);
-    final lxd = data.lxdForLab(lab.id);
-    final accent = labColorFor(lab.id);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(color: colors.bg),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _BackButton(colors: colors, onTap: () => _goBack(student)),
-                      const Spacer(),
-                      _ContentThemeToggle(
-                          isDark: _isDark, colors: colors, onTap: () => setState(() => _isDark = !_isDark)),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  _LabIdentityBand(
-                      lab: lab,
-                      progress: progress,
-                      currentPhaseDisplay: currentPhaseDisplay,
-                      totalPhases: lab.phases.length,
-                      colors: colors),
-                  const SizedBox(height: 20),
-                  _LabStatsRow(
-                      lab: lab, progress: progress, courseCount: courses.length, hours: hours, colors: colors),
-                  const SizedBox(height: 32),
-                  Text('RUTA DE IMPACTO',
-                      style: knockoutHeading(fontSize: 34, fontWeight: AppWeights.display, color: colors.text)),
-                  const SizedBox(height: 4),
-                  Text('Las fases se abren en orden. Tu LXD publica el contenido de cada una.',
-                      style: TextStyle(fontSize: 13.5, color: colors.text3)),
-                  const SizedBox(height: 18),
-                  _PhaseCardsGrid(lab: lab, student: student, colors: colors),
-                  const SizedBox(height: 32),
-                  LayoutBuilder(builder: (context, c) {
-                    final coursesCard = _LabCoursesCard(
-                        courses: courses, studentId: student.id, accent: accent, colors: colors);
-                    final lxdCard = _LabLxdCard(lab: lab, lxd: lxd, accent: accent, colors: colors);
-                    if (c.maxWidth > 760) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 150, child: coursesCard),
-                          const SizedBox(width: 20),
-                          Expanded(flex: 100, child: lxdCard),
-                        ],
-                      );
-                    }
-                    return Column(children: [coursesCard, const SizedBox(height: 20), lxdCard]);
-                  }),
-                ],
-              ),
-            ),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
-          ),
-        ],
-      ),
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
+        ),
+      ],
     );
   }
 }
@@ -663,13 +754,16 @@ class _ContentThemeToggle extends StatelessWidget {
 
 class _LabIdentityBand extends StatelessWidget {
   final Laboratory lab;
-  final ({int done, int total}) progress;
+
+  /// Módulos hechos/totales de toda la Ruta. Única fuente para el anillo y
+  /// para el texto: no hay dos cifras que puedan desincronizarse.
+  final ({int done, int total}) modules;
   final int currentPhaseDisplay;
   final int totalPhases;
   final ContentColors colors;
   const _LabIdentityBand(
       {required this.lab,
-      required this.progress,
+      required this.modules,
       required this.currentPhaseDisplay,
       required this.totalPhases,
       required this.colors});
@@ -678,7 +772,7 @@ class _LabIdentityBand extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = labColorFor(lab.id);
     final odsNum = labOdsNumberFor(lab.id);
-    final pct = progress.total == 0 ? 0.0 : progress.done / progress.total;
+    final pct = modules.total == 0 ? 0.0 : modules.done / modules.total;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -750,7 +844,7 @@ class _LabIdentityBand extends StatelessWidget {
                               Text('Fase $currentPhaseDisplay de $totalPhases',
                                   style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: Colors.white)),
                               const SizedBox(height: 2),
-                              Text('${progress.done} de ${progress.total} módulos',
+                              Text('${modules.done} de ${modules.total} módulos',
                                   style: TextStyle(fontSize: 12.5, color: Colors.white.withValues(alpha: 0.85))),
                             ],
                           ),
@@ -769,14 +863,14 @@ class _LabIdentityBand extends StatelessWidget {
 }
 
 class _LabStatsRow extends StatelessWidget {
-  final Laboratory lab;
-  final ({int done, int total}) progress;
+  final int phaseCount;
+  final ({int done, int total}) modules;
   final int courseCount;
   final int hours;
   final ContentColors colors;
   const _LabStatsRow(
-      {required this.lab,
-      required this.progress,
+      {required this.phaseCount,
+      required this.modules,
       required this.courseCount,
       required this.hours,
       required this.colors});
@@ -784,8 +878,8 @@ class _LabStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      (value: '${lab.phases.length}', label: 'Fases en la ruta', primary: true),
-      (value: '${progress.total}', label: 'Módulos publicados', primary: false),
+      (value: '$phaseCount', label: 'Fases en la ruta', primary: true),
+      (value: '${modules.total}', label: 'Módulos publicados', primary: false),
       (value: '$courseCount', label: 'Cursos del laboratorio', primary: false),
       (value: '$hours h', label: 'Horas estimadas', primary: false),
     ];
@@ -828,12 +922,24 @@ class _LabStatsRow extends StatelessWidget {
 
 class _PhaseCardsGrid extends StatelessWidget {
   final Laboratory lab;
+
+  /// Avance por fase de quien mira. Viene vacío para un rol sin Ruta propia.
+  final List<PhaseProgress> phases;
   final AppUser student;
   final ContentColors colors;
-  const _PhaseCardsGrid({required this.lab, required this.student, required this.colors});
+  const _PhaseCardsGrid(
+      {required this.lab,
+      required this.phases,
+      required this.student,
+      required this.colors});
 
   @override
   Widget build(BuildContext context) {
+    if (phases.isEmpty) {
+      return Text(
+          'Este laboratorio todavía no tiene fases publicadas.',
+          style: TextStyle(fontSize: 13.5, color: colors.text3));
+    }
     return LayoutBuilder(builder: (context, c) {
       final perRow = c.maxWidth > 940 ? 3 : (c.maxWidth > 620 ? 2 : 1);
       final width = (c.maxWidth - (perRow - 1) * 16) / perRow;
@@ -841,12 +947,16 @@ class _PhaseCardsGrid extends StatelessWidget {
         spacing: 16,
         runSpacing: 16,
         children: [
-          for (var i = 0; i < lab.phases.length; i++)
+          for (var i = 0; i < phases.length; i++)
             SizedBox(
               width: width,
               child: Entrance(
                   delayMs: 70 * i,
-                  child: _PhaseDetailCard(lab: lab, index: i, student: student, colors: colors)),
+                  child: _PhaseDetailCard(
+                      labId: lab.id,
+                      phase: phases[i],
+                      index: i,
+                      colors: colors)),
             ),
         ],
       );
@@ -862,29 +972,30 @@ enum _PhaseUiState { complete, overdue, available, locked }
 /// nunca muestra su fecha en rojo: eso está reservado para lo que el
 /// estudiante puede abrir de verdad.
 class _PhaseDetailCard extends StatelessWidget {
-  final Laboratory lab;
+  final String labId;
+  final PhaseProgress phase;
   final int index;
-  final AppUser student;
   final ContentColors colors;
   const _PhaseDetailCard(
-      {required this.lab, required this.index, required this.student, required this.colors});
+      {required this.labId,
+      required this.phase,
+      required this.index,
+      required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final phase = lab.phases[index];
-    final accent = labColorFor(lab.id);
-    final unlocked = data.isPhaseUnlocked(student.id, lab.id, lab, index);
-    final complete = data.isPhaseComplete(student.id, lab.id, phase);
-    final published = data.labPhaseContentPublished(phase);
-    final deadlineStatus = data.phaseDeadlineStatus(student.id, lab.id, phase);
+    final accent = labColorFor(labId);
     final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
 
-    final state = complete
+    // Los cuatro estados salen del servidor: el desbloqueo, la completitud y
+    // el estado de la fecha. Antes se recalculaban acá, cada uno con su
+    // llamada, y la tarjeta podía contradecir al riel de fases de al lado.
+    final published = phase.hasPublishedContent;
+    final state = phase.isComplete
         ? _PhaseUiState.complete
-        : (!unlocked || !published)
+        : (!phase.isUnlocked || !published)
             ? _PhaseUiState.locked
-            : (deadlineStatus == DeadlineStatus.overdue
+            : (phase.deadlineStatus == DeadlineStatus.overdue
                 ? _PhaseUiState.overdue
                 : _PhaseUiState.available);
 
@@ -915,11 +1026,11 @@ class _PhaseDetailCard extends StatelessWidget {
       _PhaseUiState.locked => (colors.surface2, colors.border, colors.text3),
     };
 
-    final done = phase.modules.where((m) => data.isModuleComplete(student.id, lab.id, m)).length;
-    final total = phase.modules.length;
+    final done = phase.modulesDone;
+    final total = phase.modulesTotal;
     final showModules = state != _PhaseUiState.locked;
 
-    String lockedReason() => !unlocked
+    String lockedReason() => !phase.isUnlocked
         ? 'Se abre cuando completes la Fase $index'
         : 'Tu LXD publicará el contenido de esta fase.';
 
@@ -991,7 +1102,12 @@ class _PhaseDetailCard extends StatelessWidget {
             )
           else ...[
             for (var j = 0; j < phase.modules.length; j++)
-              _ModuleSummaryRow(lab: lab, phaseIndex: index, moduleIndex: j, student: student, colors: colors),
+              _ModuleSummaryRow(
+                  labId: labId,
+                  module: phase.modules[j],
+                  phaseIndex: index,
+                  moduleIndex: j,
+                  colors: colors),
             const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1012,7 +1128,7 @@ class _PhaseDetailCard extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation(accent)),
             ),
           ],
-          if (phase.deadline.isNotEmpty) ...[
+          if (phase.deadlineDate != null) ...[
             const SizedBox(height: 14),
             Divider(height: 1, color: colors.border),
             const SizedBox(height: 14),
@@ -1024,10 +1140,10 @@ class _PhaseDetailCard extends StatelessWidget {
                   child: Text(
                       state == _PhaseUiState.locked
                           ? 'Fecha prevista por el laboratorio: '
-                              '${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
+                              '${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
                           : (state == _PhaseUiState.overdue
-                              ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
-                              : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'),
+                              ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
+                              : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'),
                       style: TextStyle(
                           fontSize: 12.5,
                           color: state == _PhaseUiState.overdue ? colors.alertInk : colors.text3)),
@@ -1043,12 +1159,14 @@ class _PhaseDetailCard extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   final nextIndex =
-                      phase.modules.indexWhere((m) => !data.isModuleComplete(student.id, lab.id, m));
+                      phase.modules.indexWhere((m) => !m.isComplete);
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => ModuleDetailScreen(
-                              labId: lab.id, phaseIndex: index, moduleIndex: nextIndex == -1 ? 0 : nextIndex)));
+                              labId: labId,
+                              phaseIndex: index,
+                              moduleIndex: nextIndex == -1 ? 0 : nextIndex)));
                 },
                 icon: const Icon(Icons.play_arrow, size: 18),
                 label: Text(done == 0 ? 'Empezar la fase' : 'Continuar la fase'),
@@ -1105,11 +1223,10 @@ class _DetailCard extends StatelessWidget {
 
 class _LabCoursesCard extends StatelessWidget {
   final List<Course> courses;
-  final String studentId;
   final Color accent;
   final ContentColors colors;
   const _LabCoursesCard(
-      {required this.courses, required this.studentId, required this.accent, required this.colors});
+      {required this.courses, required this.accent, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -1140,7 +1257,7 @@ class _LabCoursesCard extends StatelessWidget {
           : Column(
               children: [
                 for (final c in courses)
-                  _LabCourseRow(course: c, studentId: studentId, accent: accent, colors: colors),
+                  _LabCourseRow(course: c, accent: accent, colors: colors),
               ],
             ),
     );
@@ -1149,17 +1266,17 @@ class _LabCoursesCard extends StatelessWidget {
 
 class _LabCourseRow extends StatelessWidget {
   final Course course;
-  final String studentId;
   final Color accent;
   final ContentColors colors;
   const _LabCourseRow(
-      {required this.course, required this.studentId, required this.accent, required this.colors});
+      {required this.course, required this.accent, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final progress = data.courseProgress(studentId, course);
-    final done = data.progressFor(studentId, course.id).completedLessonIds.length;
+    // El avance vino con la lista de cursos (`include=progress`): leerlo acá
+    // no dispara una petición por fila.
+    final progress =
+        context.watch<DataProvider>().courseProgress(course.id).valueOrNull;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1200,7 +1317,7 @@ class _LabCourseRow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(3),
                         child: LinearProgressIndicator(
                             minHeight: 5,
-                            value: progress,
+                            value: progress?.ratio ?? 0,
                             backgroundColor: colors.border,
                             valueColor: AlwaysStoppedAnimation(accent)),
                       ),
@@ -1208,7 +1325,9 @@ class _LabCourseRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text('$done/${course.lessonCount}', style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                Text(
+                    '${progress?.completedLessons ?? 0}/${progress?.totalLessons ?? 0}',
+                    style: TextStyle(fontSize: 12.5, color: colors.text3)),
               ],
             ),
           ),
@@ -1227,7 +1346,7 @@ class _LabCourseRow extends StatelessWidget {
 /// el porqué.
 class _LabLxdCard extends StatelessWidget {
   final Laboratory lab;
-  final AppUser? lxd;
+  final LabStaff? lxd;
   final Color accent;
   final ContentColors colors;
   const _LabLxdCard({required this.lab, required this.lxd, required this.accent, required this.colors});
@@ -1246,13 +1365,11 @@ class _LabLxdCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                KeyboardHoverBuilder(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          settings: RouteSettings(name: '${AppRoutes.users}/${lxd.id}'),
-                          builder: (_) => UserDetailView(userId: lxd.id))),
-                  builder: (context, hover) => Row(
+                // Sin enlace a un perfil: no existe —ni debería— un endpoint
+                // que le permita a un estudiante leer la cuenta de otra
+                // persona. Nombre, correo y disponibilidad es lo que hace
+                // falta para coordinar una mentoría.
+                Row(
                     children: [
                       Container(
                         width: 52,
@@ -1272,24 +1389,22 @@ class _LabLxdCard extends StatelessWidget {
                                 style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
-                                    color: hover ? accent : colors.text)),
+                                    color: colors.text)),
                             Text('Learning Experience Designer',
                                 style: TextStyle(fontSize: 12.5, color: colors.text3)),
                           ],
                         ),
                       ),
-                      Icon(Icons.arrow_forward, size: 18, color: hover ? accent : colors.text3),
                     ],
                   ),
-                ),
                 const SizedBox(height: 16),
                 Divider(height: 1, color: colors.border),
                 const SizedBox(height: 14),
                 _LxdInfoRow(
                     icon: Icons.schedule,
-                    text: (lxd.extra['availability'] as String?)?.isNotEmpty == true
-                        ? lxd.extra['availability'] as String
-                        : 'Sin horario publicado',
+                    text: lxd.availability.isEmpty
+                        ? 'Sin horario publicado'
+                        : lxd.availability,
                     colors: colors),
                 const SizedBox(height: 10),
                 _LxdInfoRow(icon: Icons.mail_outline, text: lxd.email, colors: colors),
@@ -1320,13 +1435,13 @@ class _LxdInfoRow extends StatelessWidget {
 
 class _ScheduleMentoriaButton extends StatelessWidget {
   final Laboratory lab;
-  final AppUser lxd;
+  final LabStaff lxd;
   final ContentColors colors;
   const _ScheduleMentoriaButton({required this.lab, required this.lxd, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final availability = (lxd.extra['availability'] as String?) ?? '';
+    final availability = lxd.availability;
     final enabled = availability.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1416,88 +1531,106 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final labs = data.labsForStudent(student);
-    final group = data.groupById(student.groupId);
+    final team = student.team;
+    final group =
+        team == null ? null : data.groupById(team.groupId).valueOrNull;
 
     return ContentScreenShell(
-      eyebrow: group == null
+      eyebrow: team == null
           ? 'Ruta de Impacto'
-          : '${group.name}${group.university.isEmpty ? '' : ' · ${group.university}'}',
+          : '${team.groupName}'
+              '${student.university.isEmpty ? '' : ' · ${student.university}'}',
       title: 'Ruta de Impacto',
       subtitle: 'Las fases de tu laboratorio, sus objetivos y lo que falta '
           'para llegar a National Expo.',
       searchHint: 'Buscar en el portal',
-      bodyBuilder: (context, colors, isDark) {
-        if (labs.isEmpty) {
-          return EmptyState(
-            icon: Icons.route_outlined,
-            title: 'Sin laboratorio asignado',
-            message: 'Tu administrador aún no te asignó a ningún laboratorio.',
-            colors: colors,
-          );
-        }
-        final selected =
-            labs.firstWhere((l) => l.id == _selectedLabId, orElse: () => labs.first);
-        final hasContent =
-            selected.phases.any((p) => p.objectives.isNotEmpty || p.modules.isNotEmpty);
+      bodyBuilder: (context, colors, isDark) => data.rutaProgress.when(
+        loading: () => const CardListSkeleton(count: 3),
+        // Un Open Learning recibe 403 acá y eso es lo que se muestra: la
+        // pestaña ni siquiera existe en su portal, así que llegar es señal de
+        // que algo está mal, no de que "todavía no hay datos".
+        error: (e) => ErrorState(e, onRetry: data.reloadRutaProgress),
+        data: (ruta) {
+          final labs = ruta.laboratories;
+          if (labs.isEmpty) {
+            return EmptyState(
+              icon: Icons.route_outlined,
+              title: 'Sin laboratorio asignado',
+              message:
+                  'Tu administrador aún no te asignó a ningún laboratorio.',
+              colors: colors,
+            );
+          }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final lab in labs)
-                  _LabChip(
-                    lab: lab,
-                    active: lab.id == selected.id,
-                    colors: colors,
-                    onTap: () => setState(() => _selectedLabId = lab.id),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 22),
-            if (!hasContent)
-              EmptyState(
-                icon: Icons.route_outlined,
-                title: 'Laboratorio sin fases',
-                message: 'El ${selected.name} todavía no ha publicado sus fases. '
-                    'Tu LXD las abrirá cuando el contenido esté listo.',
-                primaryLabel: labs.length > 1 ? 'Ver otro laboratorio' : null,
-                onPrimary: labs.length > 1
-                    ? () => setState(() {
-                          final idx = labs.indexOf(selected);
-                          _selectedLabId = labs[(idx + 1) % labs.length].id;
-                        })
-                    : null,
-                colors: colors,
-              )
-            else
-              LayoutBuilder(builder: (context, c) {
-                final left = _PhasePath(lab: selected, student: student, colors: colors);
-                final right = _ExpoCard(group: group, colors: colors);
-                if (c.maxWidth > 800) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 160, child: left),
-                      const SizedBox(width: 22),
-                      Expanded(flex: 100, child: right),
-                    ],
-                  );
-                }
-                return Column(children: [left, const SizedBox(height: 22), right]);
-              }),
-          ],
-        );
-      },
+          final selected = labs.firstWhere(
+              (l) => l.laboratoryId == _selectedLabId,
+              orElse: () => labs.first);
+          final hasContent =
+              selected.phases.any((p) => p.hasPublishedContent);
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final lab in labs)
+                    _LabChip(
+                      lab: lab,
+                      active: lab.laboratoryId == selected.laboratoryId,
+                      colors: colors,
+                      onTap: () =>
+                          setState(() => _selectedLabId = lab.laboratoryId),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 22),
+              if (!hasContent)
+                EmptyState(
+                  icon: Icons.route_outlined,
+                  title: 'Laboratorio sin fases',
+                  message:
+                      'El ${selected.laboratoryName} todavía no ha publicado '
+                      'sus fases. Tu LXD las abrirá cuando el contenido esté '
+                      'listo.',
+                  primaryLabel: labs.length > 1 ? 'Ver otro laboratorio' : null,
+                  onPrimary: labs.length > 1
+                      ? () => setState(() {
+                            final idx = labs.indexOf(selected);
+                            _selectedLabId =
+                                labs[(idx + 1) % labs.length].laboratoryId;
+                          })
+                      : null,
+                  colors: colors,
+                )
+              else
+                LayoutBuilder(builder: (context, c) {
+                  final left = _PhasePath(lab: selected, colors: colors);
+                  final right = _ExpoCard(group: group, colors: colors);
+                  if (c.maxWidth > 800) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 160, child: left),
+                        const SizedBox(width: 22),
+                        Expanded(flex: 100, child: right),
+                      ],
+                    );
+                  }
+                  return Column(
+                      children: [left, const SizedBox(height: 22), right]);
+                }),
+            ],
+          );
+        },
+      ),
     );
   }
 }
 
 class _LabChip extends StatelessWidget {
-  final Laboratory lab;
+  final LabProgress lab;
   final bool active;
   final ContentColors colors;
   final VoidCallback onTap;
@@ -1506,7 +1639,7 @@ class _LabChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = labColorFor(lab.id);
+    final accent = labColorFor(lab.laboratoryId);
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hover) => GestureDetector(
@@ -1529,7 +1662,7 @@ class _LabChip extends StatelessWidget {
                 decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(3)),
               ),
               const SizedBox(width: 10),
-              Text(lab.name,
+              Text(lab.laboratoryName,
                   style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
@@ -1542,11 +1675,11 @@ class _LabChip extends StatelessWidget {
   }
 }
 
+/// El camino de fases: una columna vertical, no una fila de pasos.
 class _PhasePath extends StatelessWidget {
-  final Laboratory lab;
-  final AppUser student;
+  final LabProgress lab;
   final ContentColors colors;
-  const _PhasePath({required this.lab, required this.student, required this.colors});
+  const _PhasePath({required this.lab, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -1555,9 +1688,9 @@ class _PhasePath extends StatelessWidget {
       children: [
         for (var i = 0; i < lab.phases.length; i++)
           _PhaseRow(
-              lab: lab,
+              labId: lab.laboratoryId,
+              phase: lab.phases[i],
               index: i,
-              student: student,
               colors: colors,
               isLast: i == lab.phases.length - 1),
       ],
@@ -1566,26 +1699,24 @@ class _PhasePath extends StatelessWidget {
 }
 
 class _PhaseRow extends StatelessWidget {
-  final Laboratory lab;
+  final String labId;
+  final PhaseProgress phase;
   final int index;
-  final AppUser student;
   final ContentColors colors;
   final bool isLast;
   const _PhaseRow(
-      {required this.lab,
+      {required this.labId,
+      required this.phase,
       required this.index,
-      required this.student,
       required this.colors,
       required this.isLast});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final phase = lab.phases[index];
-    final accent = labColorFor(lab.id);
-    final unlocked = data.isPhaseUnlocked(student.id, lab.id, lab, index);
-    final complete = data.isPhaseComplete(student.id, lab.id, phase);
-    final deadlineStatus = data.phaseDeadlineStatus(student.id, lab.id, phase);
+    final accent = labColorFor(labId);
+    final unlocked = phase.isUnlocked;
+    final complete = phase.isComplete;
+    final deadlineStatus = phase.deadlineStatus;
     final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
     // Token de alerta (README `design_handoff_portal_estudiante`, sección
     // "Tokens de diseño"): nunca un literal hex suelto por tema.
@@ -1687,12 +1818,16 @@ class _PhaseRow extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Si el objetivo está cumplido lo decide el
+                            // servidor: es "todos sus cursos vinculados al
+                            // 100%", una regla que vive en una vista de
+                            // PostgreSQL, no en esta pantalla.
                             Icon(
-                                data.isObjectiveComplete(student.id, o)
+                                o.isComplete
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 size: 17,
-                                color: data.isObjectiveComplete(student.id, o)
+                                color: o.isComplete
                                     ? AppColors.statusGood
                                     : colors.text3),
                             const SizedBox(width: 10),
@@ -1702,7 +1837,7 @@ class _PhaseRow extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(o.text, style: TextStyle(fontSize: 13.5, color: colors.text2)),
-                                  Text(o.category,
+                                  Text(o.categoryLabel,
                                       style: TextStyle(fontSize: 11.5, color: colors.text3)),
                                 ],
                               ),
@@ -1715,13 +1850,13 @@ class _PhaseRow extends StatelessWidget {
                     const SizedBox(height: 6),
                     for (var j = 0; j < phase.modules.length; j++)
                       _ModuleSummaryRow(
-                          lab: lab,
+                          labId: labId,
+                          module: phase.modules[j],
                           phaseIndex: index,
                           moduleIndex: j,
-                          student: student,
                           colors: colors),
                   ],
-                  if (phase.deadline.isNotEmpty) ...[
+                  if (phase.deadlineDate != null) ...[
                     const SizedBox(height: 14),
                     Divider(height: 1, color: colors.border),
                     const SizedBox(height: 14),
@@ -1731,8 +1866,8 @@ class _PhaseRow extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                             deadlineStatus == DeadlineStatus.overdue
-                                ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}'
-                                : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(DateTime.parse(phase.deadline))}',
+                                ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
+                                : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}',
                             style: TextStyle(
                                 fontSize: 12.5,
                                 color: deadlineStatus == DeadlineStatus.overdue
@@ -1752,27 +1887,28 @@ class _PhaseRow extends StatelessWidget {
 }
 
 class _ModuleSummaryRow extends StatelessWidget {
-  final Laboratory lab;
+  final String labId;
+
+  /// Estado del módulo para quien mira: desbloqueo y completitud incluidos,
+  /// tal como los calculó el servidor.
+  final ModuleProgress module;
   final int phaseIndex;
   final int moduleIndex;
-  final AppUser student;
   final ContentColors colors;
   const _ModuleSummaryRow(
-      {required this.lab,
+      {required this.labId,
+      required this.module,
       required this.phaseIndex,
       required this.moduleIndex,
-      required this.student,
       required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final phase = lab.phases[phaseIndex];
-    final module = phase.modules[moduleIndex];
-    final unlocked = data.isModuleUnlocked(student.id, lab.id, phase, moduleIndex);
-    final complete = data.isModuleComplete(student.id, lab.id, module);
-    final title = module.title.isEmpty ? 'Módulo ${moduleIndex + 1}' : module.title;
-    final totalItems = module.ownLessons.length + module.courseIds.length;
+    final unlocked = module.isUnlocked;
+    final complete = module.isComplete;
+    final title =
+        module.title.isEmpty ? 'Módulo ${moduleIndex + 1}' : module.title;
+    final totalItems = module.totalItems;
 
     final (iconBg, iconColor) = complete
         ? (AppColors.statusGood.withValues(alpha: 0.15), AppColors.statusGood)
@@ -1788,7 +1924,9 @@ class _ModuleSummaryRow extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (_) => ModuleDetailScreen(
-                        labId: lab.id, phaseIndex: phaseIndex, moduleIndex: moduleIndex)))
+                        labId: labId,
+                        phaseIndex: phaseIndex,
+                        moduleIndex: moduleIndex)))
             : showAppSnack(
                 context, 'Completa el módulo anterior para desbloquear "$title".'),
         child: MouseRegion(
@@ -1830,7 +1968,9 @@ class _ModuleSummaryRow extends StatelessWidget {
                               ? 'Bloqueado'
                               : (module.isMentorshipModule
                                   ? 'Módulo de mentoría'
-                                  : '$totalItems elemento(s)'),
+                                  : (module.isEmpty
+                                      ? 'Sin contenido aún'
+                                      : '$totalItems elemento(s)')),
                           style: TextStyle(fontSize: 11.5, color: colors.text3)),
                     ],
                   ),
@@ -1855,10 +1995,11 @@ class _ExpoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final checklist = group == null ? null : data.checklistFor(group!.id);
-    final done = checklist?.items.where((i) => i['done'] == true).length ?? 0;
-    final total = checklist?.items.length ?? 0;
+    // El checklist llega dentro del equipo (`GET /groups/:id`): es suyo, y no
+    // tiene un recurso propio porque nadie lo escribe.
+    final checklist = group?.checklist ?? const <ChecklistItem>[];
+    final done = checklist.where((item) => item.done).length;
+    final total = checklist.length;
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -1928,25 +2069,27 @@ class _ExpoCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      for (final item in checklist!.items)
+                      for (final item in checklist)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: Row(
                             children: [
                               Icon(
-                                  item['done'] == true
+                                  item.done
                                       ? Icons.check_circle
                                       : Icons.radio_button_unchecked,
                                   size: 19,
-                                  color: item['done'] == true
+                                  color: item.done
                                       ? AppColors.statusGood
                                       : colors.text3),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: Text((item['label'] as String?) ?? '',
+                                child: Text(item.label,
                                     style: TextStyle(
                                         fontSize: 13,
-                                        color: item['done'] == true ? colors.text2 : colors.text3)),
+                                        color: item.done
+                                            ? colors.text2
+                                            : colors.text3)),
                               ),
                             ],
                           ),
@@ -1965,6 +2108,12 @@ class _ExpoCard extends StatelessWidget {
 // de mentoría, el botón para unirse a la reunión.
 // ---------------------------------------------------------------------------
 
+
+/// Un módulo de la Ruta: sus cursos, sus lecturas y entregas propias y, si es
+/// el de mentoría, el botón para unirse a la reunión.
+///
+/// Todo —qué hay dentro, qué está hecho, qué está desbloqueado— sale de
+/// `/students/:id/ruta-progress`. La pantalla no calcula nada.
 class ModuleDetailScreen extends StatelessWidget {
   final String labId;
   final int phaseIndex;
@@ -1978,22 +2127,62 @@ class ModuleDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
-    final lab = data.labById(labId);
-    if (lab == null || phaseIndex >= lab.phases.length) {
-      return const Scaffold(body: Center(child: Text('Módulo no encontrado')));
-    }
-    final phase = lab.phases[phaseIndex];
-    if (moduleIndex >= phase.modules.length) {
-      return const Scaffold(body: Center(child: Text('Módulo no encontrado')));
-    }
-    final module = phase.modules[moduleIndex];
-    final title =
-        module.title.isEmpty ? 'Módulo ${moduleIndex + 1}' : module.title;
-    final progress = data.rutaProgressFor(student.id, labId);
-    final noContent = module.courseIds.isEmpty &&
-        module.ownLessons.isEmpty &&
-        !module.isMentorshipModule;
+
+    return data.rutaProgress.when(
+      loading: () => const Scaffold(body: Center(child: BrandLoader())),
+      error: (e) => Scaffold(
+        body: Column(
+          children: [
+            const AppHeader(portalTitle: 'Módulo'),
+            Expanded(child: ErrorState(e, onRetry: data.reloadRutaProgress)),
+          ],
+        ),
+      ),
+      data: (ruta) {
+        final lab = ruta.labById(labId);
+        final phase = (lab != null && phaseIndex < lab.phases.length)
+            ? lab.phases[phaseIndex]
+            : null;
+        final module = (phase != null && moduleIndex < phase.modules.length)
+            ? phase.modules[moduleIndex]
+            : null;
+
+        if (module == null || phase == null) {
+          return const Scaffold(
+            body: Column(
+              children: [
+                AppHeader(portalTitle: 'Módulo'),
+                Expanded(
+                  child: EmptyState(
+                      icon: Icons.inbox_outlined,
+                      message:
+                          'Este módulo ya no existe o el enlace está mal escrito.'),
+                ),
+              ],
+            ),
+          );
+        }
+        return _ModuleBody(
+            labId: labId, phase: phase, module: module, index: moduleIndex);
+      },
+    );
+  }
+}
+
+class _ModuleBody extends StatelessWidget {
+  final String labId;
+  final PhaseProgress phase;
+  final ModuleProgress module;
+  final int index;
+  const _ModuleBody(
+      {required this.labId,
+      required this.phase,
+      required this.module,
+      required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = module.title.isEmpty ? 'Módulo ${index + 1}' : module.title;
 
     return Scaffold(
       body: Column(
@@ -2027,24 +2216,21 @@ class ModuleDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         if (module.isMentorshipModule)
-                          _MeetingCard(phase: phase),
-                        if (module.courseIds.isNotEmpty) ...[
+                          _MeetingCard(phaseTitle: phase.title),
+                        if (module.courses.isNotEmpty) ...[
                           const SectionTitle('Cursos asignados'),
-                          for (final cid in module.courseIds)
-                            _ModuleCourseRow(
-                                courseId: cid, studentId: student.id),
+                          for (final course in module.courses)
+                            _ModuleCourseRow(course: course),
                         ],
                         if (module.ownLessons.isNotEmpty) ...[
                           const SectionTitle('Entregas y lecturas'),
                           for (final lesson in module.ownLessons)
                             _OwnLessonRow(
-                                labId: labId,
-                                moduleId: module.id,
-                                lesson: lesson,
-                                done: progress.completedOwnLessonIds
-                                    .contains(lesson.id)),
+                                moduleId: module.moduleId, lesson: lesson),
                         ],
-                        if (noContent)
+                        // "Sin contenido aún" no es lo mismo que "pendiente":
+                        // acá no hay nada que la persona pueda hacer.
+                        if (module.isEmpty && !module.isMentorshipModule)
                           const EmptyState(
                               icon: Icons.inbox_outlined,
                               message:
@@ -2068,13 +2254,15 @@ class ModuleDetailScreen extends StatelessWidget {
 }
 
 class _MeetingCard extends StatelessWidget {
-  final Phase phase;
-  const _MeetingCard({required this.phase});
+  final String phaseTitle;
+  const _MeetingCard({required this.phaseTitle});
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final phaseTitle = phase.title.isEmpty ? 'esta fase' : phase.title;
+    final link = data.siteContent.valueOrNull?.meetingLink ?? '';
+    final title = phaseTitle.isEmpty ? 'esta fase' : phaseTitle;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: HoverCard(
@@ -2089,21 +2277,32 @@ class _MeetingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Módulo de mentoría',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 15)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 4),
-                  Text('Reúnete con tu Mentor para cerrar $phaseTitle.',
+                  Text('Reúnete con tu Mentor para cerrar $title.',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
+                  // Sin enlace configurado el botón queda apagado y se dice
+                  // por qué, en vez de abrir una pestaña en blanco.
+                  if (link.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                          'Tu administrador todavía no configuró el enlace de la reunión.',
+                          style: TextStyle(
+                              color: AppColors.textMuted, fontSize: 12)),
+                    ),
                 ],
               ),
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.video_call, size: 18),
               label: const Text('Unirse a la reunión'),
-              onPressed: () => launchUrl(
-                  Uri.parse(data.siteContent.meetingLink),
-                  mode: LaunchMode.externalApplication),
+              onPressed: link.isEmpty
+                  ? null
+                  : () => launchUrl(Uri.parse(link),
+                      mode: LaunchMode.externalApplication),
             ),
           ],
         ),
@@ -2113,39 +2312,42 @@ class _MeetingCard extends StatelessWidget {
 }
 
 class _ModuleCourseRow extends StatelessWidget {
-  final String courseId;
-  final String studentId;
-  const _ModuleCourseRow({required this.courseId, required this.studentId});
+  final CourseProgress course;
+  const _ModuleCourseRow({required this.course});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-    final course = data.courseById(courseId);
-    if (course == null) return const SizedBox.shrink();
-    final progress = data.courseProgress(studentId, course);
-    final complete = progress >= 1.0;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: HoverCard(
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-                settings: RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
-                builder: (_) => CourseDetailView(courseId: course.id))),
+                settings:
+                    RouteSettings(name: '${AppRoutes.courses}/${course.courseId}'),
+                builder: (_) =>
+                    CourseDetailView(courseId: course.courseId))),
         child: Row(
           children: [
-            Icon(complete ? Icons.check_circle : Icons.play_circle_outline,
-                color: complete ? AppColors.statusGood : AppColors.gold),
+            Icon(
+                course.isComplete
+                    ? Icons.check_circle
+                    : Icons.play_circle_outline,
+                color:
+                    course.isComplete ? AppColors.statusGood : AppColors.gold),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(course.name,
+                  Text(course.courseName,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
-                  ThinProgressBar(value: progress),
+                  ThinProgressBar(
+                    value: course.ratio,
+                    tooltip: '${course.completedLessons} de '
+                        '${course.totalLessons} lecciones',
+                  ),
                 ],
               ),
             ),
@@ -2158,29 +2360,27 @@ class _ModuleCourseRow extends StatelessWidget {
   }
 }
 
+/// Una lectura o entrega propia del módulo.
+///
+/// Una lectura se marca al abrirla; una entrega se marca al entregar. En los
+/// dos casos el que decide es el mismo endpoint que usa cualquier lección de
+/// curso, así que el avance del módulo, de la fase y de la Ruta se recalcula
+/// solo con la respuesta.
 class _OwnLessonRow extends StatelessWidget {
-  final String labId;
   final String moduleId;
-  final Lesson lesson;
-  final bool done;
-  const _OwnLessonRow(
-      {required this.labId,
-      required this.moduleId,
-      required this.lesson,
-      required this.done});
+  final OwnLesson lesson;
+  const _OwnLessonRow({required this.moduleId, required this.lesson});
 
   @override
   Widget build(BuildContext context) {
-    final data = context.read<DataProvider>();
-    final student = context.read<AuthProvider>().currentUser!;
-    final isActivity = lesson.type == LessonType.activity;
+    final done = lesson.isComplete;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: HoverCard(
-        onTap: () => isActivity
-            ? _openSubmissionDialog(context, data, student)
-            : _openReadingContent(context, data, student),
+        onTap: () => lesson.isActivity
+            ? _submit(context)
+            : _openReading(context),
         child: Row(
           children: [
             Icon(
@@ -2195,12 +2395,14 @@ class _OwnLessonRow extends StatelessWidget {
                   Text(lesson.title,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          decoration:
-                              done ? TextDecoration.lineThrough : null,
+                          decoration: done ? TextDecoration.lineThrough : null,
                           color: done
                               ? AppColors.textMuted
                               : AppColors.textPrimary)),
-                  Text(isActivity ? 'Entrega' : lessonTypeLabel(lesson.type),
+                  Text(
+                      lesson.isActivity
+                          ? 'Entrega'
+                          : lessonTypeLabel(lesson.type),
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
                 ],
@@ -2212,101 +2414,153 @@ class _OwnLessonRow extends StatelessWidget {
     );
   }
 
-  void _openReadingContent(
-      BuildContext context, DataProvider data, AppUser student) {
+  Future<void> _openReading(BuildContext context) async {
+    final data = context.read<DataProvider>();
+
     if (lesson.type == LessonType.video) {
-      VideoPlayerDialog.show(context, lesson.title, lesson.resourcePath);
+      await VideoPlayerDialog.show(context, lesson.toLesson());
     } else {
-      showAppSnack(
-          context, 'Material en course_resources/${lesson.resourcePath}');
+      final key = lesson.resourceS3Key;
+      final url = lesson.externalUrl;
+      if (key != null && key.isNotEmpty) {
+        try {
+          final signed = await data.resolveFileUrl(key);
+          final uri = Uri.tryParse(signed);
+          if (uri != null) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        } on ApiException catch (e) {
+          if (context.mounted) showAppSnack(context, e.message);
+          return;
+        }
+      } else if (url != null && url.isNotEmpty) {
+        final uri = Uri.tryParse(url);
+        if (uri != null) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      } else {
+        if (context.mounted) {
+          showAppSnack(context, 'Esta lectura todavía no tiene material.');
+        }
+        return;
+      }
     }
-    data.toggleOwnLesson(student.id, labId, lesson.id);
+
+    // Abrirla la da por vista. `IfPending` y no un toggle: volver a abrirla
+    // no debería desmarcarla.
+    try {
+      await data.toggleRutaLessonIfPending(lesson.id);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message);
+    }
   }
 
-  Future<void> _openSubmissionDialog(
-      BuildContext context, DataProvider data, AppUser student) async {
-    final commentCtrl = TextEditingController();
-    String filePath = '';
-
-    await showDialog<void>(
+  Future<void> _submit(BuildContext context) {
+    return showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: Text(lesson.title, style: const TextStyle(fontSize: 18)),
-          content: SizedBox(
-            width: 440,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (lesson.description.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(lesson.description,
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 13)),
-                  ),
-                TextField(
-                    controller: commentCtrl,
-                    maxLines: 3,
-                    decoration:
-                        const InputDecoration(labelText: 'Comentario')),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.attach_file, size: 16),
-                      label: const Text('Adjuntar archivo'),
-                      onPressed: () async {
-                        final result = await FilePicker.pickFiles();
-                        if (result != null) {
-                          setState(() => filePath =
-                              result.files.single.path ??
-                                  result.files.single.name);
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        filePath.isEmpty
-                            ? 'Sin archivo'
-                            : filePath.split('/').last,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 12),
-                      ),
-                    ),
-                  ],
+      builder: (_) => _OwnLessonSubmitDialog(moduleId: moduleId, lesson: lesson),
+    );
+  }
+}
+
+class _OwnLessonSubmitDialog extends StatefulWidget {
+  final String moduleId;
+  final OwnLesson lesson;
+  const _OwnLessonSubmitDialog({required this.moduleId, required this.lesson});
+
+  @override
+  State<_OwnLessonSubmitDialog> createState() =>
+      _OwnLessonSubmitDialogState();
+}
+
+class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
+  final _comment = TextEditingController();
+  final List<UploadedFile> _files = [];
+  bool _sending = false;
+  ApiException? _error;
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      final data = context.read<DataProvider>();
+      await data.createSubmission(
+        rutaModuleId: widget.moduleId,
+        lessonId: widget.lesson.id,
+        taskName: widget.lesson.title,
+        comment: _comment.text.trim(),
+        files: _files.map((f) => f.toJson()).toList(),
+      );
+      await data.toggleRutaLessonIfPending(widget.lesson.id);
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessCheck(context, 'Entrega enviada ✓');
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.lesson.title, style: const TextStyle(fontSize: 18)),
+      content: SizedBox(
+        width: 440,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.lesson.description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(widget.lesson.description,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13)),
                 ),
+              TextField(
+                  controller: _comment,
+                  enabled: !_sending,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Comentario')),
+              const SizedBox(height: 12),
+              FileUploadField(
+                purpose: 'submission',
+                maxFiles: 3,
+                files: _files,
+                enabled: !_sending,
+                onChanged: () => setState(() {}),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                ErrorBanner(_error!),
               ],
-            ),
+            ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () async {
-                await data.saveSubmission(Submission(
-                  id: data.newId('sub'),
-                  rutaModuleId: moduleId,
-                  studentId: student.id,
-                  lessonId: lesson.id,
-                  taskName: lesson.title,
-                  comment: commentCtrl.text.trim(),
-                  filePath: filePath,
-                ));
-                await data.toggleOwnLesson(student.id, labId, lesson.id);
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (context.mounted) {
-                  showSuccessCheck(context, 'Entrega enviada ✓');
-                }
-              },
-              child: const Text('Enviar'),
-            ),
-          ],
         ),
       ),
+      actions: [
+        TextButton(
+            onPressed: _sending ? null : () => Navigator.pop(context),
+            child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: _sending ? null : _send,
+          child: Text(_sending ? 'Enviando…' : 'Enviar'),
+        ),
+      ],
     );
   }
 }

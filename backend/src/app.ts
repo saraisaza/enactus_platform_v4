@@ -7,8 +7,23 @@ import { env } from './env';
 import { onError, onNotFound } from './middleware/error';
 import type { AppEnv } from './middleware/context';
 import { authRoutes } from './routes/auth';
+import { adminRoutes } from './routes/admin';
+import { certificateRoutes } from './routes/certificates';
+import {
+  calendarRoutes,
+  commResourceRoutes,
+  evidenceRoutes,
+  notificationRoutes,
+} from './routes/content';
 import { courseRoutes, moduleRoutes } from './routes/courses';
+import { fileRoutes } from './routes/files';
+import { forumRoutes } from './routes/forum';
+import { labRoutes } from './routes/labs';
 import { lessonRoutes, moduleLessonRoutes } from './routes/lessons';
+import { groupRoutes, projectRoutes } from './routes/orgs';
+import { progressRoutes } from './routes/progress';
+import { studentRoutes } from './routes/students';
+import { submissionRoutes } from './routes/submissions';
 
 /**
  * Arma la aplicación. Recibe la conexión por parámetro para que las pruebas
@@ -58,6 +73,20 @@ export function createApp(database: Database = defaultDb) {
   app.route('/modules', moduleRoutes);
   app.route('/modules', moduleLessonRoutes);
   app.route('/lessons', lessonRoutes);
+  app.route('/progress', progressRoutes);
+  app.route('/students', studentRoutes);
+  app.route('/certificates', certificateRoutes);
+  app.route('/laboratories', labRoutes);
+  app.route('/projects', projectRoutes);
+  app.route('/groups', groupRoutes);
+  app.route('/submissions', submissionRoutes);
+  app.route('/evidences', evidenceRoutes);
+  app.route('/calendar-events', calendarRoutes);
+  app.route('/communication-resources', commResourceRoutes);
+  app.route('/notifications', notificationRoutes);
+  app.route('/forum-posts', forumRoutes);
+  app.route('/files', fileRoutes);
+  app.route('/admin', adminRoutes);
 
   return app;
 }

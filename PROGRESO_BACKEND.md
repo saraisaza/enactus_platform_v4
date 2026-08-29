@@ -9,7 +9,7 @@ verificación y pegado su salida real.
 | 1 — Esquema Postgres | ✅ Cerrada | 28 ago 2026 |
 | 2 — Migraciones y seed | ✅ Cerrada | 28 ago 2026 |
 | 3 — Auth y autorización | ✅ Cerrada | 28 ago 2026 |
-| 4 — API REST | 🟡 En curso | Grupo 1 de 4 cerrado |
+| 4 — API REST | ✅ Cerrada | 28 ago 2026 · 4 grupos + OpenAPI |
 | 5 — Cliente Flutter | ⬜ Pendiente | — |
 | 6 — Infraestructura y CI/CD | ⬜ Pendiente | — |
 
@@ -458,7 +458,7 @@ las mismas guardias se prueban sobre ellos.
 
 ---
 
-## Fase 4 — API REST 🟡 (Grupo 1 de 4 cerrado)
+## Fase 4 — API REST ✅
 
 ### Grupo 1 — CRUD de cursos, módulos y lecciones ✅
 
@@ -574,16 +574,136 @@ borrar curso con progreso        → 409 {rutaModules:1, objectives:2, …}
 listado del estudiante           → solo los 2 cursos de sus laboratorios
 ```
 
-### Lo que falta de la Fase 4
 
-- **Grupo 2** — completitud: `POST /progress/lessons/:id/toggle`,
-  `GET /students/:id/ruta-progress`, `GET /students/:id/course-progress/:courseId`,
-  `POST /certificates/ruta`.
-- **Grupo 3** — aislamiento Enactus vs Open Learning en todos los endpoints.
-- **Grupo 4** — resto de entidades, `can-grade`, backup/restore, presigned URLs
-  de evidencias y recursos.
-- **OpenAPI** de todos los endpoints (entregable de la fase).
+### Grupo 2 — Completitud en el servidor ✅
 
-**La firma real de S3 no está verificada**: en local no hay bucket, así que lo
-probado es la validación previa y el 503 de configuración. La firma se verifica
-en la Fase 6, con credenciales reales.
+| Método | Ruta |
+|---|---|
+| POST | `/progress/lessons/:lessonId/toggle` |
+| GET | `/students/:id/ruta-progress` |
+| GET | `/students/:id/course-progress/:courseId` |
+| GET | `/students/:id/certificate-eligibility/:laboratoryId` |
+| POST | `/certificates/ruta` |
+| GET | `/certificates` |
+
+**Este es el grupo donde la lógica deja de vivir en el navegador.** Ninguna
+regla se recalcula acá: todo sale de las vistas de `0001_completeness.sql`, y
+los servicios solo arman la forma que el cliente necesita.
+
+**El toggle devuelve todo el efecto en una sola respuesta** — progreso del
+curso, del módulo, de la fase y de la Ruta, más `certificateAvailable`. El
+cliente no hace ninguna llamada adicional para saber en qué quedó. Y como un
+mismo curso puede estar en la Ruta de varios laboratorios, `rutaImpact` es una
+lista, no un objeto.
+
+**Solo el propio estudiante escribe progreso.** El endpoint ni siquiera acepta
+un `studentId`: opera siempre sobre la sesión. No existe "marcar completa a
+otro" (decisión C.6) — sería una forma de fabricar progreso. La única vía
+indirecta legítima es calificar una actividad, que completa su lección.
+
+**Doble candado en el certificado**: el endpoint valida las 3 fases y responde
+409 con el detalle de qué falta; el trigger de la base lo hace cumplir igual.
+Si mañana aparece otra vía de escritura, el requisito sigue en pie.
+
+### Grupo 3 — Aislamiento Enactus vs Open Learning ✅
+
+No es una preferencia de interfaz. `requireEnactus` protege `/laboratories`,
+`/projects`, `/groups`, `/forum-posts` y la Ruta de Impacto **enteros**, y
+responde **403, nunca una lista vacía**: una lista vacía haría ver un bug de
+permisos como si fuera "todavía no hay datos".
+
+El tipo de estudiante sale **siempre** del registro del usuario. Hay un test
+que manda `studentType: 'enactus'` y `role: 'admin'` en el cuerpo de la
+petición para confirmar que el servidor los ignora.
+
+Verificado además que manipular el id de la URL no da datos ajenos, que el
+listado de cursos de un Open Learning no incluye ninguno de laboratorio, y que
+su calendario no muestra eventos de Ruta ni de mentoría.
+
+### Grupo 4 — Resto de entidades ✅
+
+`/projects` · `/groups` (+ `PUT /groups/:id/members` con el rol de cada
+integrante) · `/evidences` · `/calendar-events` · `/communication-resources` ·
+`/notifications` · `/forum-posts` (+ respuestas, apoyos, fijar) ·
+`/submissions` (+ `grade`, + `review`) · `/files/upload-url` ·
+`/admin/users/:id/can-grade` · `/admin/backup` · `/admin/restore` ·
+`/admin/storage/video`.
+
+Cuatro cosas que vale la pena señalar:
+
+- **Calificar y revisar son endpoints distintos.** El LXD pone nota (con
+  `can_grade` **en el contexto del curso**, que sale del curso y no del
+  cuerpo); el Mentor comenta y su endpoint no toca `grade` bajo ninguna
+  circunstancia. Hoy en Flutter los dos usan el mismo `saveSubmission`.
+- **El respaldo ya no lleva credenciales.** Se excluyen el hash de contraseña
+  y las sesiones abiertas. Hoy `exportBackupJson()` vuelca la caja `users`
+  entera, con contraseñas en texto plano, a un archivo descargable.
+- **Restaurar quedó reservado al superadmin**, transaccional y con
+  confirmación literal. Hoy cualquier Admin puede reemplazar la base entera
+  desde un archivo elegido a mano.
+- **El apoyo del foro es un INSERT o un DELETE.** Hoy es leer-modificar-
+  escribir el post entero, que con dos personas dando like a la vez pierde uno.
+
+### OpenAPI
+
+`backend/openapi.yaml` — 3.1, todos los endpoints, con las reglas de negocio
+explicadas donde importan (por qué 404 y no 403, por qué el reordenamiento es
+un solo endpoint, por qué el video no pasa por la API).
+
+**Y hay un test que lo mantiene honesto**: `tests/openapi.test.ts` compara el
+documento contra las rutas realmente registradas en Hono y falla si aparece un
+endpoint sin documentar, uno documentado que no existe, o un `$ref` roto. Sin
+eso, una especificación envejece en silencio y termina mintiendo.
+
+### Dos errores encontrados por los tests, no por leer el código
+
+1. **500 en `GET /forum-posts`.** Mezclé una condición de Drizzle
+   (`isNull(forumPosts.deletedAt)` → `"forum_posts"."deleted_at"`) dentro de
+   una consulta cruda donde la tabla está aliasada como `p`. Compilaba, pasaba
+   el lint, y reventaba en ejecución.
+2. **Falso positivo revelador en el respaldo.** El test buscaba la cadena
+   `password_hash` en la respuesta y la encontró — pero en mi propia nota
+   explicativa dentro del JSON, no en un dato. Se cambió la nota y **se
+   reforzó el test**: ahora verifica que no viaje ningún hash de bcrypt y que
+   ninguna fila de usuario traiga esa clave.
+
+### Verificación — salida real
+
+```
+$ npm run typecheck → limpio     $ npm run lint → limpio
+
+$ npm test
+ ✓ auth (36)   ✓ courses (29)      ✓ isolation (27)   ✓ entities (25)
+ ✓ completeness-api (16)  ✓ completeness (16)  ✓ seed (14)
+ ✓ schema-constraints (14)  ✓ flows (9)  ✓ openapi (3)
+ Test Files  10 passed (10)      Tests  189 passed (189)
+
+$ migrate → rollback ×3 → reset
+migrate:   tablas=52 vistas=7
+rollback3: tablas=0  vistas=0
+reset:     tablas=52 vistas=7
+db:generate → "No schema changes"
+```
+
+Contra el servidor corriendo:
+
+```
+Ruta de Impacto (estudiante)  → 2 laboratorios, fase 1 en 1/2 módulos,
+                                 desbloqueo correcto, deadline=overdue
+Open Learning → /laboratories, /projects, /groups, /forum-posts,
+                /students/:id/ruta-progress   →  403 en los cinco
+Enactus → la misma ruta                        →  200
+POST /certificates/ruta sin completar          →  409 · 0/3 fases · faltan 3
+GET  /admin/backup      → 16 usuarios, sin ningún "$2b$", 22 columnas
+GET  /admin/storage/video → 14 lecciones con video
+```
+
+### Lo que NO está verificado
+
+**La firma real de S3.** En local no hay bucket, así que lo probado es la
+validación previa (tipo, tamaño, rol) y el 503 de configuración. La firma se
+verifica en la Fase 6, con credenciales reales.
+
+**Las URLs firmadas de CloudFront** para servir video todavía no existen: el
+esquema y los endpoints ya distinguen `external` de `uploaded`, pero la
+generación de la URL de reproducción va con la infraestructura (Fase 6).

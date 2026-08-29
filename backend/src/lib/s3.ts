@@ -97,3 +97,39 @@ export async function createUploadUrl(input: {
 
   return { uploadUrl, key: input.key, expiresInSeconds: UPLOAD_URL_TTL_SECONDS };
 }
+
+/** Tope para documentos (evidencias, recursos, entregas). */
+export const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024; // 25 MB
+
+export const ALLOWED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/svg+xml',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/zip',
+] as const;
+
+export function assertValidDocumentUpload(input: {
+  contentType: string;
+  sizeBytes: number;
+}): void {
+  if (!(ALLOWED_DOCUMENT_TYPES as readonly string[]).includes(input.contentType)) {
+    throw badRequest(`Tipo de archivo no permitido: ${input.contentType}.`, {
+      allowed: ALLOWED_DOCUMENT_TYPES,
+    });
+  }
+  if (input.sizeBytes > MAX_DOCUMENT_BYTES) {
+    throw payloadTooLarge(
+      `El archivo pesa ${(input.sizeBytes / 1024 / 1024).toFixed(1)} MB y el máximo son 25 MB.`,
+      { maxBytes: MAX_DOCUMENT_BYTES },
+    );
+  }
+}
+
+/** Key para un archivo que no es video: `<carpeta>/<uuid>.<ext>`. */
+export function documentKeyFor(folder: string, fileName: string): string {
+  const ext = fileName.includes('.') ? fileName.split('.').pop() : 'bin';
+  return `${folder}/${randomUUID()}.${ext ?? 'bin'}`;
+}

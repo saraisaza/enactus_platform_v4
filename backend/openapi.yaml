@@ -1,0 +1,1176 @@
+openapi: 3.1.0
+
+info:
+  title: Enactus Platform API
+  version: 0.4.0
+  description: |
+    API de Enactus Platform (eduXaction Colombia).
+
+    **Formato de error único.** Todo error responde con la misma forma:
+
+    ```json
+    { "error": { "code": "forbidden", "message": "…", "details": … } }
+    ```
+
+    `code` es el identificador estable que el cliente mira para decidir qué
+    hacer; `message` es para la persona. Un error inesperado se registra
+    entero en el servidor y llega genérico al cliente — nunca un detalle
+    interno de PostgreSQL.
+
+    **Dos criterios que conviene tener presentes al leer:**
+
+    - Pedir por id un recurso que existe pero está fuera del alcance del rol
+      devuelve **404, no 403**. Un 403 ya confirmaría que ese recurso existe.
+    - Un estudiante de Open Learning que llama un endpoint exclusivo de
+      Enactus recibe **403, nunca una lista vacía**: una lista vacía haría
+      ver un bug de permisos como si fuera "todavía no hay datos".
+
+    **Alcance de lectura.** Ningún listado devuelve todo a todo el mundo: el
+    filtro por rol se aplica en el servidor y no se puede cambiar con un
+    parámetro de la petición.
+
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: https://api-staging.eduxaction.co
+    description: Staging (pendiente, Fase 6)
+  - url: https://api.eduxaction.co
+    description: Producción (pendiente, Fase 6)
+
+tags:
+  - name: auth
+    description: Sesión, tokens y rotación
+  - name: courses
+    description: Cursos, módulos y lecciones (autoría de contenido)
+  - name: progress
+    description: Progreso y completitud — calculado en el servidor
+  - name: students
+    description: Ruta de Impacto y progreso de un estudiante
+  - name: certificates
+    description: Certificado de Ruta de Impacto
+  - name: laboratories
+    description: Laboratorios y estructura de la Ruta (solo Enactus)
+  - name: orgs
+    description: Proyectos y equipos (solo Enactus)
+  - name: submissions
+    description: Entregas, calificación y revisión
+  - name: content
+    description: Evidencias, calendario, recursos y notificaciones
+  - name: forum
+    description: Foro de la comunidad Enactus
+  - name: files
+    description: URLs firmadas de subida
+  - name: admin
+    description: Permisos, respaldo y métricas
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [auth]
+      summary: Estado del servicio
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  env: { type: string }
+                  time: { type: string, format: date-time }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Iniciar sesión
+      security: []
+      description: |
+        Limitado a 10 intentos por IP + correo cada 5 minutos.
+
+        El mensaje y el tiempo de respuesta son idénticos exista o no la
+        cuenta: si distinguieran, el endpoint sería un enumerador de usuarios.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Rotar el refresh token
+      security: []
+      description: |
+        Cada uso emite un par nuevo y revoca el anterior.
+
+        Si llega un refresh **ya revocado**, se interpreta como token robado
+        y se revocan **todas** las sesiones de esa persona.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Par nuevo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Session' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Cerrar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties: { refreshToken: { type: string } }
+      responses:
+        '204': { description: Sesión cerrada (siempre, exista o no el token) }
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Usuario de la sesión
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /courses:
+    get:
+      tags: [courses]
+      summary: Listar cursos visibles para el rol
+      description: |
+        El alcance depende del rol: el estudiante ve lo publicado y visible de
+        sus laboratorios; el LXD además sus propios borradores; el mentor lo
+        que revisa; la empresa lo de sus LXD; el asesor lo de los laboratorios
+        de sus estudiantes; el donante, nada.
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+        - { in: query, name: laboratoryId, schema: { type: string, format: uuid } }
+        - { in: query, name: status, schema: { type: string, enum: [draft, published, archived] } }
+        - { in: query, name: isOpenLearning, schema: { type: string, enum: ['true', 'false'] } }
+        - { in: query, name: creatorId, schema: { type: string, format: uuid } }
+        - { in: query, name: q, schema: { type: string }, description: Busca por nombre }
+        - { in: query, name: include, schema: { type: string, example: 'modules,lessons' } }
+      responses:
+        '200':
+          description: Página de cursos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/Page' }
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Course' }
+    post:
+      tags: [courses]
+      summary: Crear un curso (nace en borrador)
+      description: Solo lxd, admin y superadmin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Course' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /courses/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Detalle de un curso
+      parameters:
+        - { in: query, name: include, schema: { type: string, example: 'modules,lessons' } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Course' }
+        '404':
+          description: |
+            No existe **o está fuera del alcance del rol**. Deliberadamente no
+            se distinguen los dos casos.
+    patch:
+      tags: [courses]
+      summary: Editar un curso
+      description: Solo su creador o un administrador.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '200': { description: Actualizado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [courses]
+      summary: Borrado lógico
+      description: |
+        Responde **409** si el curso tiene progreso de estudiantes o está
+        vinculado a módulos de la Ruta, con el detalle de qué lo bloquea y
+        sugiriendo archivar. Borrar un curso en uso dejaría el objetivo —y con
+        él el módulo, la fase y la Ruta entera— bloqueado en silencio.
+      responses:
+        '204': { description: Borrado }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /courses/{id}/publish:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Publicar
+      description: |
+        Valida que el curso tenga lecciones y que ninguna lección de video esté
+        sin enlace ni archivo. Es donde vive esa regla desde la migración 0002.
+      responses:
+        '200': { description: Publicado }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /courses/{id}/archive:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Archivar
+      description: |
+        Deja de asignarse a estudiantes nuevos y desaparece de los catálogos,
+        pero sigue existiendo para quienes ya tienen progreso.
+      responses:
+        '200': { description: Archivado }
+
+  /courses/{id}/modules:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Agregar un módulo (al final)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties: { title: { type: string } }
+      responses:
+        '201': { description: Creado }
+
+  /courses/{id}/modules/order:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [courses]
+      summary: Reordenar TODOS los módulos
+      description: |
+        Un solo endpoint, no un PATCH por módulo: con
+        `unique(course_id, order_index)` un intercambio de a uno falla en el
+        primer paso. Va en transacción y en dos pasadas.
+
+        La lista debe incluir exactamente los módulos del curso, una vez cada
+        uno; si no, responde 409 y no cambia nada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Reorder' }
+      responses:
+        '200': { description: Nuevo orden }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /modules/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [courses]
+      summary: Renombrar un módulo
+      responses: { '200': { description: Actualizado } }
+    delete:
+      tags: [courses]
+      summary: Borrar un módulo (renumera el resto)
+      responses: { '204': { description: Borrado } }
+
+  /modules/{id}/lessons:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Agregar una lección (al final)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LessonInput' }
+      responses:
+        '201': { description: Creada }
+        '409':
+          description: Una lección de tipo `link` sin `externalUrl`
+
+  /modules/{id}/lessons/order:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [courses]
+      summary: Reordenar las lecciones de un módulo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Reorder' }
+      responses: { '200': { description: Nuevo orden } }
+
+  /lessons/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [courses]
+      summary: Editar una lección
+      responses: { '200': { description: Actualizada } }
+    delete:
+      tags: [courses]
+      summary: Borrar una lección
+      responses: { '204': { description: Borrada } }
+
+  /lessons/{id}/video-upload-url:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Paso 1 — URL firmada para subir el video
+      description: |
+        El archivo **nunca** pasa por la API: va directo del navegador a S3.
+        API Gateway corta el payload en 10 MB y un video lo revienta.
+
+        Se valida ANTES de firmar: `video/mp4` o `video/webm`, máximo 500 MB,
+        y rol con permiso de contenido. Una URL firmada es un permiso real de
+        escritura sobre el bucket.
+
+        Recomendación para el LXD: MP4, H.264, 720p — reproduce nativamente en
+        todos los navegadores. **No hay transcodificación**: lo que se sube es
+        lo que se sirve.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, sizeBytes]
+              properties:
+                contentType: { type: string, enum: ['video/mp4', 'video/webm'] }
+                sizeBytes: { type: integer, maximum: 524288000 }
+      responses:
+        '200':
+          description: URL firmada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadUrl' }
+        '400': { description: Content-type no permitido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { description: Supera los 500 MB }
+        '503': { description: Almacenamiento no configurado en este entorno }
+
+  /lessons/{id}/video:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Paso 3 — confirmar la subida
+      description: |
+        La `key` debe empezar por `lessons/<id>/`: si no, alguien podría
+        apuntar su lección a un archivo subido para otra.
+
+        Los videos propios se sirven **siempre por CloudFront con URL
+        firmada**, nunca por URL directa de S3 (1 TB/mes gratis vs. 100 GB).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, sizeBytes, mimeType]
+              properties:
+                key: { type: string }
+                sizeBytes: { type: integer }
+                mimeType: { type: string }
+                durationSec: { type: integer }
+      responses:
+        '200': { description: Lección actualizada }
+        '409': { description: La key no corresponde a esta lección }
+
+  /lessons/{id}/video-external:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Asociar un video externo (YouTube/Vimeo)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string, format: uri }
+                durationSec: { type: integer }
+      responses: { '200': { description: Lección actualizada } }
+
+  /progress/lessons/{lessonId}/toggle:
+    parameters:
+      - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [progress]
+      summary: Alternar una lección
+      description: |
+        Solo el propio estudiante. **No existe** una versión "marcar completa a
+        otro": sería una forma de fabricar progreso. La única vía indirecta
+        legítima es calificar una actividad, que completa su lección.
+
+        La respuesta trae el progreso recalculado de curso, módulo, fase y
+        Ruta: **el cliente no necesita ninguna llamada adicional**.
+      responses:
+        '200':
+          description: Progreso recalculado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ToggleImpact' }
+        '403':
+          description: No es estudiante, o no tiene acceso a ese curso/laboratorio
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /students/{id}/ruta-progress:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [students]
+      summary: Ruta de Impacto completa
+      description: |
+        Laboratorios, fases, módulos, objetivos y cursos, con el desbloqueo y
+        el estado de cada deadline.
+
+        Un estudiante de Open Learning recibe **403**. Si quien pregunta es
+        del equipo pero el estudiante objetivo es de Open Learning, responde
+        **409** diciéndolo — nunca una lista vacía.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RutaProgress' }
+        '403': { description: Cuenta de Open Learning, o no es su propio progreso }
+        '409': { description: El estudiante objetivo es de Open Learning }
+
+  /students/{id}/course-progress/{courseId}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { in: path, name: courseId, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [students]
+      summary: Progreso en un curso, con las lecciones completadas
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: El estudiante no tiene acceso a ese curso }
+
+  /students/{id}/certificate-eligibility/{laboratoryId}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { in: path, name: laboratoryId, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [students]
+      summary: Si ya puede emitirse el certificado, y si no, qué falta
+      responses: { '200': { description: OK } }
+
+  /certificates:
+    get:
+      tags: [certificates]
+      summary: Certificados
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+        - { in: query, name: studentId, schema: { type: string, format: uuid } }
+      responses: { '200': { description: Página de certificados } }
+
+  /certificates/ruta:
+    post:
+      tags: [certificates]
+      summary: Emitir el certificado de Ruta de Impacto
+      description: |
+        Doble candado a propósito:
+
+        1. El endpoint valida que las 3 fases estén completas y, si no,
+           responde **409 con el detalle de qué falta**.
+        2. La base lo hace cumplir igual con el trigger
+           `certificates_require_complete_ruta`.
+
+        Requiere `can_grade_enactus` — la Ruta es contexto Enactus, no alcanza
+        con el permiso de Open Learning. Admin y superadmin lo hacen sin pasar
+        por el permiso, y queda en `audit_log`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, laboratoryId]
+              properties:
+                studentId: { type: string, format: uuid }
+                laboratoryId: { type: string, format: uuid }
+      responses:
+        '201': { description: Emitido }
+        '403': { description: Sin permiso de calificar en Enactus }
+        '409':
+          description: Ruta incompleta, o el certificado ya existía
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /laboratories:
+    get:
+      tags: [laboratories]
+      summary: Laboratorios visibles para el rol
+      description: Todo este recurso es **solo Enactus**.
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+      responses:
+        '200': { description: Página de laboratorios }
+        '403': { description: Cuenta de Open Learning }
+
+  /laboratories/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [laboratories]
+      summary: Laboratorio con la estructura de su Ruta
+      description: |
+        Describe el laboratorio (fases, objetivos, módulos). El **avance** de
+        un estudiante puntual vive en `/students/{id}/ruta-progress`.
+      responses:
+        '200': { description: OK }
+        '403': { description: Cuenta de Open Learning }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /projects:
+    get:
+      tags: [orgs]
+      summary: Listar proyectos
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+        - { in: query, name: include, schema: { type: string, example: ods } }
+      responses: { '200': { description: Página de proyectos } }
+    post:
+      tags: [orgs]
+      summary: Crear un proyecto (solo admin/superadmin)
+      responses:
+        '201': { description: Creado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /projects/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [orgs]
+      summary: Detalle con el equipo y el rol de cada integrante
+      responses: { '200': { description: OK } }
+    patch:
+      tags: [orgs]
+      summary: Editar (admin, superadmin o asesor)
+      description: El asesor **edita pero no crea**.
+      responses: { '200': { description: Actualizado } }
+    delete:
+      tags: [orgs]
+      summary: Borrado lógico (solo admin/superadmin)
+      responses: { '204': { description: Borrado } }
+
+  /groups:
+    get: { tags: [orgs], summary: Listar equipos, responses: { '200': { description: OK } } }
+    post: { tags: [orgs], summary: Crear equipo, responses: { '201': { description: Creado } } }
+
+  /groups/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get: { tags: [orgs], summary: Detalle con integrantes, responses: { '200': { description: OK } } }
+    patch: { tags: [orgs], summary: Editar, responses: { '200': { description: Actualizado } } }
+    delete: { tags: [orgs], summary: Borrado lógico, responses: { '204': { description: Borrado } } }
+
+  /groups/{id}/members:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [orgs]
+      summary: Reemplazar los integrantes, cada uno con su rol en el proyecto
+      description: |
+        Un solo endpoint en vez de altas y bajas sueltas: así el equipo nunca
+        queda a medias entre dos llamadas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                members:
+                  type: array
+                  items:
+                    type: object
+                    required: [userId]
+                    properties:
+                      userId: { type: string, format: uuid }
+                      roleInProject:
+                        type: string
+                        enum: [leader, research, finance, communications, design, operations, member]
+      responses: { '200': { description: Integrantes actualizados } }
+
+  /submissions:
+    get:
+      tags: [submissions]
+      summary: Entregas visibles para el rol
+      description: Un estudiante ve **solo las suyas**; no hay parámetro que lo cambie.
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+        - { in: query, name: courseId, schema: { type: string, format: uuid } }
+        - { in: query, name: studentId, schema: { type: string, format: uuid } }
+        - { in: query, name: pending, schema: { type: string, enum: ['true', 'false'] } }
+      responses: { '200': { description: Página de entregas } }
+    post:
+      tags: [submissions]
+      summary: Crear una entrega (solo el propio estudiante)
+      responses:
+        '201': { description: Creada }
+        '403': { description: Sin acceso a ese curso o laboratorio }
+
+  /submissions/{id}/grade:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [submissions]
+      summary: Calificar
+      description: |
+        Requiere `can_grade` **en el contexto del curso**: Open Learning y
+        Enactus son permisos separados, y el contexto sale del curso, no del
+        cuerpo de la petición.
+
+        La escala se guarda junto a la nota: hoy conviven cuatro escalas en el
+        mismo campo y el número por sí solo no significa nada.
+
+        Calificar una actividad **completa su lección** (marca, nunca alterna).
+        Queda en `audit_log`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gradingMode]
+              properties:
+                grade: { type: number, nullable: true }
+                gradingMode: { type: string, enum: [points100, passfail, review, scale5] }
+                feedback: { type: string }
+      responses:
+        '200': { description: Calificada }
+        '400': { description: Nota fuera del rango de la escala }
+        '403': { description: Sin permiso de calificar en ese contexto }
+
+  /submissions/{id}/review:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [submissions]
+      summary: Comentar sin calificar (Mentor)
+      description: |
+        El Mentor revisa y comenta, pero **no pone nota**. Este endpoint no
+        toca `grade` bajo ninguna circunstancia.
+      responses: { '200': { description: Revisada } }
+
+  /submissions/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    delete:
+      tags: [submissions]
+      summary: Borrado lógico
+      description: El estudiante solo puede borrar la suya mientras no esté calificada ni comentada.
+      responses:
+        '204': { description: Borrada }
+        '409': { description: Ya calificada o comentada }
+
+  /evidences:
+    get:
+      tags: [content]
+      summary: Evidencias de impacto
+      description: Un donante ve **solo las suyas**, sin importar qué pida.
+      responses: { '200': { description: Página de evidencias } }
+    post:
+      tags: [content]
+      summary: Crear (solo admin/superadmin)
+      responses: { '201': { description: Creada } }
+
+  /evidences/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch: { tags: [content], summary: Editar, responses: { '200': { description: Actualizada } } }
+    delete: { tags: [content], summary: Borrado lógico, responses: { '204': { description: Borrada } } }
+
+  /calendar-events:
+    get:
+      tags: [content]
+      summary: Eventos visibles para el rol
+      description: |
+        `ruta_impacto` es global para el mundo Enactus; `mentoria` sigue atado
+        al laboratorio; `open_learning_sync`, al curso. Empresa y Donante no
+        tienen calendario.
+      responses: { '200': { description: Página de eventos } }
+    post:
+      tags: [content]
+      summary: Crear un evento
+      description: El LXD solo `open_learning_sync`; el Mentor solo `ruta_impacto`/`mentoria`; el Admin, cualquiera.
+      responses:
+        '201': { description: Creado }
+        '403': { description: Ese rol no puede crear ese tipo de evento }
+
+  /calendar-events/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch: { tags: [content], summary: Editar (solo quien lo creó, o admin), responses: { '200': { description: Actualizado } } }
+    delete: { tags: [content], summary: Borrado lógico, responses: { '204': { description: Borrado } } }
+
+  /communication-resources:
+    get:
+      tags: [content]
+      summary: Plantillas de comunicaciones
+      description: Las publica el Admin; las leen Asesor, Mentor y LXD.
+      responses: { '200': { description: Página de recursos } }
+    post: { tags: [content], summary: Publicar (solo admin/superadmin), responses: { '201': { description: Creado } } }
+
+  /communication-resources/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    delete: { tags: [content], summary: Borrado lógico, responses: { '204': { description: Borrado } } }
+
+  /notifications:
+    get:
+      tags: [content]
+      summary: Notificaciones propias
+      description: Siempre las del usuario de la sesión; no hay parámetro para pedir las de otro.
+      responses: { '200': { description: Página con el conteo de no leídas } }
+
+  /notifications/read:
+    post:
+      tags: [content]
+      summary: Marcar todas como leídas
+      responses: { '204': { description: OK } }
+
+  /forum-posts:
+    get:
+      tags: [forum]
+      summary: Publicaciones del foro
+      description: |
+        Solo Admin, Super Admin, Asesores y estudiantes/alumni **Enactus**.
+        Los de Open Learning, LXD, Mentor, Empresa y Donante reciben 403.
+      responses:
+        '200': { description: Página de publicaciones }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post: { tags: [forum], summary: Publicar, responses: { '201': { description: Creada } } }
+
+  /forum-posts/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get: { tags: [forum], summary: Publicación con sus respuestas, responses: { '200': { description: OK } } }
+    delete:
+      tags: [forum]
+      summary: Borrar
+      description: El autor borra lo suyo; Admin y Super Admin, cualquiera.
+      responses: { '204': { description: Borrada } }
+
+  /forum-posts/{id}/replies:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post: { tags: [forum], summary: Responder, responses: { '201': { description: Creada } } }
+
+  /forum-posts/{id}/like:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [forum]
+      summary: Apoyar o retirar el apoyo
+      description: Un apoyo por persona. Es un INSERT o un DELETE, sin condición de carrera.
+      responses: { '200': { description: Estado del apoyo y el conteo } }
+
+  /forum-posts/{id}/pin:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post: { tags: [forum], summary: Fijar (moderación de admin), responses: { '200': { description: OK } } }
+
+  /files/upload-url:
+    post:
+      tags: [files]
+      summary: URL firmada para archivos que no son video
+      description: |
+        Evidencias, recursos de comunicaciones, adjuntos de entregas y
+        avatares. Máximo 25 MB; el rol permitido depende del propósito.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purpose, fileName, contentType, sizeBytes]
+              properties:
+                purpose:
+                  type: string
+                  enum: [evidence, communication_resource, submission, avatar]
+                fileName: { type: string }
+                contentType: { type: string }
+                sizeBytes: { type: integer, maximum: 26214400 }
+      responses:
+        '200':
+          description: URL firmada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadUrl' }
+        '400': { description: Tipo de archivo no permitido }
+        '403': { description: Ese rol no puede subir ese tipo de archivo }
+        '413': { description: Supera los 25 MB }
+        '503': { description: Almacenamiento no configurado }
+
+  /admin/users/{id}/can-grade:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [admin]
+      summary: Cambiar el permiso de calificar de un LXD
+      description: |
+        Son **dos** permisos, no uno. Cada cambio queda en `audit_log` con
+        quién, a quién, cuándo, y los valores anterior y nuevo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                canGradeOpenLearning: { type: boolean }
+                canGradeEnactus: { type: boolean }
+      responses:
+        '200': { description: Usuario actualizado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El permiso solo aplica a cuentas LXD }
+
+  /admin/backup:
+    get:
+      tags: [admin]
+      summary: Respaldo completo
+      description: |
+        **Sin contraseñas ni sesiones.** Hoy `exportBackupJson()` vuelca la
+        caja `users` entera —contraseñas en texto plano incluidas— a un archivo
+        que el Admin descarga.
+      responses: { '200': { description: Respaldo en JSON } }
+
+  /admin/restore:
+    post:
+      tags: [admin]
+      summary: Restaurar un respaldo
+      description: |
+        El endpoint más peligroso de la API. **Solo superadmin**, transaccional
+        (o entra todo, o no entra nada), y exige la confirmación literal
+        `REEMPLAZAR TODOS LOS DATOS`. Queda en `audit_log`.
+
+        Efecto secundario deliberado: al reemplazar `users` se caen las
+        sesiones abiertas de todo el mundo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version, data, confirm]
+              properties:
+                version: { type: integer }
+                data: { type: object }
+                confirm: { type: string, enum: ['REEMPLAZAR TODOS LOS DATOS'] }
+      responses:
+        '200': { description: Filas restauradas por tabla }
+        '400': { description: Falta la confirmación exacta }
+        '403': { description: Solo superadmin }
+
+  /admin/storage/video:
+    get:
+      tags: [admin]
+      summary: Almacenamiento total de video
+      description: |
+        La métrica que va a crecer y necesita visibilidad: sin
+        transcodificación, lo que se sube es lo que se guarda y lo que se paga.
+      responses: { '200': { description: Bytes y GB, por lecciones e intros } }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token de 12 h. Se renueva con `/auth/refresh`.
+
+  parameters:
+    id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    pageSize:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    Unauthorized:
+      description: Sin sesión, token inválido o expirado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: El rol no tiene permiso
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: No existe, o está fuera del alcance del rol
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: El estado actual no permite la operación
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Datos inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Demasiados intentos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - bad_request
+                - validation_error
+                - unauthorized
+                - forbidden
+                - not_found
+                - conflict
+                - payload_too_large
+                - too_many_requests
+                - storage_not_configured
+                - internal_error
+            message: { type: string }
+            details: {}
+
+    Page:
+      type: object
+      properties:
+        data: { type: array, items: {} }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+
+    Session:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, example: 43200, description: Segundos (12 h) }
+        user: { $ref: '#/components/schemas/User' }
+
+    User:
+      type: object
+      description: Nunca incluye el hash de la contraseña.
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        role:
+          type: string
+          enum: [superadmin, admin, advisor, donor, lxd, mentor, company, student, alumni]
+        studentType:
+          type: string
+          nullable: true
+          enum: [enactus, open_learning]
+        university: { type: string }
+        career: { type: string }
+        canGradeOpenLearning: { type: boolean }
+        canGradeEnactus: { type: boolean }
+        avatarS3Key: { type: string, nullable: true }
+        joinedAt: { type: string, format: date-time, nullable: true }
+
+    CourseInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        subtitle: { type: string }
+        description: { type: string }
+        fullDescription: { type: string }
+        laboratoryId: { type: string, format: uuid, nullable: true }
+        isOpenLearning: { type: boolean }
+        level: { type: string, enum: [basic, intermediate, advanced] }
+        estimatedHours: { type: integer, minimum: 0 }
+        generatesCertificate: { type: boolean }
+        certifiedHours: { type: integer, minimum: 0 }
+        maxStudents: { type: integer, minimum: 0, description: '0 = sin límite' }
+        visible: { type: boolean }
+
+    Course:
+      allOf:
+        - { $ref: '#/components/schemas/CourseInput' }
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            status: { type: string, enum: [draft, published, archived] }
+            creatorId: { type: string, format: uuid, nullable: true }
+            createdAt: { type: string, format: date-time }
+            deletedAt: { type: string, format: date-time, nullable: true }
+            modules:
+              type: array
+              description: Solo con `include=modules`
+              items: {}
+
+    LessonInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        type:
+          type: string
+          enum: [video, pdf, resource, link, quiz, activity, survey]
+        description: { type: string }
+        durationMin: { type: integer, minimum: 0 }
+        externalUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Obligatorio si `type = link`
+
+    Reorder:
+      type: object
+      required: [orderedIds]
+      properties:
+        orderedIds:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
+          description: Exactamente los elementos del padre, una vez cada uno.
+
+    UploadUrl:
+      type: object
+      properties:
+        uploadUrl: { type: string, format: uri }
+        key: { type: string }
+        expiresInSeconds: { type: integer, example: 900 }
+        method: { type: string, example: PUT }
+        headers: { type: object }
+
+    ToggleImpact:
+      type: object
+      properties:
+        lessonId: { type: string, format: uuid }
+        completed: { type: boolean }
+        course:
+          type: object
+          nullable: true
+          properties:
+            courseId: { type: string, format: uuid }
+            totalLessons: { type: integer }
+            completedLessons: { type: integer }
+            ratio: { type: number, format: float }
+            isComplete: { type: boolean }
+        rutaImpact:
+          type: array
+          description: Un elemento por laboratorio donde el curso esté en la Ruta.
+          items:
+            type: object
+            properties:
+              laboratoryId: { type: string, format: uuid }
+              moduleId: { type: string, format: uuid }
+              moduleComplete: { type: boolean }
+              phaseId: { type: string, format: uuid }
+              phaseOrder: { type: integer }
+              phaseModulesDone: { type: integer }
+              phaseModulesTotal: { type: integer }
+              phaseComplete: { type: boolean }
+              rutaPhasesDone: { type: integer }
+              rutaPhasesTotal: { type: integer }
+              rutaComplete: { type: boolean }
+              certificateAvailable: { type: boolean }
+
+    RutaProgress:
+      type: object
+      properties:
+        studentId: { type: string, format: uuid }
+        studentName: { type: string }
+        laboratories:
+          type: array
+          items:
+            type: object
+            properties:
+              laboratoryId: { type: string, format: uuid }
+              laboratoryName: { type: string }
+              phasesTotal: { type: integer }
+              phasesDone: { type: integer }
+              isComplete: { type: boolean }
+              certificateIssued: { type: boolean }
+              phases:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    phaseId: { type: string, format: uuid }
+                    orderIndex: { type: integer }
+                    title: { type: string }
+                    deadline: { type: string, format: date, nullable: true }
+                    deadlineStatus:
+                      type: string
+                      enum: [none, on_track, approaching, overdue]
+                      description: Una fase completada nunca aparece atrasada.
+                    modulesTotal: { type: integer }
+                    modulesDone: { type: integer }
+                    isComplete: { type: boolean }
+                    isUnlocked: { type: boolean }
+                    objectives: { type: array, items: {} }
+                    modules: { type: array, items: {} }

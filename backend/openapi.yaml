@@ -161,6 +161,10 @@ paths:
     get:
       tags: [auth]
       summary: Usuario de la sesión
+      description: |
+        Para estudiantes y alumni incluye `team` con su equipo y el rol dentro
+        del proyecto. Antes eso salía de `AppUser.extra['groupId']`, una
+        denormalización de Hive.
       responses:
         '200':
           description: OK
@@ -168,6 +172,18 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [auth]
+      summary: Editar el propio perfil
+      description: |
+        Deliberadamente acotado: acepta nombre, teléfono, cédula, ciudad,
+        carrera y el perfil libre. **No** acepta `role`, `studentType`,
+        `university`, `canGrade*` ni las relaciones — esos los cambia un
+        administrador. Si estuvieran acá, cualquiera podría ascenderse
+        mandando un campo de más.
+      responses:
+        '200': { description: Perfil actualizado }
+        '400': { $ref: '#/components/responses/ValidationError' }
 
   /site-content:
     get:

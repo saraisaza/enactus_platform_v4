@@ -168,7 +168,68 @@ authRoutes.post('/logout', async (c) => {
   return c.body(null, 204);
 });
 
-authRoutes.get('/me', requireAuth, (c) => c.json(publicUser(currentUser(c))));
+/**
+ * Usuario de la sesión.
+ *
+ * Para estudiantes y alumni incluye su equipo: `groupId`, `projectId` y el rol
+ * dentro del proyecto. Antes eso salía de `AppUser.extra['groupId']`, una
+ * denormalización de Hive; ahora es un JOIN y viene con el propio usuario, así
+ * la pantalla no tiene que adivinar a qué equipo pertenece quien mira.
+ */
+authRoutes.get('/me', requireAuth, async (c) => {
+  const user = currentUser(c);
+  const base = publicUser(user);
+  if (user.role !== 'student' && user.role !== 'alumni') return c.json(base);
+
+  const [team] = await c.get('db').execute<{
+    groupId: string;
+    groupName: string;
+    projectId: string;
+    projectName: string;
+    roleInProject: string;
+  }>(raw`
+    select g.id as "groupId", g.name as "groupName",
+           pr.id as "projectId", pr.name as "projectName",
+           gm.role_in_project as "roleInProject"
+      from group_members gm
+      join groups g on g.id = gm.group_id and g.deleted_at is null
+      join projects pr on pr.id = g.project_id and pr.deleted_at is null
+     where gm.user_id = ${user.id}
+     limit 1
+  `);
+
+  return c.json({ ...base, team: team ?? null });
+});
+
+const profileSchema = z.object({
+  name: z.string().trim().min(1, 'El nombre es obligatorio.').optional(),
+  phone: z.string().trim().optional(),
+  cedula: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  career: z.string().trim().optional(),
+  profile: z.record(z.string(), z.unknown()).optional(),
+});
+
+/**
+ * Editar el PROPIO perfil.
+ *
+ * Deliberadamente acotado: no acepta `role`, `studentType`, `university`,
+ * `canGrade*` ni las relaciones. Esos los cambia un administrador — si
+ * estuvieran acá, cualquiera podría ascenderse mandando un campo de más.
+ */
+authRoutes.patch('/me', requireAuth, async (c) => {
+  const user = currentUser(c);
+  const body = profileSchema.parse(await c.req.json());
+
+  const [updated] = await c
+    .get('db')
+    .update(users)
+    .set({ ...body, updatedAt: new Date() })
+    .where(eq(users.id, user.id))
+    .returning();
+
+  return c.json(publicUser(updated!));
+});
 
 /** Emite el par de tokens y guarda el refresh hasheado. */
 async function issueTokens(db: Database, ip: string, userId: string, role: string) {

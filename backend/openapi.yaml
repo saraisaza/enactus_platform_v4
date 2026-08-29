@@ -390,6 +390,87 @@ paths:
         '204': { description: Borrado }
         '409': { $ref: '#/components/responses/Conflict' }
 
+  /courses/{id}/students:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Estudiantes del curso, con todo lo que la tabla de seguimiento muestra
+      description: |
+        Avance, nota promedio, última actividad y comentario del equipo
+        docente, **en una sola consulta**. Resolverlo en el cliente serían
+        cuatro peticiones por fila: con treinta estudiantes, 120 viajes para
+        dibujar una tabla.
+
+        `avgGrade` es `null` cuando esa persona no tiene ninguna entrega
+        calificada — no 0: "todavía no tiene nota" y "sacó cero" son cosas
+        distintas.
+
+        `lastActivityAt` es lo más reciente entre marcar una lección y hacer
+        una entrega: "cuándo se supo de esta persona por última vez".
+
+        **Alcance**: más amplio que editar el curso (el Mentor y el Asesor
+        acompañan sin poder cambiarlo) pero no público — un estudiante no ve
+        cómo va el resto de la clase. Fuera de alcance responde `404`, no
+        `403`.
+      responses:
+        '200': { description: Estudiantes del curso }
+        '404': { description: No existe, o está fuera del alcance }
+
+  /courses/{id}/stats:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Cifras del seguimiento
+      description: |
+        Inscritos, completados, avance promedio, nota promedio y entregas
+        pendientes. Mismo alcance que la lista de estudiantes.
+      responses:
+        '200':
+          description: Cifras
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrolled: { type: integer }
+                  completed: { type: integer }
+                  avgProgress: { type: number, minimum: 0, maximum: 1 }
+                  avgGrade: { type: number, nullable: true }
+                  pending: { type: integer }
+        '404': { description: No existe, o está fuera del alcance }
+
+  /courses/{id}/students/{studentId}/note:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: studentId, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [courses]
+      summary: Comentario privado del equipo docente sobre un estudiante
+      description: |
+        **El estudiante no lo ve**: no hay ningún endpoint que se lo devuelva.
+        La tabla `staff_notes` solo se lee desde el seguimiento del curso, y
+        ahí solo entra quien puede acompañarlo.
+
+        Es `PUT` y no `POST` porque hay UNA nota por estudiante y curso:
+        escribir dos veces reemplaza, no acumula.
+
+        El Asesor acompaña pero no escribe en el cuaderno del curso. Y no se
+        puede dejar una nota sobre alguien que no cursa la materia: quedaría
+        colgando de un par (estudiante, curso) que no existe.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [note]
+              properties:
+                note: { type: string, maxLength: 4000 }
+      responses:
+        '200': { description: Comentario guardado }
+        '403': { description: El asesor no escribe comentarios de curso }
+        '404': { description: El curso está fuera del alcance, o esa persona no lo cursa }
+
   /courses/{id}/publish:
     parameters: [{ $ref: '#/components/parameters/id' }]
     post:

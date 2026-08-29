@@ -474,3 +474,37 @@ describe('el contrato de la API es camelCase en TODAS las respuestas', () => {
     }
   });
 });
+
+describe('GET /site-content — el único endpoint público además de /health', () => {
+  it('responde SIN sesión y trae los laboratorios de la portada', async () => {
+    const res = await app.request('/site-content');
+    expect(res.status).toBe(200);
+    const b = await body<{
+      heroTitle: string;
+      laboratories: { id: string; name: string; description: string }[];
+    }>(res);
+    expect(b.heroTitle).toBe('eduXaction Colombia');
+    expect(b.laboratories).toHaveLength(6);
+    expect(b.laboratories[0]?.name).toBeTruthy();
+  });
+
+  it('lo público NO abre la puerta a /laboratories, que sigue aislado', async () => {
+    // La portada muestra nombre y descripción; el endpoint real sigue
+    // exigiendo sesión y devolviendo 403 a una cuenta de Open Learning.
+    const ol = await login(app, 'camila.rivas@gmail.com', 'Est123');
+    const res = await req('/laboratories', ol.accessToken);
+    expect(res.status).toBe(403);
+
+    const sinSesion = await app.request('/laboratories');
+    expect(sinSesion.status).toBe(401);
+  });
+
+  it('editarlo exige ser admin', async () => {
+    const res = await req('/site-content', T.student!, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ heroTitle: 'Hackeado' }),
+    });
+    expect(res.status).toBe(403);
+  });
+});

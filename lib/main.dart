@@ -13,10 +13,9 @@ import 'views/public/not_found_view.dart';
 import 'views/public/pending_portal_view.dart';
 import 'views/shared/lab_detail_view.dart';
 import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
-import 'views/shared/user_detail_view.dart';
 import 'views/student/course_detail_view.dart';
 import 'views/student/student_portal.dart';
-import 'widgets/common.dart';
+import 'widgets/async_states.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,10 +131,12 @@ class EnactusApp extends StatelessWidget {
         page = _AuthGuard(
             child: CourseDetailView(
                 courseId: name.substring('${AppRoutes.courses}/'.length)));
+      // `/usuarios/:id` queda pendiente: el perfil de OTRA persona necesita
+      // un `GET /users/:id` que la API todavía no expone, y su vista es de
+      // personal (Mentor, Asesor, LXD, Admin), no del portal Estudiante.
       case String name when name.startsWith('${AppRoutes.users}/'):
-        page = _AuthGuard(
-            child: UserDetailView(
-                userId: name.substring('${AppRoutes.users}/'.length)));
+        page = const _AuthGuard(
+            child: PendingPortalView(portalName: 'Perfil de usuario'));
       case String name when name.startsWith('${AppRoutes.labs}/'):
         page = _AuthGuard(
             child: LabDetailView(

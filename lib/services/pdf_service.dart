@@ -14,7 +14,7 @@ class PdfService {
   /// Construye el documento del certificado.
   static Future<pw.Document> buildCertificate(Certificate cert) async {
     final doc = pw.Document();
-    final dateStr = DateFormat('d MMMM yyyy', 'es').format(cert.date);
+    final dateStr = DateFormat('d MMMM yyyy', 'es').format(cert.issuedAt);
 
     doc.addPage(
       pw.Page(
@@ -78,7 +78,7 @@ class PdfService {
                   style: const pw.TextStyle(color: PdfColors.grey300, fontSize: 14)),
               pw.SizedBox(height: 8),
               pw.Text(
-                cert.labName,
+                cert.laboratoryName,
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(
                   color: _gold,

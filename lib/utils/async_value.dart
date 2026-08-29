@@ -61,7 +61,7 @@ sealed class AsyncValue<T> {
       switch (this) {
         AsyncIdle<T>() => loading(),
         AsyncLoading<T>() => loading(),
-        AsyncError<T>(:final error) => error(this.error),
+        AsyncError<T>(error: final failure) => error(failure),
         AsyncData<T>(:final value) => data(value),
       };
 

@@ -1274,6 +1274,27 @@ class CalendarEvent {
       };
 }
 
+/// Laboratorio tal como lo ve la portada pública: nombre y descripción, nada
+/// más. Viene dentro de `/site-content`, no de `/laboratories` — ese sigue
+/// exigiendo sesión y aislando por rol.
+class PublicLab {
+  final String id;
+  final String name;
+  final String description;
+
+  const PublicLab({
+    required this.id,
+    required this.name,
+    this.description = '',
+  });
+
+  factory PublicLab.fromJson(Map<String, dynamic> j) => PublicLab(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        description: (j['description'] as String?) ?? '',
+      );
+}
+
 /// Contenido editable de la página principal.
 class SiteContent {
   final String heroTitle;
@@ -1286,6 +1307,14 @@ class SiteContent {
   final int statLabs;
   final int statUniversities;
 
+  /// Los laboratorios que se muestran en la portada.
+  final List<PublicLab> laboratories;
+
+  /// Keys de S3 de la galería del hero. **Todavía no se pueden mostrar**:
+  /// servirlas necesita la distribución de CloudFront de la Fase 6. Hasta
+  /// entonces esta lista se ignora y el bloque de galería no se dibuja.
+  final List<String> galleryImages;
+
   const SiteContent({
     this.heroTitle = 'eduXaction Colombia',
     this.heroSubtitle = '',
@@ -1296,6 +1325,8 @@ class SiteContent {
     this.statProjects = 0,
     this.statLabs = 0,
     this.statUniversities = 0,
+    this.laboratories = const [],
+    this.galleryImages = const [],
   });
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
@@ -1308,6 +1339,11 @@ class SiteContent {
         statProjects: (j['statProjects'] as num?)?.toInt() ?? 0,
         statLabs: (j['statLabs'] as num?)?.toInt() ?? 0,
         statUniversities: (j['statUniversities'] as num?)?.toInt() ?? 0,
+        laboratories: (j['laboratories'] as List? ?? const [])
+            .map((e) => PublicLab.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        galleryImages:
+            List<String>.from(j['galleryImages'] as List? ?? const []),
       );
 }
 

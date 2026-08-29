@@ -11,7 +11,7 @@ import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/common.dart';
 import '../../widgets/video_player_dialog.dart';
-import '../lxd/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
+import '../../widgets/lesson_visuals.dart';
 
 /// Detalle de un curso: módulos y lecciones de todos los tipos (video, PDF,
 /// recurso, enlace, quiz, actividad, encuesta), progreso y entregas.

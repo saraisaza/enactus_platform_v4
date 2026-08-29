@@ -73,8 +73,8 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   List<CalendarEvent> _eventsOn(DateTime day) =>
-      widget.events.where((e) => _sameDay(e.start, day)).toList()
-        ..sort((a, b) => a.start.compareTo(b.start));
+      widget.events.where((e) => _sameDay(e.startsAt, day)).toList()
+        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
   void _changeMonth(int delta) {
     setState(() {
@@ -200,7 +200,7 @@ class _CalendarViewState extends State<CalendarView> {
       tooltip: hasEvents
           ? dayEvents
               .map((e) =>
-                  '${DateFormat('h:mm a').format(e.start)} · ${e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title}')
+                  '${DateFormat('h:mm a').format(e.startsAt)} · ${e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title}')
               .join('\n')
           : null,
       child: Container(
@@ -376,7 +376,7 @@ class _EventCard extends StatelessWidget {
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 14)),
               ),
-              Text(DateFormat('h:mm a').format(event.start),
+              Text(DateFormat('h:mm a').format(event.startsAt),
                   style: const TextStyle(
                       color: AppColors.textMuted, fontSize: 12)),
             ],
@@ -462,10 +462,10 @@ Future<void> showCalendarEventDialog(
       TextEditingController(text: existing?.meetLink ?? defaultMeetLink);
   var type = existing?.type ?? allowedTypes.first;
   var courseId = existing?.courseId ?? (courses.isNotEmpty ? courses.first.id : '');
-  var labId = existing?.labId ?? (labs.isNotEmpty ? labs.first.id : '');
+  var labId = existing?.laboratoryId ?? (labs.isNotEmpty ? labs.first.id : '');
   final fallbackDay = DateTime.now().add(const Duration(days: 1));
   final day = initialDay ?? fallbackDay;
-  var start = existing?.start ?? DateTime(day.year, day.month, day.day, 10, 0);
+  var start = existing?.startsAt ?? DateTime(day.year, day.month, day.day, 10, 0);
   var repeatCount = 1;
 
   await showDialog<void>(
@@ -665,12 +665,12 @@ Future<void> showCalendarEventDialog(
                         id: baseId,
                         title: title.text.trim(),
                         description: description.text.trim(),
-                        start: start,
+                        startsAt: start,
                         type: type,
                         meetLink: meetLink.text.trim(),
                         guests: guests.text.trim(),
                         courseId: eventCourseId,
-                        labId: eventLabId,
+                        laboratoryId: eventLabId,
                       ),
                     ];
                     if (!isEditing && repeatCount > 1) {
@@ -679,12 +679,12 @@ Future<void> showCalendarEventDialog(
                           id: '${baseId}_$i',
                           title: title.text.trim(),
                           description: description.text.trim(),
-                          start: start.add(Duration(days: 15 * i)),
+                          startsAt: start.add(Duration(days: 15 * i)),
                           type: type,
                           meetLink: meetLink.text.trim(),
                           guests: guests.text.trim(),
                           courseId: events.first.courseId,
-                          labId: events.first.labId,
+                          laboratoryId: events.first.laboratoryId,
                         ));
                       }
                     }

@@ -21,12 +21,19 @@ class _LoginViewState extends State<LoginView> {
   String? _error;
   bool _obscure = true;
 
-  void _submit() {
-    final user = context
-        .read<AuthProvider>()
-        .login(_email.text, _password.text);
+  Future<void> _submit() async {
+    final auth = context.read<AuthProvider>();
+    setState(() => _error = null);
+
+    final user = await auth.login(_email.text.trim(), _password.text);
+    if (!mounted) return;
+
     if (user == null) {
-      setState(() => _error = 'Correo o contraseña incorrectos.');
+      // El mensaje sale del servidor: distingue "credenciales incorrectas" de
+      // "demasiados intentos" o "sin conexión", que para quien lo usa son tres
+      // problemas distintos con tres soluciones distintas.
+      setState(() => _error =
+          auth.loginError?.message ?? 'Correo o contraseña incorrectos.');
       return;
     }
     Navigator.of(context).pushNamedAndRemoveUntil(

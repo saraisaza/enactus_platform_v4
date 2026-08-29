@@ -18,7 +18,7 @@ import '../../widgets/charts.dart' show ProgressRing;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/video_player_dialog.dart';
-import '../lxd/lesson_editor.dart' show lessonTypeIcon, lessonTypeLabel;
+import '../../widgets/lesson_visuals.dart';
 import '../shared/lab_detail_view.dart';
 import '../shared/user_detail_view.dart';
 import 'course_detail_view.dart';

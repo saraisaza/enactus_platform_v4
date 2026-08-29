@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/models.dart';
 import '../../providers/data_provider.dart';
+import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../utils/responsive.dart';
@@ -19,8 +21,22 @@ class LandingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final content = data.siteContent;
-    final labs = data.labs;
+    // La portada es pública: este es el único dato que se pide sin sesión.
+    return data.siteContent.when(
+      loading: () => const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: BrandLoader()),
+      ),
+      error: (e) => Scaffold(
+        backgroundColor: AppColors.background,
+        body: ErrorState(e, onRetry: data.reloadSiteContent),
+      ),
+      data: (content) => _buildLanding(context, content),
+    );
+  }
+
+  Widget _buildLanding(BuildContext context, SiteContent content) {
+    final labs = content.laboratories;
     final isCompact = context.isCompact;
 
     return Scaffold(

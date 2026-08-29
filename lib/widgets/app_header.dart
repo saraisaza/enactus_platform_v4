@@ -127,73 +127,43 @@ class _SearchHit {
   String toString() => name;
 }
 
-/// Búsqueda global por estudiantes/alumni, LXD, mentores, cursos,
-/// proyectos, universidades y empresas. Función libre (no método de
-/// estado) para que la use tanto el buscador en línea de escritorio
-/// ([_GlobalSearch]) como la pantalla completa de compact
-/// ([_CompactSearchScreen]).
+/// Búsqueda sobre lo que el rol con sesión YA puede ver: sus cursos y sus
+/// proyectos.
+///
+/// Antes esto recorría `studentsAndAlumni`, `usersByRole(...)` y las empresas,
+/// es decir, enumeraba a TODA la plataforma con su universidad y carrera desde
+/// cualquier rol. Eso era posible solo porque Hive tenía todo local; contra la
+/// API ni siquiera se puede pedir. Buscar personas es una capacidad de Admin y
+/// de BuscaTalento, no del encabezado que ve cualquiera.
+///
+/// Solo mira datos ya cargados: no dispara pedidos mientras se escribe.
 List<_SearchHit> _searchHits(DataProvider data, String query) {
   final q = query.toLowerCase().trim();
   if (q.isEmpty) return const [];
   final hits = <_SearchHit>[];
-  for (final u in data.studentsAndAlumni) {
-    if (u.name.toLowerCase().contains(q)) {
-      hits.add(_SearchHit(Roles.label(u.role), u.name,
-          '${u.university} · ${u.career}', Icons.school_outlined));
-    }
-  }
-  for (final u in data.usersByRole(Roles.lxd)) {
-    if (u.name.toLowerCase().contains(q)) {
-      final courseCount =
-          data.courses.where((c) => c.creatorId == u.id).length;
-      hits.add(_SearchHit(
-          'LXD', u.name, '$courseCount cursos creados', Icons.school_outlined));
-    }
-  }
-  for (final u in data.usersByRole(Roles.mentor)) {
-    if (u.name.toLowerCase().contains(q)) {
-      final labNames = data
-          .labsForMentor(u)
-          .map((l) => l.name)
-          .join(', ');
-      hits.add(_SearchHit('Mentor', u.name, labNames,
-          Icons.psychology_outlined));
-    }
-  }
-  for (final c in data.courses) {
+
+  for (final c in data.courses.valueOrNull ?? const []) {
     if (c.name.toLowerCase().contains(q)) {
-      hits.add(_SearchHit('Curso', c.name,
-          '${c.lessonCount} lecciones', Icons.video_library_outlined));
+      hits.add(_SearchHit(
+        'Curso',
+        c.name,
+        c.description.isEmpty ? c.levelLabel : c.description,
+        Icons.video_library_outlined,
+      ));
     }
   }
-  for (final p in data.projects) {
+
+  for (final p in data.projects.valueOrNull ?? const []) {
     if (p.name.toLowerCase().contains(q)) {
       hits.add(_SearchHit(
-          'Proyecto', p.name, 'Etapa: ${p.stage}', Icons.lightbulb_outline));
+        'Proyecto',
+        p.name,
+        'Etapa: ${p.stageLabel}',
+        Icons.lightbulb_outline,
+      ));
     }
   }
-  final universities = data.studentsAndAlumni
-      .map((s) => s.university)
-      .where((u) => u.isNotEmpty)
-      .toSet();
-  for (final u in universities) {
-    if (u.toLowerCase().contains(q)) {
-      final count = data.studentsAndAlumni
-          .where((s) => s.university == u)
-          .length;
-      hits.add(_SearchHit('Universidad', u, '$count estudiantes',
-          Icons.account_balance_outlined));
-    }
-  }
-  for (final c in data.usersByRole(Roles.company)) {
-    if (c.companyName.toLowerCase().contains(q)) {
-      final labNames =
-          data.labsForCompany(c.id).map((l) => l.name).join(', ');
-      hits.add(_SearchHit('Empresa', c.companyName,
-          labNames.isEmpty ? 'Aliado corporativo' : labNames,
-          Icons.business_outlined));
-    }
-  }
+
   return hits.take(8).toList();
 }
 
@@ -449,14 +419,17 @@ class _AvatarMenu extends StatelessWidget {
           ]),
         ),
       ],
-      onSelected: (value) {
+      onSelected: (value) async {
         switch (value) {
           case 'profile':
             _showProfile(context);
           case 'logout':
-            context.read<AuthProvider>().logout();
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false);
+            // Se espera a que termine: cerrar sesión ahora incluye avisarle al
+            // servidor para que revoque el refresh token. Navegar antes
+            // dejaría la sesión viva del otro lado.
+            final navigator = Navigator.of(context);
+            await context.read<AuthProvider>().logout();
+            navigator.pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false);
         }
       },
       child: HoverableAvatar(user: user),
@@ -574,8 +547,10 @@ class _NotificationBell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final notifications = data.notificationsFor(userId);
-    final unread = notifications.where((n) => !n.read).length;
+    final notifications = data.notifications.valueOrNull ?? const [];
+    // El conteo lo da el servidor: es el mismo número en todas las
+    // pestañas abiertas, sin depender de cuántas se hayan traído.
+    final unread = data.unreadNotifications;
 
     return Stack(
       clipBehavior: Clip.none,
@@ -615,8 +590,8 @@ class _NotificationBell extends StatelessWidget {
 
   void _showPanel(BuildContext context) {
     final data = context.read<DataProvider>();
-    final notifications = data.notificationsFor(userId);
-    data.markNotificationsRead(userId);
+    final notifications = data.notifications.valueOrNull ?? const [];
+    data.markNotificationsRead();
 
     if (context.isCompact) {
       // Panel flotante de 380px no cabe en un teléfono — bottom sheet a
@@ -698,7 +673,7 @@ class _NotificationListBody extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             subtitle: Text(
-              '${n.body}\n${DateFormat('d MMM yyyy, h:mm a').format(n.date)}',
+              '${n.body}\n${DateFormat('d MMM yyyy, h:mm a').format(n.createdAt)}',
               style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             isThreeLine: true,

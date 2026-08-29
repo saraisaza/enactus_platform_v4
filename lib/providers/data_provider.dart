@@ -69,6 +69,7 @@ class DataProvider extends ChangeNotifier {
   AsyncValue<List<CommunicationResource>> _commResources =
       const AsyncValue.idle();
   AsyncValue<List<Evidence>> _evidences = const AsyncValue.idle();
+  AsyncValue<SiteContent> _siteContent = const AsyncValue.idle();
 
   int _unreadNotifications = 0;
 
@@ -93,6 +94,7 @@ class DataProvider extends ChangeNotifier {
     _submissions = const AsyncValue.idle();
     _commResources = const AsyncValue.idle();
     _evidences = const AsyncValue.idle();
+    // `_siteContent` NO se limpia: es público y no depende de quién mire.
     _unreadNotifications = 0;
     _courseById.clear();
     _projectById.clear();
@@ -600,6 +602,28 @@ class DataProvider extends ChangeNotifier {
   }
 
   // -------------------------------------------------------------------------
+  // Contenido público de la portada
+  // -------------------------------------------------------------------------
+
+  /// Contenido de la página principal. Es el único dato que NO necesita
+  /// sesión: la portada se ve sin entrar.
+  AsyncValue<SiteContent> get siteContent {
+    _lazy(_siteContent, (v) => _siteContent = v, _fetchSiteContent);
+    return _siteContent;
+  }
+
+  Future<void> reloadSiteContent() => _refresh(
+        (v) => _siteContent = v,
+        _fetchSiteContent,
+        _siteContent.valueOrNull,
+      );
+
+  Future<SiteContent> _fetchSiteContent() async {
+    final json = await api.get('/site-content');
+    return SiteContent.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  // -------------------------------------------------------------------------
   // Archivos
   // -------------------------------------------------------------------------
 
@@ -660,8 +684,8 @@ class DataProvider extends ChangeNotifier {
     Future<T> Function() fetch,
   ) {
     if (current is! AsyncIdle<T>) return;
-    set(const AsyncValue.loading());
-    scheduleMicrotask(() => _load(set, fetch, null));
+    set(AsyncValue<T>.loading());
+    scheduleMicrotask(() => _load<T>(set, fetch, null));
   }
 
   /// Vuelve a pedir un dato, conservando el anterior mientras llega. Es lo que

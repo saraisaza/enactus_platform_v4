@@ -128,6 +128,20 @@ const _rutaVacia = {
   'laboratories': <Map<String, Object?>>[],
 };
 
+const _siteContent = {
+  'heroTitle': 'eduXaction Colombia',
+  'heroSubtitle': 'Formamos líderes',
+  'bannerText': '',
+  'aboutText': 'Sobre nosotros',
+  'meetingLink': '',
+  'statStudents': 6,
+  'statProjects': 2,
+  'statLabs': 6,
+  'statUniversities': 2,
+  'laboratories': <Map<String, Object?>>[],
+  'galleryImages': <String>[],
+};
+
 Map<String, Object?> _page(List<Object?> data) => {
       'data': data,
       'page': 1,
@@ -157,6 +171,8 @@ FakeApi _api({
         '/students/student1/course-progress/course1': courseProgress,
         '/submissions': _page([]),
         '/notifications': _page([]),
+        // La portada, a la que cae el guardia de rol cuando no hay sesión.
+        '/site-content': _siteContent,
       },
     );
 

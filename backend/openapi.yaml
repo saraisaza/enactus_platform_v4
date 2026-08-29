@@ -169,6 +169,27 @@ paths:
               schema: { $ref: '#/components/schemas/User' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /site-content:
+    get:
+      tags: [content]
+      summary: Contenido de la página principal
+      security: []
+      description: |
+        **Único endpoint sin sesión además de `/health`**: la portada se ve sin
+        entrar. No expone nada sensible — es el texto y las cifras que el
+        equipo cura a mano para el hero.
+
+        Sin fila configurada devuelve los valores por defecto: la portada nunca
+        debe quedar en blanco por un dato de configuración que falta.
+      responses:
+        '200': { description: Contenido del sitio }
+    patch:
+      tags: [content]
+      summary: Editar el contenido (solo admin/superadmin)
+      responses:
+        '200': { description: Actualizado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /courses:
     get:
       tags: [courses]

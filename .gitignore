@@ -53,3 +53,5 @@ app.*.map.json
 
 # graphify knowledge-graph cache (generated, regenerate with `graphify update .`)
 /graphify-out/
+
+echo ".dev.vars" >> .gitignore

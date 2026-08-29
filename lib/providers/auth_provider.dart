@@ -1,86 +1,113 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import '../services/api_errors.dart';
+import '../services/api_service.dart';
 import 'data_provider.dart';
 
-/// Sesión del usuario autenticado.
+/// Sesión del usuario, contra la API.
 ///
-/// La sesión se persiste en la BD local con una expiración de
-/// [sessionDuration]: al recargar la página el usuario sigue dentro hasta
-/// que el tiempo venza o cierre sesión.
+/// La sesión ya no es una fila en Hive con una fecha de expiración: es un JWT
+/// de 12 horas emitido por el servidor, con un refresh que se rota solo. El
+/// cliente no decide cuándo expira — solo reacciona.
 class AuthProvider extends ChangeNotifier {
-  static const sessionDuration = Duration(hours: 12);
-
+  final ApiService api;
   final DataProvider data;
-  AuthProvider(this.data);
+
+  AuthProvider(this.api, this.data) {
+    // Si el refresh también falla, `ApiService` avisa por acá y la sesión se
+    // cierra sola. Es lo que hace que una pestaña abierta toda la noche vuelva
+    // al ingreso en vez de quedarse mostrando errores.
+    api.onSessionExpired = _onSessionExpired;
+  }
 
   AppUser? _currentUser;
-  bool _loggedIn = false;
+  bool _restoring = true;
+  ApiException? _loginError;
+  bool _loggingIn = false;
 
-  /// El usuario de la sesión actual. Sigue devolviendo el último usuario
-  /// autenticado incluso justo después de [logout] (ver por qué en
-  /// [logout]) — para saber si la sesión sigue activa hay que consultar
-  /// [isLoggedIn], no la nulidad de esto.
-  AppUser? get currentUser => _currentUser;
-  bool get isLoggedIn => _loggedIn && _currentUser != null;
-
-  /// Restaura la sesión guardada si aún no ha expirado.
-  /// Devuelve el usuario restaurado o null.
-  AppUser? tryRestoreSession() {
-    final saved = data.db.get('session', 'current');
-    if (saved == null) return null;
-    final expiresAt = DateTime.tryParse((saved['expiresAt'] as String?) ?? '');
-    if (expiresAt == null || DateTime.now().isAfter(expiresAt)) {
-      data.db.delete('session', 'current');
-      return null;
-    }
-    final user = data.userById((saved['userId'] as String?) ?? '');
-    _currentUser = user;
-    _loggedIn = user != null;
-    return user;
-  }
-
-  /// Intenta iniciar sesión; devuelve null si las credenciales son inválidas.
-  AppUser? login(String email, String password) {
-    final user = data.findByCredentials(email, password);
-    if (user != null) {
-      _currentUser = user;
-      _loggedIn = true;
-      data.db.put('session', 'current', {
-        'userId': user.id,
-        'expiresAt': DateTime.now().add(sessionDuration).toIso8601String(),
-      });
-      notifyListeners();
-    }
-    return user;
-  }
-
-  /// Refresca el usuario en sesión desde la BD (tras editar el perfil).
-  void refresh() {
-    if (_currentUser != null) {
-      _currentUser = data.userById(_currentUser!.id);
-      notifyListeners();
-    }
-  }
-
-  /// Cierra la sesión: [isLoggedIn] pasa a false de inmediato (nadie puede
-  /// volver a entrar a una ruta protegida) y la sesión guardada se borra,
-  /// pero [currentUser] deliberadamente NO se limpia a null.
+  /// Usuario de la sesión, o `null` si no hay.
   ///
-  /// Motivo: muchas pantallas leen `context.watch<AuthProvider>().currentUser!`
-  /// directamente. Si currentUser se vuelve null en el mismo instante en
-  /// que se navega a la pantalla de login, la pantalla que se está
-  /// cerrando (todavía montada mientras Flutter anima/reconcilia la
-  /// navegación) se reconstruye con currentUser nulo y lanza una excepción
-  /// de null-check — se probó incluso esperando varios cientos de
-  /// milisegundos y la pantalla anterior seguía montada. Como después de
-  /// [logout] ninguna ruta protegida sigue siendo alcanzable (todas exigen
-  /// [isLoggedIn]), dejar currentUser con el último usuario (obsoleto) es
-  /// inofensivo — no se vuelve a mostrar en ningún lado — y evita tener
-  /// que tocar cada pantalla para blindarla contra un currentUser nulo.
-  void logout() {
-    data.db.delete('session', 'current');
-    _loggedIn = false;
+  /// A diferencia del `AuthProvider` anterior —que dejaba el último usuario
+  /// puesto tras cerrar sesión para no romper pantallas que hacían
+  /// `currentUser!`— acá se limpia de verdad. Las pantallas ahora leen estado
+  /// asíncrono y saben mostrar el caso "sin sesión".
+  AppUser? get currentUser => _currentUser;
+
+  bool get isLoggedIn => _currentUser != null;
+
+  /// Mientras se comprueba si hay una sesión guardada. La app muestra una
+  /// pantalla de carga: sin esto, se vería el ingreso por un instante antes
+  /// de saltar al portal.
+  bool get isRestoring => _restoring;
+
+  bool get isLoggingIn => _loggingIn;
+  ApiException? get loginError => _loginError;
+
+  /// Recupera la sesión guardada al arrancar.
+  Future<void> restoreSession() async {
+    _restoring = true;
+    notifyListeners();
+    try {
+      final json = await api.restoreSession();
+      _setUser(json == null ? null : AppUser.fromJson(json));
+    } on ApiException catch (e) {
+      // Sin red al arrancar no es "sesión inválida": no se borran los tokens,
+      // para que al volver la conexión la sesión siga estando.
+      debugPrint('No se pudo restaurar la sesión: ${e.message}');
+      _setUser(null);
+    } finally {
+      _restoring = false;
+      notifyListeners();
+    }
+  }
+
+  /// Devuelve el usuario si entró, o `null` — el motivo queda en [loginError].
+  Future<AppUser?> login(String email, String password) async {
+    _loggingIn = true;
+    _loginError = null;
+    notifyListeners();
+    try {
+      final user = AppUser.fromJson(await api.login(email, password));
+      _setUser(user);
+      return user;
+    } on ApiException catch (e) {
+      _loginError = e;
+      return null;
+    } finally {
+      _loggingIn = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> logout() async {
+    await api.logout();
+    _setUser(null);
+    notifyListeners();
+  }
+
+  /// Vuelve a leer el usuario del servidor, tras editar el perfil.
+  Future<void> refresh() async {
+    if (_currentUser == null) return;
+    try {
+      final json = await api.get('/auth/me');
+      _setUser(AppUser.fromJson(Map<String, dynamic>.from(json as Map)));
+      notifyListeners();
+    } on ApiException catch (e) {
+      debugPrint('No se pudo refrescar el perfil: ${e.message}');
+    }
+  }
+
+  void _setUser(AppUser? user) {
+    _currentUser = user;
+    // El provider de datos necesita saber de quién son "mis" cursos, y tiene
+    // que tirar todo su estado al cambiar de sesión.
+    data.setCurrentUser(user?.id);
+  }
+
+  void _onSessionExpired() {
+    _currentUser = null;
+    data.setCurrentUser(null);
     notifyListeners();
   }
 }

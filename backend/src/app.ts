@@ -22,6 +22,7 @@ import { labRoutes } from './routes/labs';
 import { lessonRoutes, moduleLessonRoutes } from './routes/lessons';
 import { groupRoutes, projectRoutes } from './routes/orgs';
 import { progressRoutes } from './routes/progress';
+import { siteRoutes } from './routes/site';
 import { studentRoutes } from './routes/students';
 import { submissionRoutes } from './routes/submissions';
 
@@ -66,6 +67,8 @@ export function createApp(database: Database = defaultDb) {
   );
 
   app.route('/auth', authRoutes);
+  // Público: la portada se ve sin sesión.
+  app.route('/site-content', siteRoutes);
   app.route('/courses', courseRoutes);
   // Dos routers en la misma base: uno maneja el módulo en sí, el otro sus
   // lecciones. Se separan por archivo para que `courses.ts` no tenga que

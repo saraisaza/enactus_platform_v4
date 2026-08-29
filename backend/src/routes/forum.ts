@@ -77,6 +77,7 @@ forumRoutes.get('/', async (c) => {
     id: string;
     authorId: string;
     authorName: string;
+    authorRole: string;
     body: string;
     category: string;
     pinned: boolean;
@@ -85,7 +86,7 @@ forumRoutes.get('/', async (c) => {
     likeCount: number;
     likedByMe: boolean;
   }>(sql`
-    select p.id, p.author_id as "authorId", u.name as "authorName", p.body,
+    select p.id, p.author_id as "authorId", u.name as "authorName", u.role::text as "authorRole", p.body,
            p.category::text as category, p.pinned, p.created_at as "createdAt",
            (select count(*)::int from forum_replies r
              where r.post_id = p.id and r.deleted_at is null) as "replyCount",
@@ -107,6 +108,46 @@ forumRoutes.get('/', async (c) => {
   return c.json(paginated(rows, total?.value ?? 0, query));
 });
 
+/**
+ * Cifras del encabezado del foro.
+ *
+ * Eran agregados del cliente: recorrían TODAS las publicaciones y TODOS los
+ * usuarios en memoria. Contra la API eso ni se puede pedir, y además son dos
+ * consultas de agregación que Postgres resuelve mejor.
+ */
+forumRoutes.get('/stats', async (c) => {
+  const db = c.get('db');
+
+  const [activos] = await db.execute<{ count: number }>(sql`
+    select count(distinct p.author_id)::int as count
+      from forum_posts p
+     where p.deleted_at is null
+       and p.created_at > now() - interval '7 days'
+  `);
+
+  // Equipos con más publicaciones, resuelto desde el grupo real de cada
+  // autor. Solo cuenta autores con equipo: LXD, Mentor y Asesor no tienen.
+  const equipos = await db.execute<{
+    groupId: string;
+    groupName: string;
+    count: number;
+  }>(sql`
+    select g.id as "groupId", g.name as "groupName", count(*)::int as count
+      from forum_posts p
+      join group_members gm on gm.user_id = p.author_id
+      join groups g on g.id = gm.group_id
+     where p.deleted_at is null and g.deleted_at is null
+     group by g.id, g.name
+     order by count desc, g.name
+     limit 3
+  `);
+
+  return c.json({
+    activeUsersThisWeek: activos?.count ?? 0,
+    mostActiveTeams: equipos,
+  });
+});
+
 forumRoutes.get('/:id', async (c) => {
   const db = c.get('db');
   const [post] = await db
@@ -120,11 +161,12 @@ forumRoutes.get('/:id', async (c) => {
     id: string;
     authorId: string;
     authorName: string;
+    authorRole: string;
     body: string;
     createdAt: string;
   }>(sql`
     select r.id, r.author_id as "authorId", u.name as "authorName",
-           r.body, r.created_at as "createdAt"
+           u.role::text as "authorRole", r.body, r.created_at as "createdAt"
       from forum_replies r
       join users u on u.id = r.author_id
      where r.post_id = ${post.id} and r.deleted_at is null

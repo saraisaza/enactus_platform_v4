@@ -817,6 +817,18 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
     post: { tags: [forum], summary: Publicar, responses: { '201': { description: Creada } } }
 
+  /forum-posts/stats:
+    get:
+      tags: [forum]
+      summary: Cifras del encabezado del foro
+      description: |
+        Personas distintas que publicaron en los últimos 7 días, y los tres
+        equipos con más publicaciones. Eran agregados del cliente que
+        recorrían todas las publicaciones y todos los usuarios en memoria.
+      responses:
+        '200': { description: Cifras }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /forum-posts/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
     get: { tags: [forum], summary: Publicación con sus respuestas, responses: { '200': { description: OK } } }

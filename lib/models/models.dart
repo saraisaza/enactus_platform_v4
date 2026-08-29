@@ -1139,10 +1139,53 @@ class ForumCategory {
       };
 }
 
+/// Cifras del encabezado del foro, calculadas por el servidor.
+class ForumStats {
+  final int activeUsersThisWeek;
+  final List<ForumTeamActivity> mostActiveTeams;
+
+  const ForumStats({
+    this.activeUsersThisWeek = 0,
+    this.mostActiveTeams = const [],
+  });
+
+  factory ForumStats.fromJson(Map<String, dynamic> j) => ForumStats(
+        activeUsersThisWeek:
+            (j['activeUsersThisWeek'] as num?)?.toInt() ?? 0,
+        mostActiveTeams: (j['mostActiveTeams'] as List? ?? const [])
+            .map((e) =>
+                ForumTeamActivity.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+class ForumTeamActivity {
+  final String groupId;
+  final String groupName;
+  final int count;
+
+  const ForumTeamActivity({
+    required this.groupId,
+    required this.groupName,
+    required this.count,
+  });
+
+  factory ForumTeamActivity.fromJson(Map<String, dynamic> j) =>
+      ForumTeamActivity(
+        groupId: (j['groupId'] as String?) ?? '',
+        groupName: (j['groupName'] as String?) ?? '',
+        count: (j['count'] as num?)?.toInt() ?? 0,
+      );
+}
+
 class ForumReply {
   final String id;
   final String authorId;
   final String authorName;
+
+  /// Rol del autor, para la etiqueta de la tarjeta. Viene con la publicación:
+  /// el cliente no puede —ni debe— pedir el perfil de cada autor.
+  final String authorRole;
   final String body;
   final DateTime createdAt;
 
@@ -1150,6 +1193,7 @@ class ForumReply {
     required this.id,
     required this.authorId,
     this.authorName = '',
+    this.authorRole = '',
     required this.body,
     required this.createdAt,
   });
@@ -1158,6 +1202,7 @@ class ForumReply {
         id: j['id'] as String,
         authorId: (j['authorId'] as String?) ?? '',
         authorName: (j['authorName'] as String?) ?? '',
+        authorRole: (j['authorRole'] as String?) ?? '',
         body: (j['body'] as String?) ?? '',
         createdAt: _date(j['createdAt']) ?? DateTime.now(),
       );
@@ -1167,6 +1212,10 @@ class ForumPost {
   final String id;
   final String authorId;
   final String authorName;
+
+  /// Rol del autor, para la etiqueta de la tarjeta. Viene con la publicación:
+  /// el cliente no puede —ni debe— pedir el perfil de cada autor.
+  final String authorRole;
   final String body;
   final String category;
   final bool pinned;
@@ -1182,6 +1231,7 @@ class ForumPost {
     required this.id,
     required this.authorId,
     this.authorName = '',
+    this.authorRole = '',
     required this.body,
     this.category = ForumCategory.question,
     this.pinned = false,
@@ -1198,6 +1248,7 @@ class ForumPost {
         id: j['id'] as String,
         authorId: (j['authorId'] as String?) ?? '',
         authorName: (j['authorName'] as String?) ?? '',
+        authorRole: (j['authorRole'] as String?) ?? '',
         body: (j['body'] as String?) ?? '',
         category: (j['category'] as String?) ?? ForumCategory.question,
         pinned: (j['pinned'] as bool?) ?? false,

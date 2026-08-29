@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../services/api_errors.dart';
+import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/common.dart';
@@ -15,16 +17,16 @@ import '../../widgets/portal_shell.dart';
 // categórica de gráficos para que las 4 categorías se distingan entre sí
 // y de "anuncio" (que sí usa el acento de marca a propósito).
 Color forumCategoryColor(String category) => switch (category) {
-      ForumCategory.avance => AppColors.statusGood,
-      ForumCategory.recurso => AppColors.chartSeries[3],
-      ForumCategory.anuncio => AppColors.gold,
+      ForumCategory.progress => AppColors.statusGood,
+      ForumCategory.resource => AppColors.chartSeries[3],
+      ForumCategory.announcement => AppColors.gold,
       _ => AppColors.chartSeries[1],
     };
 
 IconData forumCategoryIcon(String category) => switch (category) {
-      ForumCategory.avance => Icons.trending_up,
-      ForumCategory.recurso => Icons.attach_file,
-      ForumCategory.anuncio => Icons.campaign,
+      ForumCategory.progress => Icons.trending_up,
+      ForumCategory.resource => Icons.attach_file,
+      ForumCategory.announcement => Icons.campaign,
       _ => Icons.help_outline,
     };
 
@@ -41,13 +43,6 @@ String relativeTime(DateTime date) {
 }
 
 /// Organización de un usuario para mostrar junto a su nombre en el foro:
-/// empresa si la tiene, si no universidad.
-String _orgOf(AppUser? user) {
-  if (user == null) return '';
-  if (user.companyName.isNotEmpty) return user.companyName;
-  return user.university;
-}
-
 /// Foro de la comunidad Enactus — rediseño funcional y de alta fidelidad
 /// según `design_handoff_portal_estudiante/README.md` (pantalla 6). Es el
 /// único espacio de la plataforma que NO está aislado por laboratorio,
@@ -65,7 +60,7 @@ class ForumView extends StatefulWidget {
 
 class _ForumViewState extends State<ForumView> {
   final _composerCtrl = TextEditingController();
-  String _categoryDraft = ForumCategory.pregunta;
+  String _categoryDraft = ForumCategory.question;
   bool _sending = false;
 
   /// Filtro de categoría del feed — deliberadamente separado de
@@ -85,17 +80,12 @@ class _ForumViewState extends State<ForumView> {
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
     try {
-      await data.saveForumPost(ForumPost(
-        id: data.newId('post'),
-        authorId: me.id,
-        body: text,
-        category: _categoryDraft,
-      ));
+      await data.createForumPost(text, _categoryDraft);
       _composerCtrl.clear();
-    } catch (_) {
-      if (mounted) {
-        showAppSnack(context, 'No se pudo publicar. Intenta de nuevo.', error: true);
-      }
+    } on ApiException catch (e) {
+      // Se muestra el motivo REAL: "sin conexión" y "tu cuenta es de Open
+      // Learning" piden cosas distintas de quien lo lee.
+      if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -107,7 +97,33 @@ class _ForumViewState extends State<ForumView> {
     final me = context.watch<AuthProvider>().currentUser;
     if (me == null) return const SizedBox.shrink();
 
-    final allPosts = data.forumPosts; // ya viene ordenado por fecha desc
+    final postsState = data.forumPosts;
+    final canModerate = me.role == Roles.admin || me.role == Roles.superAdmin;
+
+    // El foro es exclusivo de la comunidad Enactus: una cuenta de Open
+    // Learning recibe 403 del servidor, y eso llega acá como error — nunca
+    // como una lista vacía que parecería "todavía no hay publicaciones".
+    final error = postsState.errorOrNull;
+    if (error != null) {
+      return ContentScreenShell(
+        eyebrow: 'Comunidad',
+        title: 'Foro de la Comunidad',
+        subtitle: 'No pudimos abrir el foro.',
+        bodyBuilder: (context, colors, isDark) =>
+            ErrorState(error, onRetry: data.reloadForumPosts),
+      );
+    }
+
+    final allPosts = postsState.valueOrNull;
+    if (allPosts == null) {
+      return const ContentScreenShell(
+        eyebrow: 'Comunidad',
+        title: 'Foro de la Comunidad',
+        subtitle: 'Cargando publicaciones…',
+        bodyBuilder: _forumLoadingBody,
+      );
+    }
+
     final pinned = allPosts.where((p) => p.pinned).toList();
     final rest = allPosts.where((p) => !p.pinned).toList();
     final ordered = [...pinned, ...rest];
@@ -117,17 +133,16 @@ class _ForumViewState extends State<ForumView> {
         : ordered.where((p) => p.category == _categoryFilter).toList();
     if (_query.trim().isNotEmpty) {
       final q = _query.trim().toLowerCase();
-      posts = posts.where((p) {
-        final author = data.userById(p.authorId);
-        final haystack =
-            [author?.name ?? '', _orgOf(author), p.body].join(' ').toLowerCase();
-        return haystack.contains(q);
-      }).toList();
+      posts = posts
+          .where((p) => '${p.authorName} ${p.body}'.toLowerCase().contains(q))
+          .toList();
     }
 
-    final canModerate = me.role == Roles.admin || me.role == Roles.superAdmin;
-    final activeCount = data.activeForumUsersThisWeek();
-    final topTeams = data.mostActiveForumTeams();
+    // Cifras del encabezado: las calcula el servidor. Si fallan, el foro se
+    // muestra igual — no vale la pena bloquearlo por un contador.
+    final stats = data.forumStats.valueOrNull;
+    final activeCount = stats?.activeUsersThisWeek ?? 0;
+    final topTeams = stats?.mostActiveTeams ?? const <ForumTeamActivity>[];
 
     return ContentScreenShell(
       eyebrow: '$activeCount persona${activeCount == 1 ? '' : 's'} '
@@ -493,8 +508,7 @@ class _PostCardState extends State<_PostCard> {
     if (text.isEmpty || _sendingReply) return;
     setState(() => _sendingReply = true);
     try {
-      await data.addForumReply(widget.post.id,
-          ForumReply(id: data.newId('reply'), authorId: widget.me.id, body: text));
+      await data.replyToForumPost(widget.post.id, text);
       _replyCtrl.clear();
       if (mounted) setState(() => _replyOpen = false);
     } catch (_) {
@@ -511,12 +525,15 @@ class _PostCardState extends State<_PostCard> {
     final data = context.watch<DataProvider>();
     final colors = widget.colors;
     final post = widget.post;
-    final author = data.userById(post.authorId);
-    final name = (author == null || author.name.isEmpty) ? 'Usuario eliminado' : author.name;
-    final isStaff = author != null && !Roles.isStudentLike(author.role);
-    final org = _orgOf(author);
+    final authorName = post.authorName;
+    final name = authorName.isEmpty ? 'Usuario eliminado' : authorName;
+    final isStaff = post.authorRole.isNotEmpty &&
+        !Roles.isStudentLike(post.authorRole);
+    // La universidad o empresa del autor ya no viaja con la publicación: era
+    // exponer el perfil de cada persona a todo el que abriera el foro.
+    const org = '';
     final catColor = forumCategoryColor(post.category);
-    final liked = post.likedBy.contains(widget.me.id);
+    final liked = post.likedByMe;
     final canDelete = widget.canModerate || post.authorId == widget.me.id;
     final visibleReplies =
         _repliesExpanded ? post.replies : post.replies.take(2).toList();
@@ -546,7 +563,7 @@ class _PostCardState extends State<_PostCard> {
                   color: colors.surface,
                   border: Border.all(color: colors.border),
                 ),
-                child: _postCardBody(context, colors, post, author, name, isStaff, org,
+                child: _postCardBody(context, colors, post, name, isStaff, org,
                     catColor, data, liked, canDelete, visibleReplies),
               ),
               Positioned(
@@ -566,7 +583,6 @@ class _PostCardState extends State<_PostCard> {
       BuildContext context,
       ContentColors colors,
       ForumPost post,
-      AppUser? author,
       String name,
       bool isStaff,
       String org,
@@ -619,7 +635,7 @@ class _PostCardState extends State<_PostCard> {
                               style: TextStyle(
                                   fontSize: 14.5, fontWeight: FontWeight.w600, color: colors.text)),
                           _RolePill(
-                              label: author == null ? '' : Roles.label(author.role),
+                              label: post.authorRole.isEmpty ? '' : Roles.label(post.authorRole),
                               staff: isStaff,
                               colors: colors),
                         ],
@@ -628,7 +644,7 @@ class _PostCardState extends State<_PostCard> {
                       Text(
                           [
                             if (org.isNotEmpty) org,
-                            relativeTime(post.date),
+                            relativeTime(post.createdAt),
                           ].join(' · '),
                           style: TextStyle(fontSize: 12, color: colors.text3)),
                     ],
@@ -658,10 +674,10 @@ class _PostCardState extends State<_PostCard> {
               children: [
                 _ActionButton(
                   icon: Icons.volunteer_activism_outlined,
-                  label: '${post.likedBy.length}',
+                  label: '${post.likeCount}',
                   active: liked,
                   colors: colors,
-                  onTap: () => data.toggleForumLike(post.id, widget.me.id),
+                  onTap: () => data.toggleForumLike(post.id),
                 ),
                 const SizedBox(width: 10),
                 _ActionButton(
@@ -679,7 +695,7 @@ class _PostCardState extends State<_PostCard> {
                     colors: colors,
                     hoverColor: colors.goldInk,
                     tooltip: post.pinned ? 'Desfijar' : 'Fijar anuncio',
-                    onTap: () => data.setForumPinned(post.id, !post.pinned),
+                    onTap: () => data.toggleForumPin(post.id),
                   ),
                 if (canDelete) ...[
                   const SizedBox(width: 8),
@@ -760,7 +776,7 @@ class _PostCardState extends State<_PostCard> {
 }
 
 String _replyAuthorName(DataProvider data, String authorId) {
-  final name = data.userById(authorId)?.name ?? '';
+  final name = authorId;
   return name.isEmpty ? 'Usuario eliminado' : name;
 }
 
@@ -903,7 +919,7 @@ class _ReplyTile extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600, color: colors.text)),
                     const SizedBox(width: 8),
-                    Text(relativeTime(reply.date),
+                    Text(relativeTime(reply.createdAt),
                         style: TextStyle(fontSize: 11.5, color: colors.text3)),
                   ],
                 ),
@@ -976,7 +992,7 @@ class _RulesCard extends StatelessWidget {
 }
 
 class _TopTeamsCard extends StatelessWidget {
-  final List<({Group group, int count})> teams;
+  final List<ForumTeamActivity> teams;
   final ContentColors colors;
   const _TopTeamsCard({required this.teams, required this.colors});
 
@@ -1021,13 +1037,10 @@ class _TopTeamsCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(teams[i].group.name,
+                        Text(teams[i].groupName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 13.5, color: colors.text)),
-                        if (teams[i].group.university.isNotEmpty)
-                          Text(teams[i].group.university,
-                              style: TextStyle(fontSize: 11.5, color: colors.text3)),
                       ],
                     ),
                   ),
@@ -1042,4 +1055,10 @@ class _TopTeamsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+
+/// Esqueleto mientras cargan las publicaciones.
+Widget _forumLoadingBody(BuildContext context, ContentColors colors, bool isDark) {
+  return const CardListSkeleton(count: 4, height: 168);
 }

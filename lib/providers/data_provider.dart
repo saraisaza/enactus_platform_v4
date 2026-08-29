@@ -65,6 +65,7 @@ class DataProvider extends ChangeNotifier {
   AsyncValue<List<AppNotification>> _notifications = const AsyncValue.idle();
   AsyncValue<List<CalendarEvent>> _calendarEvents = const AsyncValue.idle();
   AsyncValue<List<ForumPost>> _forumPosts = const AsyncValue.idle();
+  AsyncValue<ForumStats> _forumStats = const AsyncValue.idle();
   AsyncValue<List<Submission>> _submissions = const AsyncValue.idle();
   AsyncValue<List<CommunicationResource>> _commResources =
       const AsyncValue.idle();
@@ -91,6 +92,7 @@ class DataProvider extends ChangeNotifier {
     _notifications = const AsyncValue.idle();
     _calendarEvents = const AsyncValue.idle();
     _forumPosts = const AsyncValue.idle();
+    _forumStats = const AsyncValue.idle();
     _submissions = const AsyncValue.idle();
     _commResources = const AsyncValue.idle();
     _evidences = const AsyncValue.idle();
@@ -543,6 +545,16 @@ class DataProvider extends ChangeNotifier {
     ).data;
   }
 
+  /// Cifras del encabezado. Las calcula el servidor: antes eran agregados que
+  /// recorrían todas las publicaciones y todos los usuarios en memoria.
+  AsyncValue<ForumStats> get forumStats {
+    _lazy(_forumStats, (v) => _forumStats = v, () async {
+      final json = await api.get('/forum-posts/stats');
+      return ForumStats.fromJson(Map<String, dynamic>.from(json as Map));
+    });
+    return _forumStats;
+  }
+
   AsyncValue<ForumPost> forumPostById(String id) {
     final current = _forumPostById[id] ?? const AsyncValue<ForumPost>.idle();
     _lazy(current, (v) => _forumPostById[id] = v, () async {
@@ -554,6 +566,7 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> createForumPost(String body, String category) async {
     await api.post('/forum-posts', body: {'body': body, 'category': category});
+    _forumStats = const AsyncValue.idle();
     await reloadForumPosts();
   }
 

@@ -9,7 +9,6 @@ import '../../utils/constants.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
-import '../../widgets/app_image.dart';
 import '../../widgets/common.dart';
 import '../../widgets/contact_dialog.dart';
 
@@ -223,9 +222,14 @@ class LandingView extends StatelessWidget {
                                 child: SizedBox(
                                   width: 220,
                                   height: 160,
-                                  child: AppImage(
-                                      source: content.galleryImages[i],
-                                      fit: BoxFit.cover),
+                                  // Ya vienen firmadas del servidor: la portada
+                                // no tiene sesión con la que pedir la firma.
+                                child: Image.network(
+                                      content.galleryImages[i],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) =>
+                                          const ColoredBox(
+                                              color: AppColors.surfaceAlt)),
                                 ),
                               ),
                             ),

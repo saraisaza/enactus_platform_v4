@@ -473,6 +473,33 @@ describe('el contrato de la API es camelCase en TODAS las respuestas', () => {
       expect(encontradas, `claves snake_case en ${ruta}`).toEqual([]);
     }
   });
+
+  it('el detalle de un laboratorio trae mentores, patrocinador y avance del grupo', async () => {
+    // Sin estos campos la pantalla de detalle tendría que listar TODOS los
+    // usuarios y filtrarlos en el navegador para saber quién es mentor — que
+    // es lo que hacía con Hive, y por qué cualquier rol podía enumerar a toda
+    // la plataforma.
+    const res = await req(`/laboratories/${seedId('lab_ia')}`, T.admin!);
+    expect(res.status).toBe(200);
+    const lab = await body<{
+      mentors: { id: string; name: string }[];
+      sponsorName: string | null;
+      studentsAssigned: number;
+      phases: { id: string; completedByCount: number }[];
+    }>(res);
+
+    expect(lab.mentors.length).toBeGreaterThan(0);
+    expect(lab.mentors[0]!.name).toBeTruthy();
+    expect(lab.studentsAssigned).toBeGreaterThan(0);
+    expect(lab).toHaveProperty('sponsorName');
+
+    // El agregado nunca puede superar la cantidad de asignados: si lo hiciera,
+    // la consulta estaría contando la misma persona más de una vez.
+    for (const phase of lab.phases) {
+      expect(phase.completedByCount).toBeGreaterThanOrEqual(0);
+      expect(phase.completedByCount).toBeLessThanOrEqual(lab.studentsAssigned);
+    }
+  });
 });
 
 describe('GET /site-content — el único endpoint público además de /health', () => {

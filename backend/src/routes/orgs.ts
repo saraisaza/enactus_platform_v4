@@ -250,7 +250,21 @@ groupRoutes.get('/:id', async (c) => {
      order by u.name
   `);
 
-  return c.json({ ...group, members });
+  // Checklist RUTA NATIONAL EXPO del equipo. Es de SOLO LECTURA: no hay
+  // ninguna pantalla que lo edite y no se expone ningún endpoint de escritura.
+  // Se devuelve acá, con el equipo al que pertenece, en vez de inventarle un
+  // recurso propio para algo que nadie escribe.
+  const checklist = await db.execute<{
+    id: string;
+    label: string;
+    done: boolean;
+  }>(sql`
+    select id, label, done from expo_checklist_items
+     where group_id = ${group.id}
+     order by order_index
+  `);
+
+  return c.json({ ...group, members, checklist });
 });
 
 groupRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {

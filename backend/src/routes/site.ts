@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { laboratories, siteContent, siteGalleryImages } from '../db/schema';
+import { createDownloadUrl, isStorageConfigured } from '../lib/s3';
 import { ADMIN_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 
@@ -62,21 +63,41 @@ siteRoutes.get('/', async (c) => {
     .where(isNull(laboratories.deletedAt))
     .orderBy(asc(laboratories.name));
 
-  // Galería del hero. Se devuelven las KEYS de S3, no URLs: servir estas
-  // imágenes necesita la distribución de CloudFront que todavía no existe
-  // (Fase 6). Hasta entonces la portada no dibuja la galería — el bloque se
-  // omite entero en vez de mostrar recuadros rotos.
+  // Galería del hero: acá se devuelven URLs YA FIRMADAS, no keys.
+  //
+  // Es la excepción al resto de los archivos, que se firman uno por uno con
+  // `POST /files/download-url` tras comprobar permisos. Acá no hay a quién
+  // comprobarle nada —la portada se ve sin sesión— y el contenido es público
+  // por definición, así que el servidor firma al construir la respuesta. Si
+  // no lo hiciera, un visitante sin cuenta no tendría forma de ver la galería.
   const gallery = await db
     .select({ s3Key: siteGalleryImages.s3Key })
     .from(siteGalleryImages)
     .orderBy(asc(siteGalleryImages.orderIndex));
+
+  const galleryImages = isStorageConfigured()
+    ? (
+        await Promise.all(
+          gallery.map(async (g) => {
+            try {
+              return (await createDownloadUrl({ key: g.s3Key })).url;
+            } catch {
+              // Una imagen que no se puede firmar se omite. La portada se
+              // dibuja igual: una galería incompleta es mejor que una portada
+              // caída por un archivo que alguien borró del bucket.
+              return null;
+            }
+          }),
+        )
+      ).filter((url): url is string => url !== null)
+    : [];
 
   // Sin fila todavía se devuelven los valores por defecto: la portada nunca
   // debe quedar en blanco por un dato de configuración que falta.
   return c.json({
     ...(row ?? DEFAULTS),
     laboratories: labs,
-    galleryImages: gallery.map((g) => g.s3Key),
+    galleryImages,
   });
 });
 

@@ -338,4 +338,28 @@ describe('PATCH /auth/me y la foto de perfil', () => {
     expect(b.team!.projectName).toBeTruthy();
     expect(b).toHaveProperty('sponsorName');
   });
+
+  it('PATCH devuelve la MISMA forma que GET, con equipo incluido', async () => {
+    // Si PATCH devolviera solo el usuario base, guardar el teléfono borraría
+    // el equipo del modelo en el cliente y el perfil se quedaría sin proyecto
+    // hasta recargar la página.
+    const res = await req('/auth/me', est1Token, {
+      ...json({ phone: '3001234567' }),
+      method: 'PATCH',
+    });
+    expect(res.status).toBe(200);
+    const b = await body<{
+      phone: string;
+      team: { projectName: string } | null;
+    }>(res);
+    expect(b.phone).toBe('3001234567');
+    expect(b.team).not.toBeNull();
+  });
+
+  it('a un rol sin equipo no le agrega campos que no le corresponden', async () => {
+    const res = await req('/auth/me', mentorToken);
+    const b = await body<Record<string, unknown>>(res);
+    expect(b).not.toHaveProperty('team');
+    expect(b).not.toHaveProperty('sponsorName');
+  });
 });

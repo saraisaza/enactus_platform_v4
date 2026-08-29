@@ -14,7 +14,7 @@ import {
 } from '../lib/jwt';
 import { verifyPassword } from '../lib/password';
 import { requireAuth, currentUser } from '../middleware/auth';
-import type { AppEnv } from '../middleware/context';
+import type { AppEnv, AuthUser } from '../middleware/context';
 import { rateLimit } from '../middleware/rate-limit';
 import { env } from '../env';
 
@@ -183,11 +183,19 @@ authRoutes.post('/logout', async (c) => {
  *   permita a un estudiante leer el perfil de otra cuenta para resolverlo.
  */
 authRoutes.get('/me', requireAuth, async (c) => {
-  const user = currentUser(c);
-  const base = publicUser(user);
-  if (user.role !== 'student' && user.role !== 'alumni') return c.json(base);
+  return c.json(await meResponse(c.get('db'), currentUser(c)));
+});
 
-  const db = c.get('db');
+/**
+ * El cuerpo de `/auth/me`, compartido por GET y PATCH.
+ *
+ * PATCH devuelve exactamente la misma forma a propósito: si devolviera solo
+ * `publicUser`, guardar el teléfono borraría el equipo del modelo en el
+ * cliente y la pantalla de perfil se quedaría sin proyecto hasta recargar.
+ */
+async function meResponse(db: Database, user: AuthUser) {
+  const base = publicUser(user);
+  if (user.role !== 'student' && user.role !== 'alumni') return base;
 
   const [team] = await db.execute<{
     groupId: string;
@@ -216,8 +224,8 @@ authRoutes.get('/me', requireAuth, async (c) => {
     sponsorName = sponsor?.name || null;
   }
 
-  return c.json({ ...base, team: team ?? null, sponsorName });
-});
+  return { ...base, team: team ?? null, sponsorName };
+}
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio.').optional(),
@@ -247,15 +255,15 @@ const profileSchema = z.object({
 authRoutes.patch('/me', requireAuth, async (c) => {
   const user = currentUser(c);
   const body = profileSchema.parse(await c.req.json());
+  const db = c.get('db');
 
-  const [updated] = await c
-    .get('db')
+  const [updated] = await db
     .update(users)
     .set({ ...body, updatedAt: new Date() })
     .where(eq(users.id, user.id))
     .returning();
 
-  return c.json(publicUser(updated!));
+  return c.json(await meResponse(db, updated!));
 });
 
 /** Emite el par de tokens y guarda el refresh hasheado. */

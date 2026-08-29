@@ -104,6 +104,11 @@ class DataProvider extends ChangeNotifier {
     _groupById.clear();
     _forumPostById.clear();
     _courseProgress.clear();
+    // Las URLs firmadas se emitieron para la sesión anterior: al cambiar de
+    // cuenta se descartan, en vez de dejar enlaces vivos a archivos que la
+    // cuenta nueva quizá no puede ver.
+    _fileUrls.clear();
+    _fileUrlExpiry.clear();
   }
 
   // -------------------------------------------------------------------------
@@ -657,6 +662,61 @@ class DataProvider extends ChangeNotifier {
   // -------------------------------------------------------------------------
   // Archivos
   // -------------------------------------------------------------------------
+
+  final Map<String, AsyncValue<String>> _fileUrls = {};
+
+  /// Cuándo vence cada URL firmada. Se guarda un poco antes del vencimiento
+  /// real para no entregar una URL que caduque mientras carga la imagen.
+  final Map<String, DateTime> _fileUrlExpiry = {};
+
+  /// URL firmada para mostrar o descargar un archivo de S3.
+  ///
+  /// El servidor decide si esta persona puede leer esa key —resolviéndola
+  /// contra la fila que la referencia— así que un archivo ajeno llega acá como
+  /// [NotFoundError] o [ForbiddenError], nunca como una imagen rota silenciosa.
+  ///
+  /// La URL dura una hora. Al vencer se vuelve a pedir sola: una pestaña
+  /// abierta toda la tarde no se queda con avatares muertos.
+  AsyncValue<String> fileUrl(String? s3Key) {
+    if (s3Key == null || s3Key.isEmpty) {
+      return const AsyncValue.idle();
+    }
+
+    final expiry = _fileUrlExpiry[s3Key];
+    if (expiry != null && DateTime.now().isAfter(expiry)) {
+      _fileUrls.remove(s3Key);
+      _fileUrlExpiry.remove(s3Key);
+    }
+
+    final current = _fileUrls[s3Key] ?? const AsyncValue<String>.idle();
+    _lazy(current, (v) => _fileUrls[s3Key] = v, () async {
+      final json = await api.post('/files/download-url', body: {'key': s3Key});
+      final info = Map<String, dynamic>.from(json as Map);
+      final seconds = (info['expiresInSeconds'] as num?)?.toInt() ?? 3600;
+      _fileUrlExpiry[s3Key] =
+          DateTime.now().add(Duration(seconds: (seconds * 0.9).round()));
+      return info['url'] as String;
+    });
+    return _fileUrls[s3Key] ?? current;
+  }
+
+  /// La misma URL, pero para quien necesita esperar el valor: descargar un
+  /// adjunto al tocar un botón, por ejemplo, donde no hay estado que mostrar.
+  Future<String> resolveFileUrl(String s3Key) async {
+    final cached = _fileUrls[s3Key]?.valueOrNull;
+    final expiry = _fileUrlExpiry[s3Key];
+    if (cached != null && expiry != null && DateTime.now().isBefore(expiry)) {
+      return cached;
+    }
+    final json = await api.post('/files/download-url', body: {'key': s3Key});
+    final info = Map<String, dynamic>.from(json as Map);
+    final seconds = (info['expiresInSeconds'] as num?)?.toInt() ?? 3600;
+    final url = info['url'] as String;
+    _fileUrls[s3Key] = AsyncValue.data(url);
+    _fileUrlExpiry[s3Key] =
+        DateTime.now().add(Duration(seconds: (seconds * 0.9).round()));
+    return url;
+  }
 
   /// Sube un archivo en los tres pasos: pedir permiso, subir directo a S3,
   /// devolver los metadatos para adjuntarlos donde correspondan.

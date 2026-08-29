@@ -141,5 +141,66 @@ labRoutes.get('/:id', async (c) => {
      order by p.order_index
   `);
 
-  return c.json({ ...lab, phases });
+  // Quiénes acompañan el laboratorio y quién lo patrocina. Sin esto la
+  // pantalla de detalle tendría que listar TODOS los usuarios de la
+  // plataforma y filtrar en el navegador — que es exactamente lo que hacía
+  // con Hive, y por qué cualquier rol podía enumerar a todo el mundo.
+  const mentors = await db.execute<{
+    id: string;
+    name: string;
+    avatarS3Key: string | null;
+  }>(sql`
+    select u.id, u.name, u.avatar_s3_key as "avatarS3Key"
+      from laboratory_mentors lm
+      join users u on u.id = lm.user_id and u.deleted_at is null
+     where lm.laboratory_id = ${lab.id}
+     order by u.name
+  `);
+
+  let sponsorName: string | null = null;
+  if (lab.sponsorCompanyId) {
+    const [sponsor] = await db.execute<{ name: string }>(sql`
+      select company_name as name from users
+       where id = ${lab.sponsorCompanyId} and deleted_at is null
+       limit 1
+    `);
+    sponsorName = sponsor?.name || null;
+  }
+
+  // Avance AGREGADO del grupo: cuántos de los estudiantes asignados
+  // completaron cada fase. Es lo que ve un Admin, LXD, Mentor o Empresa —
+  // ellos no tienen "su" avance en este laboratorio.
+  //
+  // Sale de la vista `phase_completion`, la misma que decide si se puede
+  // emitir un certificado: una sola definición de "fase completa" para todo
+  // el sistema.
+  const [assigned] = await db.execute<{ value: number }>(sql`
+    select count(*)::int as value from student_laboratories
+     where laboratory_id = ${lab.id}
+  `);
+
+  // `phase_completion` ya está restringida a los estudiantes asignados al
+  // laboratorio de la fase, así que alcanza con filtrar por `laboratory_id`:
+  // volver a unir con `student_laboratories` no agregaría nada.
+  const completions = await db.execute<{
+    phaseId: string;
+    value: number;
+  }>(sql`
+    select phase_id as "phaseId", count(*)::int as value
+      from phase_completion
+     where laboratory_id = ${lab.id} and is_complete
+     group by phase_id
+  `);
+  const doneByPhase = new Map(completions.map((r) => [r.phaseId, r.value]));
+
+  return c.json({
+    ...lab,
+    phases: phases.map((p) => ({
+      ...p,
+      completedByCount: doneByPhase.get(p.id) ?? 0,
+    })),
+    mentors,
+    sponsorName,
+    studentsAssigned: assigned?.value ?? 0,
+  });
 });

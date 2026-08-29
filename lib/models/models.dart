@@ -343,6 +343,10 @@ class Group {
   /// Solo en el detalle.
   final List<ProjectMember> members;
 
+  /// Checklist RUTA NATIONAL EXPO del equipo. Solo en el detalle, y de SOLO
+  /// LECTURA: no hay pantalla que lo edite ni endpoint de escritura.
+  final List<ChecklistItem> checklist;
+
   const Group({
     required this.id,
     required this.name,
@@ -350,7 +354,11 @@ class Group {
     this.university = '',
     this.advisorId,
     this.members = const [],
+    this.checklist = const [],
   });
+
+  List<ChecklistItem> get pendingChecklist =>
+      checklist.where((item) => !item.done).toList();
 
   factory Group.fromJson(Map<String, dynamic> j) => Group(
         id: j['id'] as String,
@@ -362,6 +370,28 @@ class Group {
             .map((e) =>
                 ProjectMember.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        checklist: (j['checklist'] as List? ?? const [])
+            .map((e) =>
+                ChecklistItem.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+class ChecklistItem {
+  final String id;
+  final String label;
+  final bool done;
+
+  const ChecklistItem({
+    required this.id,
+    required this.label,
+    this.done = false,
+  });
+
+  factory ChecklistItem.fromJson(Map<String, dynamic> j) => ChecklistItem(
+        id: j['id'] as String,
+        label: (j['label'] as String?) ?? '',
+        done: (j['done'] as bool?) ?? false,
       );
 }
 
@@ -383,6 +413,20 @@ class Laboratory {
   /// Estructura de las fases. Solo en el detalle.
   final List<Phase> phases;
 
+  /// Mentores que acompañan el laboratorio. Solo en el detalle.
+  ///
+  /// Vienen resueltos con el laboratorio a propósito: la alternativa era pedir
+  /// la lista completa de usuarios y filtrarla en el navegador, que es lo que
+  /// hacía la versión con Hive — y por eso cualquier rol podía enumerar a toda
+  /// la plataforma.
+  final List<LabMentor> mentors;
+
+  /// Nombre de la empresa patrocinadora, ya resuelto. Solo en el detalle.
+  final String? sponsorName;
+
+  /// Cuántos estudiantes tienen este laboratorio asignado. Solo en el detalle.
+  final int studentsAssigned;
+
   const Laboratory({
     required this.id,
     required this.name,
@@ -391,6 +435,9 @@ class Laboratory {
     this.sponsorCompanyId,
     this.contentVersion = 1,
     this.phases = const [],
+    this.mentors = const [],
+    this.sponsorName,
+    this.studentsAssigned = 0,
   });
 
   factory Laboratory.fromJson(Map<String, dynamic> j) => Laboratory(
@@ -403,6 +450,26 @@ class Laboratory {
         phases: (j['phases'] as List? ?? const [])
             .map((e) => Phase.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        mentors: (j['mentors'] as List? ?? const [])
+            .map((e) => LabMentor.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        sponsorName: j['sponsorName'] as String?,
+        studentsAssigned: (j['studentsAssigned'] as num?)?.toInt() ?? 0,
+      );
+}
+
+/// Un mentor tal como aparece en el detalle de su laboratorio.
+class LabMentor {
+  final String id;
+  final String name;
+  final String? avatarS3Key;
+
+  const LabMentor({required this.id, required this.name, this.avatarS3Key});
+
+  factory LabMentor.fromJson(Map<String, dynamic> j) => LabMentor(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        avatarS3Key: j['avatarS3Key'] as String?,
       );
 }
 
@@ -473,6 +540,13 @@ class Phase {
   final List<Objective> objectives;
   final List<RutaModule> modules;
 
+  /// Cuántos de los estudiantes asignados completaron esta fase.
+  ///
+  /// Es el avance del GRUPO, el que ve un Admin, LXD, Mentor o Empresa: ellos
+  /// no tienen avance propio en un laboratorio. El avance personal de quien
+  /// mira vive en `/students/:id/ruta-progress`, no acá.
+  final int completedByCount;
+
   const Phase({
     required this.id,
     this.orderIndex = 1,
@@ -481,7 +555,11 @@ class Phase {
     this.deadline,
     this.objectives = const [],
     this.modules = const [],
+    this.completedByCount = 0,
   });
+
+  DateTime? get deadlineDate =>
+      deadline == null ? null : DateTime.tryParse(deadline!);
 
   factory Phase.fromJson(Map<String, dynamic> j) => Phase(
         id: j['id'] as String,
@@ -495,6 +573,7 @@ class Phase {
         modules: (j['modules'] as List? ?? const [])
             .map((e) => RutaModule.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        completedByCount: (j['completedByCount'] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -1413,9 +1492,12 @@ class SiteContent {
   /// Los laboratorios que se muestran en la portada.
   final List<PublicLab> laboratories;
 
-  /// Keys de S3 de la galería del hero. **Todavía no se pueden mostrar**:
-  /// servirlas necesita la distribución de CloudFront de la Fase 6. Hasta
-  /// entonces esta lista se ignora y el bloque de galería no se dibuja.
+  /// URLs **ya firmadas** de la galería del hero, listas para `Image.network`.
+  ///
+  /// Es la única lista de archivos que llega resuelta en vez de como key: la
+  /// portada se ve sin sesión, así que no hay quien pida la firma después.
+  /// Vencen en una hora, igual que las demás; una visita más larga que eso
+  /// recarga la portada.
   final List<String> galleryImages;
 
   const SiteContent({

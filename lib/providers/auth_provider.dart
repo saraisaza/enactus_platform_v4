@@ -86,7 +86,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vuelve a leer el usuario del servidor, tras editar el perfil.
+  /// Vuelve a leer el usuario del servidor.
   Future<void> refresh() async {
     if (_currentUser == null) return;
     try {
@@ -96,6 +96,21 @@ class AuthProvider extends ChangeNotifier {
     } on ApiException catch (e) {
       debugPrint('No se pudo refrescar el perfil: ${e.message}');
     }
+  }
+
+  /// Guarda cambios en el PROPIO perfil.
+  ///
+  /// El servidor decide qué campos acepta: mandarle `role` o `canGradeEnactus`
+  /// no hace nada. Devuelve el usuario ya actualizado —con equipo y
+  /// patrocinador— así que no hace falta un `refresh()` después.
+  ///
+  /// No atrapa el error a propósito: quien llama necesita distinguir "sin
+  /// conexión" de "ese teléfono no es válido" para poder decírselo a la
+  /// persona.
+  Future<void> updateProfile(Map<String, dynamic> changes) async {
+    final json = await api.patch('/auth/me', body: changes);
+    _currentUser = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    notifyListeners();
   }
 
   void _setUser(AppUser? user) {

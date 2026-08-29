@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,9 +7,13 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/pdf_service.dart';
+import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../models/progress.dart';
 import '../../widgets/app_image.dart';
+import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
@@ -111,20 +113,32 @@ class _StudentCertificates extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
-    final certs = data.certificatesForStudent(student.id);
 
     return TabBody(
       title: 'Mis Certificados',
       subtitle: 'Certificados emitidos por tus LXD al completar una Ruta de Impacto',
       children: [
-        if (certs.isEmpty)
-          const EmptyState(
-              icon: Icons.workspace_premium_outlined,
-              message:
-                  'Aún no tienes certificados.\nCompleta tus cursos para obtenerlos.')
-        else
-          ...certs.map((cert) => Padding(
+        // `/certificates` ya devuelve solo los propios cuando quien pregunta es
+        // un estudiante: el alcance lo decide el servidor, no un filtro acá.
+        data.certificates.when(
+          loading: () => const CardListSkeleton(count: 3),
+          error: (e) => ErrorState(e, onRetry: data.reloadCertificates),
+          data: (certs) => _certificateList(certs),
+        ),
+      ],
+    );
+  }
+
+  Widget _certificateList(List<Certificate> certs) {
+    if (certs.isEmpty) {
+      return const EmptyState(
+          icon: Icons.workspace_premium_outlined,
+          message:
+              'Aún no tienes certificados.\nCompleta tus cursos para obtenerlos.');
+    }
+    return Column(
+      children: [
+        ...certs.map((cert) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: HoverBuilder(
                   builder: (context, hover) => AnimatedScale(
@@ -163,11 +177,12 @@ class _StudentCertificates extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Ruta de Impacto · ${cert.labName}',
+                                Text(
+                                    'Ruta de Impacto · ${cert.laboratoryName}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.w700)),
                                 Text(
-                                  'Emitido el ${DateFormat('d MMM yyyy').format(cert.date)} · '
+                                  'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)} · '
                                   'Por: ${cert.issuerName} · Código: ${cert.code}',
                                   style: const TextStyle(
                                       color: AppColors.textMuted,
@@ -224,31 +239,13 @@ class _StudentProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final group = data.groupById(student.groupId);
-    final project = group == null ? null : data.projectById(group.projectId);
-    final sponsor =
-        student.companyId == null ? null : data.userById(student.companyId!);
-    final labs = data.labsForStudent(student);
-    final certs = data.certificatesForStudent(student.id);
 
-    // `coursesForStudent` empareja solo por laboratorio: la Ruta National
-    // Expo (sin labId) se suma aparte, igual que en Mis Cursos.
-    final expoCourses = data.courses
-        .where((c) => c.isRutaExpo && student.courseIds.contains(c.id));
-    final allCourses = [...data.coursesForStudent(student), ...expoCourses];
-    var totalLessons = 0;
-    var doneLessons = 0;
-    Course? closestCourse;
-    var closestProgress = -1.0;
-    for (final c in allCourses) {
-      totalLessons += c.lessonCount;
-      doneLessons += data.progressFor(student.id, c.id).completedLessonIds.length;
-      final progress = data.courseProgress(student.id, c);
-      if (progress < 1.0 && progress > closestProgress) {
-        closestProgress = progress;
-        closestCourse = c;
-      }
-    }
+    // Equipo, proyecto y patrocinador vienen resueltos con el propio usuario
+    // (`GET /auth/me`). Antes salían de `extra['groupId']` y de recorrer la
+    // lista completa de usuarios buscando la empresa.
+    final team = student.team;
+    final project =
+        team == null ? null : data.projectById(team.projectId).valueOrNull;
 
     final eyebrow = student.joinedAt != null
         ? 'Miembro activo desde ${student.joinedAt!.year}'
@@ -262,30 +259,10 @@ class _StudentProfile extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _IdentityBand(
-                student: student, project: project, group: group, colors: colors),
+            // La identidad no espera a la red: sale del usuario de la sesión.
+            _IdentityBand(student: student, team: team, colors: colors),
             const SizedBox(height: 20),
-            LayoutBuilder(builder: (context, c) {
-              final tiles = [
-                _ProfileStat(value: '${allCourses.length}', label: 'Cursos activos'),
-                _ProfileStat(value: '$doneLessons/$totalLessons', label: 'Lecciones completadas'),
-                _ProfileStat(value: '${labs.length}', label: 'Laboratorios'),
-                _ProfileStat(value: '${certs.length}', label: 'Certificados'),
-              ];
-              final perRow = c.maxWidth > 700 ? 4 : 2;
-              final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  for (var i = 0; i < tiles.length; i++)
-                    SizedBox(
-                        width: width,
-                        child: _ProfileStatCard(
-                            stat: tiles[i], isPrimary: i == 0, colors: colors)),
-                ],
-              );
-            }),
+            _ProfileStats(student: student, colors: colors),
             const SizedBox(height: 20),
             LayoutBuilder(builder: (context, c) {
               final personal = _GroupCard(
@@ -305,9 +282,13 @@ class _StudentProfile extends StatelessWidget {
                 icon: Icons.workspaces_outlined,
                 rows: [
                   ('Universidad', student.university),
-                  ('Equipo', group?.name ?? ''),
-                  ('Laboratorios', labs.map((l) => l.name).join(', ')),
-                  ('Empresa patrocinadora', sponsor?.companyName ?? ''),
+                  ('Equipo', team?.groupName ?? ''),
+                  // Los laboratorios solo existen en eduXaction: para una
+                  // cuenta de Open Learning la fila no se dibuja, en vez de
+                  // mostrarla vacía como si le faltara un dato.
+                  if (student.isEnactusStudent)
+                    ('Laboratorios', _labNames(data)),
+                  ('Empresa patrocinadora', student.sponsorName ?? ''),
                 ],
                 colors: colors,
               );
@@ -327,8 +308,7 @@ class _StudentProfile extends StatelessWidget {
             const SizedBox(height: 20),
             LayoutBuilder(builder: (context, c) {
               final projectCard = _ProjectCard(project: project, colors: colors);
-              final certCard = _CertificatesCard(
-                  certs: certs, closestCourse: closestCourse, colors: colors);
+              final certCard = _CertificatesCard(colors: colors);
               if (c.maxWidth > 760) {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,15 +327,112 @@ class _StudentProfile extends StatelessWidget {
       },
     );
   }
+
+  /// Nombres de los laboratorios del estudiante, o un guion mientras cargan.
+  /// El texto es una fila de una tabla de datos: no tiene dónde poner un
+  /// esqueleto ni un botón de reintentar.
+  String _labNames(DataProvider data) {
+    final ruta = data.rutaProgress.valueOrNull;
+    if (ruta == null) return '';
+    return ruta.laboratories.map((l) => l.laboratoryName).join(', ');
+  }
+}
+
+/// Las cuatro cifras del perfil. Van juntas en su propio widget porque las
+/// cuatro dependen de la red y comparten el mismo estado de carga: mostrar
+/// "0 cursos" mientras llega la respuesta sería mentir.
+class _ProfileStats extends StatelessWidget {
+  final AppUser student;
+  final ContentColors colors;
+  const _ProfileStats({required this.student, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final state = combine2(data.courses, data.certificates);
+
+    return state.when(
+      loading: () => const _ProfileStatsSkeleton(),
+      error: (e) => ErrorState(e, onRetry: data.reloadCourses),
+      data: (values) {
+        final (courses, certs) = values;
+
+        // El avance de cada curso vino junto con la lista (`include=progress`),
+        // así que esto no dispara ninguna petición extra.
+        var totalLessons = 0;
+        var doneLessons = 0;
+        for (final course in courses) {
+          final progress = data.courseProgress(course.id).valueOrNull;
+          if (progress == null) continue;
+          totalLessons += progress.totalLessons;
+          doneLessons += progress.completedLessons;
+        }
+
+        // Un Open Learning no tiene laboratorios y pedirlos le daría 403.
+        final labCount = student.isEnactusStudent
+            ? data.rutaProgress.valueOrNull?.laboratories.length
+            : 0;
+
+        final tiles = [
+          _ProfileStat(value: '${courses.length}', label: 'Cursos activos'),
+          _ProfileStat(
+              value: '$doneLessons/$totalLessons',
+              label: 'Lecciones completadas'),
+          _ProfileStat(
+              value: labCount == null ? '—' : '$labCount',
+              label: 'Laboratorios'),
+          _ProfileStat(value: '${certs.length}', label: 'Certificados'),
+        ];
+
+        return LayoutBuilder(builder: (context, c) {
+          final perRow = c.maxWidth > 700 ? 4 : 2;
+          final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (var i = 0; i < tiles.length; i++)
+                SizedBox(
+                    width: width,
+                    child: _ProfileStatCard(
+                        stat: tiles[i], isPrimary: i == 0, colors: colors)),
+            ],
+          );
+        });
+      },
+    );
+  }
+}
+
+class _ProfileStatsSkeleton extends StatelessWidget {
+  const _ProfileStatsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      final perRow = c.maxWidth > 700 ? 4 : 2;
+      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (var i = 0; i < 4; i++)
+            Skeleton(
+                width: width,
+                height: 96,
+                radius: BorderRadius.circular(14)),
+        ],
+      );
+    });
+  }
 }
 
 class _IdentityBand extends StatelessWidget {
   final AppUser student;
-  final Project? project;
-  final Group? group;
+  final UserTeam? team;
   final ContentColors colors;
   const _IdentityBand(
-      {required this.student, required this.project, required this.group, required this.colors});
+      {required this.student, required this.team, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -376,11 +453,11 @@ class _IdentityBand extends StatelessWidget {
               children: [
                 const ColoredBox(color: AppColors.slate),
                 const CustomPaint(painter: StripePainter()),
-                if (project != null)
+                if (team != null)
                   Positioned(
                     right: 26,
                     bottom: -22,
-                    child: Text(project!.name.toUpperCase(),
+                    child: Text(team!.projectName.toUpperCase(),
                         style: knockoutHeading(
                             fontSize: 104,
                             fontWeight: AppWeights.display,
@@ -407,19 +484,20 @@ class _IdentityBand extends StatelessWidget {
                       border: Border.all(color: colors.surface, width: 5),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: student.avatarBase64 != null
-                        ? SizedBox(
-                            width: 110,
-                            height: 110,
-                            child: AppImage(
-                                source: student.avatarBase64,
-                                fit: BoxFit.cover),
-                          )
-                        : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
-                            style: knockoutHeading(
-                                fontSize: 52,
-                                fontWeight: AppWeights.display,
-                                color: AppColors.ink)),
+                    child: AppImage(
+                      s3Key: student.avatarS3Key,
+                      fit: BoxFit.cover,
+                      // Sin foto —o mientras se resuelve su URL firmada— la
+                      // inicial. Nunca un hueco ni un ícono de imagen rota.
+                      placeholderBuilder: (_) => Text(
+                          student.name.isEmpty
+                              ? '?'
+                              : student.name[0].toUpperCase(),
+                          style: knockoutHeading(
+                              fontSize: 52,
+                              fontWeight: AppWeights.display,
+                              color: AppColors.ink)),
+                    ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
@@ -461,10 +539,10 @@ class _IdentityBand extends StatelessWidget {
                                   label: student.career,
                                   gold: false,
                                   colors: colors),
-                            if (group != null)
+                            if (team != null)
                               _CredentialChip(
                                   icon: Icons.groups_outlined,
-                                  label: group!.name,
+                                  label: team!.groupName,
                                   gold: false,
                                   colors: colors),
                           ],
@@ -781,14 +859,12 @@ class _ProfileOdsTag extends StatelessWidget {
 }
 
 class _CertificatesCard extends StatelessWidget {
-  final List<Certificate> certs;
-  final Course? closestCourse;
   final ContentColors colors;
-  const _CertificatesCard(
-      {required this.certs, required this.closestCourse, required this.colors});
+  const _CertificatesCard({required this.colors});
 
   @override
   Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
       decoration: BoxDecoration(
@@ -809,232 +885,358 @@ class _CertificatesCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (certs.isEmpty)
-            Builder(builder: (context) {
-              final data = context.watch<DataProvider>();
-              final student = context.watch<AuthProvider>().currentUser!;
-              return DashedRRectBorder(
-                color: colors.border,
-                radius: 14,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 12),
-                  child: Column(
+          data.certificates.when(
+            loading: () => const CardListSkeleton(count: 2, height: 58),
+            error: (e) => ErrorState(e, onRetry: data.reloadCertificates),
+            data: (certs) => certs.isEmpty
+                ? _NoCertificatesYet(colors: colors)
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.hourglass_empty, size: 32, color: colors.text3),
-                      const SizedBox(height: 12),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: Text(
-                            closestCourse == null
-                                ? 'Aún no tienes certificados. Completa una Ruta de Impacto para obtener el primero.'
-                                : 'Te falta poco para tu primer certificado: '
-                                    '"${closestCourse!.name}".',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 13.5, color: colors.text2)),
-                      ),
-                      if (closestCourse != null) ...[
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ThinProgressBar(
-                            value: data.courseProgress(student.id, closestCourse!),
-                            color: labColorFor(closestCourse!.labId),
-                            tooltip:
-                                '${data.progressFor(student.id, closestCourse!.id).completedLessonIds.length} '
-                                'de ${closestCourse!.lessonCount} lecciones',
-                          ),
-                        ),
-                      ],
+                      for (final cert in certs)
+                        _CertificateRow(cert: cert, colors: colors),
                     ],
                   ),
-                ),
-              );
-            })
-          else
-            for (final cert in certs)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration:
-                      BoxDecoration(color: colors.surface2, borderRadius: BorderRadius.circular(11)),
-                  child: Row(
-                    children: [
-                      Icon(Icons.workspace_premium, size: 22, color: colors.goldInk),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Ruta de Impacto · ${cert.labName}',
-                                style: TextStyle(
-                                    fontSize: 13, fontWeight: FontWeight.w700, color: colors.text)),
-                            Text('Emitido el ${DateFormat('d MMM yyyy').format(cert.date)}',
-                                style: TextStyle(fontSize: 12, color: colors.text3)),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.download_outlined, color: colors.goldInk),
-                        tooltip: 'Descargar certificado',
-                        onPressed: () => PdfService.download(cert),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Editar perfil: solo teléfono, carrera y foto son editables — cédula,
-/// universidad, equipo, proyecto y patrocinador los asigna el Admin y
-/// quedan de solo lectura en la vista principal.
+/// Sin certificados todavía: en vez de un vacío, cuánto le falta al curso en
+/// el que está más cerca. Ese curso sale del avance que ya vino con la lista
+/// —no hay una petición extra— y si todavía no llegó, solo se dice que no hay
+/// certificados: no se inventa un progreso.
+class _NoCertificatesYet extends StatelessWidget {
+  final ContentColors colors;
+  const _NoCertificatesYet({required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+
+    Course? closest;
+    CourseProgress? closestProgress;
+    for (final course in data.courses.valueOrNull ?? const <Course>[]) {
+      final progress = data.courseProgress(course.id).valueOrNull;
+      if (progress == null || progress.isComplete) continue;
+      if (closestProgress == null || progress.ratio > closestProgress.ratio) {
+        closest = course;
+        closestProgress = progress;
+      }
+    }
+
+    return DashedRRectBorder(
+      color: colors.border,
+      radius: 14,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 12),
+        child: Column(
+          children: [
+            Icon(Icons.hourglass_empty, size: 32, color: colors.text3),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: Text(
+                  closest == null
+                      ? 'Aún no tienes certificados. Completa una Ruta de Impacto para obtener el primero.'
+                      : 'Te falta poco para tu primer certificado: '
+                          '"${closest.name}".',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13.5, color: colors.text2)),
+            ),
+            if (closest != null && closestProgress != null) ...[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ThinProgressBar(
+                  value: closestProgress.ratio,
+                  color: labColorFor(closest.laboratoryId ?? ''),
+                  tooltip: '${closestProgress.completedLessons} '
+                      'de ${closestProgress.totalLessons} lecciones',
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CertificateRow extends StatelessWidget {
+  final Certificate cert;
+  final ContentColors colors;
+  const _CertificateRow({required this.cert, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+            color: colors.surface2, borderRadius: BorderRadius.circular(11)),
+        child: Row(
+          children: [
+            Icon(Icons.workspace_premium, size: 22, color: colors.goldInk),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Ruta de Impacto · ${cert.laboratoryName}',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: colors.text)),
+                  Text(
+                      'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)}',
+                      style: TextStyle(fontSize: 12, color: colors.text3)),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.download_outlined, color: colors.goldInk),
+              tooltip: 'Descargar certificado',
+              onPressed: () => PdfService.download(cert),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Editar el propio perfil: teléfono, carrera y foto.
+///
+/// Cédula, universidad, equipo, proyecto y patrocinador los asigna el Admin y
+/// son de solo lectura acá — el servidor tampoco los aceptaría (`PATCH
+/// /auth/me` los ignora), así que la interfaz y la API dicen lo mismo.
+///
+/// La foto sigue el mismo camino de tres pasos que cualquier archivo: se pide
+/// permiso de subida, el navegador sube DIRECTO a S3 —nunca a través de la
+/// API, que corta en 10 MB— y recién entonces se guarda la key en el perfil.
 Future<void> showEditProfileDialog(
     BuildContext context, AppUser student, ContentColors colors) async {
-  final phoneCtrl = TextEditingController(text: student.phone);
-  final careerCtrl = TextEditingController(text: student.career);
-  String? avatarBase64 = student.avatarBase64;
-  var saving = false;
-  var pickingImage = false;
-  String? error;
-
   await showDialog<void>(
     context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setState) => AlertDialog(
-        title: const Text('Editar perfil', style: TextStyle(fontSize: 18)),
-        content: SizedBox(
-          width: 420,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 42,
-                        backgroundColor: AppColors.gold,
-                        backgroundImage: appImageProvider(avatarBase64),
-                        child: avatarBase64 != null
-                            ? null
-                            : Text(student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
-                                style: const TextStyle(
-                                    color: AppColors.ink,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 26)),
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Material(
-                          color: AppColors.slate,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            onTap: pickingImage
-                                ? null
-                                : () async {
-                                    setState(() => pickingImage = true);
-                                    try {
-                                      final result = await FilePicker.pickFiles(
-                                        dialogTitle: 'Selecciona una foto',
-                                        type: FileType.image,
-                                        withData: true,
-                                      );
-                                      final bytes = result?.files.single.bytes;
-                                      if (bytes != null) {
-                                        setState(() => avatarBase64 = base64Encode(bytes));
-                                      }
-                                    } finally {
-                                      setState(() => pickingImage = false);
-                                    }
-                                  },
-                            child: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: pickingImage
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2))
-                                  : const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-                            ),
+    builder: (ctx) => _EditProfileDialog(student: student, colors: colors),
+  );
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  final AppUser student;
+  final ContentColors colors;
+  const _EditProfileDialog({required this.student, required this.colors});
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late final TextEditingController _phone =
+      TextEditingController(text: widget.student.phone);
+  late final TextEditingController _career =
+      TextEditingController(text: widget.student.career);
+
+  /// Key ya subida. Arranca en la actual y solo cambia si la subida termina
+  /// bien: si falla a mitad, el perfil conserva la foto que tenía.
+  late String? _avatarKey = widget.student.avatarS3Key;
+
+  bool _saving = false;
+  bool _uploading = false;
+  double _uploadProgress = 0;
+  ApiException? _error;
+
+  @override
+  void dispose() {
+    _phone.dispose();
+    _career.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    final result = await FilePicker.pickFiles(
+      dialogTitle: 'Selecciona una foto',
+      type: FileType.image,
+      withData: true,
+    );
+    final file = result?.files.singleOrNull;
+    final bytes = file?.bytes;
+    if (bytes == null || !mounted) return;
+
+    setState(() {
+      _uploading = true;
+      _uploadProgress = 0;
+      _error = null;
+    });
+    try {
+      final uploaded = await context.read<DataProvider>().uploadFile(
+            purpose: 'avatar',
+            fileName: file!.name,
+            contentType: _contentTypeOf(file.name),
+            bytes: bytes,
+            onProgress: (p) {
+              if (mounted) setState(() => _uploadProgress = p);
+            },
+          );
+      if (mounted) setState(() => _avatarKey = uploaded['s3Key'] as String);
+    } on ApiException catch (e) {
+      // El motivo real, no un "algo salió mal": "el archivo pesa demasiado" y
+      // "no hay conexión" piden cosas distintas de quien lo lee.
+      if (mounted) setState(() => _error = e);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  /// Los formatos de imagen que acepta el servidor. Se manda el correcto en
+  /// vez de `application/octet-stream`: la URL firmada se emite PARA un
+  /// content-type y la subida falla si no coincide.
+  String _contentTypeOf(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'png' => 'image/png',
+      'svg' => 'image/svg+xml',
+      _ => 'image/jpeg',
+    };
+  }
+
+  Future<void> _save() async {
+    final phone = _phone.text.trim();
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length < 7) {
+      setState(() => _error = const ValidationError(
+          'Ingresa un teléfono válido (mínimo 7 dígitos).'));
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await context.read<AuthProvider>().updateProfile({
+        'phone': phone,
+        'career': _career.text.trim(),
+        'avatarS3Key': _avatarKey,
+      });
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessCheck(context, 'Perfil actualizado ✓');
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = e;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final busy = _saving || _uploading;
+
+    return AlertDialog(
+      title: const Text('Editar perfil', style: TextStyle(fontSize: 18)),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 42,
+                      backgroundColor: AppColors.gold,
+                      backgroundImage: appImageProvider(context, _avatarKey),
+                      child: _avatarKey != null
+                          ? null
+                          : Text(
+                              widget.student.name.isEmpty
+                                  ? '?'
+                                  : widget.student.name[0].toUpperCase(),
+                              style: const TextStyle(
+                                  color: AppColors.ink,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 26)),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Material(
+                        color: AppColors.slate,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: busy ? null : _pickAvatar,
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: _uploading
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    // Progreso real de la subida, no un giro
+                                    // indefinido: una foto de 5 MB tarda.
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        value: _uploadProgress == 0
+                                            ? null
+                                            : _uploadProgress),
+                                  )
+                                : const Icon(Icons.camera_alt,
+                                    size: 16, color: Colors.white),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Teléfono'),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: careerCtrl,
-                  decoration: const InputDecoration(labelText: 'Carrera'),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                    'Cédula, universidad, equipo, proyecto y empresa patrocinadora '
-                    'los asigna tu administrador.',
-                    style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                if (error != null) ...[
-                  const SizedBox(height: 12),
-                  Text(error!,
-                      style: const TextStyle(color: AppColors.statusCritical, fontSize: 12.5)),
-                ],
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _phone,
+                enabled: !busy,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Teléfono'),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _career,
+                enabled: !busy,
+                decoration: const InputDecoration(labelText: 'Carrera'),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                  'Cédula, universidad, equipo, proyecto y empresa patrocinadora '
+                  'los asigna tu administrador.',
+                  style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                ErrorBanner(_error!),
               ],
-            ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-              onPressed: saving ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: saving
-                ? null
-                : () async {
-                    final phone = phoneCtrl.text.trim();
-                    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
-                    if (digits.length < 7) {
-                      setState(() => error = 'Ingresa un teléfono válido (mínimo 7 dígitos).');
-                      return;
-                    }
-                    setState(() {
-                      saving = true;
-                      error = null;
-                    });
-                    try {
-                      student.phone = phone;
-                      student.career = careerCtrl.text.trim();
-                      student.avatarBase64 = avatarBase64;
-                      await context.read<DataProvider>().saveUser(student);
-                      if (context.mounted) context.read<AuthProvider>().refresh();
-                      if (ctx.mounted) Navigator.pop(ctx);
-                      if (context.mounted) {
-                        showSuccessCheck(context, 'Perfil actualizado ✓');
-                      }
-                    } catch (_) {
-                      setState(() {
-                        saving = false;
-                        error = 'No se pudo guardar. Intenta de nuevo.';
-                      });
-                    }
-                  },
-            child: Text(saving ? 'Guardando…' : 'Guardar'),
-          ),
-        ],
       ),
-    ),
-  );
+      actions: [
+        TextButton(
+            onPressed: busy ? null : () => Navigator.pop(context),
+            child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: busy ? null : _save,
+          child: Text(_saving ? 'Guardando…' : 'Guardar'),
+        ),
+      ],
+    );
+  }
 }

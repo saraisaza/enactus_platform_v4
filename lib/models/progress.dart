@@ -455,3 +455,45 @@ class Page<T> {
         totalPages: (j['totalPages'] as num?)?.toInt() ?? 0,
       );
 }
+
+/// Resultado de resolver un quiz, tal como lo devuelve
+/// `POST /lessons/:id/quiz-attempt`.
+///
+/// La nota viene calculada del servidor: la clave de respuestas nunca llega al
+/// cliente. [correctness] dice QUÉ preguntas estuvieron bien —retroalimentación
+/// legítima— pero no cuál era la respuesta de las falladas; si la trajera,
+/// bastaría con mandar un intento en blanco para obtener la clave completa.
+class QuizResult {
+  final String attemptId;
+
+  /// 0..100.
+  final int score;
+  final bool passed;
+  final int correctCount;
+  final int totalQuestions;
+
+  /// `{ idDePregunta: acertó }`.
+  final Map<String, bool> correctness;
+
+  const QuizResult({
+    required this.attemptId,
+    required this.score,
+    required this.passed,
+    required this.correctCount,
+    required this.totalQuestions,
+    this.correctness = const {},
+  });
+
+  bool isCorrect(String questionId) => correctness[questionId] ?? false;
+
+  factory QuizResult.fromJson(Map<String, dynamic> j) => QuizResult(
+        attemptId: (j['attemptId'] as String?) ?? '',
+        score: (j['score'] as num?)?.toInt() ?? 0,
+        passed: (j['passed'] as bool?) ?? false,
+        correctCount: (j['correctCount'] as num?)?.toInt() ?? 0,
+        totalQuestions: (j['totalQuestions'] as num?)?.toInt() ?? 0,
+        correctness: Map<String, bool>.from(
+            (j['correctness'] as Map? ?? const {}).map(
+                (key, value) => MapEntry('$key', value == true))),
+      );
+}

@@ -142,8 +142,10 @@ class DataProvider extends ChangeNotifier {
             CourseProgress.fromJson(Map<String, dynamic>.from(progress));
         // Sin pisar un progreso ya cargado con sus lecciones marcadas: ese
         // trae más detalle que este resumen.
-        if (_courseProgress[parsed.courseId]?.valueOrNull == null) {
-          _courseProgress[parsed.courseId] = AsyncValue.data(parsed);
+        // Bajo la clave del usuario con sesión: este resumen es SUYO.
+        final key = _progressKey(parsed.courseId, null);
+        if (_courseProgress[key]?.valueOrNull == null) {
+          _courseProgress[key] = AsyncValue.data(parsed);
         }
       }
     }
@@ -205,27 +207,43 @@ class DataProvider extends ChangeNotifier {
     return RutaProgress.fromJson(Map<String, dynamic>.from(json as Map));
   }
 
-  /// Progreso del usuario con sesión en un curso, con sus lecciones marcadas.
-  AsyncValue<CourseProgress> courseProgress(String courseId) {
+  /// Progreso en un curso, con sus lecciones marcadas.
+  ///
+  /// Sin [studentId] es el del usuario con sesión — el caso de siempre. Con
+  /// [studentId] es el de OTRA persona: lo usan Mentor, Asesor, LXD y Admin
+  /// para mirar el avance de un estudiante. El servidor decide si quien
+  /// pregunta puede; un estudiante pidiendo el de otro recibe 403.
+  AsyncValue<CourseProgress> courseProgress(String courseId,
+      {String? studentId}) {
+    final key = _progressKey(courseId, studentId);
     final current =
-        _courseProgress[courseId] ?? const AsyncValue<CourseProgress>.idle();
-    _lazy(current, (v) => _courseProgress[courseId] = v, () async {
-      final id = _requireUser();
-      final json = await api.get('/students/$id/course-progress/$courseId');
-      return CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
-    });
-    return _courseProgress[courseId] ?? current;
+        _courseProgress[key] ?? const AsyncValue<CourseProgress>.idle();
+    _lazy(current, (v) => _courseProgress[key] = v,
+        () => _fetchCourseProgress(courseId, studentId));
+    return _courseProgress[key] ?? current;
   }
 
-  Future<void> reloadCourseProgress(String courseId) => _refresh(
-        (v) => _courseProgress[courseId] = v,
-        () async {
-          final id = _requireUser();
-          final json = await api.get('/students/$id/course-progress/$courseId');
-          return CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
-        },
-        _courseProgress[courseId]?.valueOrNull,
-      );
+  Future<void> reloadCourseProgress(String courseId, {String? studentId}) {
+    final key = _progressKey(courseId, studentId);
+    return _refresh(
+      (v) => _courseProgress[key] = v,
+      () => _fetchCourseProgress(courseId, studentId),
+      _courseProgress[key]?.valueOrNull,
+    );
+  }
+
+  /// La caché se indexa por persona: sin eso, abrir el curso de un estudiante
+  /// desde el portal del Mentor pisaría el progreso propio del Mentor y al
+  /// volver a su portal vería el ajeno.
+  String _progressKey(String courseId, String? studentId) =>
+      '${studentId ?? _currentUserId}/$courseId';
+
+  Future<CourseProgress> _fetchCourseProgress(
+      String courseId, String? studentId) async {
+    final id = studentId ?? _requireUser();
+    final json = await api.get('/students/$id/course-progress/$courseId');
+    return CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
+  }
 
   /// Marca o desmarca una lección.
   ///
@@ -240,14 +258,17 @@ class DataProvider extends ChangeNotifier {
     // Progreso del curso: viene en la misma respuesta.
     final course = impact.course;
     if (course != null) {
-      final previous = _courseProgress[courseId]?.valueOrNull;
+      // Marcar una lección solo puede hacerlo la propia persona, así que el
+      // recálculo se guarda bajo su clave.
+      final key = _progressKey(courseId, null);
+      final previous = _courseProgress[key]?.valueOrNull;
       final completed = [...?previous?.completedLessonIds];
       if (impact.completed) {
         if (!completed.contains(lessonId)) completed.add(lessonId);
       } else {
         completed.remove(lessonId);
       }
-      _courseProgress[courseId] = AsyncValue.data(CourseProgress(
+      _courseProgress[key] = AsyncValue.data(CourseProgress(
         courseId: course.courseId,
         courseName: previous?.courseName ?? '',
         totalLessons: course.totalLessons,
@@ -266,6 +287,34 @@ class DataProvider extends ChangeNotifier {
 
     notifyListeners();
     return impact;
+  }
+
+  /// Marca una lección como completa **solo si todavía no lo estaba**.
+  ///
+  /// [toggleLesson] alterna: aprobar un quiz dos veces lo desmarcaría. Acá el
+  /// acto es "esto quedó hecho", no "cambiá el estado".
+  Future<void> toggleLessonIfPending(String lessonId, String courseId) async {
+    final done = _courseProgress[_progressKey(courseId, null)]
+            ?.valueOrNull
+            ?.isLessonComplete(lessonId) ??
+        false;
+    if (done) return;
+    await toggleLesson(lessonId, courseId);
+  }
+
+  /// Envía las respuestas de un quiz y devuelve el resultado.
+  ///
+  /// **La nota la calcula el servidor.** La clave de respuestas nunca llega al
+  /// cliente, así que acá no hay nada que corregir: se mandan las respuestas y
+  /// vuelve el puntaje, con qué preguntas estuvieron bien (pero no cuál era la
+  /// correcta de las falladas).
+  Future<QuizResult> submitQuiz(
+    String lessonId,
+    Map<String, Object> answers,
+  ) async {
+    final json = await api.post('/lessons/$lessonId/quiz-attempt',
+        body: {'answers': answers});
+    return QuizResult.fromJson(Map<String, dynamic>.from(json as Map));
   }
 
   // -------------------------------------------------------------------------

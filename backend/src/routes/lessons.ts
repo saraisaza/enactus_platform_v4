@@ -2,14 +2,25 @@ import { asc, count, eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { courseModules, lessons } from '../db/schema';
-import { conflict, notFound } from '../lib/errors';
+import {
+  courseModules,
+  lessons,
+  quizAttempts,
+  quizQuestions,
+} from '../db/schema';
+import { conflict, forbidden, notFound } from '../lib/errors';
 import {
   assertValidVideoUpload,
   createUploadUrl,
   videoKeyFor,
 } from '../lib/s3';
-import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
+import {
+  CONTENT_ROLES,
+  currentUser,
+  isStudentLike,
+  requireAuth,
+  requireRole,
+} from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import { loadEditableCourse } from './courses';
 
@@ -270,6 +281,144 @@ lessonRoutes.post('/:id/video-external', requireRole(...CONTENT_ROLES), async (c
 
   return c.json(updated);
 });
+
+// ---------------------------------------------------------------------------
+// Quiz
+// ---------------------------------------------------------------------------
+
+const quizAttemptBody = z.object({
+  /** Una respuesta por pregunta: `{ [questionId]: índice | texto }`. */
+  answers: z.record(z.string(), z.union([z.number().int(), z.string()])),
+});
+
+/** Umbral de aprobación. El mismo 60% que aplicaba el diálogo en Flutter. */
+const PASSING_SCORE = 60;
+
+/**
+ * Resuelve un quiz y devuelve la nota.
+ *
+ * **La corrección ocurre acá, nunca en el cliente.** Antes el curso viajaba al
+ * navegador con la clave de respuestas dentro, así que cualquiera podía leerla
+ * desde las herramientas de desarrollo, y la nota que el cliente reportaba se
+ * guardaba sin verificar. Ahora `answer_index`/`answer_text` no salen de la
+ * base: llegan las respuestas, se comparan contra la clave y vuelve el
+ * resultado.
+ *
+ * Se devuelve qué preguntas estuvieron bien —eso es retroalimentación
+ * legítima— pero NO cuál era la respuesta correcta de las falladas: si la
+ * devolviera, bastaría con enviar un intento en blanco para obtener la clave
+ * completa.
+ */
+lessonRoutes.post('/:id/quiz-attempt', async (c) => {
+  const user = currentUser(c);
+  if (!isStudentLike(user.role)) {
+    throw forbidden('Solo un estudiante resuelve un quiz.');
+  }
+
+  const db = c.get('db');
+  const lessonId = c.req.param('id');
+  const body = quizAttemptBody.parse(await c.req.json());
+
+  await assertLessonVisible(db, user, lessonId);
+
+  const questions = await db
+    .select()
+    .from(quizQuestions)
+    .where(eq(quizQuestions.lessonId, lessonId))
+    .orderBy(asc(quizQuestions.orderIndex));
+
+  if (questions.length === 0) {
+    throw conflict('Esta lección no tiene preguntas configuradas.');
+  }
+
+  const correctness: Record<string, boolean> = {};
+  let correct = 0;
+  for (const question of questions) {
+    const given = body.answers[question.id];
+    const ok = isCorrect(question, given);
+    correctness[question.id] = ok;
+    if (ok) correct += 1;
+  }
+
+  const score = Math.round((correct / questions.length) * 100);
+  const passed = score >= PASSING_SCORE;
+
+  const [attempt] = await db
+    .insert(quizAttempts)
+    .values({
+      lessonId,
+      studentId: user.id,
+      answers: body.answers,
+      score,
+      passed,
+    })
+    .returning();
+
+  return c.json({
+    attemptId: attempt!.id,
+    score,
+    passed,
+    correctCount: correct,
+    totalQuestions: questions.length,
+    correctness,
+  });
+});
+
+/**
+ * Compara una respuesta contra la clave.
+ *
+ * `multiple` y `truefalse` van por índice; `short` y `fill` por texto,
+ * normalizando espacios, mayúsculas y tildes — quien escribe "Analisis" no
+ * está equivocado respecto de "análisis". `order` todavía no se corrige
+ * automáticamente: no hay ningún quiz que la use y adivinar el formato de su
+ * clave sería inventar una regla.
+ */
+function isCorrect(
+  question: typeof quizQuestions.$inferSelect,
+  given: number | string | undefined,
+): boolean {
+  if (given === undefined) return false;
+
+  if (question.kind === 'multiple' || question.kind === 'truefalse') {
+    return typeof given === 'number' && given === question.answerIndex;
+  }
+  if (question.kind === 'short' || question.kind === 'fill') {
+    if (typeof given !== 'string' || question.answerText === null) return false;
+    return normalize(given) === normalize(question.answerText);
+  }
+  return false;
+}
+
+const normalize = (text: string) =>
+  text
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ');
+
+/**
+ * Una persona solo resuelve quizzes de cursos a los que tiene acceso.
+ *
+ * Se apoya en `student_course_access`, la misma vista con la que se calcula la
+ * completitud: si un curso no está en su acceso, tampoco cuenta para su avance.
+ */
+async function assertLessonVisible(
+  db: Db,
+  user: ReturnType<typeof currentUser>,
+  lessonId: string,
+): Promise<void> {
+  const [row] = await db.execute<{ ok: number }>(sql`
+    select 1 as ok
+      from lessons l
+      join course_modules cm on cm.id = l.course_module_id
+      join student_course_access a
+        on a.course_id = cm.course_id and a.student_id = ${user.id}
+     where l.id = ${lessonId}
+     limit 1
+  `);
+  if (!row) throw notFound('No se encontró la lección.');
+}
 
 // ---------------------------------------------------------------------------
 // Helpers

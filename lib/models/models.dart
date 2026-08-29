@@ -701,7 +701,6 @@ class ActivityConfig {
   final bool requiresFile;
   final bool requiresText;
   final int maxFiles;
-  final List<String> allowedTypes;
 
   /// `points100` | `passfail` | `review` | `scale5`.
   final String gradingMode;
@@ -713,7 +712,6 @@ class ActivityConfig {
     this.requiresFile = false,
     this.requiresText = true,
     this.maxFiles = 1,
-    this.allowedTypes = const [],
     this.gradingMode = 'points100',
     this.rubric = const [],
   });
@@ -726,8 +724,6 @@ class ActivityConfig {
         requiresFile: (j['requiresFile'] as bool?) ?? false,
         requiresText: (j['requiresText'] as bool?) ?? true,
         maxFiles: (j['maxFiles'] as num?)?.toInt() ?? 1,
-        allowedTypes:
-            List<String>.from(j['allowedTypes'] as List? ?? const []),
         gradingMode: (j['gradingMode'] as String?) ?? 'points100',
         rubric: (j['rubric'] as List? ?? const [])
             .map((e) => RubricItem.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -895,6 +891,13 @@ class Course {
   final String? laboratoryName;
   final String? creatorName;
 
+  /// Etiquetas, objetivos, competencias y ODS. Solo en el detalle, y ahí
+  /// siempre: son cuatro consultas chicas y la ficha los muestra todos.
+  final List<String> tags;
+  final List<CourseObjective> objectives;
+  final List<String> competencies;
+  final List<String> ods;
+
   const Course({
     required this.id,
     required this.name,
@@ -918,6 +921,10 @@ class Course {
     this.modules = const [],
     this.laboratoryName,
     this.creatorName,
+    this.tags = const [],
+    this.objectives = const [],
+    this.competencies = const [],
+    this.ods = const [],
   });
 
   bool get isPublished => status == CourseStatus.published;
@@ -967,6 +974,14 @@ class Course {
             .toList(),
         laboratoryName: j['laboratoryName'] as String?,
         creatorName: j['creatorName'] as String?,
+        tags: List<String>.from(j['tags'] as List? ?? const []),
+        objectives: (j['objectives'] as List? ?? const [])
+            .map((e) =>
+                CourseObjective.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        competencies:
+            List<String>.from(j['competencies'] as List? ?? const []),
+        ods: List<String>.from(j['ods'] as List? ?? const []),
       );
 
   Map<String, dynamic> toJson() => {
@@ -984,6 +999,27 @@ class Course {
         'maxStudents': maxStudents,
         'visible': visible,
       };
+}
+
+/// Objetivo de aprendizaje de un curso.
+///
+/// `category` nula = objetivo general. Con categoría
+/// (`entrepreneurship`/`business`) es de los que se copian a la fase al
+/// vincular el curso a un módulo de la Ruta.
+class CourseObjective {
+  final String id;
+  final String? category;
+  final String text;
+
+  const CourseObjective({required this.id, this.category, this.text = ''});
+
+  bool get isGeneral => category == null;
+
+  factory CourseObjective.fromJson(Map<String, dynamic> j) => CourseObjective(
+        id: j['id'] as String,
+        category: j['category'] as String?,
+        text: (j['text'] as String?) ?? '',
+      );
 }
 
 // ---------------------------------------------------------------------------

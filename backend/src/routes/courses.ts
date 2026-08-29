@@ -2,7 +2,7 @@ import { and, asc, count, eq, ilike, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { courseModules, courses, lessons } from '../db/schema';
+import { courseModules, courses } from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
 import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
@@ -150,7 +150,11 @@ courseRoutes.get('/:id', async (c) => {
       modules: await loadModules(db, course.id, include.has('lessons')),
     };
   }
-  return c.json(result);
+
+  // Etiquetas, objetivos, competencias y ODS van SIEMPRE en el detalle: son
+  // cuatro consultas chicas y la ficha del curso las muestra todas. Pedirlas
+  // con un `include` obligaría a cada pantalla a acordarse.
+  return c.json({ ...result, ...(await loadCourseMeta(db, course.id)) });
 });
 
 /** Agrega `laboratoryName` y `creatorName` a una lista de cursos. */
@@ -453,13 +457,87 @@ async function loadModules(db: Db, courseId: string, withLessons: boolean) {
   return Promise.all(
     mods.map(async (m) => ({
       ...m,
-      lessons: await db
-        .select()
-        .from(lessons)
-        .where(eq(lessons.courseModuleId, m.id))
-        .orderBy(asc(lessons.orderIndex)),
+      lessons: await loadLessons(db, m.id),
     })),
   );
+}
+
+/**
+ * Lecciones de un módulo, con el contenido que la pantalla necesita para
+ * mostrarlas: las preguntas del quiz y la configuración de la actividad.
+ *
+ * **La clave de respuestas NUNCA sale de acá.** `answer_index` y `answer_text`
+ * se quedan en la base: el quiz se califica en el servidor
+ * (`POST /lessons/:id/quiz-attempt`). En la versión con Hive la respuesta
+ * correcta viajaba al navegador dentro del curso, así que cualquiera podía
+ * leerla desde las herramientas de desarrollo.
+ */
+async function loadLessons(db: Db, moduleId: string) {
+  return db.execute<Record<string, unknown>>(sql`
+    select l.id, l.title, l.type, l.description,
+           l.duration_min as "durationMin", l.order_index as "orderIndex",
+           l.resource_s3_key as "resourceS3Key",
+           l.resource_file_name as "resourceFileName",
+           l.external_url as "externalUrl",
+           l.video_type as "videoType", l.video_url as "videoUrl",
+           l.video_s3_key as "videoS3Key",
+           l.video_duration_sec as "videoDurationSec",
+           coalesce((
+             select json_agg(json_build_object(
+                      'id', q.id, 'kind', q.kind, 'question', q.question,
+                      'options', coalesce((
+                        select json_agg(o.text order by o.order_index)
+                          from quiz_question_options o
+                         where o.quiz_question_id = q.id), '[]'::json))
+                    order by q.order_index)
+               from quiz_questions q where q.lesson_id = l.id), '[]'::json
+           ) as quiz,
+           (select json_build_object(
+                     'description', a.description,
+                     'deadline', a.deadline::text,
+                     'requiresFile', a.requires_file,
+                     'requiresText', a.requires_text,
+                     'maxFiles', a.max_files,
+                     'gradingMode', a.grading_mode,
+                     'rubric', coalesce((
+                       select json_agg(json_build_object(
+                                'criterion', r.criterion, 'points', r.points)
+                              order by r.order_index)
+                         from activity_rubric_items r
+                        where r.lesson_id = a.lesson_id), '[]'::json))
+              from lesson_activities a where a.lesson_id = l.id) as activity
+      from lessons l
+     where l.course_module_id = ${moduleId}
+     order by l.order_index
+  `);
+}
+
+/** Etiquetas, objetivos, competencias y ODS de un curso. */
+async function loadCourseMeta(db: Db, courseId: string) {
+  const [tags, objectives, competencies, ods] = await Promise.all([
+    db.execute<{ tag: string }>(
+      sql`select tag from course_tags where course_id = ${courseId} order by tag`,
+    ),
+    db.execute<{ id: string; category: string | null; text: string }>(sql`
+      select id, category, text from course_objectives
+       where course_id = ${courseId} order by order_index
+    `),
+    db.execute<{ code: string }>(sql`
+      select competency_code as code from course_competencies
+       where course_id = ${courseId} order by competency_code
+    `),
+    db.execute<{ code: string }>(sql`
+      select ods_code as code from course_ods
+       where course_id = ${courseId} order by ods_code
+    `),
+  ]);
+
+  return {
+    tags: tags.map((t) => t.tag),
+    objectives,
+    competencies: competencies.map((r) => r.code),
+    ods: ods.map((r) => r.code),
+  };
 }
 
 /** Carga un curso vivo y confirma que quien pide puede editarlo. */

@@ -1,31 +1,31 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
+import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/async_value.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
+import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
-import '../../widgets/video_player_dialog.dart';
+import '../../widgets/file_upload_field.dart';
 import '../../widgets/lesson_visuals.dart';
+import '../../widgets/video_player_dialog.dart';
 
-/// Detalle de un curso: módulos y lecciones de todos los tipos (video, PDF,
-/// recurso, enlace, quiz, actividad, encuesta), progreso y entregas.
+/// Detalle de un curso: módulos y lecciones de todos los tipos, avance y
+/// entregas.
 ///
-/// Por defecto ([studentId] nulo, el caso de siempre: el propio estudiante
-/// entrando a SU curso) muestra y permite editar el progreso de quien tiene
-/// la sesión abierta. Si [studentId] viene informado (otro rol — LXD,
-/// Mentor, Asesor, Empresa, Donante, Admin — abrió este curso desde el
-/// perfil de un estudiante puntual, ver `StudentDetailView`), muestra el
-/// progreso de ESE estudiante en modo de solo lectura: antes, sin este
-/// parámetro, la pantalla siempre leía `AuthProvider.currentUser` sin
-/// importar cómo se llegó, así que un Mentor viendo el curso de su
-/// estudiante en realidad veía (y podía escribir) su propio progreso
-/// inexistente, no el del estudiante.
+/// Por defecto ([studentId] nulo) muestra y deja editar el avance de quien
+/// tiene la sesión abierta. Con [studentId] muestra el de ESE estudiante en
+/// solo lectura — es como lo abre un Mentor, Asesor o LXD desde el perfil de
+/// alguien. El servidor decide si quien pregunta puede: un estudiante pidiendo
+/// el avance de otro recibe 403, no una pantalla vacía.
 class CourseDetailView extends StatelessWidget {
   final String courseId;
   final String? studentId;
@@ -34,209 +34,229 @@ class CourseDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final viewer = context.watch<AuthProvider>().currentUser!;
-    final course = data.courseById(courseId);
-    if (course == null) {
-      return const Scaffold(body: Center(child: Text('Curso no encontrado')));
-    }
-    // readOnly: alguien que no es el propio estudiante está mirando su
-    // progreso — puede ver todo, pero no completar lecciones, responder
-    // quizzes/encuestas ni entregar actividades en su nombre.
-    final readOnly = studentId != null && studentId != viewer.id;
-    final target = readOnly ? (data.userById(studentId!) ?? viewer) : viewer;
-    final progress = data.progressFor(target.id, course.id);
-    final mySubmissions = data
-        .submissionsForStudent(target.id)
-        .where((s) => s.courseId == course.id)
-        .toList();
+    final viewer = context.watch<AuthProvider>().currentUser;
+    final readOnly = studentId != null && studentId != viewer?.id;
 
     return Scaffold(
       body: Column(
         children: [
           const AppHeader(portalTitle: 'Curso'),
           Expanded(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back),
-                              color: AppColors.gold,
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Text(course.name,
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.gold)),
-                                  if (course.subtitle.isNotEmpty)
-                                    Text(course.subtitle,
-                                        style: const TextStyle(
-                                            color:
-                                                AppColors.textSecondary,
-                                            fontSize: 14)),
-                                ],
-                              ),
-                            ),
-                            StatusChip(
-                                label: course.level,
-                                color: AppColors.slateLight,
-                                icon: Icons.signal_cellular_alt),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 56),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  course.fullDescription.isNotEmpty
-                                      ? course.fullDescription
-                                      : course.description,
-                                  style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 14,
-                                      height: 1.5)),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 14,
-                                runSpacing: 6,
-                                children: [
-                                  if (course.estimatedHours > 0)
-                                    _meta(Icons.schedule,
-                                        '${course.estimatedHours} h estimadas'),
-                                  _meta(Icons.language, course.language),
-                                  if (course.generatesCertificate)
-                                    _meta(Icons.workspace_premium_outlined,
-                                        'Genera certificado'),
-                                  for (final t in course.tags.take(4))
-                                    _meta(Icons.tag, t),
-                                ],
-                              ),
-                              if (course.objectives.isNotEmpty) ...[
-                                const SectionTitle('Objetivos'),
-                                for (final o in course.objectives)
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 4),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Icon(
-                                            Icons.check_circle_outline,
-                                            size: 15,
-                                            color: AppColors.gold),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                            child: Text(o,
-                                                style: const TextStyle(
-                                                    fontSize: 13.5))),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (readOnly) ...[
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 56, right: 16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceAlt,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.visibility_outlined,
-                                      size: 17, color: AppColors.textMuted),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                        'Estás viendo el progreso de ${target.name} — modo de solo lectura.',
-                                        style: const TextStyle(
-                                            fontSize: 12.5,
-                                            color: AppColors.textMuted)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(left: 56, right: 16),
-                          child: ThinProgressBar(
-                            value: data.courseProgress(target.id, course),
-                            tooltip:
-                                '${progress.completedLessonIds.length} de '
-                                '${course.lessonCount} lecciones',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Módulos y lecciones
-                        for (final module in course.modules) ...[
-                          SectionTitle(module.title),
-                          for (final lesson in module.lessons)
-                            _LessonTile(
-                              lesson: lesson,
-                              course: course,
-                              done: progress.completedLessonIds
-                                  .contains(lesson.id),
-                              readOnly: readOnly,
-                              onToggle: () {
-                                final wasDone = progress
-                                    .completedLessonIds
-                                    .contains(lesson.id);
-                                data.toggleLesson(
-                                    target.id, course.id, lesson.id);
-                                if (!wasDone) {
-                                  showSuccessCheck(
-                                      context, '¡Lección completada!');
-                                }
-                              },
-                            ),
-                        ],
-                        const SectionTitle('Mis entregas'),
-                        _SubmissionsSection(
-                            course: course,
-                            student: target,
-                            submissions: mySubmissions,
-                            readOnly: readOnly),
-                      ],
+            child: combine2(
+              data.courseById(courseId),
+              data.courseProgress(courseId, studentId: studentId),
+            ).when(
+              loading: () => const Center(child: BrandLoader()),
+              error: (e) => ErrorState(e, onRetry: () async {
+                await data.reloadCourse(courseId);
+                await data.reloadCourseProgress(courseId,
+                    studentId: studentId);
+              }),
+              data: (values) {
+                final (course, progress) = values;
+                return _CourseBody(
+                  course: course,
+                  progress: progress,
+                  studentId: studentId,
+                  readOnly: readOnly,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CourseBody extends StatelessWidget {
+  final Course course;
+  final CourseProgress progress;
+  final String? studentId;
+  final bool readOnly;
+
+  const _CourseBody({
+    required this.course,
+    required this.progress,
+    required this.studentId,
+    required this.readOnly,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      color: AppColors.gold,
+                      onPressed: () => Navigator.pop(context),
                     ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(course.name,
+                              style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.gold)),
+                          if (course.subtitle.isNotEmpty)
+                            Text(course.subtitle,
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                    StatusChip(
+                        label: course.levelLabel,
+                        color: AppColors.slateLight,
+                        icon: Icons.signal_cellular_alt),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 56),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          course.fullDescription.isNotEmpty
+                              ? course.fullDescription
+                              : course.description,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                              height: 1.5)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 14,
+                        runSpacing: 6,
+                        children: [
+                          if (course.estimatedHours > 0)
+                            _meta(Icons.schedule,
+                                '${course.estimatedHours} h estimadas'),
+                          _meta(Icons.language, course.language),
+                          if (course.generatesCertificate)
+                            _meta(Icons.workspace_premium_outlined,
+                                'Genera certificado'),
+                          if (course.laboratoryName != null)
+                            _meta(Icons.science_outlined,
+                                course.laboratoryName!),
+                          for (final tag in course.tags.take(4))
+                            _meta(Icons.tag, tag),
+                        ],
+                      ),
+                      if (course.objectives.isNotEmpty) ...[
+                        const SectionTitle('Objetivos'),
+                        for (final objective in course.objectives)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.check_circle_outline,
+                                    size: 15, color: AppColors.gold),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                    child: Text(objective.text,
+                                        style:
+                                            const TextStyle(fontSize: 13.5))),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
                 ),
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: AppFooter(),
+                if (readOnly) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 56, right: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceAlt,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.visibility_outlined,
+                              size: 17, color: AppColors.textMuted),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                                'Estás viendo el progreso de otro estudiante — '
+                                'modo de solo lectura.',
+                                style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: AppColors.textMuted)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 56, right: 16),
+                  child: ThinProgressBar(
+                    value: progress.ratio,
+                    tooltip: '${progress.completedLessons} de '
+                        '${progress.totalLessons} lecciones',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (course.modules.isEmpty)
+                  const EmptyState(
+                      icon: Icons.menu_book_outlined,
+                      message: 'Este curso todavía no tiene contenido publicado.')
+                else
+                  for (final module in course.modules) ...[
+                    SectionTitle(module.title),
+                    for (final lesson in module.lessons)
+                      _LessonTile(
+                        lesson: lesson,
+                        course: course,
+                        done: progress.isLessonComplete(lesson.id),
+                        readOnly: readOnly,
+                      ),
+                  ],
+                const SectionTitle('Mis entregas'),
+                data.submissions.when(
+                  loading: () => const CardListSkeleton(count: 2, height: 90),
+                  error: (e) =>
+                      ErrorState(e, onRetry: data.reloadSubmissions),
+                  data: (all) => _SubmissionsSection(
+                    course: course,
+                    submissions: all
+                        .where((s) => s.courseId == course.id)
+                        .toList(),
+                    readOnly: readOnly,
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(
+              alignment: Alignment.bottomCenter, child: AppFooter()),
+        ),
+      ],
     );
   }
 
@@ -246,14 +266,14 @@ class CourseDetailView extends StatelessWidget {
           Icon(icon, size: 13, color: AppColors.gold),
           const SizedBox(width: 4),
           Text(text,
-              style: const TextStyle(
-                  color: AppColors.textMuted, fontSize: 12)),
+              style:
+                  const TextStyle(color: AppColors.textMuted, fontSize: 12)),
         ],
       );
 }
 
 // ---------------------------------------------------------------------------
-// Tile de lección
+// Lección
 // ---------------------------------------------------------------------------
 
 class _LessonTile extends StatelessWidget {
@@ -261,13 +281,13 @@ class _LessonTile extends StatelessWidget {
   final Course course;
   final bool done;
   final bool readOnly;
-  final VoidCallback onToggle;
-  const _LessonTile(
-      {required this.lesson,
-      required this.course,
-      required this.done,
-      required this.onToggle,
-      this.readOnly = false});
+
+  const _LessonTile({
+    required this.lesson,
+    required this.course,
+    required this.done,
+    required this.readOnly,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -278,8 +298,7 @@ class _LessonTile extends StatelessWidget {
         onTap: () => _open(context),
         child: Row(
           children: [
-            Icon(lessonTypeIcon(lesson.type),
-                color: AppColors.gold, size: 22),
+            Icon(lessonTypeIcon(lesson.type), color: AppColors.gold, size: 22),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -298,15 +317,16 @@ class _LessonTile extends StatelessWidget {
             Tooltip(
               message: readOnly
                   ? (done ? 'Completada' : 'Pendiente')
-                  : (done ? 'Marcar como pendiente' : 'Marcar como completada'),
+                  : (done
+                      ? 'Marcar como pendiente'
+                      : 'Marcar como completada'),
               child: IconButton(
                 icon: Icon(
                   done ? Icons.check_circle : Icons.radio_button_unchecked,
                   color: done ? AppColors.statusGood : AppColors.textMuted,
                 ),
-                // En modo de solo lectura no se puede completar en nombre
-                // de otro estudiante — ver doc de [CourseDetailView].
-                onPressed: readOnly ? null : onToggle,
+                // En solo lectura no se completa en nombre de otra persona.
+                onPressed: readOnly ? null : () => _toggle(context),
               ),
             ),
           ],
@@ -315,12 +335,28 @@ class _LessonTile extends StatelessWidget {
     );
   }
 
+  /// Marcar la lección. La respuesta trae el recálculo de curso, módulo, fase
+  /// y Ruta, así que si con esto quedó una Ruta lista para certificar, se
+  /// puede celebrar sin preguntar nada más.
+  Future<void> _toggle(BuildContext context) async {
+    final data = context.read<DataProvider>();
+    try {
+      final impact = await data.toggleLesson(lesson.id, course.id);
+      if (!context.mounted) return;
+      if (impact.newlyCertifiable != null) {
+        showSuccessCheck(context, '¡Completaste la Ruta de Impacto! 🎉');
+      } else if (impact.completed) {
+        showSuccessCheck(context, '¡Lección completada!');
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message);
+    }
+  }
+
   void _open(BuildContext context) {
-    // Video/PDF/recurso/enlace son solo lectura de por sí (no escriben
-    // nada): se pueden abrir igual estando en modo readOnly. Quiz/encuesta/
-    // actividad SÍ escriben una entrega a nombre de quien tiene la sesión
-    // abierta — si estamos viendo el progreso de otro estudiante, eso
-    // atribuiría la respuesta a la persona equivocada, así que se bloquean.
+    // Video, PDF, recurso y enlace no escriben nada: se abren igual en solo
+    // lectura. Quiz, encuesta y actividad SÍ escriben a nombre de quien tiene
+    // la sesión, así que atribuirían la respuesta a la persona equivocada.
     if (readOnly &&
         (lesson.type == LessonType.quiz ||
             lesson.type == LessonType.survey ||
@@ -329,95 +365,135 @@ class _LessonTile extends StatelessWidget {
           'Estás viendo el progreso de otro estudiante — no puedes responder en su nombre.');
       return;
     }
+
     switch (lesson.type) {
       case LessonType.video:
-        VideoPlayerDialog.show(context, lesson.title, lesson.resourcePath);
+        VideoPlayerDialog.show(context, lesson);
       case LessonType.pdf:
       case LessonType.resource:
-        showAppSnack(
-            context, 'Material en course_resources/${lesson.resourcePath}');
+        _openResource(context);
       case LessonType.link:
-        showAppSnack(context, 'Enlace: ${lesson.resourcePath}');
+        _openExternal(context, lesson.externalUrl);
       case LessonType.quiz:
         showDialog(
             context: context,
-            builder: (_) => _QuizDialog(lesson: lesson, onPassed: onToggle));
+            builder: (_) => _QuizDialog(lesson: lesson, course: course));
       case LessonType.survey:
         showDialog(
             context: context,
-            builder: (_) => _SurveyDialog(
-                lesson: lesson, course: course, onDone: onToggle));
+            builder: (_) => _SurveyDialog(lesson: lesson, course: course));
       case LessonType.activity:
         showDialog(
             context: context,
             builder: (_) => _ActivityDialog(lesson: lesson, course: course));
     }
   }
+
+  /// Abre el PDF o recurso pidiendo su URL firmada.
+  ///
+  /// La firma la emite el servidor tras comprobar que esta persona puede leer
+  /// esa key: un archivo de un curso ajeno responde 404 y acá se dice, en vez
+  /// de abrir una pestaña en blanco.
+  Future<void> _openResource(BuildContext context) async {
+    final key = lesson.resourceS3Key;
+    if (key == null || key.isEmpty) {
+      showAppSnack(context, 'Esta lección todavía no tiene material cargado.');
+      return;
+    }
+    final data = context.read<DataProvider>();
+    try {
+      final url = await data.resolveFileUrl(key);
+      if (context.mounted) _openExternal(context, url);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message);
+    }
+  }
+
+  Future<void> _openExternal(BuildContext context, String? url) async {
+    final uri = url == null ? null : Uri.tryParse(url);
+    if (uri == null) {
+      showAppSnack(context, 'Esta lección no tiene un enlace válido.');
+      return;
+    }
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      showAppSnack(context, 'No se pudo abrir el enlace.');
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Quiz con 5 tipos de pregunta y puntaje automático
+// Quiz
 // ---------------------------------------------------------------------------
 
+/// Quiz con los cinco tipos de pregunta.
+///
+/// **La corrección la hace el servidor.** La clave de respuestas ya no viaja
+/// al navegador —antes venía dentro del curso y cualquiera podía leerla desde
+/// las herramientas de desarrollo— así que acá no hay nada que comparar: se
+/// mandan las respuestas y vuelve el puntaje con qué preguntas estuvieron
+/// bien.
 class _QuizDialog extends StatefulWidget {
   final Lesson lesson;
-  final VoidCallback onPassed;
-  const _QuizDialog({required this.lesson, required this.onPassed});
+  final Course course;
+  const _QuizDialog({required this.lesson, required this.course});
 
   @override
   State<_QuizDialog> createState() => _QuizDialogState();
 }
 
 class _QuizDialogState extends State<_QuizDialog> {
-  final Map<int, int> _choice = {}; // multiple / truefalse
-  final Map<int, String> _text = {}; // short / fill
-  final Map<int, List<String>> _order = {}; // order (estado actual)
-  int? _score;
+  /// Respuesta por id de pregunta: índice para `multiple`/`truefalse`, texto
+  /// para `short`/`fill`.
+  final Map<String, Object> _answers = {};
 
-  bool _answered(int i, QuizQuestion q) => switch (q.kind) {
-        'multiple' || 'truefalse' => _choice.containsKey(i),
-        'short' || 'fill' => (_text[i] ?? '').trim().isNotEmpty,
+  /// Orden actual de las opciones en las preguntas de tipo `order`.
+  final Map<String, List<String>> _order = {};
+
+  QuizResult? _result;
+  bool _sending = false;
+  ApiException? _error;
+
+  bool _isAnswered(QuizQuestion question) => switch (question.kind) {
+        'multiple' || 'truefalse' => _answers.containsKey(question.id),
+        'short' || 'fill' =>
+          ((_answers[question.id] as String?) ?? '').trim().isNotEmpty,
         'order' => true,
         _ => false,
       };
 
-  bool _correct(int i, QuizQuestion q) {
-    switch (q.kind) {
-      case 'multiple':
-      case 'truefalse':
-        return _choice[i] == q.answerIndex;
-      case 'short':
-      case 'fill':
-        final given = (_text[i] ?? '').trim().toLowerCase();
-        final expected = q.answerText.trim().toLowerCase();
-        return given == expected ||
-            (expected.isNotEmpty && given.contains(expected));
-      case 'order':
-        final current = _order[i] ?? q.options;
-        for (var k = 0; k < q.options.length; k++) {
-          if (current[k] != q.options[k]) return false;
-        }
-        return true;
-      default:
-        return false;
-    }
-  }
+  Future<void> _submit() async {
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      final result = await context
+          .read<DataProvider>()
+          .submitQuiz(widget.lesson.id, _answers);
+      if (!mounted) return;
+      setState(() => _result = result);
 
-  void _grade() {
-    final quiz = widget.lesson.quiz;
-    var correct = 0;
-    for (var i = 0; i < quiz.length; i++) {
-      if (_correct(i, quiz[i])) correct++;
+      // Aprobar el quiz marca la lección: es el mismo acto para quien lo
+      // resuelve. Se hace acá y no en el servidor porque completar una
+      // lección es reversible y de la persona, no del quiz.
+      if (result.passed) {
+        await context
+            .read<DataProvider>()
+            .toggleLessonIfPending(widget.lesson.id, widget.course.id);
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e);
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
-    setState(() => _score = (correct / quiz.length * 100).round());
-    if (_score! >= 60) widget.onPassed();
   }
 
   @override
   Widget build(BuildContext context) {
     final quiz = widget.lesson.quiz;
-    final allAnswered = List.generate(quiz.length, (i) => i)
-        .every((i) => _answered(i, quiz[i]));
+    final allAnswered = quiz.every(_isAnswered);
+    final result = _result;
 
     return AlertDialog(
       title: Text(widget.lesson.title, style: const TextStyle(fontSize: 18)),
@@ -427,23 +503,49 @@ class _QuizDialogState extends State<_QuizDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (quiz.isEmpty)
+                const Text('Este quiz todavía no tiene preguntas.',
+                    style: TextStyle(color: AppColors.textMuted)),
               for (var i = 0; i < quiz.length; i++) ...[
-                Text('${i + 1}. ${quiz[i].question}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text('${i + 1}. ${quiz[i].question}',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                    // Tras corregir se marca cada pregunta, pero nunca se
+                    // muestra cuál era la respuesta correcta.
+                    if (result != null)
+                      Icon(
+                          result.isCorrect(quiz[i].id)
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          size: 18,
+                          color: result.isCorrect(quiz[i].id)
+                              ? AppColors.statusGood
+                              : AppColors.statusCritical),
+                  ],
+                ),
                 const SizedBox(height: 4),
-                ..._questionWidget(i, quiz[i]),
+                ..._questionWidget(quiz[i]),
                 const SizedBox(height: 12),
               ],
-              if (_score != null)
+              if (result != null)
                 StatusChip(
-                  label: _score! >= 60
-                      ? '¡Aprobado! $_score%'
-                      : 'Puntaje: $_score% (mínimo 60%)',
-                  color: _score! >= 60
+                  label: result.passed
+                      ? '¡Aprobado! ${result.score}%'
+                      : 'Puntaje: ${result.score}% (mínimo 60%)',
+                  color: result.passed
                       ? AppColors.statusGood
                       : AppColors.statusCritical,
-                  icon: _score! >= 60 ? Icons.check : Icons.close,
+                  icon: result.passed ? Icons.check : Icons.close,
                 ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                ErrorBanner(_error!),
+              ],
             ],
           ),
         ),
@@ -453,45 +555,52 @@ class _QuizDialogState extends State<_QuizDialog> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cerrar')),
         ElevatedButton(
-          onPressed: allAnswered ? _grade : null,
-          child: const Text('Calificar'),
+          onPressed: allAnswered && !_sending && quiz.isNotEmpty
+              ? _submit
+              : null,
+          child: Text(_sending ? 'Calificando…' : 'Calificar'),
         ),
       ],
     );
   }
 
-  List<Widget> _questionWidget(int i, QuizQuestion q) {
-    switch (q.kind) {
+  List<Widget> _questionWidget(QuizQuestion question) {
+    // Tras corregir, las respuestas quedan fijas: cambiarlas no volvería a
+    // calificar y daría a entender que sí.
+    final locked = _result != null || _sending;
+
+    switch (question.kind) {
       case 'multiple':
         return [
-          for (var o = 0; o < q.options.length; o++)
+          for (var o = 0; o < question.options.length; o++)
             RadioListTile<int>(
               dense: true,
-              title: Text(q.options[o],
+              title: Text(question.options[o],
                   style: const TextStyle(fontSize: 13)),
               value: o,
-              groupValue: _choice[i],
+              // ignore: deprecated_member_use
+              groupValue: _answers[question.id] as int?,
               activeColor: AppColors.gold,
-              onChanged: (v) => setState(() => _choice[i] = v!),
+              // ignore: deprecated_member_use
+              onChanged: locked
+                  ? null
+                  : (v) => setState(() => _answers[question.id] = v!),
             ),
         ];
       case 'truefalse':
         return [
-          Row(
+          Wrap(
+            spacing: 8,
             children: [
-              ChoiceChip(
-                label: const Text('Verdadero'),
-                selected: _choice[i] == 0,
-                selectedColor: AppColors.gold.withValues(alpha: 0.25),
-                onSelected: (_) => setState(() => _choice[i] = 0),
-              ),
-              const SizedBox(width: 8),
-              ChoiceChip(
-                label: const Text('Falso'),
-                selected: _choice[i] == 1,
-                selectedColor: AppColors.gold.withValues(alpha: 0.25),
-                onSelected: (_) => setState(() => _choice[i] = 1),
-              ),
+              for (final (value, label) in [(0, 'Verdadero'), (1, 'Falso')])
+                ChoiceChip(
+                  label: Text(label),
+                  selected: _answers[question.id] == value,
+                  selectedColor: AppColors.gold.withValues(alpha: 0.25),
+                  onSelected: locked
+                      ? null
+                      : (_) => setState(() => _answers[question.id] = value),
+                ),
             ],
           ),
         ];
@@ -499,18 +608,19 @@ class _QuizDialogState extends State<_QuizDialog> {
       case 'fill':
         return [
           TextField(
+            enabled: !locked,
             decoration: InputDecoration(
-              hintText: q.kind == 'fill'
+              hintText: question.kind == 'fill'
                   ? 'Completa la frase…'
                   : 'Tu respuesta…',
               isDense: true,
             ),
-            onChanged: (v) => setState(() => _text[i] = v),
+            onChanged: (v) => setState(() => _answers[question.id] = v),
           ),
         ];
       case 'order':
-        final current = _order.putIfAbsent(
-            i, () => [...q.options]..shuffle());
+        final current =
+            _order.putIfAbsent(question.id, () => [...question.options]..shuffle());
         return [
           const Text('Usa las flechas para ordenar:',
               style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
@@ -519,10 +629,10 @@ class _QuizDialogState extends State<_QuizDialog> {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
                 children: [
-                  Container(
+                  SizedBox(
                     width: 24,
-                    alignment: Alignment.center,
                     child: Text('${o + 1}',
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: AppColors.gold,
                             fontWeight: FontWeight.w700)),
@@ -541,23 +651,15 @@ class _QuizDialogState extends State<_QuizDialog> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.arrow_upward, size: 15),
-                    onPressed: o == 0
+                    onPressed: o == 0 || locked
                         ? null
-                        : () => setState(() {
-                              final tmp = current[o - 1];
-                              current[o - 1] = current[o];
-                              current[o] = tmp;
-                            }),
+                        : () => setState(() => _swap(question.id, o, o - 1)),
                   ),
                   IconButton(
                     icon: const Icon(Icons.arrow_downward, size: 15),
-                    onPressed: o == current.length - 1
+                    onPressed: o == current.length - 1 || locked
                         ? null
-                        : () => setState(() {
-                              final tmp = current[o + 1];
-                              current[o + 1] = current[o];
-                              current[o] = tmp;
-                            }),
+                        : () => setState(() => _swap(question.id, o, o + 1)),
                   ),
                 ],
               ),
@@ -566,6 +668,14 @@ class _QuizDialogState extends State<_QuizDialog> {
       default:
         return const [];
     }
+  }
+
+  void _swap(String questionId, int a, int b) {
+    final list = _order[questionId]!;
+    final tmp = list[a];
+    list[a] = list[b];
+    list[b] = tmp;
+    _answers[questionId] = list.join('|');
   }
 }
 
@@ -576,16 +686,49 @@ class _QuizDialogState extends State<_QuizDialog> {
 class _SurveyDialog extends StatefulWidget {
   final Lesson lesson;
   final Course course;
-  final VoidCallback onDone;
-  const _SurveyDialog(
-      {required this.lesson, required this.course, required this.onDone});
+  const _SurveyDialog({required this.lesson, required this.course});
 
   @override
   State<_SurveyDialog> createState() => _SurveyDialogState();
 }
 
 class _SurveyDialogState extends State<_SurveyDialog> {
-  final Map<int, String> _answers = {};
+  final Map<String, String> _answers = {};
+  bool _sending = false;
+  ApiException? _error;
+
+  Future<void> _send() async {
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    final data = context.read<DataProvider>();
+    final body = [
+      for (final question in widget.lesson.quiz)
+        '${question.question}: ${_answers[question.id] ?? '—'}',
+    ].join('\n');
+
+    try {
+      await data.createSubmission(
+        courseId: widget.course.id,
+        lessonId: widget.lesson.id,
+        taskName: 'Encuesta: ${widget.lesson.title}',
+        comment: body,
+      );
+      // Responder la encuesta la da por vista.
+      await data.toggleLessonIfPending(widget.lesson.id, widget.course.id);
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessCheck(context, '¡Gracias por responder!');
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -599,52 +742,34 @@ class _SurveyDialogState extends State<_SurveyDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Tu opinión nos ayuda a mejorar 💛',
-                  style: TextStyle(
-                      color: AppColors.textMuted, fontSize: 13)),
+                  style:
+                      TextStyle(color: AppColors.textMuted, fontSize: 13)),
               const SizedBox(height: 12),
               for (var i = 0; i < questions.length; i++) ...[
                 Text('${i + 1}. ${questions[i].question}',
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 TextField(
+                  enabled: !_sending,
                   maxLines: 2,
                   decoration: const InputDecoration(
                       hintText: 'Tu respuesta…', isDense: true),
-                  onChanged: (v) => _answers[i] = v,
+                  onChanged: (v) => _answers[questions[i].id] = v,
                 ),
                 const SizedBox(height: 12),
               ],
+              if (_error != null) ErrorBanner(_error!),
             ],
           ),
         ),
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: _sending ? null : () => Navigator.pop(context),
             child: const Text('Cancelar')),
         ElevatedButton(
-          onPressed: () async {
-            final data = context.read<DataProvider>();
-            final student = context.read<AuthProvider>().currentUser!;
-            final body = [
-              for (var i = 0; i < questions.length; i++)
-                '${questions[i].question}: ${_answers[i] ?? '—'}'
-            ].join('\n');
-            await data.saveSubmission(Submission(
-              id: data.newId('sub'),
-              courseId: widget.course.id,
-              studentId: student.id,
-              lessonId: widget.lesson.id,
-              taskName: 'Encuesta: ${widget.lesson.title}',
-              comment: body,
-            ));
-            widget.onDone();
-            if (context.mounted) {
-              Navigator.pop(context);
-              showSuccessCheck(context, '¡Gracias por responder!');
-            }
-          },
-          child: const Text('Enviar'),
+          onPressed: _sending ? null : _send,
+          child: Text(_sending ? 'Enviando…' : 'Enviar'),
         ),
       ],
     );
@@ -652,7 +777,7 @@ class _SurveyDialogState extends State<_SurveyDialog> {
 }
 
 // ---------------------------------------------------------------------------
-// Actividad (entregable con requisitos y rúbrica)
+// Actividad
 // ---------------------------------------------------------------------------
 
 class _ActivityDialog extends StatelessWidget {
@@ -662,16 +787,14 @@ class _ActivityDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final a = lesson.activity ?? ActivityConfig();
+    final activity = lesson.activity ?? const ActivityConfig();
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
-    final mySubmission = data
-        .submissionsForStudent(student.id)
+    final mine = (data.submissions.valueOrNull ?? const <Submission>[])
         .where((s) => s.lessonId == lesson.id)
         .toList();
 
     final deadline =
-        a.deadline.isEmpty ? null : DateTime.tryParse(a.deadline);
+        activity.deadline == null ? null : DateTime.tryParse(activity.deadline!);
     final overdue = deadline != null && DateTime.now().isAfter(deadline);
 
     return AlertDialog(
@@ -683,8 +806,8 @@ class _ActivityDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (a.description.isNotEmpty) ...[
-                Text(a.description,
+              if (activity.description.isNotEmpty) ...[
+                Text(activity.description,
                     style: const TextStyle(fontSize: 14, height: 1.5)),
                 const SizedBox(height: 12),
               ],
@@ -701,55 +824,45 @@ class _ActivityDialog extends StatelessWidget {
                           : AppColors.statusWarning,
                       icon: Icons.schedule,
                     ),
-                  if (a.requiresFile)
+                  if (activity.requiresFile)
                     const StatusChip(
                         label: 'Archivo obligatorio',
                         color: AppColors.slateLight,
                         icon: Icons.attach_file),
-                  if (a.requiresText)
+                  if (activity.requiresText)
                     const StatusChip(
                         label: 'Texto obligatorio',
                         color: AppColors.slateLight,
                         icon: Icons.notes),
-                  if (a.allowedTypes.isNotEmpty)
-                    StatusChip(
-                        label: a.allowedTypes.join(' / '),
-                        color: AppColors.slateLight,
-                        icon: Icons.category_outlined),
                   StatusChip(
-                    label: switch (a.gradingMode) {
-                      'passfail' => 'Aprobado / Reprobado',
-                      'review' => 'Solo revisión',
-                      _ => 'Puntaje 0–100',
-                    },
+                    label: GradingMode.label(activity.gradingMode),
                     color: AppColors.gold,
                     icon: Icons.grade_outlined,
                   ),
                 ],
               ),
-              if (a.rubric.isNotEmpty) ...[
+              if (activity.rubric.isNotEmpty) ...[
                 const SectionTitle('Rúbrica de evaluación'),
-                for (final r in a.rubric)
+                for (final item in activity.rubric)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.rule,
-                            size: 14, color: AppColors.gold),
+                        const Icon(Icons.rule, size: 14, color: AppColors.gold),
                         const SizedBox(width: 8),
                         Expanded(
-                            child: Text(r['criterion'] as String,
+                            child: Text(item.criterion,
                                 style: const TextStyle(fontSize: 13))),
-                        Text('${r['points']} pts',
+                        Text('${item.points} pts',
                             style: const TextStyle(
                                 color: AppColors.textMuted, fontSize: 12)),
                       ],
                     ),
                   ),
               ],
-              if (mySubmission.isNotEmpty) ...[
+              if (mine.isNotEmpty) ...[
                 const SectionTitle('Tu entrega'),
-                for (final s in mySubmission)
+                for (final submission in mine)
                   HoverCard(
                     padding: const EdgeInsets.all(12),
                     child: Column(
@@ -760,18 +873,30 @@ class _ActivityDialog extends StatelessWidget {
                             Expanded(
                               child: Text(
                                   DateFormat('d MMM yyyy, h:mm a')
-                                      .format(s.date),
+                                      .format(submission.submittedAt),
                                   style: const TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 12)),
                             ),
-                            _resultChip(s, a.gradingMode),
+                            StatusChip(
+                              label: submission.gradeLabel,
+                              color: submission.isGraded
+                                  ? (GradingMode.isPassing(submission.grade,
+                                          submission.gradingMode)
+                                      ? AppColors.statusGood
+                                      : AppColors.statusCritical)
+                                  : AppColors.statusWarning,
+                              icon: submission.isGraded
+                                  ? Icons.grade
+                                  : Icons.hourglass_empty,
+                            ),
                           ],
                         ),
-                        if (s.feedback.isNotEmpty)
+                        if (submission.feedback.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
-                            child: Text('Retroalimentación: ${s.feedback}',
+                            child: Text(
+                                'Retroalimentación: ${submission.feedback}',
                                 style: const TextStyle(
                                     color: AppColors.gold, fontSize: 13)),
                           ),
@@ -789,346 +914,383 @@ class _ActivityDialog extends StatelessWidget {
             child: const Text('Cerrar')),
         ElevatedButton.icon(
           icon: const Icon(Icons.upload_file, size: 16),
-          label: Text(
-              mySubmission.isEmpty ? 'Entregar actividad' : 'Nueva entrega'),
+          label: Text(mine.isEmpty ? 'Entregar actividad' : 'Nueva entrega'),
           onPressed: () {
             Navigator.pop(context);
-            submitActivity(context, course, lesson, a);
+            showSubmitActivityDialog(context, course, lesson, activity);
           },
         ),
       ],
     );
   }
-
-  Widget _resultChip(Submission s, String mode) {
-    if (s.grade == null) {
-      return const StatusChip(
-          label: 'En revisión',
-          color: AppColors.statusWarning,
-          icon: Icons.hourglass_empty);
-    }
-    return switch (mode) {
-      'passfail' => s.grade! > 0
-          ? const StatusChip(
-              label: 'Aprobado',
-              color: AppColors.statusGood,
-              icon: Icons.check)
-          : const StatusChip(
-              label: 'Reprobado',
-              color: AppColors.statusCritical,
-              icon: Icons.close),
-      _ => StatusChip(
-          label: '${s.grade!.round()}/100',
-          color: s.grade! >= 60
-              ? AppColors.statusGood
-              : AppColors.statusCritical,
-          icon: Icons.grade),
-    };
-  }
 }
 
-/// Diálogo de entrega de actividad con validaciones según la configuración.
-Future<void> submitActivity(BuildContext context, Course course,
-    Lesson lesson, ActivityConfig config) async {
-  final data = context.read<DataProvider>();
-  final student = context.read<AuthProvider>().currentUser!;
-  final commentCtrl = TextEditingController();
-  final files = <String>[];
-  String? error;
-
-  await showDialog<void>(
+/// Entregar una actividad, con las validaciones de su configuración.
+Future<void> showSubmitActivityDialog(BuildContext context, Course course,
+    Lesson lesson, ActivityConfig config) {
+  return showDialog<void>(
     context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setState) => AlertDialog(
-        title: Text('Entregar: ${lesson.title}',
-            style: const TextStyle(fontSize: 18)),
-        content: SizedBox(
-          width: 460,
+    builder: (_) =>
+        _SubmitDialog(course: course, lesson: lesson, config: config),
+  );
+}
+
+class _SubmitDialog extends StatefulWidget {
+  final Course course;
+  final Lesson lesson;
+  final ActivityConfig config;
+  const _SubmitDialog(
+      {required this.course, required this.lesson, required this.config});
+
+  @override
+  State<_SubmitDialog> createState() => _SubmitDialogState();
+}
+
+class _SubmitDialogState extends State<_SubmitDialog> {
+  final _comment = TextEditingController();
+  final List<UploadedFile> _files = [];
+  bool _sending = false;
+  ApiException? _error;
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (widget.config.requiresText && _comment.text.trim().isEmpty) {
+      setState(() => _error = const ValidationError(
+          'Esta actividad requiere una respuesta escrita.'));
+      return;
+    }
+    if (widget.config.requiresFile && _files.isEmpty) {
+      setState(() => _error = const ValidationError(
+          'Esta actividad requiere adjuntar un archivo.'));
+      return;
+    }
+
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      final data = context.read<DataProvider>();
+      await data.createSubmission(
+        courseId: widget.course.id,
+        lessonId: widget.lesson.id,
+        taskName: widget.lesson.title,
+        comment: _comment.text.trim(),
+        files: _files.map((f) => f.toJson()).toList(),
+      );
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessCheck(context, 'Actividad entregada ✓');
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Entregar: ${widget.lesson.title}',
+          style: const TextStyle(fontSize: 18)),
+      content: SizedBox(
+        width: 460,
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
-                controller: commentCtrl,
+                controller: _comment,
+                enabled: !_sending,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: config.requiresText
+                  labelText: widget.config.requiresText
                       ? 'Tu respuesta (obligatoria)'
                       : 'Comentario (opcional)',
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.attach_file, size: 16),
-                    label: Text(config.requiresFile
-                        ? 'Adjuntar archivo (obligatorio)'
-                        : 'Adjuntar archivo'),
-                    onPressed: files.length >= config.maxFiles
-                        ? null
-                        : () async {
-                            final result = await FilePicker.pickFiles();
-                            if (result != null) {
-                              setState(() => files.add(
-                                  result.files.single.path ??
-                                      result.files.single.name));
-                            }
-                          },
-                  ),
-                  const SizedBox(width: 10),
-                  Text('${files.length}/${config.maxFiles}',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
-                ],
+              FileUploadField(
+                purpose: 'submission',
+                maxFiles: widget.config.maxFiles,
+                files: _files,
+                enabled: !_sending,
+                onChanged: () => setState(() {}),
               ),
-              for (final f in files)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.insert_drive_file_outlined,
-                          size: 14, color: AppColors.gold),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(f.split('/').last,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12)),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 14),
-                        onPressed: () => setState(() => files.remove(f)),
-                      ),
-                    ],
-                  ),
-                ),
-              if (config.allowedTypes.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: Text(
-                      'Tipos aceptados: ${config.allowedTypes.join(', ')}',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
-                ),
-              if (error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(error!,
-                      style: const TextStyle(
-                          color: AppColors.statusCritical, fontSize: 13)),
-                ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                ErrorBanner(_error!),
+              ],
             ],
           ),
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
-              // Validaciones según la configuración de la actividad
-              if (config.requiresText &&
-                  commentCtrl.text.trim().isEmpty) {
-                setState(() =>
-                    error = 'Esta actividad requiere una respuesta escrita.');
-                return;
-              }
-              if (config.requiresFile && files.isEmpty) {
-                setState(() =>
-                    error = 'Esta actividad requiere adjuntar un archivo.');
-                return;
-              }
-              await data.saveSubmission(Submission(
-                id: data.newId('sub'),
-                courseId: course.id,
-                studentId: student.id,
-                lessonId: lesson.id,
-                taskName: lesson.title,
-                comment: commentCtrl.text.trim(),
-                filePath: files.join(' | '),
-              ));
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (context.mounted) {
-                showSuccessCheck(context, 'Actividad entregada ✓');
-              }
-            },
-            child: const Text('Enviar'),
-          ),
-        ],
       ),
-    ),
-  );
+      actions: [
+        TextButton(
+            onPressed: _sending ? null : () => Navigator.pop(context),
+            child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: _sending ? null : _send,
+          child: Text(_sending ? 'Enviando…' : 'Enviar'),
+        ),
+      ],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Entregas libres del curso
+// Entregas del curso
 // ---------------------------------------------------------------------------
 
 class _SubmissionsSection extends StatelessWidget {
   final Course course;
-  final AppUser student;
   final List<Submission> submissions;
   final bool readOnly;
-  const _SubmissionsSection(
-      {required this.course,
-      required this.student,
-      required this.submissions,
-      this.readOnly = false});
+  const _SubmissionsSection({
+    required this.course,
+    required this.submissions,
+    required this.readOnly,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final s in submissions)
+        if (submissions.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text('Todavía no hiciste ninguna entrega en este curso.',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          ),
+        for (final submission in submissions)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: HoverCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(s.taskName,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700)),
-                      ),
-                      if (s.grade != null)
-                        StatusChip(
-                            label: s.grade! > 5
-                                ? '${s.grade!.round()}/100'
-                                : 'Nota: ${s.grade}',
-                            color: (s.grade! > 5
-                                    ? s.grade! >= 60
-                                    : s.grade! >= 3)
-                                ? AppColors.statusGood
-                                : AppColors.statusCritical,
-                            icon: Icons.grade)
-                      else
-                        const StatusChip(
-                            label: 'Sin calificar',
-                            color: AppColors.statusWarning,
-                            icon: Icons.hourglass_empty),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(s.comment,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
-                  if (s.filePath.isNotEmpty)
-                    Text('Archivo: ${s.filePath}',
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 12)),
-                  if (s.feedback.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text('Retroalimentación: ${s.feedback}',
-                        style: const TextStyle(
-                            color: AppColors.gold, fontSize: 13)),
-                  ],
-                  Text(DateFormat('d MMM yyyy').format(s.date),
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
-                ],
-              ),
-            ),
+            child: _SubmissionCard(submission: submission),
           ),
         if (!readOnly) ...[
           const SizedBox(height: 8),
           ElevatedButton.icon(
             icon: const Icon(Icons.upload_file, size: 18),
             label: const Text('Nueva entrega libre'),
-            onPressed: () => _newSubmission(context),
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => _FreeSubmissionDialog(course: course),
+            ),
           ),
         ],
       ],
     );
   }
+}
 
-  Future<void> _newSubmission(BuildContext context) async {
-    final data = context.read<DataProvider>();
-    final taskCtrl = TextEditingController();
-    final commentCtrl = TextEditingController();
-    String filePath = '';
+class _SubmissionCard extends StatelessWidget {
+  final Submission submission;
+  const _SubmissionCard({required this.submission});
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Nueva entrega', style: TextStyle(fontSize: 18)),
-          content: SizedBox(
-            width: 440,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                    controller: taskCtrl,
-                    decoration:
-                        const InputDecoration(labelText: 'Nombre de la tarea')),
-                const SizedBox(height: 12),
-                TextField(
-                    controller: commentCtrl,
-                    maxLines: 3,
-                    decoration:
-                        const InputDecoration(labelText: 'Comentario')),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.attach_file, size: 16),
-                      label: const Text('Adjuntar archivo'),
-                      onPressed: () async {
-                        final result = await FilePicker.pickFiles();
-                        if (result != null) {
-                          setState(() => filePath =
-                              result.files.single.path ??
-                                  result.files.single.name);
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        filePath.isEmpty
-                            ? 'Sin archivo'
-                            : filePath.split('/').last,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return HoverCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(submission.taskName,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+              ),
+              // La nota se muestra en SU escala: 100 no significa lo mismo en
+              // `passfail` que en `points100`.
+              StatusChip(
+                label: submission.gradeLabel,
+                color: submission.isGraded
+                    ? (GradingMode.isPassing(
+                            submission.grade, submission.gradingMode)
+                        ? AppColors.statusGood
+                        : AppColors.statusCritical)
+                    : AppColors.statusWarning,
+                icon: submission.isGraded
+                    ? Icons.grade
+                    : Icons.hourglass_empty,
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () async {
-                if (taskCtrl.text.trim().isEmpty) return;
-                await data.saveSubmission(Submission(
-                  id: data.newId('sub'),
-                  courseId: course.id,
-                  studentId: student.id,
-                  taskName: taskCtrl.text.trim(),
-                  comment: commentCtrl.text.trim(),
-                  filePath: filePath,
-                ));
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (context.mounted) {
-                  showSuccessCheck(context, 'Entrega enviada ✓');
-                }
-              },
-              child: const Text('Enviar'),
+          if (submission.comment.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(submission.comment,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13)),
+          ],
+          for (final file in submission.files)
+            _AttachmentRow(file: file),
+          if (submission.feedback.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text('Retroalimentación: ${submission.feedback}',
+                style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+          ],
+          Text(DateFormat('d MMM yyyy').format(submission.submittedAt),
+              style: const TextStyle(
+                  color: AppColors.textMuted, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Un adjunto, que se abre pidiendo su URL firmada al servidor.
+class _AttachmentRow extends StatelessWidget {
+  final SubmissionFile file;
+  const _AttachmentRow({required this.file});
+
+  Future<void> _open(BuildContext context) async {
+    final data = context.read<DataProvider>();
+    try {
+      final url = await data.resolveFileUrl(file.s3Key);
+      final uri = Uri.tryParse(url);
+      if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: InkWell(
+        onTap: () => _open(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.insert_drive_file_outlined,
+                size: 14, color: AppColors.gold),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(file.fileName,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline)),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FreeSubmissionDialog extends StatefulWidget {
+  final Course course;
+  const _FreeSubmissionDialog({required this.course});
+
+  @override
+  State<_FreeSubmissionDialog> createState() => _FreeSubmissionDialogState();
+}
+
+class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
+  final _task = TextEditingController();
+  final _comment = TextEditingController();
+  final List<UploadedFile> _files = [];
+  bool _sending = false;
+  ApiException? _error;
+
+  @override
+  void dispose() {
+    _task.dispose();
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (_task.text.trim().isEmpty) {
+      setState(() => _error =
+          const ValidationError('Ponle un nombre a la entrega.'));
+      return;
+    }
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await context.read<DataProvider>().createSubmission(
+            courseId: widget.course.id,
+            taskName: _task.text.trim(),
+            comment: _comment.text.trim(),
+            files: _files.map((f) => f.toJson()).toList(),
+          );
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSuccessCheck(context, 'Entrega enviada ✓');
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _error = e;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Nueva entrega', style: TextStyle(fontSize: 18)),
+      content: SizedBox(
+        width: 440,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                  controller: _task,
+                  enabled: !_sending,
+                  decoration: const InputDecoration(
+                      labelText: 'Nombre de la tarea')),
+              const SizedBox(height: 12),
+              TextField(
+                  controller: _comment,
+                  enabled: !_sending,
+                  maxLines: 3,
+                  decoration:
+                      const InputDecoration(labelText: 'Comentario')),
+              const SizedBox(height: 12),
+              FileUploadField(
+                purpose: 'submission',
+                maxFiles: 3,
+                files: _files,
+                enabled: !_sending,
+                onChanged: () => setState(() {}),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                ErrorBanner(_error!),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: _sending ? null : () => Navigator.pop(context),
+            child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: _sending ? null : _send,
+          child: Text(_sending ? 'Enviando…' : 'Enviar'),
+        ),
+      ],
     );
   }
 }

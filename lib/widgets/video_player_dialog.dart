@@ -1,67 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../services/video_source_io.dart'
-    if (dart.library.js_interop) '../services/video_source_web.dart';
+import '../models/models.dart';
 import '../utils/app_theme.dart';
 
-/// Reproductor de video para lecciones locales (carpeta `course_resources/`).
+/// Reproductor de video de una lección.
 ///
-/// En escritorio lee el archivo directamente; en web lo pide al servidor de
-/// desarrollo (que sirve `web/course_resources/`). Si el recurso no existe o
-/// es un dummy del seed, muestra un placeholder elegante en lugar de fallar.
-/// Al migrar a AWS S3 este widget pasará a recibir URLs firmadas.
-class VideoPlayerDialog extends StatefulWidget {
-  final String title;
-  final String resourcePath; // relativo a course_resources/
-  const VideoPlayerDialog(
-      {super.key, required this.title, required this.resourcePath});
+/// El video tiene dos orígenes posibles y **no se tratan igual**:
+///
+/// - **`external`** — un enlace de YouTube o Vimeo. Se abre en una pestaña
+///   nueva. No se embebe en un iframe porque ambos servicios exigen sus
+///   propios reproductores y políticas de cookies; abrirlo aparte es lo que
+///   funciona hoy en todos los navegadores sin pelearse con el CSP.
+///
+/// - **`uploaded`** — un archivo propio en S3. **Todavía no se puede
+///   reproducir**: servirlo necesita la distribución de CloudFront con URLs
+///   firmadas (Fase 6). No se sirve por URL firmada de S3 a propósito — es una
+///   decisión de costo, y la API rechaza esas keys en `/files/download-url`.
+///   Hasta entonces se dice exactamente eso, en vez de mostrar un reproductor
+///   que se queda cargando para siempre.
+class VideoPlayerDialog extends StatelessWidget {
+  final Lesson lesson;
+  const VideoPlayerDialog({super.key, required this.lesson});
 
-  static Future<void> show(
-      BuildContext context, String title, String resourcePath) {
+  static Future<void> show(BuildContext context, Lesson lesson) {
     return showDialog(
       context: context,
-      builder: (_) =>
-          VideoPlayerDialog(title: title, resourcePath: resourcePath),
+      builder: (_) => VideoPlayerDialog(lesson: lesson),
     );
-  }
-
-  @override
-  State<VideoPlayerDialog> createState() => _VideoPlayerDialogState();
-}
-
-class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
-  VideoPlayerController? _controller;
-  bool _failed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    try {
-      final c = await createCourseVideoController(widget.resourcePath);
-      if (c == null) {
-        if (mounted) setState(() => _failed = true);
-        return;
-      }
-      if (!mounted) {
-        await c.dispose();
-        return;
-      }
-      setState(() => _controller = c);
-      await c.play();
-    } catch (_) {
-      if (mounted) setState(() => _failed = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
   }
 
   @override
@@ -77,11 +43,10 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.play_circle_outline,
-                      color: AppColors.gold),
+                  const Icon(Icons.play_circle_outline, color: AppColors.gold),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(widget.title,
+                    child: Text(lesson.title,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w700)),
                   ),
@@ -92,48 +57,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                 ],
               ),
               const SizedBox(height: 12),
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: _failed
-                    ? _placeholder()
-                    : _controller == null
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                                color: AppColors.gold))
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: VideoPlayer(_controller!),
-                          ),
-              ),
-              if (_controller != null) ...[
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(_controller!.value.isPlaying
-                          ? Icons.pause
-                          : Icons.play_arrow),
-                      color: AppColors.gold,
-                      onPressed: () => setState(() {
-                        _controller!.value.isPlaying
-                            ? _controller!.pause()
-                            : _controller!.play();
-                      }),
-                    ),
-                    Expanded(
-                      child: VideoProgressIndicator(
-                        _controller!,
-                        allowScrubbing: true,
-                        colors: const VideoProgressColors(
-                          playedColor: AppColors.gold,
-                          bufferedColor: AppColors.slateLight,
-                          backgroundColor: AppColors.surfaceAlt,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              AspectRatio(aspectRatio: 16 / 9, child: _body(context)),
             ],
           ),
         ),
@@ -141,7 +65,58 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     );
   }
 
-  Widget _placeholder() {
+  Widget _body(BuildContext context) {
+    if (lesson.isExternalVideo && lesson.videoUrl != null) {
+      return _Panel(
+        icon: Icons.open_in_new,
+        title: 'Ver el video',
+        message: 'Se abre en una pestaña nueva.',
+        action: ('Abrir video', () => _open(context, lesson.videoUrl!)),
+      );
+    }
+    if (lesson.isUploadedVideo) {
+      return const _Panel(
+        icon: Icons.cloud_off_outlined,
+        title: 'Reproducción no disponible todavía',
+        message: 'Este video está guardado en la plataforma, pero servirlo '
+            'necesita la distribución de CloudFront, que se configura en la '
+            'siguiente fase de despliegue.',
+      );
+    }
+    return const _Panel(
+      icon: Icons.videocam_off_outlined,
+      title: 'Esta lección todavía no tiene video',
+      message: 'Quien la creó aún no le cargó ninguno.',
+    );
+  }
+
+  Future<void> _open(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    final ok = uri != null &&
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir el enlace del video.')),
+      );
+    }
+  }
+}
+
+class _Panel extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final (String, VoidCallback)? action;
+
+  const _Panel({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.action,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceAlt,
@@ -151,23 +126,28 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.videocam_off_outlined,
-              size: 48, color: AppColors.textMuted),
+          Icon(icon, size: 48, color: AppColors.textMuted),
           const SizedBox(height: 12),
-          const Text('Video de demostración',
-              style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600)),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              'El archivo course_resources/${widget.resourcePath} es un '
-              'recurso de ejemplo. Reemplázalo por un .mp4 real para verlo aquí.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-            ),
+            child: Text(message,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 12)),
           ),
+          if (action != null) ...[
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.play_arrow, size: 18),
+              label: Text(action!.$1),
+              onPressed: action!.$2,
+            ),
+          ],
         ],
       ),
     );

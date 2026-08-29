@@ -488,6 +488,60 @@ paths:
                 durationSec: { type: integer }
       responses: { '200': { description: Lección actualizada } }
 
+  /lessons/{id}/quiz-attempt:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [lessons]
+      summary: Resolver un quiz (lo califica el servidor)
+      description: |
+        **La corrección ocurre acá, nunca en el cliente.** `answer_index` y
+        `answer_text` no salen de la base en ninguna respuesta de la API: antes
+        el curso viajaba al navegador con la clave dentro, así que cualquiera
+        podía leerla desde las herramientas de desarrollo, y la nota que el
+        cliente reportaba se guardaba sin verificar.
+
+        Se devuelve **qué** preguntas estuvieron bien —eso es retroalimentación
+        legítima— pero no cuál era la respuesta de las falladas: si la
+        devolviera, bastaría con enviar un intento en blanco para obtener la
+        clave completa.
+
+        `multiple` y `truefalse` se corrigen por índice; `short` y `fill` por
+        texto, normalizando espacios, mayúsculas y tildes. `order` todavía no
+        se corrige automáticamente y cuenta como no respondida. Aprueba con 60.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  description: '`{ [questionId]: índice | texto }`'
+                  additionalProperties:
+                    oneOf: [{ type: integer }, { type: string }]
+      responses:
+        '200':
+          description: Resultado del intento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attemptId: { type: string, format: uuid }
+                  score: { type: integer, minimum: 0, maximum: 100 }
+                  passed: { type: boolean }
+                  correctCount: { type: integer }
+                  totalQuestions: { type: integer }
+                  correctness:
+                    type: object
+                    additionalProperties: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Solo un estudiante resuelve un quiz }
+        '404': { description: La lección no está entre sus cursos }
+        '409': { description: La lección no tiene preguntas configuradas }
+
   /progress/lessons/{lessonId}/toggle:
     parameters:
       - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }

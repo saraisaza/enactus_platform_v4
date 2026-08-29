@@ -208,8 +208,9 @@ describe('Flujo 3 — LXD construye un curso completo', () => {
     const urlSubida = await req(`/lessons/${leccionPropia}/video-upload-url`, token, {
       ...json({ contentType: 'video/mp4', sizeBytes: 180 * 1024 * 1024 }),
     });
-    // Sin S3 configurado en local, la validación pasa y falla la firma.
-    expect(urlSubida.status).toBe(503);
+    // 200 con bucket configurado, 503 sin él. Las dos son respuestas
+    // legítimas; lo que NUNCA debe pasar es que la validación falle.
+    expect([200, 503]).toContain(urlSubida.status);
 
     // El navegador habría subido a S3; se confirma con la key de la lección.
     const confirmada = await req(`/lessons/${leccionPropia}/video`, token, {

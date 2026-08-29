@@ -1,7 +1,7 @@
 import type { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { MAX_VIDEO_BYTES } from '../src/lib/s3';
+import { MAX_VIDEO_BYTES, isStorageConfigured } from '../src/lib/s3';
 import { resetRateLimits } from '../src/middleware/rate-limit';
 import { auth, json, login, makeTestApp } from './helpers/app';
 import { seedId, seedTestDatabase } from './helpers/db';
@@ -394,17 +394,39 @@ describe('URL de subida de video', () => {
     expect(res.status).toBe(403);
   });
 
-  it('con datos válidos llega hasta la firma (503 sin S3 configurado)', async () => {
-    // En local no hay bucket. Lo que se comprueba acá es que la validación
-    // pasó y el fallo es de CONFIGURACIÓN, no de datos — y que se dice qué
-    // falta en vez de devolver una URL falsa.
+  it('con datos válidos llega hasta la firma', async () => {
+    // Este es el único punto de la suite que depende de infraestructura: sin
+    // un bucket configurado no hay nada que firmar. Se afirman las dos ramas
+    // explícitamente en vez de dar por sentado el entorno — y la rama sin
+    // configurar exige que se diga QUÉ falta, no una URL falsa que reventaría
+    // recién cuando el navegador intente subir.
     const res = await req(`/lessons/${lessonId}/video-upload-url`, lxdToken, {
       ...json({ contentType: 'video/mp4', sizeBytes: 10 * 1024 * 1024 }),
     });
-    expect(res.status).toBe(503);
-    const b = await body<{ error: { code: string; message: string } }>(res);
-    expect(b.error.code).toBe('storage_not_configured');
-    expect(b.error.message).toContain('S3_BUCKET');
+
+    if (!isStorageConfigured()) {
+      expect(res.status).toBe(503);
+      const b = await body<{ error: { code: string; message: string } }>(res);
+      expect(b.error.code).toBe('storage_not_configured');
+      expect(b.error.message).toContain('S3_BUCKET');
+      return;
+    }
+
+    expect(res.status).toBe(200);
+    const b = await body<{
+      uploadUrl: string;
+      key: string;
+      expiresInSeconds: number;
+      method: string;
+    }>(res);
+    const url = new URL(b.uploadUrl);
+    expect(url.protocol).toBe('https:');
+    expect(url.host).toContain('s3');
+    // Es una URL FIRMADA de verdad, no un enlace armado a mano.
+    expect(url.searchParams.get('X-Amz-Signature')).toBeTruthy();
+    expect(url.searchParams.get('X-Amz-Expires')).toBe('900');
+    expect(b.key).toMatch(new RegExp(`^lessons/${lessonId}/.+\\.mp4$`));
+    expect(b.method).toBe('PUT');
   });
 
   it('la confirmación rechaza una key que no es de esta lección', async () => {

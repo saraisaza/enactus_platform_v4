@@ -698,12 +698,42 @@ GET  /admin/backup      → 16 usuarios, sin ningún "$2b$", 22 columnas
 GET  /admin/storage/video → 14 lecciones con video
 ```
 
-### Lo que NO está verificado
+### Subida de archivos: verificada de punta a punta contra AWS real ✅
 
-**La firma real de S3.** En local no hay bucket, así que lo probado es la
-validación previa (tipo, tamaño, rol) y el 503 de configuración. La firma se
-verifica en la Fase 6, con credenciales reales.
+Bucket `enactus-media-dev` (us-east-1), creado con acceso público bloqueado y
+CORS para `localhost:8080`, `localhost:3000` y `saraisaza.github.io` — sin ese
+CORS el `PUT` del navegador falla con un error de red que no dice nada útil.
 
-**Las URLs firmadas de CloudFront** para servir video todavía no existen: el
-esquema y los endpoints ya distinguen `external` de `uploaded`, pero la
-generación de la URL de reproducción va con la infraestructura (Fase 6).
+Los tres pasos, con un archivo real de 1 MB:
+
+```
+paso 1  POST /lessons/:id/video-upload-url
+        → key=lessons/<id>/<uuid>.mp4 · expira en 900s
+        → host=enactus-media-dev.s3.us-east-1.amazonaws.com
+paso 2  PUT directo del cliente a esa URL          → HTTP 200
+        head-object en el bucket                    → 1048576 bytes
+paso 3  POST /lessons/:id/video (confirmación)
+        → videoType=uploaded · videoSizeBytes=1048576
+
+y las validaciones siguen activas:
+        content-type video/quicktime → 400
+        archivo de 600 MB            → 413
+```
+
+El objeto de prueba se borró del bucket al terminar.
+
+Los tests que antes daban por sentado el 503 ahora **afirman las dos ramas
+explícitamente**: con bucket configurado exigen una URL firmada de verdad
+(`X-Amz-Signature` presente, `X-Amz-Expires=900`, key bajo `lessons/<id>/`);
+sin bucket, exigen que el 503 diga qué falta. La suite no depende de si quien
+la corre tiene AWS.
+
+### Lo que sigue sin verificar
+
+**Las URLs firmadas de CloudFront** para *servir* el video. El esquema y los
+endpoints ya distinguen `external` de `uploaded`, y la subida funciona, pero
+generar la URL de reproducción necesita una distribución de CloudFront con su
+key group — va en la Fase 6.
+
+Hasta entonces el video propio está guardado y es recuperable con credenciales,
+pero no hay forma de reproducirlo desde el cliente.

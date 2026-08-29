@@ -416,8 +416,9 @@ describe('/files/upload-url', () => {
         sizeBytes: 1024,
       }),
     });
-    // Pasa la validación de rol y de archivo; falla por falta de bucket.
-    expect(estudianteSubeEntrega.status).toBe(503);
+    // Pasó la validación de rol y de archivo. El resultado final depende de
+    // si hay bucket: 200 con URL firmada, 503 si falta configurarlo.
+    expect([200, 503]).toContain(estudianteSubeEntrega.status);
   });
 
   it('rechaza un tipo de archivo no permitido', async () => {

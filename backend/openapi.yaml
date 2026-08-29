@@ -58,8 +58,10 @@ tags:
     description: Evidencias, calendario, recursos y notificaciones
   - name: forum
     description: Foro de la comunidad Enactus
+  - name: users
+    description: Personas, con alcance por rol
   - name: files
-    description: URLs firmadas de subida
+    description: URLs firmadas de subida y lectura
   - name: admin
     description: Permisos, respaldo y métricas
 
@@ -208,6 +210,96 @@ paths:
       responses:
         '200': { description: Actualizado }
         '403': { $ref: '#/components/responses/Forbidden' }
+
+  /users:
+    get:
+      tags: [users]
+      summary: Personas visibles para quien pregunta
+      description: |
+        Este router no existía, y su ausencia mantenía sin migrar a cinco
+        portales: todos necesitan saber "quiénes son mis estudiantes" o "quién
+        es el mentor de este laboratorio". La versión con Hive lo resolvía
+        teniendo la tabla entera de usuarios en el navegador, con la contraseña
+        en texto plano.
+
+        **Cada rol ve solo a quien le corresponde**, con la misma regla que ya
+        usa el resto de la API para ese rol:
+
+        | Rol | Ve a |
+        |---|---|
+        | admin / superadmin | todas |
+        | asesor | las de su universidad |
+        | LXD | quienes tienen acceso a sus cursos |
+        | mentor | los estudiantes de sus laboratorios y los mentores que comparte |
+        | empresa | su gente y los estudiantes de los laboratorios que patrocina |
+        | donante | los estudiantes que apoya |
+        | estudiante / alumni | **nadie** — su equipo llega dentro del proyecto |
+
+        Un rol sin alcance recibe una página vacía, no un 403: el listado
+        existe para todos, su alcance simplemente está vacío. Y un filtro
+        NUNCA amplía el alcance.
+
+        Correo, teléfono y cédula solo salen para quien administra la
+        plataforma o acompaña a esa persona (admin, asesor, LXD, mentor); el
+        resto recibe la ficha recortada.
+      parameters:
+        - { name: role, in: query, schema: { type: string }, description: 'Uno o varios separados por coma' }
+        - { name: laboratoryId, in: query, schema: { type: string, format: uuid } }
+        - { name: groupId, in: query, schema: { type: string, format: uuid } }
+        - { name: companyId, in: query, schema: { type: string, format: uuid } }
+        - { name: q, in: query, schema: { type: string }, description: 'Busca por nombre' }
+      responses:
+        '200': { description: Página de personas }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [users]
+      summary: Crear una cuenta (solo admin/superadmin)
+      description: |
+        Un estudiante SIN tipo (`enactus` u `open_learning`) se rechaza con
+        409: es lo que separa los dos mundos en toda la API, y una cuenta sin
+        él quedaría donde ninguna regla de aislamiento aplica. Al revés
+        también: un rol que no es estudiante no lleva tipo.
+
+        Un admin **no** puede crear un superadmin — si pudiera, se ascendería
+        creando una cuenta y entrando con ella.
+
+        No acepta `canGradeOpenLearning` ni `canGradeEnactus`: esos se cambian
+        por `PATCH /admin/users/{id}/can-grade`, que deja rastro en
+        `audit_log`.
+      responses:
+        '201': { description: Cuenta creada }
+        '403': { description: Sin permiso, o un admin intentando crear un superadmin }
+        '409': { description: Correo repetido, o tipo de estudiante incoherente con el rol }
+
+  /users/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [users]
+      summary: Una persona
+      description: |
+        Cualquiera puede pedirse a sí mismo. Una persona fuera del alcance de
+        quien pregunta responde `404`, no `403`: un `403` ya confirmaría que
+        esa cuenta existe.
+      responses:
+        '200': { description: OK }
+        '404': { description: No existe, o está fuera del alcance }
+    patch:
+      tags: [users]
+      summary: Editar una cuenta (solo admin/superadmin)
+      responses:
+        '200': { description: Actualizada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Tipo de estudiante incoherente con el rol }
+    delete:
+      tags: [users]
+      summary: Eliminar una cuenta (borrado lógico, solo admin/superadmin)
+      description: |
+        Nadie puede eliminar su propia cuenta: es casi siempre un accidente, y
+        podría dejar la plataforma sin quien la administre. Queda en
+        `audit_log`.
+      responses:
+        '204': { description: Eliminada }
+        '409': { description: Es la propia cuenta de quien lo pide }
 
   /courses:
     get:

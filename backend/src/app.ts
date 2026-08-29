@@ -15,6 +15,7 @@ import {
   evidenceRoutes,
   notificationRoutes,
 } from './routes/content';
+import { userRoutes } from './routes/users';
 import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
 import { forumRoutes } from './routes/forum';
@@ -69,6 +70,7 @@ export function createApp(database: Database = defaultDb) {
   app.route('/auth', authRoutes);
   // Público: la portada se ve sin sesión.
   app.route('/site-content', siteRoutes);
+  app.route('/users', userRoutes);
   app.route('/courses', courseRoutes);
   // Dos routers en la misma base: uno maneja el módulo en sí, el otro sus
   // lecciones. Se separan por archivo para que `courses.ts` no tenga que

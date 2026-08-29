@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { env } from '../env';
@@ -96,6 +96,52 @@ export async function createUploadUrl(input: {
   });
 
   return { uploadUrl, key: input.key, expiresInSeconds: UPLOAD_URL_TTL_SECONDS };
+}
+
+/**
+ * Vigencia de la URL de lectura.
+ *
+ * Más larga que la de subida porque tiene que sobrevivir a que la persona deje
+ * la pestaña abierta un rato antes de abrir el archivo, y bastante más corta
+ * que la sesión: una URL firmada es un permiso que viaja suelto, sin token.
+ */
+const DOWNLOAD_URL_TTL_SECONDS = 3600; // 1 hora
+
+/**
+ * URL firmada de LECTURA para una key concreta.
+ *
+ * Quién puede leer qué **no se decide acá**: esta función solo firma. La
+ * autorización vive en `services/file-access.ts`, que resuelve la key contra la
+ * tabla que la referencia. Firmar sin ese paso equivale a publicar el bucket.
+ */
+export async function createDownloadUrl(input: {
+  key: string;
+  /** Nombre con el que se descarga. Sin esto el navegador usa el uuid. */
+  fileName?: string;
+}): Promise<{ url: string; expiresInSeconds: number }> {
+  if (!isStorageConfigured()) {
+    throw new AppError(
+      503,
+      'storage_not_configured',
+      'El almacenamiento de archivos no está configurado en este entorno (falta S3_BUCKET).',
+    );
+  }
+
+  const command = new GetObjectCommand({
+    Bucket: env.S3_BUCKET,
+    Key: input.key,
+    ...(input.fileName
+      ? {
+          ResponseContentDisposition: `inline; filename="${input.fileName.replace(/"/g, '')}"`,
+        }
+      : {}),
+  });
+
+  const url = await getSignedUrl(s3(), command, {
+    expiresIn: DOWNLOAD_URL_TTL_SECONDS,
+  });
+
+  return { url, expiresInSeconds: DOWNLOAD_URL_TTL_SECONDS };
 }
 
 /** Tope para documentos (evidencias, recursos, entregas). */

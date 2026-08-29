@@ -171,17 +171,25 @@ authRoutes.post('/logout', async (c) => {
 /**
  * Usuario de la sesión.
  *
- * Para estudiantes y alumni incluye su equipo: `groupId`, `projectId` y el rol
- * dentro del proyecto. Antes eso salía de `AppUser.extra['groupId']`, una
- * denormalización de Hive; ahora es un JOIN y viene con el propio usuario, así
- * la pantalla no tiene que adivinar a qué equipo pertenece quien mira.
+ * Para estudiantes y alumni incluye dos cosas que solo la propia persona
+ * puede ver de sí misma:
+ *
+ * - `team`: `groupId`, `projectId` y el rol dentro del proyecto. Antes eso
+ *   salía de `AppUser.extra['groupId']`, una denormalización de Hive; ahora es
+ *   un JOIN y viene con el propio usuario, así la pantalla no tiene que
+ *   adivinar a qué equipo pertenece quien mira.
+ * - `sponsorName`: el nombre de la empresa que lo patrocina. `companyId` por sí
+ *   solo no sirve para mostrarlo, y no existe —ni debería— un endpoint que le
+ *   permita a un estudiante leer el perfil de otra cuenta para resolverlo.
  */
 authRoutes.get('/me', requireAuth, async (c) => {
   const user = currentUser(c);
   const base = publicUser(user);
   if (user.role !== 'student' && user.role !== 'alumni') return c.json(base);
 
-  const [team] = await c.get('db').execute<{
+  const db = c.get('db');
+
+  const [team] = await db.execute<{
     groupId: string;
     groupName: string;
     projectId: string;
@@ -198,7 +206,17 @@ authRoutes.get('/me', requireAuth, async (c) => {
      limit 1
   `);
 
-  return c.json({ ...base, team: team ?? null });
+  let sponsorName: string | null = null;
+  if (user.companyId) {
+    const [sponsor] = await db
+      .select({ name: users.companyName })
+      .from(users)
+      .where(and(eq(users.id, user.companyId), isNull(users.deletedAt)))
+      .limit(1);
+    sponsorName = sponsor?.name || null;
+  }
+
+  return c.json({ ...base, team: team ?? null, sponsorName });
 });
 
 const profileSchema = z.object({
@@ -208,6 +226,15 @@ const profileSchema = z.object({
   city: z.string().trim().optional(),
   career: z.string().trim().optional(),
   profile: z.record(z.string(), z.unknown()).optional(),
+  // Solo una key bajo `avatars/`, que es donde `POST /files/upload-url` deja
+  // los avatares. Sin esta restricción alguien podría apuntar su foto de
+  // perfil a la key de una entrega ajena y leerla desde el visor de avatares.
+  avatarS3Key: z
+    .string()
+    .trim()
+    .regex(/^avatars\//, 'La foto de perfil debe venir de una subida de avatar.')
+    .nullable()
+    .optional(),
 });
 
 /**

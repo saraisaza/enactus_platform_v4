@@ -3,12 +3,14 @@ import { z } from 'zod';
 
 import {
   assertValidDocumentUpload,
+  createDownloadUrl,
   createUploadUrl,
   documentKeyFor,
 } from '../lib/s3';
 import { forbidden } from '../lib/errors';
 import { currentUser, requireAuth } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
+import { authorizeFileRead } from '../services/file-access';
 
 /**
  * URLs firmadas para archivos que NO son video (evidencias, recursos de
@@ -63,5 +65,41 @@ fileRoutes.post('/upload-url', async (c) => {
     ...signed,
     method: 'PUT',
     headers: { 'Content-Type': body.contentType },
+  });
+});
+
+const downloadBody = z.object({
+  key: z.string().trim().min(1, 'Falta la key del archivo.'),
+});
+
+/**
+ * URL firmada de LECTURA para un archivo ya subido.
+ *
+ * Sin esto el cliente puede guardar keys pero no mostrar nada: ni la foto de
+ * perfil, ni el PDF de una lección, ni el adjunto que entregó un estudiante.
+ *
+ * Quién puede leer qué lo decide `authorizeFileRead`, resolviendo la key
+ * contra la fila que la referencia — no contra su prefijo. Una key que ninguna
+ * tabla referencia responde 404, no 403: un 403 confirmaría que el objeto
+ * existe en el bucket.
+ *
+ * Es POST y no GET a propósito: así la key no queda en el log de acceso de
+ * API Gateway ni en el historial del navegador.
+ */
+fileRoutes.post('/download-url', async (c) => {
+  const user = currentUser(c);
+  const { key } = downloadBody.parse(await c.req.json());
+
+  const grant = await authorizeFileRead(c.get('db'), user, key);
+  const signed = await createDownloadUrl({
+    key: grant.key,
+    fileName: grant.fileName ?? undefined,
+  });
+
+  return c.json({
+    url: signed.url,
+    expiresInSeconds: signed.expiresInSeconds,
+    fileName: grant.fileName,
+    contentType: grant.contentType,
   });
 });

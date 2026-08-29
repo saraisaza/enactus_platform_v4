@@ -76,6 +76,15 @@ class AppUser {
 
   final DateTime? joinedAt;
 
+  /// Equipo y proyecto de esta persona. **Solo llega en `GET /auth/me`**, y
+  /// solo para estudiantes y alumni: es información de uno mismo, no de
+  /// terceros. En cualquier otro usuario es `null`.
+  final UserTeam? team;
+
+  /// Nombre de la empresa que la patrocina, resuelto por el servidor. Mismo
+  /// alcance que [team]: solo en `GET /auth/me`.
+  final String? sponsorName;
+
   const AppUser({
     required this.id,
     required this.name,
@@ -96,6 +105,8 @@ class AppUser {
     this.canGradeEnactus = false,
     this.profile = const {},
     this.joinedAt,
+    this.team,
+    this.sponsorName,
   });
 
   bool get isEnactusStudent => studentType == StudentType.enactus;
@@ -124,6 +135,10 @@ class AppUser {
         canGradeEnactus: (j['canGradeEnactus'] as bool?) ?? false,
         profile: Map<String, dynamic>.from(j['profile'] as Map? ?? const {}),
         joinedAt: _date(j['joinedAt']),
+        team: j['team'] == null
+            ? null
+            : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
+        sponsorName: j['sponsorName'] as String?,
       );
 
   Map<String, dynamic> toUpdateJson() => {
@@ -134,6 +149,33 @@ class AppUser {
         'career': career,
         'profile': profile,
       };
+}
+
+/// El equipo de una persona, tal como lo resuelve `GET /auth/me`.
+class UserTeam {
+  final String groupId;
+  final String groupName;
+  final String projectId;
+  final String projectName;
+  final String roleInProject;
+
+  const UserTeam({
+    required this.groupId,
+    required this.groupName,
+    required this.projectId,
+    required this.projectName,
+    this.roleInProject = 'member',
+  });
+
+  String get roleLabel => ProjectMemberRole.label(roleInProject);
+
+  factory UserTeam.fromJson(Map<String, dynamic> j) => UserTeam(
+        groupId: (j['groupId'] as String?) ?? '',
+        groupName: (j['groupName'] as String?) ?? '',
+        projectId: (j['projectId'] as String?) ?? '',
+        projectName: (j['projectName'] as String?) ?? '',
+        roleInProject: (j['roleInProject'] as String?) ?? 'member',
+      );
 }
 
 // ---------------------------------------------------------------------------

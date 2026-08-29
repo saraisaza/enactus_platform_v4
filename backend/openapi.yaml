@@ -162,9 +162,12 @@ paths:
       tags: [auth]
       summary: Usuario de la sesión
       description: |
-        Para estudiantes y alumni incluye `team` con su equipo y el rol dentro
-        del proyecto. Antes eso salía de `AppUser.extra['groupId']`, una
-        denormalización de Hive.
+        Para estudiantes y alumni agrega dos campos que solo la propia persona
+        puede ver de sí misma: `team` (equipo, proyecto y rol dentro del
+        proyecto — antes salía de `AppUser.extra['groupId']`, una
+        denormalización de Hive) y `sponsorName` (nombre de la empresa que la
+        patrocina; `companyId` por sí solo no sirve para mostrarlo, y no existe
+        un endpoint que le permita a un estudiante leer otra cuenta).
       responses:
         '200':
           description: OK
@@ -900,6 +903,57 @@ paths:
         '400': { description: Tipo de archivo no permitido }
         '403': { description: Ese rol no puede subir ese tipo de archivo }
         '413': { description: Supera los 25 MB }
+        '503': { description: Almacenamiento no configurado }
+
+  /files/download-url:
+    post:
+      tags: [files]
+      summary: URL firmada de lectura para un archivo ya subido
+      description: |
+        Sin este endpoint el cliente puede guardar keys pero no mostrar nada:
+        ni la foto de perfil, ni el PDF de una lección, ni el adjunto que
+        entregó un estudiante.
+
+        **Quién puede leer qué se resuelve contra la fila que referencia la
+        key**, no contra su prefijo, y con la misma regla de visibilidad que el
+        listado correspondiente: un donante que solo ve sus evidencias en
+        `GET /evidences` tampoco puede firmar la foto de otro.
+
+        Una key que ninguna tabla referencia responde `404`, no `403` — un
+        `403` confirmaría que el objeto está en el bucket.
+
+        Los videos se rechazan con `400`: se sirven por CloudFront, nunca por
+        S3 directo. Es una decisión de costo (1 TB/mes de CloudFront frente a
+        transferencia de S3 cobrada desde el primer byte) aplicada en el único
+        punto que firma lecturas.
+
+        Es `POST` y no `GET` para que la key no quede en el log de acceso de
+        API Gateway ni en el historial del navegador.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key: { type: string, example: 'avatars/6f1c….png' }
+      responses:
+        '200':
+          description: URL firmada de lectura, válida una hora
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  expiresInSeconds: { type: integer, example: 3600 }
+                  fileName: { type: string, nullable: true }
+                  contentType: { type: string, nullable: true }
+        '400': { description: Es una key de video, o falta la key }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: Ninguna tabla referencia esa key }
         '503': { description: Almacenamiento no configurado }
 
   /admin/users/{id}/can-grade:

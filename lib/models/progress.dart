@@ -573,3 +573,96 @@ class QuizResult {
                 (key, value) => MapEntry('$key', value == true))),
       );
 }
+
+/// Un estudiante en la tabla de seguimiento de un curso.
+///
+/// Todo lo que la fila muestra viene en la misma respuesta: avance, nota
+/// promedio, última actividad y el comentario del equipo docente. Resolverlo
+/// en el cliente serían cuatro peticiones por fila.
+class CourseStudent {
+  final String id;
+  final String name;
+  final String email;
+  final String? avatarS3Key;
+  final String university;
+  final CourseProgress progress;
+
+  /// `null` cuando esta persona no tiene ninguna entrega calificada. No es 0:
+  /// "todavía no tiene nota" y "sacó cero" son cosas distintas.
+  final double? avgGrade;
+  final int gradedCount;
+  final int pendingCount;
+
+  /// Lo más reciente entre marcar una lección y hacer una entrega — "cuándo
+  /// se supo de esta persona por última vez".
+  final DateTime? lastActivityAt;
+
+  /// Comentario privado del equipo docente. **El estudiante no lo ve**: no
+  /// hay endpoint que se lo devuelva.
+  final String note;
+
+  const CourseStudent({
+    required this.id,
+    required this.name,
+    this.email = '',
+    this.avatarS3Key,
+    this.university = '',
+    required this.progress,
+    this.avgGrade,
+    this.gradedCount = 0,
+    this.pendingCount = 0,
+    this.lastActivityAt,
+    this.note = '',
+  });
+
+  bool get hasStarted => progress.completedLessons > 0;
+
+  factory CourseStudent.fromJson(Map<String, dynamic> j) => CourseStudent(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        email: (j['email'] as String?) ?? '',
+        avatarS3Key: j['avatarS3Key'] as String?,
+        university: (j['university'] as String?) ?? '',
+        progress: CourseProgress.fromJson(
+            Map<String, dynamic>.from(j['progress'] as Map)),
+        avgGrade: (j['avgGrade'] as num?)?.toDouble(),
+        gradedCount: (j['gradedCount'] as num?)?.toInt() ?? 0,
+        pendingCount: (j['pendingCount'] as num?)?.toInt() ?? 0,
+        lastActivityAt: _parseDate(j['lastActivityAt']),
+        note: (j['note'] as String?) ?? '',
+      );
+}
+
+/// Cifras del encabezado del seguimiento de un curso.
+class CourseStats {
+  final int enrolled;
+  final int completed;
+
+  /// 0..1.
+  final double avgProgress;
+
+  /// `null` si nadie tiene nota todavía.
+  final double? avgGrade;
+  final int pending;
+
+  const CourseStats({
+    this.enrolled = 0,
+    this.completed = 0,
+    this.avgProgress = 0,
+    this.avgGrade,
+    this.pending = 0,
+  });
+
+  factory CourseStats.fromJson(Map<String, dynamic> j) => CourseStats(
+        enrolled: (j['enrolled'] as num?)?.toInt() ?? 0,
+        completed: (j['completed'] as num?)?.toInt() ?? 0,
+        avgProgress: (j['avgProgress'] as num?)?.toDouble() ?? 0,
+        avgGrade: (j['avgGrade'] as num?)?.toDouble(),
+        pending: (j['pending'] as num?)?.toInt() ?? 0,
+      );
+}
+
+DateTime? _parseDate(Object? raw) {
+  if (raw is! String || raw.isEmpty) return null;
+  return DateTime.tryParse(raw)?.toLocal();
+}

@@ -105,6 +105,10 @@ class DataProvider extends ChangeNotifier {
     _groupById.clear();
     _forumPostById.clear();
     _courseProgress.clear();
+    _usersByQuery.clear();
+    _userById.clear();
+    _courseStudents.clear();
+    _courseStats.clear();
     // Las URLs firmadas se emitieron para la sesión anterior: al cambiar de
     // cuenta se descartan, en vez de dejar enlaces vivos a archivos que la
     // cuenta nueva quizá no puede ver.
@@ -333,6 +337,108 @@ class DataProvider extends ChangeNotifier {
     final json = await api.post('/lessons/$lessonId/quiz-attempt',
         body: {'answers': answers});
     return QuizResult.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  // -------------------------------------------------------------------------
+  // Personas
+  // -------------------------------------------------------------------------
+
+  final Map<String, AsyncValue<List<AppUser>>> _usersByQuery = {};
+
+  /// Las personas que el rol con sesión puede ver.
+  ///
+  /// El alcance lo decide el servidor: un estudiante recibe una lista vacía
+  /// porque no tiene directorio de personas, y un filtro **nunca** amplía lo
+  /// que a alguien le corresponde ver.
+  AsyncValue<List<AppUser>> users({
+    String? role,
+    String? laboratoryId,
+    String? groupId,
+    String? companyId,
+  }) {
+    final query = <String, dynamic>{
+      'pageSize': 200,
+      if (role != null) 'role': role,
+      if (laboratoryId != null) 'laboratoryId': laboratoryId,
+      if (groupId != null) 'groupId': groupId,
+      if (companyId != null) 'companyId': companyId,
+    };
+    final key = query.entries.map((e) => '${e.key}=${e.value}').join('&');
+
+    final current = _usersByQuery[key] ?? const AsyncValue<List<AppUser>>.idle();
+    _lazy(current, (v) => _usersByQuery[key] = v, () async {
+      final json = await api.get('/users', query: query);
+      return Page.fromJson(
+        Map<String, dynamic>.from(json as Map),
+        AppUser.fromJson,
+      ).data;
+    });
+    return _usersByQuery[key] ?? current;
+  }
+
+  final Map<String, AsyncValue<AppUser>> _userById = {};
+
+  AsyncValue<AppUser> userById(String id) {
+    final current = _userById[id] ?? const AsyncValue<AppUser>.idle();
+    _lazy(current, (v) => _userById[id] = v, () async {
+      final json = await api.get('/users/$id');
+      return AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    });
+    return _userById[id] ?? current;
+  }
+
+  // -------------------------------------------------------------------------
+  // Seguimiento de un curso (LXD, Mentor, Asesor, Admin)
+  // -------------------------------------------------------------------------
+
+  final Map<String, AsyncValue<List<CourseStudent>>> _courseStudents = {};
+  final Map<String, AsyncValue<CourseStats>> _courseStats = {};
+
+  /// Los estudiantes de un curso con todo lo que la tabla de seguimiento
+  /// muestra: avance, nota promedio, última actividad y comentario. Una sola
+  /// petición, no cuatro por fila.
+  AsyncValue<List<CourseStudent>> courseStudents(String courseId) {
+    final current =
+        _courseStudents[courseId] ?? const AsyncValue<List<CourseStudent>>.idle();
+    _lazy(current, (v) => _courseStudents[courseId] = v,
+        () => _fetchCourseStudents(courseId));
+    return _courseStudents[courseId] ?? current;
+  }
+
+  Future<void> reloadCourseStudents(String courseId) => _refresh(
+        (v) => _courseStudents[courseId] = v,
+        () => _fetchCourseStudents(courseId),
+        _courseStudents[courseId]?.valueOrNull,
+      );
+
+  Future<List<CourseStudent>> _fetchCourseStudents(String courseId) async {
+    final json = await api.get('/courses/$courseId/students');
+    final map = Map<String, dynamic>.from(json as Map);
+    return (map['students'] as List? ?? const [])
+        .map((e) => CourseStudent.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  AsyncValue<CourseStats> courseStats(String courseId) {
+    final current =
+        _courseStats[courseId] ?? const AsyncValue<CourseStats>.idle();
+    _lazy(current, (v) => _courseStats[courseId] = v, () async {
+      final json = await api.get('/courses/$courseId/stats');
+      return CourseStats.fromJson(Map<String, dynamic>.from(json as Map));
+    });
+    return _courseStats[courseId] ?? current;
+  }
+
+  /// Guarda el comentario privado sobre un estudiante en un curso.
+  /// Hay UNA nota por par: escribir dos veces reemplaza.
+  Future<void> saveStaffNote({
+    required String courseId,
+    required String studentId,
+    required String note,
+  }) async {
+    await api.put('/courses/$courseId/students/$studentId/note',
+        body: {'note': note});
+    await reloadCourseStudents(courseId);
   }
 
   // -------------------------------------------------------------------------

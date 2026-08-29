@@ -15,6 +15,7 @@ import {
   evidenceRoutes,
   notificationRoutes,
 } from './routes/content';
+import { courseTrackingRoutes } from './routes/course-tracking';
 import { userRoutes } from './routes/users';
 import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
@@ -72,6 +73,9 @@ export function createApp(database: Database = defaultDb) {
   app.route('/site-content', siteRoutes);
   app.route('/users', userRoutes);
   app.route('/courses', courseRoutes);
+  // Segundo router en la misma base: el seguimiento de un curso es de otro
+  // rol (quien acompaña, no quien edita) y vive en su propio archivo.
+  app.route('/courses', courseTrackingRoutes);
   // Dos routers en la misma base: uno maneja el módulo en sí, el otro sus
   // lecciones. Se separan por archivo para que `courses.ts` no tenga que
   // importar `lessons.ts` y al revés.

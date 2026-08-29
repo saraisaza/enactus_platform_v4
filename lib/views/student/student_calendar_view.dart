@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
     show calendarEventColor, calendarEventIcon, calendarEventTypeLabel;
@@ -49,14 +49,40 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final student = context.watch<AuthProvider>().currentUser!;
-    final events = data.calendarEventsFor(student);
+    final eventsState = data.calendarEvents;
+
+    final error = eventsState.errorOrNull;
+    if (error != null) {
+      return ContentScreenShell(
+        eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
+        title: 'Calendario',
+        subtitle: 'No pudimos traer tus eventos.',
+        bodyBuilder: (context, colors, isDark) =>
+            ErrorState(error, onRetry: data.reloadCalendarEvents),
+      );
+    }
+
+    final events = eventsState.valueOrNull;
+    if (events == null) {
+      return ContentScreenShell(
+        eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
+        title: 'Calendario',
+        subtitle: 'Cargando tus eventos…',
+        bodyBuilder: (context, colors, isDark) =>
+            const CardListSkeleton(count: 3, height: 96),
+      );
+    }
+
+    // Qué eventos ve cada rol lo decide el servidor (`ruta_impacto` es global
+    // para el mundo Enactus, `mentoria` va por laboratorio y
+    // `open_learning_sync` por curso). Antes ese filtro lo hacía el cliente
+    // con `calendarEventsFor(student)` sobre todos los eventos de Hive.
     final monthEvents =
-        events.where((e) => e.start.year == _visibleMonth.year && e.start.month == _visibleMonth.month).toList();
+        events.where((e) => e.startsAt.year == _visibleMonth.year && e.startsAt.month == _visibleMonth.month).toList();
     final today = DateTime.now();
     final todayStart = DateTime(today.year, today.month, today.day);
-    final upcoming = events.where((e) => !e.start.isBefore(todayStart)).toList()
-      ..sort((a, b) => a.start.compareTo(b.start));
+    final upcoming = events.where((e) => !e.startsAt.isBefore(todayStart)).toList()
+      ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
     return ContentScreenShell(
       eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
@@ -179,8 +205,8 @@ class _MonthGrid extends StatelessWidget {
   const _MonthGrid({required this.visibleMonth, required this.events, required this.colors});
 
   List<CalendarEvent> _eventsOn(DateTime day) =>
-      events.where((e) => _sameDay(e.start, day)).toList()
-        ..sort((a, b) => a.start.compareTo(b.start));
+      events.where((e) => _sameDay(e.startsAt, day)).toList()
+        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
   @override
   Widget build(BuildContext context) {
@@ -336,10 +362,10 @@ class _UpcomingRow extends StatelessWidget {
                     color: colors.surface2, borderRadius: BorderRadius.circular(11)),
                 child: Column(
                   children: [
-                    Text('${event.start.day}',
+                    Text('${event.startsAt.day}',
                         style: knockoutHeading(
                             fontSize: 22, fontWeight: AppWeights.display, color: color)),
-                    Text(DateFormat('EEE', 'es').format(event.start).toUpperCase(),
+                    Text(DateFormat('EEE', 'es').format(event.startsAt).toUpperCase(),
                         style: TextStyle(
                             fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),
                   ],
@@ -357,7 +383,7 @@ class _UpcomingRow extends StatelessWidget {
                             color: hover ? colors.goldInk : colors.text)),
                     const SizedBox(height: 2),
                     Text(
-                        '${DateFormat('h:mm a').format(event.start)}'
+                        '${DateFormat('h:mm a').format(event.startsAt)}'
                         '${event.guests.isEmpty ? '' : ' · ${event.guests}'}',
                         style: TextStyle(fontSize: 12, color: colors.text3)),
                   ],
@@ -394,7 +420,7 @@ Future<void> showEventsDialog(
             children: [
               Row(
                 children: [
-                  Text(DateFormat("EEEE d 'de' MMMM", 'es').format(events.first.start),
+                  Text(DateFormat("EEEE d 'de' MMMM", 'es').format(events.first.startsAt),
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w700, color: colors.text)),
                   const Spacer(),
@@ -449,7 +475,7 @@ class _EventDetailTile extends StatelessWidget {
                 child: Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: colors.text)),
               ),
-              Text(DateFormat('h:mm a').format(event.start),
+              Text(DateFormat('h:mm a').format(event.startsAt),
                   style: TextStyle(color: colors.text3, fontSize: 12)),
             ],
           ),

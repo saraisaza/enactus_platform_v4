@@ -204,12 +204,15 @@ que explica por qué no se parchearon para que compilaran.
 ## Lo que falta
 
 - Los cinco portales diferidos, en orden: Admin → Mentor → Asesor → Empresa
-  → Donante. **La API que necesitan ya existe**: `/users` con alcance por rol,
-  `/catalogs`, autoría de cursos y autoría de laboratorios con su Ruta de
-  Impacto. Lo que falta de cada uno es la pantalla, no el endpoint — con una
-  excepción conocida: las métricas de impacto agregadas del panel Admin
-  (`hoursByCompetency`, `odsCompletionRate`, `sponsoredHoursByCompany`)
-  todavía no tienen endpoint.
+  → Donante. **El servidor está terminado**: se auditaron los 75 métodos del
+  provider que esos portales usan y los 75 tienen endpoint. Lo que falta de
+  cada uno es la pantalla, no la API.
+
+  Lo último que se construyó para cerrarlo: `/admin/metrics` (horas por
+  competencia, cobertura de ODS, horas patrocinadas), `/talent`
+  (BuscaTalento), `POST /notifications` (avisos), `include=reviews` en
+  `/users`, autoría de laboratorios con su Ruta de Impacto, y el alta acotada
+  de LXD/mentor desde una cuenta de empresa.
 - **Reproducción de video**: un enlace externo ya se abre; un video propio dice
   claramente que necesita la distribución de CloudFront (Fase 6) en vez de
   quedarse cargando.

@@ -87,7 +87,7 @@ class AppRoutes {
   /// Detalle de laboratorio, sin depender de un estudiante puntual — ver
   /// `LabDetailView`. Antes solo existía la vista embebida del propio
   /// portal Estudiante (`/student/lab/:id`, ligada siempre al usuario con
-  /// sesión) y `LabProgressView` (progreso de UN estudiante puntual).
+  /// sesión) y el perfil de una persona (progreso de UN estudiante puntual).
   static const labs = '/laboratorios';
 
   static String forRole(String role) => switch (role) {

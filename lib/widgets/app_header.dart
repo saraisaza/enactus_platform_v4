@@ -62,27 +62,46 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   tooltip: 'Menú',
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
-              AnimatedLogo(
-                height: compact ? 34 : 135,
-                compact: compact,
-                onTap: () => Navigator.of(context)
-                    .pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
+              // El logotipo va en `Flexible` con `scaleDown`, y su alto baja
+              // en medium. Suelto a 135px de alto medía más de 300 de ancho, y
+              // con el menú de cuenta al otro extremo esta fila desbordaba en
+              // cualquier ventana por debajo de ~1100px — en TODOS los
+              // portales, porque todos heredan este encabezado.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: AnimatedLogo(
+                    height: compact ? 34 : (roomy ? 135 : 72),
+                    compact: compact,
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
+                  ),
+                ),
               ),
               if (!compact && roomy) ...[
                 const SizedBox(width: 16),
                 if (portalTitle != null)
                   Container(
+                    constraints: const BoxConstraints(maxWidth: 220),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.slate,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(portalTitle!,
-                        style: const TextStyle(
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13)),
+                    child: Text(
+                      portalTitle!,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
               ],
               const Spacer(),
@@ -96,8 +115,10 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     color: AppColors.textSecondary,
                     tooltip: 'Buscar',
                     onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (_) => const _CompactSearchScreen())),
+                      MaterialPageRoute(
+                        builder: (_) => const _CompactSearchScreen(),
+                      ),
+                    ),
                   ),
                 _NotificationBell(userId: user.id),
                 SizedBox(width: compact ? 4 : 10),
@@ -144,23 +165,27 @@ List<_SearchHit> _searchHits(DataProvider data, String query) {
 
   for (final c in data.courses.valueOrNull ?? const []) {
     if (c.name.toLowerCase().contains(q)) {
-      hits.add(_SearchHit(
-        'Curso',
-        c.name,
-        c.description.isEmpty ? c.levelLabel : c.description,
-        Icons.video_library_outlined,
-      ));
+      hits.add(
+        _SearchHit(
+          'Curso',
+          c.name,
+          c.description.isEmpty ? c.levelLabel : c.description,
+          Icons.video_library_outlined,
+        ),
+      );
     }
   }
 
   for (final p in data.projects.valueOrNull ?? const []) {
     if (p.name.toLowerCase().contains(q)) {
-      hits.add(_SearchHit(
-        'Proyecto',
-        p.name,
-        'Etapa: ${p.stageLabel}',
-        Icons.lightbulb_outline,
-      ));
+      hits.add(
+        _SearchHit(
+          'Proyecto',
+          p.name,
+          'Etapa: ${p.stageLabel}',
+          Icons.lightbulb_outline,
+        ),
+      );
     }
   }
 
@@ -173,16 +198,22 @@ void _showSearchHitDetail(BuildContext context, _SearchHit hit) {
   showDialog<void>(
     context: context,
     builder: (_) => AlertDialog(
-      title: Row(children: [
-        Icon(hit.icon, color: AppColors.gold),
-        const SizedBox(width: 10),
-        Expanded(child: Text(hit.name, style: const TextStyle(fontSize: 18))),
-      ]),
-      content: Text('${hit.type}\n${hit.sub}', style: const TextStyle(height: 1.6)),
+      title: Row(
+        children: [
+          Icon(hit.icon, color: AppColors.gold),
+          const SizedBox(width: 10),
+          Expanded(child: Text(hit.name, style: const TextStyle(fontSize: 18))),
+        ],
+      ),
+      content: Text(
+        '${hit.type}\n${hit.sub}',
+        style: const TextStyle(height: 1.6),
+      ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar')),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
       ],
     ),
   );
@@ -230,12 +261,16 @@ class _GlobalSearchState extends State<_GlobalSearch> {
           style: const TextStyle(fontSize: 13.5),
           decoration: InputDecoration(
             hintText: 'Buscar estudiantes, cursos, proyectos…',
-            prefixIcon: Icon(Icons.search,
-                size: 19,
-                color: _focused ? AppColors.gold : AppColors.textMuted),
+            prefixIcon: Icon(
+              Icons.search,
+              size: 19,
+              color: _focused ? AppColors.gold : AppColors.textMuted,
+            ),
             isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
           ),
         ),
         optionsViewBuilder: (context, onSelected, options) => Align(
@@ -252,9 +287,10 @@ class _GlobalSearchState extends State<_GlobalSearch> {
                 border: Border.all(color: AppColors.border),
                 boxShadow: const [
                   BoxShadow(
-                      color: Colors.black54,
-                      blurRadius: 20,
-                      offset: Offset(0, 8)),
+                    color: Colors.black54,
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
+                  ),
                 ],
               ),
               child: ListView.builder(
@@ -266,15 +302,24 @@ class _GlobalSearchState extends State<_GlobalSearch> {
                   return ListTile(
                     dense: true,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     hoverColor: AppColors.gold.withValues(alpha: 0.08),
                     leading: Icon(hit.icon, color: AppColors.gold, size: 20),
-                    title: Text(hit.name,
-                        style: const TextStyle(
-                            fontSize: 13.5, fontWeight: FontWeight.w600)),
-                    subtitle: Text('${hit.type} · ${hit.sub}',
-                        style: const TextStyle(
-                            fontSize: 11.5, color: AppColors.textMuted)),
+                    title: Text(
+                      hit.name,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${hit.type} · ${hit.sub}',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                     onTap: () => onSelected(hit),
                   );
                 },
@@ -336,32 +381,43 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
       ),
       body: _query.isEmpty
           ? const Center(
-              child: Text('Escribe para buscar',
-                  style: TextStyle(color: AppColors.textMuted)))
+              child: Text(
+                'Escribe para buscar',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
+            )
           : hits.isEmpty
-              ? const Center(
-                  child: Text('Sin resultados',
-                      style: TextStyle(color: AppColors.textMuted)))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: hits.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, color: AppColors.border),
-                  itemBuilder: (context, i) {
-                    final hit = hits[i];
-                    return ListTile(
-                      minVerticalPadding: 14,
-                      leading: Icon(hit.icon, color: AppColors.gold),
-                      title: Text(hit.name,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600)),
-                      subtitle: Text('${hit.type} · ${hit.sub}',
-                          style: const TextStyle(color: AppColors.textMuted)),
-                      onTap: () => _showSearchHitDetail(context, hit),
-                    );
-                  },
-                ),
+          ? const Center(
+              child: Text(
+                'Sin resultados',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(8),
+              itemCount: hits.length,
+              separatorBuilder: (_, _) =>
+                  const Divider(height: 1, color: AppColors.border),
+              itemBuilder: (context, i) {
+                final hit = hits[i];
+                return ListTile(
+                  minVerticalPadding: 14,
+                  leading: Icon(hit.icon, color: AppColors.gold),
+                  title: Text(
+                    hit.name,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${hit.type} · ${hit.sub}',
+                    style: const TextStyle(color: AppColors.textMuted),
+                  ),
+                  onTap: () => _showSearchHitDetail(context, hit),
+                );
+              },
+            ),
     );
   }
 }
@@ -390,33 +446,46 @@ class _AvatarMenu extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(user.name,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700)),
-              Text('${Roles.label(user.role)} · ${user.email}',
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12)),
+              Text(
+                user.name,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                '${Roles.label(user.role)} · ${user.email}',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ),
         const PopupMenuDivider(),
         const PopupMenuItem(
           value: 'profile',
-          child: Row(children: [
-            Icon(Icons.person_outline, size: 18),
-            SizedBox(width: 10),
-            Text('Mi perfil'),
-          ]),
+          child: Row(
+            children: [
+              Icon(Icons.person_outline, size: 18),
+              SizedBox(width: 10),
+              Text('Mi perfil'),
+            ],
+          ),
         ),
         const PopupMenuItem(
           value: 'logout',
-          child: Row(children: [
-            Icon(Icons.logout, size: 18, color: AppColors.statusCritical),
-            SizedBox(width: 10),
-            Text('Cerrar sesión',
-                style: TextStyle(color: AppColors.statusCritical)),
-          ]),
+          child: Row(
+            children: [
+              Icon(Icons.logout, size: 18, color: AppColors.statusCritical),
+              SizedBox(width: 10),
+              Text(
+                'Cerrar sesión',
+                style: TextStyle(color: AppColors.statusCritical),
+              ),
+            ],
+          ),
         ),
       ],
       onSelected: (value) async {
@@ -440,16 +509,24 @@ class _AvatarMenu extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Row(children: [
-          CircleAvatar(
-            backgroundColor: AppColors.gold,
-            child: Text(user.name[0].toUpperCase(),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppColors.gold,
+              child: Text(
+                user.name[0].toUpperCase(),
                 style: const TextStyle(
-                    color: AppColors.ink, fontWeight: FontWeight.w700)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(user.name, style: const TextStyle(fontSize: 18))),
-        ]),
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(user.name, style: const TextStyle(fontSize: 18)),
+            ),
+          ],
+        ),
         content: Text(
           'Rol: ${Roles.label(user.role)}\n'
           'Correo: ${user.email}\n'
@@ -459,8 +536,9 @@ class _AvatarMenu extends StatelessWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
         ],
       ),
     );
@@ -496,39 +574,57 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
             duration: const Duration(milliseconds: 150),
             child: CircleAvatar(
               radius: 17,
-              backgroundColor:
-                  _hover ? AppColors.goldBright : AppColors.gold,
+              backgroundColor: _hover ? AppColors.goldBright : AppColors.gold,
               child: Text(
                 widget.user.name.isNotEmpty
                     ? widget.user.name[0].toUpperCase()
                     : '?',
                 style: const TextStyle(
-                    color: AppColors.ink, fontWeight: FontWeight.w700),
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
           if (!compact) ...[
             const SizedBox(width: 8),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.user.name,
+            // Acotado: un nombre largo empujaba la fila del encabezado hasta
+            // desbordarla. El nombre completo sigue estando en el menú.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 150),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.user.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        color: _hover
-                            ? AppColors.gold
-                            : AppColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600)),
-                Text(Roles.label(widget.user.role),
+                      color: _hover ? AppColors.gold : AppColors.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    Roles.label(widget.user.role),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11)),
-              ],
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.keyboard_arrow_down,
-                size: 18,
-                color: _hover ? AppColors.gold : AppColors.textMuted),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 18,
+              color: _hover ? AppColors.gold : AppColors.textMuted,
+            ),
           ],
         ],
       ),
@@ -568,17 +664,21 @@ class _NotificationBell extends StatelessWidget {
               tween: Tween(begin: 0, end: 1),
               duration: const Duration(milliseconds: 400),
               curve: Curves.elasticOut,
-              builder: (_, v, child) =>
-                  Transform.scale(scale: v, child: child),
+              builder: (_, v, child) => Transform.scale(scale: v, child: child),
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: const BoxDecoration(
-                    color: AppColors.gold, shape: BoxShape.circle),
-                child: Text('$unread',
-                    style: const TextStyle(
-                        color: AppColors.ink,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700)),
+                  color: AppColors.gold,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$unread',
+                  style: const TextStyle(
+                    color: AppColors.ink,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -598,9 +698,13 @@ class _NotificationBell extends StatelessWidget {
         context: context,
         backgroundColor: AppColors.surfaceAlt,
         shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         builder: (_) => SafeArea(
-          child: _NotificationListBody(notifications: notifications, maxHeight: 480),
+          child: _NotificationListBody(
+            notifications: notifications,
+            maxHeight: 480,
+          ),
         ),
       );
       return;
@@ -613,8 +717,10 @@ class _NotificationBell extends StatelessWidget {
       barrierColor: Colors.black38,
       transitionDuration: const Duration(milliseconds: 260),
       transitionBuilder: (context, anim, _, child) => SlideTransition(
-        position: Tween(begin: const Offset(0.15, 0), end: Offset.zero)
-            .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+        position: Tween(
+          begin: const Offset(0.15, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
         child: FadeTransition(opacity: anim, child: child),
       ),
       pageBuilder: (context, _, _) => Align(
@@ -628,7 +734,9 @@ class _NotificationBell extends StatelessWidget {
             child: SizedBox(
               width: 380,
               child: _NotificationListBody(
-                  notifications: notifications, maxHeight: 460),
+                notifications: notifications,
+                maxHeight: 460,
+              ),
             ),
           ),
         ),
@@ -642,17 +750,21 @@ class _NotificationBell extends StatelessWidget {
 class _NotificationListBody extends StatelessWidget {
   final List<AppNotification> notifications;
   final double maxHeight;
-  const _NotificationListBody(
-      {required this.notifications, required this.maxHeight});
+  const _NotificationListBody({
+    required this.notifications,
+    required this.maxHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (notifications.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(32),
-        child: Text('Sin notificaciones',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textMuted)),
+        child: Text(
+          'Sin notificaciones',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.textMuted),
+        ),
       );
     }
     return ConstrainedBox(
@@ -665,11 +777,15 @@ class _NotificationListBody extends StatelessWidget {
         itemBuilder: (_, i) {
           final n = notifications[i];
           return ListTile(
-            leading: const Icon(Icons.notifications,
-                color: AppColors.gold, size: 20),
-            title: Text(n.title,
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            leading: const Icon(
+              Icons.notifications,
+              color: AppColors.gold,
+              size: 20,
+            ),
+            title: Text(
+              n.title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
             subtitle: Text(
               '${n.body}\n${DateFormat('d MMM yyyy, h:mm a').format(n.createdAt)}',
               style: const TextStyle(fontSize: 12, color: AppColors.textMuted),

@@ -185,34 +185,36 @@ La forma de que no vuelva a pasar no es acordarse.
 | Público (portada, ingreso) | ✅ Migrado |
 | **Estudiante / Alumni** | ✅ **Migrado y verificado de punta a punta** |
 | **LXD** | ✅ **Migrado y verificado de punta a punta** (incluye el constructor de cursos y de lecciones) |
-| Admin | ⏳ Diferido — la API ya está lista (ver abajo) |
-| Mentor | ⏳ Diferido |
-| Asesor | ⏳ Diferido |
-| Empresa | ⏳ Diferido |
-| Donante | ⏳ Diferido |
+| **Admin / Super Admin** | ✅ **Migrado** |
+| **Mentor** | ✅ **Migrado** |
+| **Asesor** | ✅ **Migrado** |
+| **Empresa** | ✅ **Migrado** |
+| **Donante** | ✅ **Migrado** |
 
-Los portales diferidos muestran una pantalla honesta de "disponible
-próximamente" (`lib/views/public/pending_portal_view.dart`) en vez de datos
-desactualizados. **Una función que no está es honesta; una que muestra datos
-viejos, no.**
+Ya no queda ningún portal diferido: `migration_pending/` desapareció.
 
-`migration_pending/` conserva los archivos con su código original y un README
-que explica por qué no se parchearon para que compilaran.
+Dos pantallas del original no se migraron porque **dejaron de existir**, no
+porque falten: `StudentDetailView` se fusionó con el perfil de persona (la
+separación ya no significaba nada — quién ve qué lo decide el servidor), y
+`LabProgressView` y el diálogo de vincular a la Ruta quedaron dentro del
+perfil y del editor de Ruta respectivamente.
 
 ---
 
 ## Lo que falta
 
-- Los cinco portales diferidos, en orden: Admin → Mentor → Asesor → Empresa
-  → Donante. **El servidor está terminado**: se auditaron los 75 métodos del
-  provider que esos portales usan y los 75 tienen endpoint. Lo que falta de
-  cada uno es la pantalla, no la API.
+- **Nada de la migración.** Los ocho portales están en `lib/` y se dibujan.
 
-  Lo último que se construyó para cerrarlo: `/admin/metrics` (horas por
-  competencia, cobertura de ODS, horas patrocinadas), `/talent`
-  (BuscaTalento), `POST /notifications` (avisos), `include=reviews` en
-  `/users`, autoría de laboratorios con su Ruta de Impacto, y el alta acotada
-  de LXD/mentor desde una cuenta de empresa.
+### Prueba de humo: los ocho portales se dibujan
+
+`e2e_provider_contract_test` monta el portal de cada uno de los nueve roles y
+exige que Flutter no lance ninguna excepción. Compilar no prueba que una
+pantalla funcione: un `Row` que desborda es un fallo de ejecución.
+
+Lo encontró de inmediato: **el pie de página desbordaba por 559 px en los
+ocho portales**, en cualquier ventana de escritorio angosta. Sus dos líneas
+de texto no tenían techo, así que exigían su ancho natural, y dentro de un
+`Wrap` nadie las obliga a encoger. Estaba ahí desde antes de la migración.
 - **Reproducción de video**: un enlace externo ya se abre; un video propio dice
   claramente que necesita la distribución de CloudFront (Fase 6) en vez de
   quedarse cargando.

@@ -21,6 +21,7 @@ library;
 
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +29,7 @@ import 'package:enactus_platform/providers/auth_provider.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
+import 'package:enactus_platform/main.dart';
 import 'package:enactus_platform/utils/constants.dart';
 
 bool up = false;
@@ -187,4 +189,52 @@ void main() {
     // Sin esto puede GUARDAR un patrocinio pero no ver de quién es.
     expect(data!.users(role: Roles.company).valueOrNull, isNotEmpty);
   }, timeout: const Timeout(Duration(seconds: 40)));
+
+  /// Cada rol entra a SU portal y la pantalla se dibuja.
+  ///
+  /// Compilar no prueba que un portal funcione: un `AsyncValue` en error, un
+  /// campo que no llegó o un `Row` que desborda son fallos de ejecución. Esta
+  /// prueba entra con cada cuenta, monta el portal que le toca y exige que no
+  /// haya ninguna excepción de Flutter — que es exactamente lo que veía quien
+  /// abría la app.
+  for (final role in _cuentas.keys) {
+    testWidgets('$role: su portal se dibuja sin excepciones', (tester) async {
+      if (!up) return;
+      final data = await signIn(role);
+      expect(data, isNotNull, reason: 'No se pudo entrar como $role');
+
+      final excepciones = <Object>[];
+      final anterior = FlutterError.onError;
+      FlutterError.onError = (details) => excepciones.add(
+          '${details.exception}\n${details.context}\n'
+          '${details.informationCollector?.call().join('\n') ?? ''}');
+
+      try {
+        await tester.pumpWidget(_appDe(role, data!));
+        // Varios `pump` en vez de `pumpAndSettle`: las peticiones reales no
+        // completan dentro del tiempo falso de `testWidgets`, así que lo que
+        // se comprueba es que el estado de carga se dibuje sin reventar.
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+      } finally {
+        FlutterError.onError = anterior;
+      }
+
+      expect(excepciones, isEmpty,
+          reason: 'El portal de $role lanzó: ${excepciones.join('\n')}');
+    }, timeout: const Timeout(Duration(seconds: 90)));
+  }
+}
+
+/// Monta la app directamente en la ruta del rol, sin pasar por el arranque.
+Widget _appDe(String role, DataProvider data) {
+  final api = ApiService();
+  final auth = AuthProvider(api, data);
+  return EnactusApp(
+    api: api,
+    data: data,
+    auth: auth,
+    initialRoute: AppRoutes.forRole(role),
+  );
 }

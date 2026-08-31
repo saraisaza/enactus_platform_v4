@@ -3,7 +3,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
-import '../utils/responsive.dart';
 import 'animated_logo.dart';
 import 'common.dart';
 
@@ -19,19 +18,22 @@ class AppFooter extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: const [
         _SocialButton(
-            icon: Icons.facebook,
-            label: 'Facebook',
-            url: SocialLinks.facebook),
+          icon: Icons.facebook,
+          label: 'Facebook',
+          url: SocialLinks.facebook,
+        ),
         SizedBox(width: 10),
         _SocialButton(
-            icon: Icons.camera_alt_outlined,
-            label: 'Instagram',
-            url: SocialLinks.instagram),
+          icon: Icons.camera_alt_outlined,
+          label: 'Instagram',
+          url: SocialLinks.instagram,
+        ),
         SizedBox(width: 10),
         _SocialButton(
-            icon: Icons.business_center_outlined,
-            label: 'LinkedIn',
-            url: SocialLinks.linkedin),
+          icon: Icons.business_center_outlined,
+          label: 'LinkedIn',
+          url: SocialLinks.linkedin,
+        ),
       ],
     );
     return Container(
@@ -62,7 +64,14 @@ class AppFooter extends StatelessWidget {
                 // verticalmente — un `Column` sí ajusta el texto al ancho
                 // disponible (lo hace pasar a más líneas) en vez de exigir
                 // su ancho intrínseco completo como un `Row` sin `Expanded`.
-                context.isCompact
+                // La decisión se toma sobre el ancho DISPONIBLE, no sobre el
+                // de la ventana: el pie vive dentro de portales con barra
+                // lateral, así que "hay 800px de ventana" no significa "hay
+                // 800px acá". Con `context.isCompact` la fila desbordaba en
+                // toda ventana de escritorio angosta —en los ocho portales, y
+                // por 559px— porque los dos textos exigen su ancho natural y
+                // dentro de un `Wrap` nadie los obliga a encoger.
+                _apilar(context)
                     ? const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
@@ -72,15 +81,18 @@ class AppFooter extends StatelessWidget {
                           Text(
                             InstitutionalInfo.footerText,
                             style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600),
+                              color: AppColors.textPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           SizedBox(height: 3),
                           Text(
                             'Formamos líderes que transforman comunidades 💛',
                             style: TextStyle(
-                                color: AppColors.textMuted, fontSize: 12),
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       )
@@ -95,24 +107,32 @@ class AppFooter extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.12),
                           ),
                           const SizedBox(width: 18),
-                          const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                InstitutionalInfo.footerText,
-                                style: TextStyle(
+                          // Acotado: sin techo, estos dos textos piden su
+                          // ancho intrínseco y arrastran la fila entera.
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 420),
+                            child: const Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  InstitutionalInfo.footerText,
+                                  style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                'Formamos líderes que transforman comunidades 💛',
-                                style: TextStyle(
-                                    color: AppColors.textMuted, fontSize: 12),
-                              ),
-                            ],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 3),
+                                Text(
+                                  'Formamos líderes que transforman comunidades 💛',
+                                  style: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -120,10 +140,12 @@ class AppFooter extends StatelessWidget {
                 // escritorio; dentro de este mismo Wrap, en compact las dos
                 // filas se apilan y ese corrimiento saca los íconos del
                 // viewport — se aplica solo fuera de compact.
-                context.isCompact
+                _apilar(context)
                     ? socialButtons
                     : Transform.translate(
-                        offset: const Offset(100, 0), child: socialButtons),
+                        offset: const Offset(100, 0),
+                        child: socialButtons,
+                      ),
               ],
             ),
           ),
@@ -142,7 +164,9 @@ class AppFooter extends StatelessWidget {
                 Text(
                   '© ${DateTime.now().year} eduXaction Colombia — Todos los derechos reservados',
                   style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11),
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
                 ),
                 const Text(
                   'Hecho con 💛 en Bogotá',
@@ -162,8 +186,11 @@ class _SocialButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final String url;
-  const _SocialButton(
-      {required this.icon, required this.label, required this.url});
+  const _SocialButton({
+    required this.icon,
+    required this.label,
+    required this.url,
+  });
 
   @override
   State<_SocialButton> createState() => _SocialButtonState();
@@ -210,9 +237,11 @@ class _SocialButtonState extends State<_SocialButton> {
                           ]
                         : const [],
                   ),
-                  child: Icon(widget.icon,
-                      size: 18,
-                      color: _hover ? AppColors.ink : Colors.white),
+                  child: Icon(
+                    widget.icon,
+                    size: 18,
+                    color: _hover ? AppColors.ink : Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -222,3 +251,11 @@ class _SocialButtonState extends State<_SocialButton> {
     );
   }
 }
+
+/// ¿Hay que apilar el pie en vez de ponerlo en una fila?
+///
+/// Se decide sobre el ancho de la VENTANA porque el pie ocupa el ancho
+/// completo de su contenedor; el umbral es más alto que el de compact porque
+/// el bloque de la izquierda (logotipo + dos líneas de texto) mide bastante
+/// más que un teléfono.
+bool _apilar(BuildContext context) => MediaQuery.sizeOf(context).width < 900;

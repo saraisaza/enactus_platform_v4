@@ -9,11 +9,15 @@ import 'utils/app_theme.dart';
 import 'utils/constants.dart';
 import 'views/auth/login_view.dart';
 import 'views/admin/admin_portal.dart';
+import 'views/advisor/advisor_portal.dart';
+import 'views/company/company_portal.dart';
+import 'views/donor/donor_portal.dart';
+import 'views/mentor/mentor_portal.dart';
 import 'views/lxd/lxd_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
-import 'views/public/pending_portal_view.dart';
 import 'views/shared/lab_detail_view.dart';
+import 'views/shared/user_detail_view.dart';
 import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
 import 'views/student/course_detail_view.dart';
 import 'views/student/student_portal.dart';
@@ -138,26 +142,18 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
     case AppRoutes.lxd:
       page = const _RoleGuard(role: Roles.lxd, child: LxdPortal());
     case AppRoutes.mentor:
-      page = const _RoleGuard(
-          role: Roles.mentor,
-          child: PendingPortalView(portalName: 'Portal Mentor'));
+      page = const _RoleGuard(role: Roles.mentor, child: MentorPortal());
     case AppRoutes.admin:
       page = const _RoleGuard(role: Roles.admin, child: AdminPortal());
     case AppRoutes.superAdmin:
       page = const _RoleGuard(
           role: Roles.superAdmin, child: AdminPortal(isSuperAdmin: true));
     case AppRoutes.advisor:
-      page = const _RoleGuard(
-          role: Roles.advisor,
-          child: PendingPortalView(portalName: 'Portal Asesor Académico'));
+      page = const _RoleGuard(role: Roles.advisor, child: AdvisorPortal());
     case AppRoutes.company:
-      page = const _RoleGuard(
-          role: Roles.company,
-          child: PendingPortalView(portalName: 'Portal Empresa'));
+      page = const _RoleGuard(role: Roles.company, child: CompanyPortal());
     case AppRoutes.donor:
-      page = const _RoleGuard(
-          role: Roles.donor,
-          child: PendingPortalView(portalName: 'Portal Donante'));
+      page = const _RoleGuard(role: Roles.donor, child: DonorPortal());
     case String name when name.startsWith('${AppRoutes.projects}/'):
       page = _AuthGuard(
           child: ProjectDetailView(
@@ -166,12 +162,10 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
       page = _AuthGuard(
           child: CourseDetailView(
               courseId: name.substring('${AppRoutes.courses}/'.length)));
-    // `/usuarios/:id` queda pendiente: el perfil de OTRA persona necesita
-    // un `GET /users/:id` que la API todavía no expone, y su vista es de
-    // personal (Mentor, Asesor, LXD, Admin), no del portal Estudiante.
     case String name when name.startsWith('${AppRoutes.users}/'):
-      page = const _AuthGuard(
-          child: PendingPortalView(portalName: 'Perfil de usuario'));
+      page = _AuthGuard(
+          child: UserDetailView(
+              userId: name.substring('${AppRoutes.users}/'.length)));
     case String name when name.startsWith('${AppRoutes.labs}/'):
       page = _AuthGuard(
           child: LabDetailView(

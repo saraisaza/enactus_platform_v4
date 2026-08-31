@@ -438,6 +438,14 @@ rutaModuleRoutes.put('/:id/courses', async (c) => {
     }
   }
 
+  // Los que se agregan ahora: solo a esos se les importan los objetivos.
+  const antes = await db
+    .select({ courseId: rutaModuleCourses.courseId })
+    .from(rutaModuleCourses)
+    .where(eq(rutaModuleCourses.rutaModuleId, mod.id));
+  const yaEstaban = new Set(antes.map((r) => r.courseId));
+  const nuevos = courseIds.filter((id) => !yaEstaban.has(id));
+
   await db.transaction(async (tx) => {
     await tx
       .delete(rutaModuleCourses)
@@ -449,9 +457,99 @@ rutaModuleRoutes.put('/:id/courses', async (c) => {
     }
   });
 
+  const importados = await importCourseObjectives(db, mod.phaseId, nuevos);
   await bumpContentVersion(db, mod.laboratoryId);
-  return c.json({ courseIds });
+  return c.json({ courseIds, importedObjectives: importados });
 });
+
+/**
+ * Los objetivos categorizados de un curso recién vinculado pasan a ser
+ * objetivos de la fase.
+ *
+ * No es magia escondida: el constructor de cursos lo anuncia en la propia
+ * pantalla ("si este curso se vincula a un módulo de un laboratorio, estos
+ * objetivos se agregan automáticamente a los de esa fase"). Acá pasa en la
+ * misma transacción lógica que el vínculo, en vez de en dos llamadas del
+ * cliente que podían quedar a la mitad.
+ *
+ * Si la fase ya tiene un objetivo con la MISMA categoría y el mismo texto, no
+ * se duplica: se le suma el curso. Es lo que permite exigir "todos los cursos"
+ * dentro de un solo objetivo, que es como se define completarlo.
+ *
+ * Los objetivos SIN categoría del curso no se importan: esos describen el
+ * curso, no la fase.
+ */
+async function importCourseObjectives(
+  db: Db,
+  phaseId: string,
+  courseIds: string[],
+): Promise<number> {
+  if (courseIds.length === 0) return 0;
+
+  const origen = await db.execute<{
+    courseId: string;
+    category: 'entrepreneurship' | 'business';
+    text: string;
+  }>(sql`
+    select course_id as "courseId", category, text
+      from course_objectives
+     where course_id in ${inList(courseIds)} and category is not null
+     order by order_index
+  `);
+  if (origen.length === 0) return 0;
+
+  const existentes = await db
+    .select({
+      id: objectives.id,
+      category: objectives.category,
+      text: objectives.text,
+    })
+    .from(objectives)
+    .where(eq(objectives.phaseId, phaseId));
+
+  const clave = (category: string, text: string) =>
+    `${category}::${text.trim().toLowerCase()}`;
+  const porClave = new Map(
+    existentes.map((o) => [clave(o.category, o.text), o.id]),
+  );
+
+  const [{ next } = { next: 1 }] = await db.execute<{ next: number }>(sql`
+    select coalesce(max(order_index), 0) + 1 as next
+      from objectives where phase_id = ${phaseId}
+  `);
+
+  let orden = next;
+  let creados = 0;
+
+  for (const fuente of origen) {
+    const k = clave(fuente.category, fuente.text);
+    let objectiveId = porClave.get(k);
+
+    if (!objectiveId) {
+      const [created] = await db
+        .insert(objectives)
+        .values({
+          phaseId,
+          category: fuente.category,
+          text: fuente.text,
+          orderIndex: orden++,
+        })
+        .returning({ id: objectives.id });
+      objectiveId = created!.id;
+      porClave.set(k, objectiveId);
+      creados += 1;
+    }
+
+    // `onConflictDoNothing`: vincular dos veces el mismo curso al mismo
+    // objetivo no es un error, es que ya estaba.
+    await db
+      .insert(objectiveCourses)
+      .values({ objectiveId, courseId: fuente.courseId })
+      .onConflictDoNothing();
+  }
+
+  return creados;
+}
 
 /** Lección propia del módulo: la lectura o entrega que no viene de un curso. */
 rutaModuleRoutes.post('/:id/lessons', async (c) => {

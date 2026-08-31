@@ -252,19 +252,28 @@ paths:
           in: query
           schema: { type: string }
           description: |
-            `team` y/o `progress`, separados por coma. Agregan el equipo con su
-            proyecto y etapa, el patrocinador, y el avance general (promedio de
-            sus cursos) — en DOS consultas para toda la página.
+            `team`, `progress` y/o `reviews`, separados por coma. Agregan el
+            equipo con su proyecto y etapa, el patrocinador, el avance general
+            (promedio de sus cursos) y cuántas entregas revisó cada mentor — en
+            una consulta por `include` para TODA la página.
 
             Es lo que necesitan las tablas de seguimiento de LXD, Mentor y
-            Asesor: sin esto, cada fila haría cuatro peticiones.
+            Asesor, y las de mentores del portal Empresa: sin esto, cada fila
+            haría cuatro peticiones.
       responses:
         '200': { description: Página de personas }
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [users]
-      summary: Crear una cuenta (solo admin/superadmin)
+      summary: Crear una cuenta (admin/superadmin, y empresa para su equipo)
       description: |
+        **Una empresa puede dar de alta a SU equipo formador**, y nada más:
+        solo los roles `lxd` y `mentor`, y la cuenta queda atada a la empresa
+        que la creó (`companyId`), lo diga o no el formulario. Sin ese amarre,
+        una empresa podría crear una cuenta suelta —o peor, otra cuenta de
+        empresa— y usarla para ver lo que su alcance no le permite. Cualquier
+        otro rol responde 403.
+
         Un estudiante SIN tipo (`enactus` u `open_learning`) se rechaza con
         409: es lo que separa los dos mundos en toda la API, y una cuenta sin
         él quedaría donde ninguna regla de aislamiento aplica. Al revés
@@ -1252,6 +1261,18 @@ paths:
         Un curso vive en UN solo módulo por laboratorio. Si ya está en otro
         módulo de la misma Ruta responde 409 con cuál: si no, su avance se
         contaría dos veces.
+
+        **Importa los objetivos** de los cursos que se agregan: los objetivos
+        categorizados del curso (`entrepreneurship`/`business`) pasan a ser
+        objetivos de la fase. No es magia escondida — el constructor de cursos
+        lo anuncia en su propia pantalla— y pasa junto con el vínculo en vez de
+        en dos llamadas del cliente que podían quedar a la mitad.
+
+        Si la fase ya tiene un objetivo con la MISMA categoría y texto, no se
+        duplica: se le suma el curso. Es lo que permite exigir "todos los
+        cursos" dentro de un solo objetivo, que es como se define completarlo.
+        Los objetivos SIN categoría no se importan: describen el curso, no la
+        fase. `importedObjectives` dice cuántos se crearon.
       requestBody:
         required: true
         content:
@@ -1514,6 +1535,76 @@ paths:
       summary: Notificaciones propias
       description: Siempre las del usuario de la sesión; no hay parámetro para pedir las de otro.
       responses: { '200': { description: Página con el conteo de no leídas } }
+    post:
+      tags: [content]
+      summary: Mandar un aviso a una o varias personas
+      description: |
+        **A quién se le puede avisar es una pregunta de permisos, no de
+        formulario.** La regla es una sola y reusa alcances que ya existen: se
+        le puede avisar a quien uno ya podría ver —el alcance de `GET /users`—
+        o, si quien manda es Donante o Empresa, a cualquier estudiante Enactus,
+        que es exactamente lo que BuscaTalento ofrece hacer.
+
+        Un destinatario fuera de alcance responde 403 con **cuántos**, nunca con
+        quiénes: decir "estos tres ids no existen y estos dos sí" convertiría el
+        endpoint en una forma de enumerar la plataforma.
+
+        Nadie recibe el correo de nadie: el aviso llega a la bandeja de la
+        persona dentro de la plataforma. Es la razón por la que BuscaTalento
+        puede mostrar perfiles sin mostrar datos de contacto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userIds, title]
+              properties:
+                userIds:
+                  type: array
+                  minItems: 1
+                  maxItems: 200
+                  items: { type: string, format: uuid }
+                title: { type: string, minLength: 1 }
+                body: { type: string }
+      responses:
+        '201':
+          description: Enviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { sent: { type: integer } }
+        '403': { description: Hay destinatarios fuera de tu alcance }
+
+  /talent:
+    get:
+      tags: [content]
+      summary: BuscaTalento — directorio de talento Enactus
+      description: |
+        El **único** listado de personas cuyo alcance es deliberadamente más
+        ancho que el de `/users`. Ahí un donante ve solo a quienes apoya y una
+        empresa a su gente; acá los dos ven a todos los estudiantes Enactus,
+        porque de eso se trata la pantalla: descubrir a alguien que todavía no
+        conocen.
+
+        Por eso vive en su propia ruta y no como un filtro de `/users`. Un
+        filtro que ensancha el alcance es justo la clase de cosa que después
+        nadie recuerda que existe; una ruta aparte se lee y se audita sola.
+
+        Expone el **perfil profesional, no los datos de contacto**: nombre,
+        universidad, carrera, ciudad, avance y logros. Ni correo, ni teléfono,
+        ni cédula. Para hablarles está `POST /notifications`.
+
+        Los de Open Learning no aparecen: no tienen Ruta de Impacto, así que no
+        tienen objetivos cumplidos que mostrar. Vienen ordenados por objetivos
+        EMPRESARIALES cumplidos, que es la razón por la que una empresa entra.
+      parameters:
+        - { $ref: '#/components/parameters/page' }
+        - { $ref: '#/components/parameters/pageSize' }
+      responses:
+        '200': { description: Página de perfiles }
+        '403': { description: BuscaTalento es para Donantes y Empresas }
 
   /notifications/read:
     post:
@@ -1720,6 +1811,71 @@ paths:
         La métrica que va a crecer y necesita visibilidad: sin
         transcodificación, lo que se sube es lo que se guarda y lo que se paga.
       responses: { '200': { description: Bytes y GB, por lecciones e intros } }
+
+  /admin/metrics:
+    get:
+      tags: [admin]
+      summary: Métricas de impacto formativo
+      description: |
+        Horas por competencia, cobertura de ODS y horas patrocinadas por
+        empresa. Las tres las calculaba el cliente recorriendo toda la base en
+        memoria; contra una base remota eso sería descargar cada curso, cada
+        estudiante y cada progreso para sumar tres números.
+
+        Van juntas en una sola respuesta porque la pantalla las muestra juntas.
+        Se calculan sobre `student_course_access` y `course_progress`, las
+        mismas vistas que usa el resto de la API: antes podían discrepar del
+        avance que veía el estudiante y nadie lo habría notado.
+
+        Las horas de un curso son las **certificadas** si las tiene, si no las
+        estimadas, y siempre **ponderadas por el avance real**: un curso de 10
+        horas que alguien lleva al 40% aporta 4, no 10 ni 0.
+      responses:
+        '200':
+          description: Las tres métricas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hoursByCompetency:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string }
+                        name: { type: string }
+                        hours: { type: number }
+                  odsCompletionRate:
+                    type: array
+                    description: |
+                      `total` cuenta pares (estudiante, curso) con acceso, no
+                      estudiantes. Se devuelven los crudos además de la tasa
+                      porque un 100% sobre dos personas y otro sobre doscientas
+                      no son la misma noticia, y la barra sola no lo distingue.
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string }
+                        number: { type: integer }
+                        title: { type: string }
+                        rate: { type: number, minimum: 0, maximum: 1 }
+                        completed: { type: integer }
+                        total: { type: integer }
+                  sponsoredHoursByCompany:
+                    type: array
+                    description: |
+                      Una empresa patrocina de dos formas y las dos cuentan: el
+                      curso directamente o el laboratorio al que pertenece. El
+                      patrocinio directo manda, para que un curso patrocinado
+                      por dos no sume sus horas dos veces.
+                    items:
+                      type: object
+                      properties:
+                        companyId: { type: string, format: uuid }
+                        companyName: { type: string }
+                        hours: { type: number }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
 components:
   securitySchemes:

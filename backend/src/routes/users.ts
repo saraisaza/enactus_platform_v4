@@ -192,7 +192,10 @@ userRoutes.get('/', async (c) => {
   // patrocinador y el avance — que es exactamente lo que hacía la versión con
   // Hive, solo que contra memoria en vez de contra la red.
   const include = parseInclude(query.include);
-  if (rows.length > 0 && (include.has('team') || include.has('progress'))) {
+  if (
+    rows.length > 0 &&
+    (include.has('team') || include.has('progress') || include.has('reviews'))
+  ) {
     const ids = rows.map((r) => r.id);
 
     if (include.has('team')) {
@@ -270,6 +273,25 @@ userRoutes.get('/', async (c) => {
         };
       });
     }
+
+    if (include.has('reviews')) {
+      // Cuántas entregas revisó cada mentor. El portal Empresa lo muestra por
+      // mentor y además lo suma por laboratorio: sin esto serían dos consultas
+      // por fila, que es justo lo que hacía la versión con Hive.
+      const revisiones = await db.execute<{ mentorId: string; reviews: number }>(sql`
+        select reviewed_by as "mentorId", count(*)::int as reviews
+          from submissions
+         where reviewed_by = any(${sql.param(ids)}::uuid[])
+           and reviewed_at is not null
+           and deleted_at is null
+         group by reviewed_by
+      `);
+      const byMentor = new Map(revisiones.map((r) => [r.mentorId, r.reviews]));
+      data = data.map((u) => ({
+        ...u,
+        reviewsCount: byMentor.get(u.id as string) ?? 0,
+      }));
+    }
   }
 
   return c.json(paginated(data, total?.value ?? 0, query));
@@ -343,12 +365,37 @@ function assertStudentType(role: string, studentType?: string | null): void {
   }
 }
 
-userRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {
+/** Los roles que una cuenta de empresa puede dar de alta. */
+const COMPANY_CAN_CREATE = ['lxd', 'mentor'];
+
+userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
   const admin = currentUser(c);
   const body = createBody.parse(await c.req.json());
   const db = c.get('db');
 
   assertStudentType(body.role, body.studentType);
+
+  /**
+   * Una empresa da de alta a SU equipo formador, y nada más.
+   *
+   * Es una capacidad real del portal Empresa —una empresa que patrocina trae
+   * sus propios formadores— pero acotada en las dos direcciones que importan:
+   * solo los roles `lxd` y `mentor`, y la cuenta queda atada a la empresa que
+   * la creó (`companyId`), lo diga o no el formulario. Sin ese amarre, una
+   * empresa podría crear una cuenta suelta —o peor, otra cuenta de empresa— y
+   * usarla para ver lo que su alcance no le permite.
+   *
+   * `canGrade*` tampoco se acepta en el alta: se cambia por su propio
+   * endpoint, que además es de Admin y deja registro.
+   */
+  if (admin.role === 'company') {
+    if (!COMPANY_CAN_CREATE.includes(body.role)) {
+      throw forbidden(
+        'Una empresa solo puede crear cuentas de LXD o de mentor para su equipo.',
+      );
+    }
+    body.companyId = admin.id;
+  }
 
   // Solo un superadmin crea otro superadmin: si no, un admin podría
   // ascenderse creando una cuenta y entrando con ella.

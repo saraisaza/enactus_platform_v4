@@ -327,6 +327,100 @@ describe('Cursos vinculados a un módulo', () => {
     expect(Number(row!.n)).toBe(0);
   });
 
+  it('vincular un curso IMPORTA sus objetivos categorizados a la fase', async () => {
+    // No es magia escondida: el constructor de cursos lo anuncia en pantalla.
+    // Acá pasa junto con el vínculo, en vez de en dos llamadas del cliente que
+    // podían quedar a la mitad.
+    await put(`/courses/${seedId('crs_ia_1')}/meta`, adminToken, {
+      tags: [],
+      objectives: [
+        { category: null, text: 'Objetivo general del curso' },
+        { category: 'entrepreneurship', text: 'Detectar oportunidades de IA' },
+        { category: 'business', text: 'Estimar el costo de un modelo' },
+      ],
+      competencies: [],
+      ods: [],
+      learningOutcomes: [],
+      prerequisiteCourseIds: [],
+    });
+
+    const res = await put(`/ruta-modules/${moduloA}/courses`, adminToken, {
+      ids: [seedId('crs_ia_1')],
+    });
+    expect(res.status).toBe(200);
+    const b = await body<{ importedObjectives: number }>(res);
+    expect(b.importedObjectives).toBe(2);
+
+    const enFase = await sql<{ text: string; category: string }[]>`
+      select text, category from objectives where phase_id = ${faseIds[0]!}
+    `;
+    const textos = enFase.map((o) => o.text);
+    expect(textos).toContain('Detectar oportunidades de IA');
+    expect(textos).toContain('Estimar el costo de un modelo');
+    // Los objetivos SIN categoría describen el curso, no la fase.
+    expect(textos).not.toContain('Objetivo general del curso');
+  });
+
+  it('el objetivo importado queda exigiendo ese curso', async () => {
+    // Se comprueban los dos objetivos por su texto, no el total de la fase:
+    // vínculos anteriores de esta misma suite ya importaron otros, y contar
+    // todo mediría el historial del archivo en vez de esta importación.
+    const filas = await sql<{ text: string }[]>`
+      select o.text from objective_courses oc
+        join objectives o on o.id = oc.objective_id
+       where o.phase_id = ${faseIds[0]!} and oc.course_id = ${seedId('crs_ia_1')}
+    `;
+    const textos = filas.map((f) => f.text);
+    expect(textos).toContain('Detectar oportunidades de IA');
+    expect(textos).toContain('Estimar el costo de un modelo');
+  });
+
+  it('volver a vincularlo NO duplica los objetivos', async () => {
+    // Se importan solo los cursos que se agregan, no todo el conjunto.
+    const antes = await sql<{ n: string }[]>`
+      select count(*) as n from objectives where phase_id = ${faseIds[0]!}
+    `;
+    const res = await put(`/ruta-modules/${moduloA}/courses`, adminToken, {
+      ids: [seedId('crs_ia_1')],
+    });
+    const b = await body<{ importedObjectives: number }>(res);
+    expect(b.importedObjectives).toBe(0);
+
+    const despues = await sql<{ n: string }[]>`
+      select count(*) as n from objectives where phase_id = ${faseIds[0]!}
+    `;
+    expect(despues[0]!.n).toBe(antes[0]!.n);
+  });
+
+  it('un objetivo con el mismo texto SUMA el curso en vez de duplicarse', async () => {
+    // Es lo que permite exigir "todos los cursos" dentro de un solo objetivo,
+    // que es como se define completarlo.
+    await put(`/courses/${seedId('crs_impacto_1')}/meta`, adminToken, {
+      tags: [],
+      objectives: [
+        { category: 'business', text: 'Estimar el costo de un modelo' },
+      ],
+      competencies: [],
+      ods: [],
+      learningOutcomes: [],
+      prerequisiteCourseIds: [],
+    });
+
+    const res = await put(`/ruta-modules/${moduloA}/courses`, adminToken, {
+      ids: [seedId('crs_ia_1'), seedId('crs_impacto_1')],
+    });
+    const b = await body<{ importedObjectives: number }>(res);
+    expect(b.importedObjectives).toBe(0); // el texto ya existía
+
+    const [row] = await sql<{ n: string }[]>`
+      select count(*) as n from objective_courses oc
+        join objectives o on o.id = oc.objective_id
+       where o.phase_id = ${faseIds[0]!}
+         and o.text = 'Estimar el costo de un modelo'
+    `;
+    expect(Number(row!.n)).toBe(2);
+  });
+
   it('agrega una lección propia al módulo', async () => {
     const res = await req(
       `/ruta-modules/${moduloA}/lessons`,

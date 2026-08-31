@@ -381,6 +381,120 @@ notificationRoutes.get('/', async (c) => {
   });
 });
 
+const notifyBody = z.object({
+  userIds: z
+    .array(z.uuid())
+    .min(1, 'Falta a quién avisarle.')
+    .max(200, 'Son demasiados destinatarios para un solo aviso.'),
+  title: z.string().trim().min(1, 'El aviso necesita un título.'),
+  body: z.string().trim().default(''),
+});
+
+/**
+ * Manda un aviso a una o varias personas.
+ *
+ * **A quién se le puede avisar es una pregunta de permisos, no de formulario.**
+ * La regla es una sola y reusa alcances que ya existen: se le puede avisar a
+ * quien uno ya podría ver — el alcance de `GET /users`— o, si quien manda es
+ * Donante o Empresa, a cualquier estudiante Enactus, que es exactamente lo que
+ * BuscaTalento ofrece hacer.
+ *
+ * Un destinatario fuera de alcance responde 403 con **cuántos**, nunca con
+ * quiénes: decir "estos tres ids no existen y estos dos sí" convertiría el
+ * endpoint en una forma de enumerar la plataforma.
+ *
+ * Nadie recibe el correo de nadie: el aviso llega a la bandeja de la persona
+ * dentro de la plataforma. Es la razón por la que BuscaTalento puede mostrar
+ * perfiles sin mostrar datos de contacto.
+ */
+notificationRoutes.post('/', async (c) => {
+  const user = currentUser(c);
+  const body = notifyBody.parse(await c.req.json());
+  const db = c.get('db');
+
+  const destinatarios = [...new Set(body.userIds)];
+  const permitidos = await notifiableUserIds(db, user, destinatarios);
+
+  if (permitidos.length !== destinatarios.length) {
+    throw forbidden(
+      'Hay destinatarios a los que tu rol no puede escribirles.',
+    );
+  }
+
+  const created = await db
+    .insert(notifications)
+    .values(
+      permitidos.map((userId) => ({
+        userId,
+        title: body.title,
+        body: body.body,
+      })),
+    )
+    .returning({ id: notifications.id });
+
+  return c.json({ sent: created.length }, 201);
+});
+
+/**
+ * De los ids pedidos, cuáles puede notificar quien manda.
+ *
+ * Se resuelve con UNA consulta que replica los dos alcances en su `where`, en
+ * vez de traer los usuarios y filtrarlos en memoria: la lista puede ser de
+ * doscientos y la comprobación tiene que ser barata para no invitar a saltarla.
+ */
+async function notifiableUserIds(
+  db: AppEnv['Variables']['db'],
+  sender: ReturnType<typeof currentUser>,
+  ids: string[],
+): Promise<string[]> {
+  // El admin se salta el ALCANCE, no la EXISTENCIA. Devolverle los ids tal
+  // cual dejaba que uno inexistente llegara al insert y reventara contra la
+  // clave ajena: un 500 donde correspondía un 403.
+  const esAdmin = sender.role === 'admin' || sender.role === 'superadmin';
+
+  // Donante y Empresa alcanzan a todo estudiante Enactus: es el alcance de
+  // BuscaTalento, y sin él la pantalla ofrecería contactar a alguien que
+  // después no puede contactar.
+  const porTalento =
+    sender.role === 'donor' || sender.role === 'company'
+      ? sql`(u.student_type = 'enactus' and u.role in ('student', 'alumni'))`
+      : sql`false`;
+
+  const alcancePropio = (() => {
+    if (esAdmin) return sql`true`;
+    if (sender.role === 'advisor') {
+      return sql`(u.university = ${sender.university} and u.university <> '')`;
+    }
+    if (sender.role === 'lxd') {
+      return sql`u.id in (select a.student_id from student_course_access a
+                            join courses c on c.id = a.course_id
+                           where c.creator_id = ${sender.id})`;
+    }
+    if (sender.role === 'mentor') {
+      return sql`u.id in (select sl.student_id from student_laboratories sl
+                           where sl.laboratory_id in (
+                             select lm.laboratory_id from laboratory_mentors lm
+                              where lm.user_id = ${sender.id}))`;
+    }
+    if (sender.role === 'company') {
+      return sql`u.company_id = ${sender.id}`;
+    }
+    if (sender.role === 'donor') {
+      return sql`u.donor_id = ${sender.id}`;
+    }
+    // Estudiante y alumni no mandan avisos a nadie.
+    return sql`false`;
+  })();
+
+  const rows = await db.execute<{ id: string }>(sql`
+    select u.id from users u
+     where u.deleted_at is null
+       and u.id = any(${sql.param(ids)}::uuid[])
+       and (${alcancePropio} or ${porTalento})
+  `);
+  return rows.map((r) => r.id);
+}
+
 notificationRoutes.post('/read', async (c) => {
   const user = currentUser(c);
   await c

@@ -28,6 +28,7 @@ import {
   rutaModuleRoutes,
 } from './routes/lab-authoring';
 import { labRoutes } from './routes/labs';
+import { talentRoutes } from './routes/talent';
 import { lessonRoutes, moduleLessonRoutes } from './routes/lessons';
 import { groupRoutes, projectRoutes } from './routes/orgs';
 import { progressRoutes } from './routes/progress';
@@ -111,6 +112,9 @@ export function createApp(database: Database = defaultDb) {
   app.route('/notifications', notificationRoutes);
   app.route('/forum-posts', forumRoutes);
   app.route('/files', fileRoutes);
+  // BuscaTalento: el único listado de personas con alcance más ancho que
+  // `/users`, y por eso con ruta propia en vez de un filtro que lo ensanche.
+  app.route('/talent', talentRoutes);
   app.route('/admin', adminRoutes);
 
   return app;

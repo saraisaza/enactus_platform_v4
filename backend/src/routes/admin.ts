@@ -12,6 +12,7 @@ import {
   requireRole,
 } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
+import { impactMetrics } from '../services/impact-metrics';
 
 export const adminRoutes = new Hono<AppEnv>();
 adminRoutes.use('*', requireAuth, requireRole(...ADMIN_ROLES));
@@ -77,6 +78,22 @@ adminRoutes.patch('/users/:id/can-grade', async (c) => {
   });
 
   return c.json(publicUser(updated!));
+});
+
+/**
+ * Métricas de impacto formativo del panel Admin.
+ *
+ * Las tres las calculaba el cliente recorriendo toda la base en memoria: horas
+ * por competencia, cobertura de ODS y horas patrocinadas por empresa. Contra
+ * una base remota eso sería descargar cada curso, cada estudiante y cada
+ * progreso para sumar tres números.
+ *
+ * Van juntas en una sola respuesta porque la pantalla las muestra juntas: son
+ * tres agregaciones sobre las mismas dos vistas, y pedirlas por separado
+ * costaría tres viajes para dibujar un panel.
+ */
+adminRoutes.get('/metrics', async (c) => {
+  return c.json(await impactMetrics(c.get('db')));
 });
 
 /**

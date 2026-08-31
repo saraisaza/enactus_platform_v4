@@ -2,7 +2,16 @@ import { and, asc, count, eq, ilike, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { courseModules, courses } from '../db/schema';
+import {
+  courseCompetencies,
+  courseLearningOutcomes,
+  courseModules,
+  courseObjectives,
+  courseOds,
+  coursePrerequisites,
+  courseTags,
+  courses,
+} from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
 import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
@@ -38,6 +47,23 @@ const courseBody = z.object({
   certifiedHours: z.number().int().min(0).default(0),
   maxStudents: z.number().int().min(0).default(0),
   visible: z.boolean().default(true),
+
+  /**
+   * Portada. Solo una key bajo `covers/`, que es donde deja el archivo
+   * `POST /files/upload-url`: sin esta restricción, quien edita un curso podría
+   * apuntar la portada a la key de un adjunto ajeno y hacer que la API se la
+   * firmara. Misma regla que el avatar en `PATCH /auth/me`.
+   */
+  coverS3Key: z
+    .string()
+    .trim()
+    .regex(/^covers\//, 'La portada tiene que ser un archivo subido desde el editor.')
+    .nullable()
+    .optional(),
+
+  openDate: z.iso.date('La fecha de apertura tiene que ser AAAA-MM-DD.').nullable().optional(),
+  closeDate: z.iso.date('La fecha de cierre tiene que ser AAAA-MM-DD.').nullable().optional(),
+  sponsorCompanyId: z.uuid().nullable().optional(),
 });
 
 const courseUpdate = courseBody.partial();
@@ -312,6 +338,9 @@ courseRoutes.post('/', requireRole(...CONTENT_ROLES), async (c) => {
   const body = courseBody.parse(await c.req.json());
   const db = c.get('db');
 
+  await assertSponsorIsCompany(db, body.sponsorCompanyId);
+  assertDateWindow(body.openDate ?? null, body.closeDate ?? null);
+
   const [created] = await db
     .insert(courses)
     .values({
@@ -332,6 +361,15 @@ courseRoutes.patch('/:id', requireRole(...CONTENT_ROLES), async (c) => {
   const db = c.get('db');
   const course = await loadEditableCourse(db, c.req.param('id'), user);
 
+  await assertSponsorIsCompany(db, body.sponsorCompanyId);
+  // Las fechas se validan sobre el resultado, no sobre lo que llegó: en un
+  // parcheo que solo manda el cierre, la apertura con la que tiene que ser
+  // coherente es la que ya está guardada.
+  assertDateWindow(
+    body.openDate !== undefined ? body.openDate : course.openDate,
+    body.closeDate !== undefined ? body.closeDate : course.closeDate,
+  );
+
   const [updated] = await db
     .update(courses)
     .set({ ...body, updatedAt: new Date() })
@@ -340,6 +378,43 @@ courseRoutes.patch('/:id', requireRole(...CONTENT_ROLES), async (c) => {
 
   return c.json(updated);
 });
+
+/**
+ * El patrocinador de un curso tiene que ser una cuenta de empresa viva.
+ *
+ * La clave foránea sola no alcanza: apunta a `users`, así que aceptaría el id
+ * de un estudiante y el curso terminaría "patrocinado" por alguien que no puede
+ * patrocinar nada — y esas horas alimentan las métricas de impacto de empresa.
+ */
+async function assertSponsorIsCompany(
+  db: Db,
+  sponsorCompanyId: string | null | undefined,
+): Promise<void> {
+  if (!sponsorCompanyId) return;
+  const [row] = await db.execute<{ role: string }>(sql`
+    select role from users
+     where id = ${sponsorCompanyId} and deleted_at is null
+     limit 1
+  `);
+  if (!row || row.role !== 'company') {
+    throw conflict('El patrocinador tiene que ser una cuenta de empresa.', {
+      sponsorCompanyId,
+    });
+  }
+}
+
+/** Un curso no puede cerrar antes de abrir. */
+function assertDateWindow(
+  openDate: string | null,
+  closeDate: string | null,
+): void {
+  if (openDate && closeDate && closeDate < openDate) {
+    throw conflict('El curso no puede cerrar antes de abrir.', {
+      openDate,
+      closeDate,
+    });
+  }
+}
 
 courseRoutes.post('/:id/publish', requireRole(...CONTENT_ROLES), async (c) => {
   const user = currentUser(c);
@@ -417,6 +492,176 @@ courseRoutes.delete('/:id', requireRole(...CONTENT_ROLES), async (c) => {
 
   return c.body(null, 204);
 });
+
+// ---------------------------------------------------------------------------
+// Categorización: etiquetas, objetivos, competencias, ODS, prerrequisitos
+// ---------------------------------------------------------------------------
+
+const metaBody = z.object({
+  tags: z.array(z.string().trim().min(1)).default([]),
+  objectives: z
+    .array(
+      z.object({
+        category: z.enum(['entrepreneurship', 'business']).nullable().default(null),
+        text: z.string().trim().min(1, 'Un objetivo vacío no dice nada.'),
+      }),
+    )
+    .default([]),
+  competencies: z.array(z.string().trim().min(1)).default([]),
+  ods: z.array(z.string().trim().min(1)).default([]),
+  learningOutcomes: z.array(z.string().trim().min(1)).default([]),
+  prerequisiteCourseIds: z.array(z.uuid()).default([]),
+});
+
+/**
+ * Reemplaza la categorización completa del curso.
+ *
+ * El constructor edita las seis listas en un solo formulario, así que la API
+ * las recibe juntas y en una transacción: guardar etiquetas sí y ODS no
+ * dejaría el curso a medio describir sin que nadie se enterara.
+ *
+ * Los códigos de competencia y ODS se comprueban antes de escribir. Las claves
+ * foráneas ya lo impedirían, pero un código inexistente saldría como error de
+ * base —un 500 sin explicación— en vez de decir cuál está mal.
+ */
+courseRoutes.put('/:id/meta', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = metaBody.parse(await c.req.json());
+  const db = c.get('db');
+  const course = await loadEditableCourse(db, c.req.param('id'), user);
+
+  // Repetir una etiqueta en el formulario no es un error que valga la pena
+  // devolver: la clave primaria lo rechazaría, así que se deduplica.
+  const tags = [...new Set(body.tags)];
+  const competencyCodes = [...new Set(body.competencies)];
+  const odsCodes = [...new Set(body.ods)];
+  const prerequisites = [...new Set(body.prerequisiteCourseIds)];
+
+  await assertCatalogCodes(db, competencyCodes, odsCodes);
+  await assertPrerequisites(db, course.id, prerequisites);
+
+  await db.transaction(async (tx) => {
+    await tx.delete(courseTags).where(eq(courseTags.courseId, course.id));
+    if (tags.length > 0) {
+      await tx.insert(courseTags).values(tags.map((tag) => ({ courseId: course.id, tag })));
+    }
+
+    await tx.delete(courseObjectives).where(eq(courseObjectives.courseId, course.id));
+    if (body.objectives.length > 0) {
+      await tx.insert(courseObjectives).values(
+        body.objectives.map((o, i) => ({
+          courseId: course.id,
+          category: o.category,
+          text: o.text,
+          orderIndex: i + 1,
+        })),
+      );
+    }
+
+    await tx.delete(courseCompetencies).where(eq(courseCompetencies.courseId, course.id));
+    if (competencyCodes.length > 0) {
+      await tx.insert(courseCompetencies).values(
+        competencyCodes.map((competencyCode) => ({ courseId: course.id, competencyCode })),
+      );
+    }
+
+    await tx.delete(courseOds).where(eq(courseOds.courseId, course.id));
+    if (odsCodes.length > 0) {
+      await tx
+        .insert(courseOds)
+        .values(odsCodes.map((odsCode) => ({ courseId: course.id, odsCode })));
+    }
+
+    await tx
+      .delete(courseLearningOutcomes)
+      .where(eq(courseLearningOutcomes.courseId, course.id));
+    if (body.learningOutcomes.length > 0) {
+      await tx.insert(courseLearningOutcomes).values(
+        body.learningOutcomes.map((text, i) => ({
+          courseId: course.id,
+          text,
+          orderIndex: i + 1,
+        })),
+      );
+    }
+
+    await tx
+      .delete(coursePrerequisites)
+      .where(eq(coursePrerequisites.courseId, course.id));
+    if (prerequisites.length > 0) {
+      await tx.insert(coursePrerequisites).values(
+        prerequisites.map((prerequisiteCourseId) => ({
+          courseId: course.id,
+          prerequisiteCourseId,
+        })),
+      );
+    }
+  });
+
+  return c.json(await loadCourseMeta(db, course.id));
+});
+
+/** Competencias y ODS tienen catálogo: un código fuera de él es un error del formulario. */
+async function assertCatalogCodes(
+  db: Db,
+  competencyCodes: string[],
+  odsCodes: string[],
+): Promise<void> {
+  const [knownCompetencies, knownOds] = await Promise.all([
+    competencyCodes.length === 0
+      ? Promise.resolve([])
+      : db.execute<{ code: string }>(
+          sql`select code from competencies where code in ${inList(competencyCodes)}`,
+        ),
+    odsCodes.length === 0
+      ? Promise.resolve([])
+      : db.execute<{ code: string }>(
+          sql`select code from ods_goals where code in ${inList(odsCodes)}`,
+        ),
+  ]);
+
+  const missingCompetencies = competencyCodes.filter(
+    (code) => !knownCompetencies.some((r) => r.code === code),
+  );
+  const missingOds = odsCodes.filter((code) => !knownOds.some((r) => r.code === code));
+
+  if (missingCompetencies.length > 0 || missingOds.length > 0) {
+    throw conflict('Hay códigos que no están en el catálogo.', {
+      competencies: missingCompetencies,
+      ods: missingOds,
+    });
+  }
+}
+
+/** Un prerrequisito es otro curso vivo, y nunca el curso mismo. */
+async function assertPrerequisites(
+  db: Db,
+  courseId: string,
+  prerequisiteCourseIds: string[],
+): Promise<void> {
+  if (prerequisiteCourseIds.includes(courseId)) {
+    throw conflict('Un curso no puede ser prerrequisito de sí mismo.');
+  }
+  if (prerequisiteCourseIds.length === 0) return;
+
+  const alive = await db.execute<{ id: string }>(
+    sql`select id from courses
+         where id in ${inList(prerequisiteCourseIds)} and deleted_at is null`,
+  );
+  const missing = prerequisiteCourseIds.filter((id) => !alive.some((r) => r.id === id));
+  if (missing.length > 0) {
+    throw conflict('Hay prerrequisitos que apuntan a cursos que ya no existen.', {
+      courses: missing,
+    });
+  }
+}
+
+/** `in (…)` con parámetros, sin interpolar valores en el SQL. */
+const inList = (values: string[]) =>
+  sql`(${sql.join(
+    values.map((v) => sql`${v}`),
+    sql`, `,
+  )})`;
 
 // ---------------------------------------------------------------------------
 // Módulos
@@ -583,6 +828,10 @@ async function loadLessons(db: Db, moduleId: string) {
                      'requiresText', a.requires_text,
                      'maxFiles', a.max_files,
                      'gradingMode', a.grading_mode,
+                     'allowedTypes', coalesce((
+                       select json_agg(t.file_type order by t.file_type)
+                         from activity_allowed_types t
+                        where t.lesson_id = a.lesson_id), '[]'::json),
                      'rubric', coalesce((
                        select json_agg(json_build_object(
                                 'criterion', r.criterion, 'points', r.points)
@@ -596,31 +845,42 @@ async function loadLessons(db: Db, moduleId: string) {
   `);
 }
 
-/** Etiquetas, objetivos, competencias y ODS de un curso. */
+/** Categorización del curso: lo que el constructor edita como un solo formulario. */
 async function loadCourseMeta(db: Db, courseId: string) {
-  const [tags, objectives, competencies, ods] = await Promise.all([
-    db.execute<{ tag: string }>(
-      sql`select tag from course_tags where course_id = ${courseId} order by tag`,
-    ),
-    db.execute<{ id: string; category: string | null; text: string }>(sql`
-      select id, category, text from course_objectives
-       where course_id = ${courseId} order by order_index
-    `),
-    db.execute<{ code: string }>(sql`
-      select competency_code as code from course_competencies
-       where course_id = ${courseId} order by competency_code
-    `),
-    db.execute<{ code: string }>(sql`
-      select ods_code as code from course_ods
-       where course_id = ${courseId} order by ods_code
-    `),
-  ]);
+  const [tags, objectives, competencies, ods, outcomes, prerequisites] =
+    await Promise.all([
+      db.execute<{ tag: string }>(
+        sql`select tag from course_tags where course_id = ${courseId} order by tag`,
+      ),
+      db.execute<{ id: string; category: string | null; text: string }>(sql`
+        select id, category, text from course_objectives
+         where course_id = ${courseId} order by order_index
+      `),
+      db.execute<{ code: string }>(sql`
+        select competency_code as code from course_competencies
+         where course_id = ${courseId} order by competency_code
+      `),
+      db.execute<{ code: string }>(sql`
+        select ods_code as code from course_ods
+         where course_id = ${courseId} order by ods_code
+      `),
+      db.execute<{ text: string }>(sql`
+        select text from course_learning_outcomes
+         where course_id = ${courseId} order by order_index
+      `),
+      db.execute<{ id: string }>(sql`
+        select prerequisite_course_id as id from course_prerequisites
+         where course_id = ${courseId}
+      `),
+    ]);
 
   return {
     tags: tags.map((t) => t.tag),
     objectives,
     competencies: competencies.map((r) => r.code),
     ods: ods.map((r) => r.code),
+    learningOutcomes: outcomes.map((r) => r.text),
+    prerequisiteCourseIds: prerequisites.map((r) => r.id),
   };
 }
 

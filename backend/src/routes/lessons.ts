@@ -1,15 +1,20 @@
-import { asc, count, eq, sql } from 'drizzle-orm';
+import { asc, count, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import {
+  activityAllowedTypes,
+  activityRubricItems,
   courseModules,
+  lessonActivities,
   lessons,
   quizAttempts,
+  quizQuestionOptions,
   quizQuestions,
 } from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import {
+  assertValidDocumentUpload,
   assertValidVideoUpload,
   createUploadUrl,
   videoKeyFor,
@@ -66,6 +71,13 @@ const confirmUploadBody = z.object({
 const externalVideoBody = z.object({
   url: z.url('Tiene que ser una URL válida (YouTube o Vimeo).'),
   durationSec: z.number().int().min(0).optional(),
+});
+
+const resourceBody = z.object({
+  key: z.string().trim().min(1),
+  fileName: z.string().trim().min(1, 'Falta el nombre del archivo.'),
+  contentType: z.string().trim().min(1),
+  sizeBytes: z.number().int().positive(),
 });
 
 // ---------------------------------------------------------------------------
@@ -282,6 +294,382 @@ lessonRoutes.post('/:id/video-external', requireRole(...CONTENT_ROLES), async (c
   return c.json(updated);
 });
 
+/**
+ * Recurso descargable de una lección (PDF, plantilla, hoja de cálculo).
+ *
+ * Tercer paso del mismo flujo que el video: el navegador ya subió el archivo
+ * con la URL firmada de `POST /files/upload-url` y acá confirma la key.
+ *
+ * La key tiene que venir de la carpeta que firma ese endpoint. Es la misma
+ * garantía que da el avatar —prefijo, no id de lección— porque
+ * `documentKeyFor` genera `lesson-resources/<uuid>.<ext>`, sin la lección
+ * adentro: no se puede crear la key antes de tener el archivo.
+ */
+lessonRoutes.post('/:id/resource', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = resourceBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  assertValidDocumentUpload({
+    contentType: body.contentType,
+    sizeBytes: body.sizeBytes,
+  });
+
+  if (!body.key.startsWith('lesson-resources/')) {
+    throw conflict(
+      'Esa key no salió del endpoint de subida de recursos de lección.',
+      { key: body.key },
+    );
+  }
+
+  const [updated] = await db
+    .update(lessons)
+    .set({
+      resourceS3Key: body.key,
+      resourceFileName: body.fileName,
+      resourceContentType: body.contentType,
+      resourceSizeBytes: body.sizeBytes,
+      updatedAt: new Date(),
+    })
+    .where(eq(lessons.id, lesson.id))
+    .returning();
+
+  return c.json(updated);
+});
+
+// ---------------------------------------------------------------------------
+// Autoría del quiz
+// ---------------------------------------------------------------------------
+
+const quizKindEnum = z.enum(['multiple', 'truefalse', 'short', 'fill', 'order']);
+
+/** Una pregunta tal como la manda el constructor de lecciones. */
+const quizQuestionInput = z.object({
+  kind: quizKindEnum.default('multiple'),
+  question: z.string().trim().min(1, 'Cada pregunta necesita su enunciado.'),
+  options: z.array(z.string().trim()).default([]),
+  answerIndex: z.number().int().min(0).nullable().default(null),
+  answerText: z.string().trim().nullable().default(null),
+});
+
+const quizBody = z.object({
+  questions: z.array(quizQuestionInput).max(100, 'Son demasiadas preguntas.'),
+});
+
+type QuizQuestionInput = z.infer<typeof quizQuestionInput>;
+
+/**
+ * Lee las preguntas CON su clave de respuestas.
+ *
+ * Es la única lectura de la API que devuelve `answerIndex`/`answerText`, y
+ * existe por una razón concreta: sin ella, abrir una lección ya hecha en el
+ * constructor mostraría las respuestas en blanco y el primer guardado borraría
+ * la clave sin que nadie se enterara.
+ *
+ * Va detrás de `loadEditableLesson`, no de la visibilidad del curso: quien
+ * puede reescribir el quiz es exactamente quien puede leer su clave.
+ */
+lessonRoutes.get('/:id/quiz', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+  return c.json({ questions: await loadAuthoringQuiz(db, lesson.id) });
+});
+
+/**
+ * Reemplaza TODAS las preguntas de la lección.
+ *
+ * Reemplazo y no parcheo pregunta por pregunta: el constructor edita la lista
+ * entera en un formulario y manda el resultado. Con endpoints por pregunta,
+ * quien borrara una fila y guardara vería la pregunta seguir ahí.
+ *
+ * Los intentos ya resueltos (`quiz_attempts`) no se tocan: guardan su nota
+ * calculada en el servidor, así que siguen siendo un registro válido de lo que
+ * pasó aunque el quiz cambie después.
+ */
+lessonRoutes.put('/:id/quiz', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = quizBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  if (lesson.type !== 'quiz' && lesson.type !== 'survey') {
+    throw conflict(
+      'Solo una lección de tipo quiz o encuesta tiene preguntas. Cambiá el tipo de la lección primero.',
+      { type: lesson.type },
+    );
+  }
+
+  const isSurvey = lesson.type === 'survey';
+  const problems = quizProblems(body.questions, isSurvey);
+  if (problems.length > 0) {
+    throw conflict(
+      'Hay preguntas incompletas. Revisalas antes de guardar.',
+      { problems },
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    // Las opciones caen por CASCADE con su pregunta.
+    await tx.delete(quizQuestions).where(eq(quizQuestions.lessonId, lesson.id));
+
+    for (const [i, q] of body.questions.entries()) {
+      const stored = storableAnswer(q, isSurvey);
+      const [created] = await tx
+        .insert(quizQuestions)
+        .values({
+          lessonId: lesson.id,
+          orderIndex: i + 1,
+          kind: q.kind,
+          question: q.question,
+          answerIndex: stored.answerIndex,
+          answerText: stored.answerText,
+        })
+        .returning();
+
+      if (stored.options.length > 0) {
+        await tx.insert(quizQuestionOptions).values(
+          stored.options.map((text, o) => ({
+            quizQuestionId: created!.id,
+            orderIndex: o,
+            text,
+          })),
+        );
+      }
+    }
+  });
+
+  return c.json({ questions: await loadAuthoringQuiz(db, lesson.id) });
+});
+
+/**
+ * Qué le falta a cada pregunta para poder calificarse.
+ *
+ * Devuelve la lista completa de problemas, no el primero: quien está armando
+ * un quiz de diez preguntas prefiere verlos todos a descubrirlos de a uno.
+ *
+ * Las opciones vacías se rechazan en vez de filtrarse. Filtrarlas correría los
+ * índices y cambiaría en silencio cuál es la respuesta correcta.
+ */
+function quizProblems(
+  questions: QuizQuestionInput[],
+  isSurvey: boolean,
+): { question: number; problem: string }[] {
+  const problems: { question: number; problem: string }[] = [];
+  const add = (question: number, problem: string) =>
+    problems.push({ question, problem });
+
+  for (const [i, q] of questions.entries()) {
+    const at = i + 1;
+
+    if (isSurvey) {
+      if (q.answerIndex !== null || (q.answerText ?? '') !== '') {
+        add(at, 'Una encuesta no tiene respuesta correcta.');
+      }
+      continue;
+    }
+
+    if (q.kind === 'multiple' || q.kind === 'order') {
+      if (q.options.some((o) => o === '')) {
+        add(at, 'Hay opciones sin texto. Completalas o quitalas.');
+      } else if (q.options.length < 2) {
+        add(
+          at,
+          q.kind === 'multiple'
+            ? 'Necesita al menos dos opciones.'
+            : 'Necesita al menos dos elementos para ordenar.',
+        );
+      }
+    }
+
+    switch (q.kind) {
+      case 'multiple':
+        if (q.answerIndex === null || q.answerIndex >= q.options.length) {
+          add(at, 'Marcá cuál de las opciones es la correcta.');
+        }
+        break;
+      case 'truefalse':
+        if (q.answerIndex !== 0 && q.answerIndex !== 1) {
+          add(at, 'Elegí si la respuesta correcta es Verdadero o Falso.');
+        }
+        break;
+      case 'short':
+      case 'fill':
+        if ((q.answerText ?? '') === '') {
+          add(at, 'Falta la respuesta correcta.');
+        }
+        break;
+      case 'order':
+        // El orden correcto ES el de las opciones; no hay clave aparte.
+        break;
+    }
+  }
+  return problems;
+}
+
+/** Normaliza lo que se guarda según el tipo: cada uno usa una sola de las claves. */
+function storableAnswer(q: QuizQuestionInput, isSurvey: boolean) {
+  if (isSurvey) {
+    return { options: q.options, answerIndex: null, answerText: null };
+  }
+  switch (q.kind) {
+    case 'multiple':
+      return { options: q.options, answerIndex: q.answerIndex, answerText: null };
+    case 'order':
+      // Guardadas en el orden CORRECTO: esa es la clave.
+      return { options: q.options, answerIndex: null, answerText: null };
+    case 'truefalse':
+      // Verdadero/Falso los dibuja el cliente; no se guardan como opciones.
+      return { options: [], answerIndex: q.answerIndex, answerText: null };
+    default:
+      return { options: [], answerIndex: null, answerText: q.answerText };
+  }
+}
+
+async function loadAuthoringQuiz(db: Db, lessonId: string) {
+  return db.execute<Record<string, unknown>>(sql`
+    select q.id, q.kind, q.question,
+           q.answer_index as "answerIndex", q.answer_text as "answerText",
+           coalesce((
+             select json_agg(o.text order by o.order_index)
+               from quiz_question_options o
+              where o.quiz_question_id = q.id), '[]'::json) as options
+      from quiz_questions q
+     where q.lesson_id = ${lessonId}
+     order by q.order_index
+  `);
+}
+
+// ---------------------------------------------------------------------------
+// Autoría de la actividad
+// ---------------------------------------------------------------------------
+
+const rubricItemInput = z.object({
+  criterion: z.string().trim().min(1, 'Cada criterio necesita su texto.'),
+  points: z.number().int().min(0, 'Los puntos no pueden ser negativos.').default(0),
+});
+
+const activityBody = z.object({
+  description: z.string().trim().default(''),
+  deadline: z.iso.date('La fecha límite tiene que ser AAAA-MM-DD.').nullable().default(null),
+  requiresFile: z.boolean().default(false),
+  requiresText: z.boolean().default(true),
+  maxFiles: z.number().int().positive('Tiene que aceptar al menos un archivo.').default(1),
+  gradingMode: z.enum(['points100', 'passfail', 'review', 'scale5']).default('points100'),
+  allowedTypes: z
+    .array(z.enum(['pdf', 'video', 'document', 'image', 'zip']))
+    .default([]),
+  rubric: z.array(rubricItemInput).max(50, 'Son demasiados criterios.').default([]),
+});
+
+/**
+ * Configura la actividad de una lección: consigna, fecha, qué se entrega y con
+ * qué rúbrica se califica.
+ *
+ * Igual que el quiz, reemplaza el conjunto entero. La rúbrica y los tipos de
+ * archivo permitidos son listas que el formulario edita completas.
+ *
+ * `allowedTypes` vacío significa "cualquier tipo": es lo que ya asumía el
+ * portal del estudiante, y obligar a elegir uno rompería las actividades que
+ * hoy no tienen ninguno marcado.
+ */
+lessonRoutes.put('/:id/activity', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = activityBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  if (lesson.type !== 'activity') {
+    throw conflict(
+      'Solo una lección de tipo actividad tiene entregable. Cambiá el tipo de la lección primero.',
+      { type: lesson.type },
+    );
+  }
+
+  if (!body.requiresFile && !body.requiresText) {
+    throw conflict(
+      'La actividad tiene que pedir al menos texto o archivo: si no, no hay nada que entregar.',
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(lessonActivities)
+      .values({
+        lessonId: lesson.id,
+        description: body.description,
+        deadline: body.deadline,
+        requiresFile: body.requiresFile,
+        requiresText: body.requiresText,
+        maxFiles: body.maxFiles,
+        gradingMode: body.gradingMode,
+      })
+      .onConflictDoUpdate({
+        target: lessonActivities.lessonId,
+        set: {
+          description: body.description,
+          deadline: body.deadline,
+          requiresFile: body.requiresFile,
+          requiresText: body.requiresText,
+          maxFiles: body.maxFiles,
+          gradingMode: body.gradingMode,
+          updatedAt: new Date(),
+        },
+      });
+
+    await tx
+      .delete(activityAllowedTypes)
+      .where(eq(activityAllowedTypes.lessonId, lesson.id));
+    if (body.allowedTypes.length > 0) {
+      await tx.insert(activityAllowedTypes).values(
+        // Repetir un tipo en el formulario no es un error del que valga la
+        // pena avisar: la clave primaria lo rechazaría, así que se deduplica.
+        [...new Set(body.allowedTypes)].map((fileType) => ({
+          lessonId: lesson.id,
+          fileType,
+        })),
+      );
+    }
+
+    await tx
+      .delete(activityRubricItems)
+      .where(eq(activityRubricItems.lessonId, lesson.id));
+    if (body.rubric.length > 0) {
+      await tx.insert(activityRubricItems).values(
+        body.rubric.map((r, i) => ({
+          lessonId: lesson.id,
+          orderIndex: i + 1,
+          criterion: r.criterion,
+          points: r.points,
+        })),
+      );
+    }
+  });
+
+  return c.json(await loadActivity(db, lesson.id));
+});
+
+async function loadActivity(db: Db, lessonId: string) {
+  const [row] = await db.execute<Record<string, unknown>>(sql`
+    select a.description, a.deadline::text,
+           a.requires_file as "requiresFile", a.requires_text as "requiresText",
+           a.max_files as "maxFiles", a.grading_mode as "gradingMode",
+           coalesce((select json_agg(t.file_type order by t.file_type)
+                       from activity_allowed_types t
+                      where t.lesson_id = a.lesson_id), '[]'::json) as "allowedTypes",
+           coalesce((select json_agg(json_build_object(
+                              'criterion', r.criterion, 'points', r.points)
+                            order by r.order_index)
+                       from activity_rubric_items r
+                      where r.lesson_id = a.lesson_id), '[]'::json) as rubric
+      from lesson_activities a
+     where a.lesson_id = ${lessonId}
+  `);
+  if (!row) throw notFound('Esta lección no tiene actividad configurada.');
+  return row;
+}
+
 // ---------------------------------------------------------------------------
 // Quiz
 // ---------------------------------------------------------------------------
@@ -319,7 +707,17 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
   const lessonId = c.req.param('id');
   const body = quizAttemptBody.parse(await c.req.json());
 
-  await assertLessonVisible(db, user, lessonId);
+  const lesson = await assertLessonVisible(db, user, lessonId);
+
+  // Una encuesta no tiene respuestas correctas: calificarla daría siempre 0 y
+  // dejaría un intento reprobado en el historial de quien solo dio su opinión.
+  // El portal la manda por `POST /submissions`, no por acá.
+  if (lesson.type !== 'quiz') {
+    throw conflict(
+      'Esta lección no es un quiz, así que no se califica.',
+      { type: lesson.type },
+    );
+  }
 
   const questions = await db
     .select()
@@ -331,11 +729,13 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
     throw conflict('Esta lección no tiene preguntas configuradas.');
   }
 
+  const correctOrders = await loadCorrectOrders(db, questions);
+
   const correctness: Record<string, boolean> = {};
   let correct = 0;
   for (const question of questions) {
     const given = body.answers[question.id];
-    const ok = isCorrect(question, given);
+    const ok = isCorrect(question, given, correctOrders.get(question.id));
     correctness[question.id] = ok;
     if (ok) correct += 1;
   }
@@ -369,13 +769,18 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
  *
  * `multiple` y `truefalse` van por índice; `short` y `fill` por texto,
  * normalizando espacios, mayúsculas y tildes — quien escribe "Analisis" no
- * está equivocado respecto de "análisis". `order` todavía no se corrige
- * automáticamente: no hay ningún quiz que la use y adivinar el formato de su
- * clave sería inventar una regla.
+ * está equivocado respecto de "análisis".
+ *
+ * `order` sí se corrige: su clave es el orden en que están guardadas las
+ * opciones y el cliente manda los elementos unidos por `|`. Antes devolvía
+ * siempre `false` porque el formato no estaba definido en ningún lado; ahora lo
+ * fija el constructor de lecciones, que es quien escribe esas opciones. Sin
+ * esto, una pregunta de ordenar bajaba la nota de quien la respondía bien.
  */
 function isCorrect(
   question: typeof quizQuestions.$inferSelect,
   given: number | string | undefined,
+  correctOrder: string[] | undefined,
 ): boolean {
   if (given === undefined) return false;
 
@@ -386,7 +791,46 @@ function isCorrect(
     if (typeof given !== 'string' || question.answerText === null) return false;
     return normalize(given) === normalize(question.answerText);
   }
+  if (question.kind === 'order') {
+    if (typeof given !== 'string' || !correctOrder || correctOrder.length === 0) {
+      return false;
+    }
+    return given === correctOrder.join(ORDER_SEPARATOR);
+  }
   return false;
+}
+
+/**
+ * Separador con el que el cliente une los elementos de una pregunta `order`.
+ * Se comparan las dos cadenas ya unidas —nunca se parte la respuesta— así que
+ * un elemento que contenga el separador sigue comparándose bien.
+ */
+const ORDER_SEPARATOR = '|';
+
+/** El orden correcto de cada pregunta `order`, en una sola consulta. */
+async function loadCorrectOrders(
+  db: Db,
+  questions: (typeof quizQuestions.$inferSelect)[],
+): Promise<Map<string, string[]>> {
+  const ids = questions.filter((q) => q.kind === 'order').map((q) => q.id);
+  const byQuestion = new Map<string, string[]>();
+  if (ids.length === 0) return byQuestion;
+
+  const options = await db
+    .select({
+      questionId: quizQuestionOptions.quizQuestionId,
+      text: quizQuestionOptions.text,
+    })
+    .from(quizQuestionOptions)
+    .where(inArray(quizQuestionOptions.quizQuestionId, ids))
+    .orderBy(asc(quizQuestionOptions.orderIndex));
+
+  for (const option of options) {
+    const list = byQuestion.get(option.questionId) ?? [];
+    list.push(option.text);
+    byQuestion.set(option.questionId, list);
+  }
+  return byQuestion;
 }
 
 const normalize = (text: string) =>
@@ -407,9 +851,9 @@ async function assertLessonVisible(
   db: Db,
   user: ReturnType<typeof currentUser>,
   lessonId: string,
-): Promise<void> {
-  const [row] = await db.execute<{ ok: number }>(sql`
-    select 1 as ok
+): Promise<{ type: string }> {
+  const [row] = await db.execute<{ type: string }>(sql`
+    select l.type
       from lessons l
       join course_modules cm on cm.id = l.course_module_id
       join student_course_access a
@@ -418,6 +862,7 @@ async function assertLessonVisible(
      limit 1
   `);
   if (!row) throw notFound('No se encontró la lección.');
+  return row;
 }
 
 // ---------------------------------------------------------------------------

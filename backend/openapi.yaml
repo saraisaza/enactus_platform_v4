@@ -504,6 +504,41 @@ paths:
       responses:
         '200': { description: Archivado }
 
+  /courses/{id}/meta:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [courses]
+      summary: Reemplazar la categorización completa del curso
+      description: |
+        Etiquetas, objetivos, competencias, ODS, resultados de aprendizaje y
+        prerrequisitos. El constructor las edita en un solo formulario, así que
+        la API las recibe juntas y en una transacción: guardar etiquetas sí y
+        ODS no dejaría el curso a medio describir sin que nadie se enterara.
+
+        Los códigos de competencia y ODS se comprueban contra su catálogo antes
+        de escribir. Las claves foráneas ya lo impedirían, pero un código
+        inexistente saldría como un 500 sin explicación en vez de decir cuál
+        está mal.
+
+        Un objetivo con `category` se copia a la fase al vincular el curso a un
+        módulo de Ruta; sin categoría es un objetivo general del curso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseMeta' }
+      responses:
+        '200':
+          description: Categorización guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseMeta' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: |
+            Códigos fuera del catálogo, un prerrequisito que apunta a un curso
+            borrado, o el curso puesto como prerrequisito de sí mismo.
+
   /courses/{id}/modules:
     parameters: [{ $ref: '#/components/parameters/id' }]
     post:
@@ -689,8 +724,13 @@ paths:
         clave completa.
 
         `multiple` y `truefalse` se corrigen por índice; `short` y `fill` por
-        texto, normalizando espacios, mayúsculas y tildes. `order` todavía no
-        se corrige automáticamente y cuenta como no respondida. Aprueba con 60.
+        texto, normalizando espacios, mayúsculas y tildes; `order` comparando
+        los elementos unidos por `|` contra el orden en que están guardadas las
+        opciones, que es su clave. Aprueba con 60.
+
+        Solo lecciones de tipo `quiz`: una encuesta no tiene respuesta correcta
+        y calificarla dejaría un intento reprobado a quien solo dio su opinión.
+        El portal la manda por `POST /submissions`.
       requestBody:
         required: true
         content:
@@ -723,7 +763,144 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { description: Solo un estudiante resuelve un quiz }
         '404': { description: La lección no está entre sus cursos }
-        '409': { description: La lección no tiene preguntas configuradas }
+        '409': { description: La lección no es un quiz, o no tiene preguntas configuradas }
+
+  /lessons/{id}/quiz:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Leer las preguntas CON su clave de respuestas (autoría)
+      description: |
+        La **única** lectura de la API que devuelve `answerIndex`/`answerText`,
+        y existe por una razón concreta: sin ella, abrir en el constructor una
+        lección ya hecha mostraría las respuestas en blanco y el primer guardado
+        borraría la clave sin que nadie se enterara.
+
+        Va detrás del mismo permiso de edición que el `PUT`, no de la
+        visibilidad del curso: quien puede reescribir el quiz es exactamente
+        quien puede leer su clave. Un estudiante recibe 403.
+      responses:
+        '200':
+          description: Preguntas con su clave
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuthoringQuestion' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [courses]
+      summary: Reemplazar TODAS las preguntas
+      description: |
+        Reemplazo, no parcheo pregunta por pregunta: el constructor edita la
+        lista entera en un formulario y manda el resultado. Con endpoints por
+        pregunta, quien borrara una fila y guardara la vería seguir ahí.
+
+        Cada tipo usa una sola clave: `multiple` y `truefalse` guardan
+        `answerIndex`; `short` y `fill`, `answerText`; en `order` la clave **es**
+        el orden de las opciones. Las opciones vacías se rechazan en vez de
+        filtrarse — filtrarlas correría los índices y cambiaría en silencio cuál
+        es la respuesta correcta.
+
+        En una lección de tipo `survey` no se acepta ninguna clave: una encuesta
+        no tiene respuesta correcta.
+
+        Los intentos ya resueltos no se tocan: guardan su nota calculada en el
+        servidor, así que siguen siendo un registro válido de lo que pasó.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questions]
+              properties:
+                questions:
+                  type: array
+                  maxItems: 100
+                  items: { $ref: '#/components/schemas/AuthoringQuestion' }
+      responses:
+        '200':
+          description: Preguntas guardadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuthoringQuestion' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: |
+            La lección no es de tipo `quiz` ni `survey`, o hay preguntas
+            incompletas. En ese caso `details.problems` lista **todas** las
+            fallas (`{ question, problem }`), no solo la primera: quien arma un
+            quiz de diez preguntas prefiere verlas juntas.
+
+  /lessons/{id}/activity:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [courses]
+      summary: Configurar la actividad de la lección
+      description: |
+        Consigna, fecha límite, qué se entrega y con qué rúbrica se califica.
+        Igual que el quiz, reemplaza el conjunto entero.
+
+        `allowedTypes` vacío significa "cualquier tipo": es lo que ya asumía el
+        portal del estudiante, y obligar a elegir uno rompería las actividades
+        que hoy no tienen ninguno marcado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityInput' }
+      responses:
+        '200':
+          description: Actividad guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActivityInput' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: |
+            La lección no es de tipo `activity`, o la actividad no pide ni texto
+            ni archivo (no habría nada que entregar).
+
+  /lessons/{id}/resource:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Confirmar el recurso descargable subido (PDF, plantilla)
+      description: |
+        Tercer paso del mismo flujo que el video: el navegador ya subió el
+        archivo con la URL firmada de `POST /files/upload-url` (propósito
+        `lesson_resource`) y acá confirma la key.
+
+        La key tiene que venir de `lesson-resources/`. Es la misma garantía que
+        da el avatar —prefijo, no id de lección— porque el nombre lo genera el
+        servidor al firmar, sin la lección adentro.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, fileName, contentType, sizeBytes]
+              properties:
+                key: { type: string, pattern: '^lesson-resources/' }
+                fileName: { type: string }
+                contentType: { type: string }
+                sizeBytes: { type: integer, maximum: 26214400 }
+      responses:
+        '200': { description: Lección actualizada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: La key no salió del endpoint de subida de recursos }
+        '413': { description: Supera los 25 MB }
 
   /progress/lessons/{lessonId}/toggle:
     parameters:
@@ -1426,6 +1603,94 @@ components:
           format: uri
           nullable: true
           description: Obligatorio si `type = link`
+
+    AuthoringQuestion:
+      type: object
+      required: [question]
+      description: |
+        Una pregunta **con** su clave de respuestas. Solo aparece en los
+        endpoints de autoría (`GET`/`PUT /lessons/{id}/quiz`), nunca en la
+        lectura del curso que ve un estudiante.
+      properties:
+        id: { type: string, format: uuid, readOnly: true }
+        kind:
+          type: string
+          enum: [multiple, truefalse, short, fill, order]
+        question: { type: string, minLength: 1 }
+        options:
+          type: array
+          items: { type: string }
+          description: |
+            `multiple`: las alternativas, sin ninguna vacía. `order`: los
+            elementos **en el orden correcto** — ahí las opciones son la clave.
+            En el resto de los tipos se ignoran.
+        answerIndex:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: '`multiple`: índice de la opción correcta. `truefalse`: 0 = Verdadero, 1 = Falso.'
+        answerText:
+          type: string
+          nullable: true
+          description: '`short` y `fill`: se compara normalizando espacios, mayúsculas y tildes.'
+
+    ActivityInput:
+      type: object
+      properties:
+        description: { type: string }
+        deadline: { type: string, format: date, nullable: true }
+        requiresFile: { type: boolean, default: false }
+        requiresText: { type: boolean, default: true }
+        maxFiles: { type: integer, minimum: 1, default: 1 }
+        gradingMode:
+          type: string
+          enum: [points100, passfail, review, scale5]
+        allowedTypes:
+          type: array
+          items: { type: string, enum: [pdf, video, document, image, zip] }
+          description: Vacío = cualquier tipo.
+        rubric:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [criterion]
+            properties:
+              criterion: { type: string, minLength: 1 }
+              points: { type: integer, minimum: 0 }
+
+    CourseMeta:
+      type: object
+      properties:
+        tags:
+          type: array
+          items: { type: string }
+        objectives:
+          type: array
+          items:
+            type: object
+            required: [text]
+            properties:
+              id: { type: string, format: uuid, readOnly: true }
+              category:
+                type: string
+                nullable: true
+                enum: [entrepreneurship, business]
+              text: { type: string, minLength: 1 }
+        competencies:
+          type: array
+          items: { type: string }
+          description: Códigos del catálogo `competencies`.
+        ods:
+          type: array
+          items: { type: string }
+          description: Códigos del catálogo `ods_goals`.
+        learningOutcomes:
+          type: array
+          items: { type: string }
+        prerequisiteCourseIds:
+          type: array
+          items: { type: string, format: uuid }
 
     Reorder:
       type: object

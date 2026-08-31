@@ -23,7 +23,14 @@ export const fileRoutes = new Hono<AppEnv>();
 fileRoutes.use('*', requireAuth);
 
 const uploadBody = z.object({
-  purpose: z.enum(['evidence', 'communication_resource', 'submission', 'avatar']),
+  purpose: z.enum([
+    'evidence',
+    'communication_resource',
+    'submission',
+    'avatar',
+    'course_cover',
+    'lesson_resource',
+  ]),
   fileName: z.string().trim().min(1, 'Falta el nombre del archivo.'),
   contentType: z.string().trim().min(1, 'Falta el content-type.'),
   sizeBytes: z.number().int().positive('El tamaño debe ser mayor a 0.'),
@@ -35,6 +42,11 @@ const ALLOWED_ROLES: Record<string, readonly string[]> = {
   communication_resource: ['admin', 'superadmin'],
   submission: ['student', 'alumni'],
   avatar: ['superadmin', 'admin', 'advisor', 'donor', 'lxd', 'mentor', 'company', 'student', 'alumni'],
+  // Material de curso: lo sube quien puede editar contenido. Que la portada o
+  // el PDF terminen en ESTE curso lo decide después `PATCH /courses/:id` y
+  // `POST /lessons/:id/resource`, cada uno con su propio permiso de edición.
+  course_cover: ['lxd', 'admin', 'superadmin'],
+  lesson_resource: ['lxd', 'admin', 'superadmin'],
 };
 
 const FOLDER: Record<string, string> = {
@@ -42,6 +54,8 @@ const FOLDER: Record<string, string> = {
   communication_resource: 'communication-resources',
   submission: 'submissions',
   avatar: 'avatars',
+  course_cover: 'covers',
+  lesson_resource: 'lesson-resources',
 };
 
 fileRoutes.post('/upload-url', async (c) => {

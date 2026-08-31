@@ -12,6 +12,7 @@ import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
 import 'admin_backup.dart';
+import 'admin_management.dart';
 import 'admin_site_content.dart';
 import 'admin_users.dart';
 
@@ -38,6 +39,26 @@ class AdminPortal extends StatelessWidget {
             label: 'Usuarios',
             icon: Icons.manage_accounts_outlined,
             builder: (_) => AdminUsers(isSuperAdmin: isSuperAdmin)),
+        PortalTab(
+            label: 'Proyectos',
+            icon: Icons.lightbulb_outline,
+            builder: (_) => const AdminProjects()),
+        PortalTab(
+            label: 'Equipos',
+            icon: Icons.groups_outlined,
+            builder: (_) => const AdminGroups()),
+        PortalTab(
+            label: 'Laboratorios',
+            icon: Icons.science_outlined,
+            builder: (_) => const AdminLabs()),
+        PortalTab(
+            label: 'Cursos',
+            icon: Icons.video_library_outlined,
+            builder: (_) => const AdminCourses()),
+        PortalTab(
+            label: 'Evidencias donantes',
+            icon: Icons.volunteer_activism_outlined,
+            builder: (_) => const AdminEvidences()),
         PortalTab(
             label: 'Foro',
             icon: Icons.forum_outlined,

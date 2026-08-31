@@ -930,3 +930,104 @@ Future<bool> confirmDoubleDialog(
   );
   return result ?? false;
 }
+
+/// Envoltura adaptativa para un formulario con estado propio.
+///
+/// [showAdaptiveFormDialog] sirve cuando el contenido es un widget suelto;
+/// esta sirve cuando el formulario es un `StatefulWidget` que necesita su
+/// propio `setState` y sus botones tienen que ver ese estado — un guardado en
+/// curso, por ejemplo. La decisión adaptativa es la misma: en compact ocupa
+/// toda la pantalla (`Dialog.fullscreen`, con espacio para el teclado); en el
+/// resto, un `AlertDialog` con `maxWidth` que sí encoge, no un ancho fijo que
+/// desborda.
+///
+/// Se devuelve por `Navigator.pop` igual en los dos casos, así que quien la
+/// abre no necesita saber cuál se mostró.
+class AdaptiveFormShell extends StatelessWidget {
+  final String title;
+  final Widget child;
+  final double maxWidth;
+
+  /// Con `true` se deshabilitan los dos botones y el de guardar dice que está
+  /// trabajando. Evita el doble envío, que contra una API crea dos filas.
+  final bool saving;
+
+  final VoidCallback onCancel;
+  final VoidCallback onSave;
+  final String saveLabel;
+
+  const AdaptiveFormShell({
+    super.key,
+    required this.title,
+    required this.child,
+    required this.onCancel,
+    required this.onSave,
+    this.maxWidth = 480,
+    this.saving = false,
+    this.saveLabel = 'Guardar',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final acciones = [
+      TextButton(
+        onPressed: saving ? null : onCancel,
+        child: const Text('Cancelar'),
+      ),
+      ElevatedButton(
+        onPressed: saving ? null : onSave,
+        child: Text(saving ? 'Guardando…' : saveLabel),
+      ),
+    ];
+
+    if (context.isCompact) {
+      return Dialog.fullscreen(
+        backgroundColor: AppColors.background,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Cerrar',
+                  onPressed: saving ? null : onCancel,
+                ),
+                title: Text(title, style: const TextStyle(fontSize: 17)),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  // El teclado tapa el campo si no se le deja su espacio: un
+                  // diálogo no es un `Scaffold` y no lo hace solo.
+                  padding: EdgeInsets.fromLTRB(
+                      16, 8, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+                  child: child,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: AppColors.border)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [acciones[0], const SizedBox(width: 8), acciones[1]],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return AlertDialog(
+      title: Text(title, style: const TextStyle(fontSize: 18)),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: SingleChildScrollView(child: child),
+      ),
+      actions: acciones,
+    );
+  }
+}

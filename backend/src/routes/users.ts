@@ -63,12 +63,20 @@ function scopeFor(user: AuthUser) {
   }
 
   if (user.role === 'lxd') {
-    // Quienes tienen acceso a alguno de sus cursos.
+    // Quienes tienen acceso a alguno de sus cursos, más las cuentas de
+    // empresa.
+    //
+    // Las empresas están acá porque el constructor de cursos deja elegir el
+    // patrocinador y `PATCH /courses/:id` se lo permite al LXD: sin poder
+    // listarlas, podía guardar un patrocinio pero no ver de quién. Una cuenta
+    // de empresa es una organización, no una persona, y su nombre ya aparece
+    // como patrocinador en todo el resto de la plataforma.
     return and(
       alive,
-      sql`${users.id} in (select a.student_id from student_course_access a
-                            join courses c on c.id = a.course_id
-                           where c.creator_id = ${user.id})`,
+      sql`(${users.id} in (select a.student_id from student_course_access a
+                             join courses c on c.id = a.course_id
+                            where c.creator_id = ${user.id})
+           or ${users.role} = 'company')`,
     )!;
   }
 

@@ -504,6 +504,48 @@ paths:
       responses:
         '200': { description: Archivado }
 
+  /catalogs:
+    get:
+      tags: [courses]
+      summary: Competencias Enactus y ODS
+      description: |
+        Los dos catálogos fijos, tal como están en la base. El constructor de
+        cursos dibuja una ficha por cada uno.
+
+        Existen como endpoint en vez de como constante del cliente porque ya
+        son claves ajenas de verdad (`course_competencies`, `course_ods`):
+        copiarlas otra vez a Dart dejaría dos fuentes que se separan en
+        silencio — una competencia agregada en la base no aparecería en el
+        editor, y una escrita a mano en el cliente sería rechazada por la clave
+        ajena recién al guardar.
+
+        Son 12 y 17 filas que no cambian entre despliegues: se piden una vez
+        por sesión.
+      responses:
+        '200':
+          description: Los dos catálogos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  competencies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string, example: leadership }
+                        name: { type: string, example: Liderazgo }
+                  ods:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string, example: ods_6 }
+                        number: { type: integer, example: 6 }
+                        title: { type: string, example: Agua limpia y saneamiento }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /courses/{id}/meta:
     parameters: [{ $ref: '#/components/parameters/id' }]
     put:

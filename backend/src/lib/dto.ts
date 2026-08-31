@@ -51,5 +51,9 @@ export function limitedUser(user: UserRow) {
     career: user.career,
     city: user.city,
     avatarS3Key: user.avatarS3Key,
+    // El nombre comercial no es un dato personal: es cómo se llama la
+    // organización, y ya aparece como patrocinador en todo el resto de la
+    // plataforma. Sin él, una lista de empresas no se puede ni etiquetar.
+    companyName: user.companyName,
   };
 }

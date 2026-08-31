@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../models/authoring.dart';
 import '../models/models.dart';
 import '../models/progress.dart';
 import '../services/api_errors.dart';
@@ -234,8 +235,7 @@ class DataProvider extends ChangeNotifier {
   Future<Course> updateCourse(String id, Map<String, dynamic> changes) async {
     final json = await api.patch('/courses/$id', body: changes);
     final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
-    _courseById[id] = AsyncValue.data(course);
-    await reloadCoursesWithStats();
+    await _refreshAfterCourseMutation(id);
     return course;
   }
 
@@ -247,17 +247,27 @@ class DataProvider extends ChangeNotifier {
   Future<Course> publishCourse(String id) async {
     final json = await api.post('/courses/$id/publish');
     final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
-    _courseById[id] = AsyncValue.data(course);
-    await reloadCoursesWithStats();
+    await _refreshAfterCourseMutation(id);
     return course;
   }
 
   Future<Course> archiveCourse(String id) async {
     final json = await api.post('/courses/$id/archive');
     final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
-    _courseById[id] = AsyncValue.data(course);
-    await reloadCoursesWithStats();
+    await _refreshAfterCourseMutation(id);
     return course;
+  }
+
+  /// Vuelve a pedir el detalle después de escribir sobre el curso.
+  ///
+  /// **No** se guarda en caché lo que devuelve la escritura: esa respuesta es
+  /// la fila del curso a secas —sin módulos, sin lecciones y sin
+  /// categorización— y ponerla donde estaba el detalle completo vaciaba el
+  /// constructor apenas se guardaba cualquier campo. El curso seguía entero en
+  /// la base; lo que se rompía era la copia del cliente.
+  Future<void> _refreshAfterCourseMutation(String id) async {
+    await reloadCourse(id);
+    await reloadCoursesWithStats();
   }
 
   /// Borra un curso.
@@ -271,6 +281,175 @@ class DataProvider extends ChangeNotifier {
     _courseStats.remove(id);
     _courseStudents.remove(id);
     await reloadCoursesWithStats();
+  }
+
+  AsyncValue<Catalogs> _catalogs = const AsyncValue.idle();
+
+  /// Competencias Enactus y ODS, tal como están en la base.
+  ///
+  /// No son constantes de Dart: eran dos listas duplicadas —una acá, otra en
+  /// PostgreSQL— que se iban separando en silencio. Son 12 y 17 filas que no
+  /// cambian entre despliegues, así que se piden una vez por sesión.
+  AsyncValue<Catalogs> get catalogs {
+    _lazy(_catalogs, (v) => _catalogs = v, () async {
+      final json = await api.get('/catalogs');
+      return Catalogs.fromJson(Map<String, dynamic>.from(json as Map));
+    });
+    return _catalogs;
+  }
+
+  /// Reemplaza la categorización completa: etiquetas, objetivos, competencias,
+  /// ODS, resultados de aprendizaje y prerrequisitos.
+  ///
+  /// Va en una sola petición porque el editor las presenta como un solo
+  /// formulario: guardar unas sí y otras no dejaría el curso a medio describir.
+  Future<void> saveCourseMeta(String courseId, CourseMetaDraft meta) async {
+    await api.put('/courses/$courseId/meta', body: meta.toJson());
+    await reloadCourse(courseId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Módulos y lecciones
+  // -------------------------------------------------------------------------
+
+  Future<void> createModule(String courseId, String title) async {
+    await api.post('/courses/$courseId/modules', body: {'title': title});
+    await reloadCourse(courseId);
+  }
+
+  Future<void> renameModule(
+    String moduleId,
+    String title, {
+    required String courseId,
+  }) async {
+    await api.patch('/modules/$moduleId', body: {'title': title});
+    await reloadCourse(courseId);
+  }
+
+  Future<void> deleteModule(String moduleId, {required String courseId}) async {
+    await api.delete('/modules/$moduleId');
+    await reloadCourse(courseId);
+  }
+
+  /// Reordena TODOS los módulos de una vez.
+  ///
+  /// Un PATCH por módulo no sirve: con `unique(course_id, order_index)` el
+  /// intercambio falla en el primer paso. El servidor lo hace en transacción y
+  /// en dos pasadas.
+  Future<void> reorderModules(
+    String courseId,
+    List<String> orderedIds,
+  ) async {
+    await api.put('/courses/$courseId/modules/order',
+        body: {'orderedIds': orderedIds});
+    await reloadCourse(courseId);
+  }
+
+  Future<Lesson> createLesson(
+    String moduleId, {
+    required String title,
+    required String type,
+    String description = '',
+    int durationMin = 0,
+    String? externalUrl,
+  }) async {
+    final json = await api.post('/modules/$moduleId/lessons', body: {
+      'title': title,
+      'type': type,
+      'description': description,
+      'durationMin': durationMin,
+      'externalUrl': ?externalUrl,
+    });
+    return Lesson.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  Future<Lesson> updateLesson(
+    String lessonId,
+    Map<String, dynamic> changes,
+  ) async {
+    final json = await api.patch('/lessons/$lessonId', body: changes);
+    return Lesson.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  Future<void> deleteLesson(String lessonId, {required String courseId}) async {
+    await api.delete('/lessons/$lessonId');
+    await reloadCourse(courseId);
+  }
+
+  Future<void> reorderLessons(
+    String moduleId,
+    List<String> orderedIds, {
+    required String courseId,
+  }) async {
+    await api.put('/modules/$moduleId/lessons/order',
+        body: {'orderedIds': orderedIds});
+    await reloadCourse(courseId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Autoría de quiz y actividad
+  // -------------------------------------------------------------------------
+
+  /// Las preguntas CON su clave de respuestas, para editarlas.
+  ///
+  /// Es la única lectura de la API que la devuelve, y solo a quien puede editar
+  /// el curso. Sin ella, abrir una lección ya hecha mostraría las respuestas en
+  /// blanco y el primer guardado borraría la clave.
+  Future<List<QuizQuestionDraft>> lessonQuiz(String lessonId) async {
+    final json = await api.get('/lessons/$lessonId/quiz');
+    final body = Map<String, dynamic>.from(json as Map);
+    return (body['questions'] as List? ?? const [])
+        .map((e) =>
+            QuizQuestionDraft.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Reemplaza las preguntas de la lección.
+  ///
+  /// Si alguna está incompleta el servidor responde 409 con `problems`: la
+  /// lista de TODAS las fallas, no solo la primera.
+  Future<void> saveLessonQuiz(
+    String lessonId,
+    List<QuizQuestionDraft> questions, {
+    required String courseId,
+  }) async {
+    await api.put('/lessons/$lessonId/quiz',
+        body: {'questions': questions.map((q) => q.toJson()).toList()});
+    await reloadCourse(courseId);
+  }
+
+  Future<void> saveLessonActivity(
+    String lessonId,
+    ActivityDraft activity, {
+    required String courseId,
+  }) async {
+    await api.put('/lessons/$lessonId/activity', body: activity.toJson());
+    await reloadCourse(courseId);
+  }
+
+  /// Asocia un video externo (YouTube/Vimeo) a la lección.
+  Future<void> setLessonExternalVideo(
+    String lessonId,
+    String url, {
+    required String courseId,
+  }) async {
+    await api.post('/lessons/$lessonId/video-external', body: {'url': url});
+    await reloadCourse(courseId);
+  }
+
+  /// Confirma el recurso descargable que ya se subió a S3.
+  Future<void> setLessonResource(
+    String lessonId,
+    Map<String, dynamic> uploaded, {
+    required String courseId,
+  }) async {
+    await api.post('/lessons/$lessonId/resource', body: {
+      'key': uploaded['s3Key'],
+      'fileName': uploaded['fileName'],
+      'contentType': uploaded['contentType'],
+      'sizeBytes': uploaded['sizeBytes'],
+    });
+    await reloadCourse(courseId);
   }
 
   // -------------------------------------------------------------------------
@@ -454,7 +633,12 @@ class DataProvider extends ChangeNotifier {
     String? include,
   }) {
     final query = <String, dynamic>{
-      'pageSize': 200,
+      // 100 es el TOPE del servidor (`paginationSchema`), no un número
+      // elegido acá: pedir 200 devolvía 400 en cada llamada y dejaba sin
+      // datos a todo lo que lista personas. Cuando una lista pase de 100
+      // habrá que paginarla de verdad; subir el tope solo correría el
+      // problema.
+      'pageSize': 100,
       'role': ?role,
       'laboratoryId': ?laboratoryId,
       'groupId': ?groupId,

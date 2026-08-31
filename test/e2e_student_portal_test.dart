@@ -182,23 +182,32 @@ void main() {
         lessThanOrEqualTo(lab.moduleProgress.total));
   }, timeout: const Timeout(Duration(seconds: 30)));
 
-  test('el quiz lo califica el SERVIDOR', () async {
-    if (!up) return;
-    final s = await signIn(_enactus);
+  /// La primera lección del tipo pedido que el estudiante alcance.
+  ///
+  /// Busca por TIPO, no por "tiene preguntas": una encuesta también las tiene,
+  /// y quedarse con la última que apareciera devolvía la encuesta creyendo que
+  /// era el quiz.
+  Future<Lesson?> firstLessonOfType(Session s, LessonType type) async {
     final courses = await load<List<Course>>(() => s.data.courses);
-
-    Lesson? quiz;
     for (final c in courses) {
       final detail = await load<Course>(() => s.data.courseById(c.id));
       for (final module in detail.modules) {
         for (final lesson in module.lessons) {
-          if (lesson.quiz.isNotEmpty) quiz = lesson;
+          if (lesson.type == type) return lesson;
         }
       }
-      if (quiz != null) break;
     }
+    return null;
+  }
+
+  test('el quiz lo califica el SERVIDOR', () async {
+    if (!up) return;
+    final s = await signIn(_enactus);
+    final quiz = await firstLessonOfType(s, LessonType.quiz);
+
     expect(quiz, isNotNull, reason: 'el seed tiene al menos un quiz');
-    expect(quiz!.quiz.first.question, isNotEmpty);
+    expect(quiz!.quiz, isNotEmpty);
+    expect(quiz.quiz.first.question, isNotEmpty);
 
     final result = await s.data.submitQuiz(quiz.id, {
       for (final q in quiz.quiz) q.id: q.kind == 'multiple' ? 0 : '',
@@ -207,6 +216,24 @@ void main() {
     expect(result.score, inInclusiveRange(0, 100));
     // Dice QUÉ preguntas estuvieron bien, pero la clave no viaja.
     expect(result.correctness.keys, containsAll(quiz.quiz.map((q) => q.id)));
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  test('una ENCUESTA no se califica: no deja un intento reprobado', () async {
+    if (!up) return;
+    final s = await signIn(_enactus);
+    final survey = await firstLessonOfType(s, LessonType.survey);
+
+    expect(survey, isNotNull, reason: 'el seed tiene una encuesta');
+    // Tiene preguntas, igual que un quiz — por eso se buscaba por tipo.
+    expect(survey!.quiz, isNotEmpty);
+
+    // Una encuesta no tiene respuesta correcta: calificarla daría 0 y dejaría
+    // un intento reprobado a quien solo dio su opinión. El portal la manda
+    // como entrega, no como intento.
+    await expectLater(
+      s.data.submitQuiz(survey.id, {for (final q in survey.quiz) q.id: ''}),
+      throwsA(isA<ConflictError>()),
+    );
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   test('marcar una lección recalcula curso, módulo y fase de una sola vez',

@@ -781,6 +781,11 @@ class ActivityConfig {
 
   /// `points100` | `passfail` | `review` | `scale5`.
   final String gradingMode;
+
+  /// Extensiones aceptadas (`pdf`, `video`, `document`, `image`, `zip`).
+  /// Vacía = cualquier tipo.
+  final List<String> allowedTypes;
+
   final List<RubricItem> rubric;
 
   const ActivityConfig({
@@ -790,6 +795,7 @@ class ActivityConfig {
     this.requiresText = true,
     this.maxFiles = 1,
     this.gradingMode = 'points100',
+    this.allowedTypes = const [],
     this.rubric = const [],
   });
 
@@ -802,6 +808,8 @@ class ActivityConfig {
         requiresText: (j['requiresText'] as bool?) ?? true,
         maxFiles: (j['maxFiles'] as num?)?.toInt() ?? 1,
         gradingMode: (j['gradingMode'] as String?) ?? 'points100',
+        allowedTypes:
+            List<String>.from(j['allowedTypes'] as List? ?? const []),
         rubric: (j['rubric'] as List? ?? const [])
             .map((e) => RubricItem.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
@@ -931,6 +939,89 @@ class CourseStatus {
       };
 }
 
+/// Los dos catálogos fijos que sirve `GET /catalogs`.
+class Catalogs {
+  final List<Competency> competencies;
+  final List<OdsGoal> ods;
+
+  const Catalogs({this.competencies = const [], this.ods = const []});
+
+  factory Catalogs.fromJson(Map<String, dynamic> j) => Catalogs(
+        competencies: (j['competencies'] as List? ?? const [])
+            .map((e) => Competency.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        ods: (j['ods'] as List? ?? const [])
+            .map((e) => OdsGoal.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+
+  /// El nombre de una competencia por su código, o el código si no está.
+  String competencyLabel(String code) =>
+      competencies.firstWhere((c) => c.code == code,
+          orElse: () => Competency(code: code, name: code)).name;
+
+  /// "ODS 6: Agua limpia y saneamiento" a partir de `ods_6`.
+  String odsLabel(String code) {
+    final goal = ods.where((o) => o.code == code).firstOrNull;
+    return goal == null ? code : 'ODS ${goal.number}: ${goal.title}';
+  }
+}
+
+class Competency {
+  final String code;
+  final String name;
+
+  const Competency({required this.code, required this.name});
+
+  factory Competency.fromJson(Map<String, dynamic> j) => Competency(
+        code: j['code'] as String,
+        name: (j['name'] as String?) ?? '',
+      );
+}
+
+class OdsGoal {
+  final String code;
+  final int number;
+  final String title;
+
+  const OdsGoal({required this.code, this.number = 0, this.title = ''});
+
+  factory OdsGoal.fromJson(Map<String, dynamic> j) => OdsGoal(
+        code: j['code'] as String,
+        number: (j['number'] as num?)?.toInt() ?? 0,
+        title: (j['title'] as String?) ?? '',
+      );
+}
+
+/// Idioma del curso. La columna es texto libre con `es` por defecto; estas son
+/// las tres opciones que ofrece el constructor.
+class CourseLanguage {
+  static const all = ['es', 'en', 'pt'];
+
+  static String label(String code) => switch (code) {
+        'en' => 'Inglés',
+        'pt' => 'Portugués',
+        _ => 'Español',
+      };
+}
+
+/// Tipos de archivo que una actividad puede aceptar.
+///
+/// Son los identificadores del enum `deliverable_type` de PostgreSQL, no sus
+/// etiquetas: mandar "Documento" donde el servidor espera `document` se
+/// rechaza al guardar, sin que nada falle antes.
+class DeliverableType {
+  static const all = ['pdf', 'video', 'document', 'image', 'zip'];
+
+  static String label(String type) => switch (type) {
+        'video' => 'Video',
+        'document' => 'Documento',
+        'image' => 'Imagen',
+        'zip' => 'ZIP',
+        _ => 'PDF',
+      };
+}
+
 class Course {
   final String id;
   final String name;
@@ -978,12 +1069,18 @@ class Course {
   /// nadie aunque esté publicado, y la tarjeta lo avisa.
   final String? linkedModule;
 
-  /// Etiquetas, objetivos, competencias y ODS. Solo en el detalle, y ahí
-  /// siempre: son cuatro consultas chicas y la ficha los muestra todos.
+  /// Ventana de disponibilidad, en `AAAA-MM-DD`. Nulas = siempre abierto.
+  final String? openDate;
+  final String? closeDate;
+
+  /// Categorización. Solo en el detalle, y ahí siempre: son consultas chicas y
+  /// la ficha las muestra todas.
   final List<String> tags;
   final List<CourseObjective> objectives;
   final List<String> competencies;
   final List<String> ods;
+  final List<String> learningOutcomes;
+  final List<String> prerequisiteCourseIds;
 
   const Course({
     required this.id,
@@ -1010,10 +1107,14 @@ class Course {
     this.creatorName,
     this.stats,
     this.linkedModule,
+    this.openDate,
+    this.closeDate,
     this.tags = const [],
     this.objectives = const [],
     this.competencies = const [],
     this.ods = const [],
+    this.learningOutcomes = const [],
+    this.prerequisiteCourseIds = const [],
   });
 
   bool get isPublished => status == CourseStatus.published;
@@ -1068,6 +1169,8 @@ class Course {
             : CourseStats.fromJson(
                 Map<String, dynamic>.from(j['stats'] as Map)),
         linkedModule: j['linkedModule'] as String?,
+        openDate: j['openDate'] as String?,
+        closeDate: j['closeDate'] as String?,
         tags: List<String>.from(j['tags'] as List? ?? const []),
         objectives: (j['objectives'] as List? ?? const [])
             .map((e) =>
@@ -1076,6 +1179,10 @@ class Course {
         competencies:
             List<String>.from(j['competencies'] as List? ?? const []),
         ods: List<String>.from(j['ods'] as List? ?? const []),
+        learningOutcomes:
+            List<String>.from(j['learningOutcomes'] as List? ?? const []),
+        prerequisiteCourseIds: List<String>.from(
+            j['prerequisiteCourseIds'] as List? ?? const []),
       );
 
   Map<String, dynamic> toJson() => {

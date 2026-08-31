@@ -8,6 +8,7 @@ import 'services/api_service.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
 import 'views/auth/login_view.dart';
+import 'views/lxd/lxd_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
 import 'views/public/pending_portal_view.dart';
@@ -134,8 +135,7 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
           role: Roles.alumni,
           child: StudentPortal(initialTabLabel: 'Laboratorios'));
     case AppRoutes.lxd:
-      page = const _RoleGuard(
-          role: Roles.lxd, child: PendingPortalView(portalName: 'Portal LXD'));
+      page = const _RoleGuard(role: Roles.lxd, child: LxdPortal());
     case AppRoutes.mentor:
       page = const _RoleGuard(
           role: Roles.mentor,

@@ -17,6 +17,7 @@ import {
 } from './routes/content';
 import { courseTrackingRoutes } from './routes/course-tracking';
 import { userRoutes } from './routes/users';
+import { catalogRoutes } from './routes/catalogs';
 import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
 import { forumRoutes } from './routes/forum';
@@ -72,6 +73,9 @@ export function createApp(database: Database = defaultDb) {
   // Público: la portada se ve sin sesión.
   app.route('/site-content', siteRoutes);
   app.route('/users', userRoutes);
+  // Competencias y ODS: las dibuja el constructor de cursos y salen de la
+  // base, no de una constante copiada en el cliente.
+  app.route('/catalogs', catalogRoutes);
   app.route('/courses', courseRoutes);
   // Segundo router en la misma base: el seguimiento de un curso es de otro
   // rol (quien acompaña, no quien edita) y vive en su propio archivo.

@@ -115,26 +115,14 @@ class InstitutionalInfo {
       'Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.';
 }
 
-/// Objetivos de Desarrollo Sostenible (ONU) para asociar a proyectos.
-const List<String> odsList = [
-  'ODS 1: Fin de la pobreza',
-  'ODS 2: Hambre cero',
-  'ODS 3: Salud y bienestar',
-  'ODS 4: Educación de calidad',
-  'ODS 5: Igualdad de género',
-  'ODS 6: Agua limpia y saneamiento',
-  'ODS 7: Energía asequible y no contaminante',
-  'ODS 8: Trabajo decente y crecimiento económico',
-  'ODS 9: Industria, innovación e infraestructura',
-  'ODS 10: Reducción de las desigualdades',
-  'ODS 11: Ciudades y comunidades sostenibles',
-  'ODS 12: Producción y consumo responsables',
-  'ODS 13: Acción por el clima',
-  'ODS 14: Vida submarina',
-  'ODS 15: Vida de ecosistemas terrestres',
-  'ODS 16: Paz, justicia e instituciones sólidas',
-  'ODS 17: Alianzas para lograr los objetivos',
-];
+// Los ODS y las competencias Enactus **ya no viven acá**: los sirve
+// `GET /catalogs` desde las tablas `ods_goals` y `competencies`.
+//
+// Estaban duplicados —una lista en Dart y otra en PostgreSQL— y las dos se
+// iban separando en silencio: una competencia agregada en la base no aparecía
+// en el editor, y la etiqueta larga de Dart ("ODS 6: Agua limpia y
+// saneamiento") no es el código que acepta la API (`ods_6`), así que guardarla
+// habría fallado recién contra la clave ajena.
 
 /// Etapas de un proyecto, **en identificadores de la API** (`ideation`,
 /// `validation`, …), en su orden real.
@@ -154,13 +142,15 @@ const String courseResourcesPath = '../course_resources';
 // Catálogos del constructor de cursos (LMS)
 // ---------------------------------------------------------------------------
 
-const List<String> courseLevels = ['Básico', 'Intermedio', 'Avanzado'];
-
-const List<String> courseLanguages = ['Español', 'Inglés', 'Portugués'];
-
-const List<String> courseStatuses = ['Borrador', 'Publicado', 'Archivado'];
+// El nivel, el idioma, el estado y los tipos de entregable son
+// identificadores de la API con etiqueta aparte: `CourseLevel`,
+// `CourseLanguage`, `CourseStatus` y `DeliverableType` en `models.dart`.
+// Antes eran listas en español que se mandaban tal cual al servidor.
 
 /// Etiquetas sugeridas para categorizar cursos.
+///
+/// Estas SÍ son texto libre: `course_tags.tag` guarda lo que se escriba, sin
+/// catálogo detrás. El LXD puede agregar las suyas.
 const List<String> courseTags = [
   'IA',
   'Finanzas',
@@ -174,28 +164,3 @@ const List<String> courseTags = [
   'Comunidad',
 ];
 
-/// Competencias Enactus que un curso puede desarrollar. Alimentan las
-/// métricas de impacto formativo (horas por competencia).
-const List<String> enactusCompetencies = [
-  'Liderazgo',
-  'Innovación',
-  'Emprendimiento',
-  'Finanzas',
-  'Comunicación',
-  'Pitch',
-  'Sostenibilidad',
-  'Inteligencia Artificial',
-  'Trabajo en equipo',
-  'Diseño Centrado en el Usuario',
-  'Gestión de Proyectos',
-  'Medición de Impacto',
-];
-
-/// Tipos de archivo aceptables en entregables de actividades.
-const List<String> deliverableTypes = [
-  'PDF',
-  'Video',
-  'Documento',
-  'Imagen',
-  'ZIP',
-];

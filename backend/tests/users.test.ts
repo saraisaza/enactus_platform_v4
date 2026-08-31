@@ -126,10 +126,33 @@ describe('alcance por rol', () => {
     expect(page.data.map((u) => u.role)).not.toContain('donor');
   });
 
-  it('el LXD ve a quienes tienen acceso a SUS cursos', async () => {
+  it('el LXD ve a quienes tienen acceso a SUS cursos, y a las empresas', async () => {
     const page = await list(T.lxd!);
-    expect(page.data.every((u) => ['student', 'alumni'].includes(u.role)))
-      .toBe(true);
+    expect(page.data.length).toBeGreaterThan(0);
+
+    // Las empresas están en su alcance porque el constructor de cursos deja
+    // elegir el patrocinador y `PATCH /courses/:id` se lo permite: sin poder
+    // listarlas, guardaba un patrocinio sin ver de quién era.
+    expect(page.data.map((u) => u.role)).toContain('company');
+
+    // Y nada más. El resto del personal sigue fuera.
+    const roles = new Set(page.data.map((u) => u.role));
+    expect([...roles].sort()).toEqual(
+      [...roles].filter((r) => ['student', 'alumni', 'company'].includes(r)).sort(),
+    );
+    for (const oculto of ['admin', 'superadmin', 'advisor', 'mentor', 'donor', 'lxd']) {
+      expect(page.data.map((u) => u.role)).not.toContain(oculto);
+    }
+  });
+
+  it('la empresa que ve el LXD trae su nombre comercial y nada personal', async () => {
+    const page = await list(T.lxd!);
+    const empresa = page.data.find((u) => u.role === 'company') as
+      | Record<string, unknown>
+      | undefined;
+    expect(empresa).toBeDefined();
+    // Con nombre: una lista de empresas sin etiqueta no se puede usar.
+    expect(empresa!.companyName).toBeTruthy();
   });
 });
 

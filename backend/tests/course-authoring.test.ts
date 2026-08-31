@@ -514,6 +514,60 @@ describe('PUT /lessons/:id/activity', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Catálogos
+// ---------------------------------------------------------------------------
+
+describe('GET /catalogs', () => {
+  type Catalogos = {
+    competencies: { code: string; name: string }[];
+    ods: { code: string; number: number; title: string }[];
+  };
+
+  it('devuelve las competencias y los ODS de la base', async () => {
+    const res = await req('/catalogs', lxdToken);
+    expect(res.status).toBe(200);
+    const b = await body<Catalogos>(res);
+
+    expect(b.competencies).toHaveLength(12);
+    expect(b.ods).toHaveLength(17);
+    expect(b.competencies.map((x) => x.code)).toContain('artificial_intelligence');
+    expect(b.ods[5]!.code).toBe('ods_6');
+    expect(b.ods[5]!.title).toContain('Agua');
+  });
+
+  it('los ODS vienen en su orden numérico, no alfabético', async () => {
+    // `ods_10` va después de `ods_9`, no entre `ods_1` y `ods_2`.
+    const b = await body<Catalogos>(await req('/catalogs', lxdToken));
+    expect(b.ods.map((o) => o.number)).toEqual(
+      Array.from({ length: 17 }, (_, i) => i + 1),
+    );
+  });
+
+  it('los códigos que devuelve son los que acepta PUT /courses/:id/meta', async () => {
+    // Si estas dos listas se separaran, el editor ofrecería fichas que el
+    // guardado rechaza. Se prueba juntas a propósito.
+    const catalogos = await body<Catalogos>(await req('/catalogs', lxdToken));
+    const res = await put(`/courses/${CURSO}/meta`, lxdToken, {
+      tags: [],
+      objectives: [],
+      competencies: catalogos.competencies.map((x) => x.code),
+      ods: catalogos.ods.map((x) => x.code),
+      learningOutcomes: [],
+      prerequisiteCourseIds: [],
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it('cualquier rol con sesión los puede leer', async () => {
+    expect((await req('/catalogs', est1Token)).status).toBe(200);
+  });
+
+  it('sin sesión, no', async () => {
+    expect((await app.request('/catalogs')).status).toBe(401);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Categorización del curso
 // ---------------------------------------------------------------------------
 

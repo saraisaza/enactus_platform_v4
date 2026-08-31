@@ -350,6 +350,55 @@ describe('reordenamiento', () => {
   });
 });
 
+describe('include=stats', () => {
+  it('trae las cifras de cada curso en una sola consulta', async () => {
+    const res = await req('/courses?pageSize=100&include=stats', lxdToken);
+    expect(res.status).toBe(200);
+    const page = await body<{
+      data: {
+        id: string;
+        stats: {
+          enrolled: number;
+          completed: number;
+          avgProgress: number;
+          avgGrade: number | null;
+          pending: number;
+        };
+        linkedModule: string | null;
+      }[];
+    }>(res);
+
+    expect(page.data.length).toBeGreaterThan(0);
+    for (const curso of page.data) {
+      expect(curso.stats.completed).toBeLessThanOrEqual(curso.stats.enrolled);
+      expect(curso.stats.avgProgress).toBeGreaterThanOrEqual(0);
+      expect(curso.stats.avgProgress).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('las cifras coinciden con las del endpoint de seguimiento', async () => {
+    // Dos caminos al mismo dato: la tarjeta del portal y la pantalla de
+    // seguimiento no pueden decir cosas distintas.
+    const page = await body<{ data: { id: string; stats: { enrolled: number } }[] }>(
+      await req('/courses?pageSize=100&include=stats', lxdToken),
+    );
+    const curso = page.data.find((c) => c.id === seedId('crs_ia_1'));
+    expect(curso).toBeDefined();
+
+    const seguimiento = await body<{ enrolled: number }>(
+      await req(`/courses/${seedId('crs_ia_1')}/stats`, lxdToken),
+    );
+    expect(curso!.stats.enrolled).toBe(seguimiento.enrolled);
+  });
+
+  it('sin el include no se agregan las cifras', async () => {
+    const page = await body<{ data: Record<string, unknown>[] }>(
+      await req('/courses?pageSize=100', lxdToken),
+    );
+    expect(page.data[0]).not.toHaveProperty('stats');
+  });
+});
+
 describe('URL de subida de video', () => {
   let lessonId = '';
 

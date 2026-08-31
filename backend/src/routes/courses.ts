@@ -108,6 +108,13 @@ courseRoutes.get('/', async (c) => {
     data = await withProgress(db, user.id, data);
   }
 
+  // `include=stats` agrega las cifras de seguimiento de cada curso en UNA
+  // consulta para toda la página. Las tarjetas del portal LXD las muestran, y
+  // pedirlas por tarjeta sería una petición por curso.
+  if (include.has('stats')) {
+    data = await withStats(db, data);
+  }
+
   if (include.has('modules')) {
     data = await Promise.all(
       data.map(async (course) => ({
@@ -119,6 +126,83 @@ courseRoutes.get('/', async (c) => {
 
   return c.json(paginated(data, total?.value ?? 0, query));
 });
+
+/**
+ * Cifras de seguimiento por curso, y a qué módulo de la Ruta está vinculado.
+ *
+ * Una sola consulta para la página entera. La tarjeta del LXD muestra las dos
+ * cosas, y resolverlas por tarjeta serían dos peticiones por curso.
+ */
+async function withStats(
+  db: Db,
+  rows: Record<string, unknown>[],
+): Promise<Record<string, unknown>[]> {
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id as string);
+
+  const stats = await db.execute<{
+    courseId: string;
+    enrolled: number;
+    completed: number;
+    avgProgress: string;
+    avgGrade: string | null;
+    pending: number;
+    linkedModule: string | null;
+  }>(sql`
+    select c.id as "courseId",
+           coalesce(p.enrolled, 0)::int             as enrolled,
+           coalesce(p.completed, 0)::int            as completed,
+           coalesce(p.avg_progress, 0)::text        as "avgProgress",
+           s.avg_grade::text                        as "avgGrade",
+           coalesce(s.pending, 0)::int              as pending,
+           l.module_title                           as "linkedModule"
+      from courses c
+      left join lateral (
+        select count(*)          as enrolled,
+               count(*) filter (where cp.is_complete) as completed,
+               avg(cp.ratio)     as avg_progress
+          from student_course_access a
+          left join course_progress cp
+                 on cp.student_id = a.student_id and cp.course_id = a.course_id
+         where a.course_id = c.id
+      ) p on true
+      left join lateral (
+        select avg(sub.grade) filter (where sub.graded_at is not null) as avg_grade,
+               count(*) filter (where sub.graded_at is null)           as pending
+          from submissions sub
+         where sub.course_id = c.id and sub.deleted_at is null
+      ) s on true
+      left join lateral (
+        select rm.title as module_title
+          from ruta_module_courses rmc
+          join ruta_modules rm on rm.id = rmc.ruta_module_id
+         where rmc.course_id = c.id
+         limit 1
+      ) l on true
+     where c.id = any(${sql.param(ids)}::uuid[])
+  `);
+
+  const byId = new Map(stats.map((s) => [s.courseId, s]));
+  return rows.map((r) => {
+    const s = byId.get(r.id as string);
+    return {
+      ...r,
+      stats: {
+        enrolled: s?.enrolled ?? 0,
+        completed: s?.completed ?? 0,
+        avgProgress: Number(s?.avgProgress ?? 0),
+        // `null`, no 0: "nadie tiene nota" y "todos sacaron cero" son cosas
+        // distintas y la tarjeta las muestra distinto.
+        avgGrade: s?.avgGrade == null ? null : Number(s.avgGrade),
+        pending: s?.pending ?? 0,
+      },
+      // A qué módulo de la Ruta está vinculado, o `null`. La tarjeta avisa
+      // cuando un curso de eduXaction todavía no está en ninguna Ruta:
+      // publicarlo así no le llega a nadie.
+      linkedModule: s?.linkedModule ?? null,
+    };
+  });
+}
 
 courseRoutes.get('/:id', async (c) => {
   const user = currentUser(c);

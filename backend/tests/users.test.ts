@@ -327,7 +327,11 @@ describe('include=team,progress', () => {
       // La etapa va como identificador, no como etiqueta: el cliente traduce.
       expect(team.projectStage).toMatch(/^[a-z_]+$/);
 
-      const progress = conEquipo!.overallProgress as Record<string, number>;
+      const progress = conEquipo!.overallProgress as {
+        ratio: number;
+        coursesTotal: number;
+        coursesDone: number;
+      };
       expect(progress.ratio).toBeGreaterThanOrEqual(0);
       expect(progress.ratio).toBeLessThanOrEqual(1);
       expect(progress.coursesDone).toBeLessThanOrEqual(progress.coursesTotal);
@@ -346,7 +350,7 @@ describe('include=team,progress', () => {
       select coalesce(avg(ratio), 0)::float8 as ratio
         from course_progress where student_id = ${seedId('est1')}
     `;
-    const progress = fila!.overallProgress as Record<string, number>;
+    const progress = fila!.overallProgress as { ratio: number };
     expect(progress.ratio).toBeCloseTo(esperado!.ratio, 4);
   });
 

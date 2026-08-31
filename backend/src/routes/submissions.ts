@@ -148,8 +148,61 @@ submissionRoutes.get('/', async (c) => {
     .from(submissions)
     .where(where);
 
-  return c.json(paginated(rows, total?.value ?? 0, query));
+  return c.json(paginated(await withContext(db, rows), total?.value ?? 0, query));
 });
+
+/**
+ * Agrega a cada entrega el nombre de quien la hizo, el del curso y la escala
+ * de calificación que corresponde.
+ *
+ * Sin esto, la bandeja de calificaciones haría tres peticiones por entrega:
+ * el estudiante, el curso y la lección — para poder escribir una sola línea
+ * de encabezado.
+ *
+ * `gradingMode` merece una nota: una entrega YA calificada guarda su escala
+ * (el número solo no significa nada), pero una sin calificar todavía no
+ * tiene, así que se toma la de la actividad. Si tampoco hay actividad —una
+ * entrega libre— queda `null` y la pantalla ofrece elegirla.
+ */
+async function withContext(
+  db: Db,
+  rows: (typeof submissions.$inferSelect)[],
+): Promise<Record<string, unknown>[]> {
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id);
+
+  const extra = await db.execute<{
+    id: string;
+    studentName: string | null;
+    courseName: string | null;
+    lessonTitle: string | null;
+    activityGradingMode: string | null;
+  }>(sql`
+    select s.id,
+           u.name  as "studentName",
+           c.name  as "courseName",
+           l.title as "lessonTitle",
+           a.grading_mode as "activityGradingMode"
+      from submissions s
+      left join users u on u.id = s.student_id
+      left join courses c on c.id = s.course_id
+      left join lessons l on l.id = s.lesson_id
+      left join lesson_activities a on a.lesson_id = s.lesson_id
+     where s.id = any(${sql.param(ids)}::uuid[])
+  `);
+
+  const byId = new Map(extra.map((e) => [e.id, e]));
+  return rows.map((r) => {
+    const e = byId.get(r.id);
+    return {
+      ...r,
+      studentName: e?.studentName ?? null,
+      courseName: e?.courseName ?? null,
+      lessonTitle: e?.lessonTitle ?? null,
+      gradingMode: r.gradingMode ?? e?.activityGradingMode ?? null,
+    };
+  });
+}
 
 /** Crear una entrega: solo el propio estudiante, y solo donde tiene acceso. */
 submissionRoutes.post('/', async (c) => {

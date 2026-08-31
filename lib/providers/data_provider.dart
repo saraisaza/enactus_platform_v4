@@ -85,6 +85,7 @@ class DataProvider extends ChangeNotifier {
 
   void _resetAll() {
     _courses = const AsyncValue.idle();
+    _authoredCourses = const AsyncValue.idle();
     _rutaProgress = const AsyncValue.idle();
     _laboratories = const AsyncValue.idle();
     _allLaboratories = const AsyncValue.idle();
@@ -129,6 +130,33 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> reloadCourses() =>
       _refresh((v) => _courses = v, _fetchCourses, _courses.valueOrNull);
+
+  AsyncValue<List<Course>> _authoredCourses = const AsyncValue.idle();
+
+  /// Los cursos con sus cifras de seguimiento, para quien los administra.
+  ///
+  /// Es una lista aparte de [courses] porque pide otra cosa: `include=stats`
+  /// solo tiene sentido para quien acompaña el curso, y traerlo siempre le
+  /// costaría una consulta más a cada estudiante que abre "Mis Cursos".
+  AsyncValue<List<Course>> get coursesWithStats {
+    _lazy(_authoredCourses, (v) => _authoredCourses = v, _fetchCoursesWithStats);
+    return _authoredCourses;
+  }
+
+  Future<void> reloadCoursesWithStats() => _refresh(
+        (v) => _authoredCourses = v,
+        _fetchCoursesWithStats,
+        _authoredCourses.valueOrNull,
+      );
+
+  Future<List<Course>> _fetchCoursesWithStats() async {
+    final json = await api
+        .get('/courses', query: {'pageSize': 100, 'include': 'stats'});
+    return Page.fromJson(
+      Map<String, dynamic>.from(json as Map),
+      Course.fromJson,
+    ).data;
+  }
 
   /// Trae el progreso junto con los cursos: una tarjeta de curso muestra su
   /// avance, y pedirlo por separado sería una petición por tarjeta.
@@ -178,6 +206,72 @@ class DataProvider extends ChangeNotifier {
         },
         _courseById[id]?.valueOrNull,
       );
+
+  // -------------------------------------------------------------------------
+  // Autoría de cursos (LXD y Admin)
+  // -------------------------------------------------------------------------
+
+  /// Crea un curso y devuelve el creado, con su id real.
+  ///
+  /// El id lo asigna PostgreSQL: el cliente ya no lo inventa. Antes había un
+  /// `newId('crs')` que generaba uno local, y dos pestañas creando a la vez
+  /// podían chocar.
+  Future<Course> createCourse({
+    required String name,
+    String? laboratoryId,
+    bool isOpenLearning = false,
+  }) async {
+    final json = await api.post('/courses', body: {
+      'name': name,
+      'laboratoryId': laboratoryId,
+      'isOpenLearning': isOpenLearning,
+    });
+    final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadCoursesWithStats();
+    return course;
+  }
+
+  Future<Course> updateCourse(String id, Map<String, dynamic> changes) async {
+    final json = await api.patch('/courses/$id', body: changes);
+    final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
+    _courseById[id] = AsyncValue.data(course);
+    await reloadCoursesWithStats();
+    return course;
+  }
+
+  /// Publica el curso.
+  ///
+  /// El servidor comprueba que no queden lecciones a medio construir —una de
+  /// video sin enlace ni archivo, por ejemplo— y responde 409 con el detalle
+  /// de QUÉ falta. Ese detalle es justo lo que la pantalla necesita mostrar.
+  Future<Course> publishCourse(String id) async {
+    final json = await api.post('/courses/$id/publish');
+    final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
+    _courseById[id] = AsyncValue.data(course);
+    await reloadCoursesWithStats();
+    return course;
+  }
+
+  Future<Course> archiveCourse(String id) async {
+    final json = await api.post('/courses/$id/archive');
+    final course = Course.fromJson(Map<String, dynamic>.from(json as Map));
+    _courseById[id] = AsyncValue.data(course);
+    await reloadCoursesWithStats();
+    return course;
+  }
+
+  /// Borra un curso.
+  ///
+  /// Si está vinculado a una Ruta o tiene estudiantes con avance, el servidor
+  /// responde 409 con el detalle: borrarlo dejaría el progreso huérfano y el
+  /// módulo de la fase bloqueado en silencio para todo el laboratorio.
+  Future<void> deleteCourse(String id) async {
+    await api.delete('/courses/$id');
+    _courseById.remove(id);
+    _courseStats.remove(id);
+    _courseStudents.remove(id);
+    await reloadCoursesWithStats();
+  }
 
   // -------------------------------------------------------------------------
   // Progreso y Ruta de Impacto

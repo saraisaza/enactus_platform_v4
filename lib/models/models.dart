@@ -17,6 +17,8 @@
 ///    mapea lo que el servidor ya calculó.
 library;
 
+import 'progress.dart';
+
 // ---------------------------------------------------------------------------
 // Usuario
 // ---------------------------------------------------------------------------
@@ -966,6 +968,16 @@ class Course {
   final String? laboratoryName;
   final String? creatorName;
 
+  /// Cifras de seguimiento. Solo con `?include=stats` — las tarjetas del
+  /// portal LXD las muestran, y pedirlas por tarjeta sería una petición por
+  /// curso.
+  final CourseStats? stats;
+
+  /// Título del módulo de la Ruta al que está vinculado, o `null`. Solo con
+  /// `?include=stats`. Un curso de eduXaction sin vincular no le llega a
+  /// nadie aunque esté publicado, y la tarjeta lo avisa.
+  final String? linkedModule;
+
   /// Etiquetas, objetivos, competencias y ODS. Solo en el detalle, y ahí
   /// siempre: son cuatro consultas chicas y la ficha los muestra todos.
   final List<String> tags;
@@ -996,6 +1008,8 @@ class Course {
     this.modules = const [],
     this.laboratoryName,
     this.creatorName,
+    this.stats,
+    this.linkedModule,
     this.tags = const [],
     this.objectives = const [],
     this.competencies = const [],
@@ -1049,6 +1063,11 @@ class Course {
             .toList(),
         laboratoryName: j['laboratoryName'] as String?,
         creatorName: j['creatorName'] as String?,
+        stats: j['stats'] == null
+            ? null
+            : CourseStats.fromJson(
+                Map<String, dynamic>.from(j['stats'] as Map)),
+        linkedModule: j['linkedModule'] as String?,
         tags: List<String>.from(j['tags'] as List? ?? const []),
         objectives: (j['objectives'] as List? ?? const [])
             .map((e) =>
@@ -1185,6 +1204,13 @@ class Submission {
 
   final List<SubmissionFile> files;
 
+  /// Nombre de quien entregó, del curso y de la lección — resueltos por el
+  /// servidor. Sin esto, la bandeja de calificaciones haría tres peticiones
+  /// por entrega solo para escribir una línea de encabezado.
+  final String? studentName;
+  final String? courseName;
+  final String? lessonTitle;
+
   const Submission({
     required this.id,
     this.courseId,
@@ -1202,9 +1228,15 @@ class Submission {
     this.feedback = '',
     this.reviewedBy,
     this.files = const [],
+    this.studentName,
+    this.courseName,
+    this.lessonTitle,
   });
 
   bool get isGroup => groupId != null;
+
+  /// Quién la hizo, para mostrar. Una entrega de equipo no tiene estudiante.
+  String get authorLabel => studentName ?? (isGroup ? 'Entrega grupal' : '—');
   bool get isGraded => gradedAt != null;
   bool get isReviewed => feedback.isNotEmpty;
 
@@ -1233,6 +1265,9 @@ class Submission {
             .map((e) =>
                 SubmissionFile.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        studentName: j['studentName'] as String?,
+        courseName: j['courseName'] as String?,
+        lessonTitle: j['lessonTitle'] as String?,
       );
 
   /// La API devuelve `numeric` como cadena, para no perder precisión.

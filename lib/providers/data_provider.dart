@@ -739,6 +739,21 @@ class DataProvider extends ChangeNotifier {
     return (map['sent'] as num?)?.toInt() ?? 0;
   }
 
+  /// Le avisa al equipo de administración sin saber quiénes son.
+  ///
+  /// Es el canal de "necesito ayuda" de un aliado. Antes esta pantalla buscaba
+  /// el correo de un admin en la lista completa de usuarios: esa lista ya no
+  /// existe para un aliado, y no debería.
+  Future<int> notifyAdmins({
+    required String title,
+    String body = '',
+  }) async {
+    final json = await api.post('/notifications/admins',
+        body: {'title': title, 'body': body});
+    final map = Map<String, dynamic>.from(json as Map);
+    return (map['sent'] as num?)?.toInt() ?? 0;
+  }
+
   // -------------------------------------------------------------------------
   // BuscaTalento y métricas de impacto
   // -------------------------------------------------------------------------

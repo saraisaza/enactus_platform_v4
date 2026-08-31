@@ -33,7 +33,10 @@ class ColombiaGeometry {
       for (final rawRing in rawPoly as List) {
         final points = <LonLat>[];
         for (final rawPoint in rawRing as List) {
-          points.add(((rawPoint[0] as num).toDouble(), (rawPoint[1] as num).toDouble()));
+          points.add((
+            (rawPoint[0] as num).toDouble(),
+            (rawPoint[1] as num).toDouble(),
+          ));
         }
         rings.add(points);
       }
@@ -62,10 +65,18 @@ class MercatorFit {
 
   static ({double x, double y}) _forward(double lon, double lat) {
     final la = lat.clamp(-85.0, 85.0) * math.pi / 180;
-    return (x: lon * math.pi / 180, y: math.log(math.tan(math.pi / 4 + la / 2)));
+    return (
+      x: lon * math.pi / 180,
+      y: math.log(math.tan(math.pi / 4 + la / 2)),
+    );
   }
 
-  factory MercatorFit.fit(ColombiaGeometry geometry, double width, double height, double pad) {
+  factory MercatorFit.fit(
+    ColombiaGeometry geometry,
+    double width,
+    double height,
+    double pad,
+  ) {
     var x0 = double.infinity, y0 = double.infinity;
     var x1 = -double.infinity, y1 = -double.infinity;
     for (final polygon in geometry.polygons) {
@@ -79,7 +90,10 @@ class MercatorFit {
         }
       }
     }
-    final k = math.min((width - pad * 2) / (x1 - x0), (height - pad * 2) / (y1 - y0));
+    final k = math.min(
+      (width - pad * 2) / (x1 - x0),
+      (height - pad * 2) / (y1 - y0),
+    );
     final dx = (width - k * (x1 + x0)) / 2;
     final dy = (height + k * (y1 + y0)) / 2;
     return MercatorFit(k: k, dx: dx, dy: dy);
@@ -96,8 +110,12 @@ class _ColombiaLandPainter extends CustomPainter {
   final MercatorFit fit;
   final Color fillColor;
   final Color strokeColor;
-  const _ColombiaLandPainter(
-      {required this.geometry, required this.fit, required this.fillColor, required this.strokeColor});
+  const _ColombiaLandPainter({
+    required this.geometry,
+    required this.fit,
+    required this.fillColor,
+    required this.strokeColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -115,13 +133,19 @@ class _ColombiaLandPainter extends CustomPainter {
         path.close();
       }
     }
-    canvas.drawPath(path, Paint()..color = fillColor..style = PaintingStyle.fill);
     canvas.drawPath(
-        path,
-        Paint()
-          ..color = strokeColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2);
+      path,
+      Paint()
+        ..color = fillColor
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = strokeColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
   }
 
   // El polígono es fijo (100 puntos) y el repintado solo ocurre cuando
@@ -145,8 +169,12 @@ class CityMapPoint {
   final int value;
   final Color color;
   final List<String> universities;
-  const CityMapPoint(
-      {required this.city, required this.value, required this.color, required this.universities});
+  const CityMapPoint({
+    required this.city,
+    required this.value,
+    required this.color,
+    required this.universities,
+  });
 }
 
 class MapLegendEntry {
@@ -223,99 +251,154 @@ class _ColombiaStudentsMapState extends State<ColombiaStudentsMap> {
             children: [
               Icon(Icons.public_off, size: 34, color: colors.text3),
               const SizedBox(height: 14),
-              Text('No se pudo cargar el mapa',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.text)),
+              Text(
+                'No se pudo cargar el mapa',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: colors.text,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text('Las cifras y el listado siguen disponibles a la derecha.',
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5, color: colors.text3)),
+              Text(
+                'Las cifras y el listado siguen disponibles a la derecha.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: colors.text3),
+              ),
             ],
           ),
         ),
       );
     }
     if (_geometry == null) {
-      return Center(child: CircularProgressIndicator(strokeWidth: 2, color: colors.goldInk));
+      return Center(
+        child: CircularProgressIndicator(strokeWidth: 2, color: colors.goldInk),
+      );
     }
 
-    final maxValue =
-        widget.points.isEmpty ? 1 : widget.points.map((p) => p.value).reduce(math.max);
+    final maxValue = widget.points.isEmpty
+        ? 1
+        : widget.points.map((p) => p.value).reduce(math.max);
     // Los grandes se dibujan primero (abajo) y los chicos encima, igual que
     // el prototipo: si dos halos se superponen, el más chico gana el hover.
-    final sorted = [...widget.points]..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = [...widget.points]
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final size = Size(constraints.maxWidth, constraints.maxHeight);
-      if (size.width <= 0 || size.height <= 0) return const SizedBox.shrink();
-      final fit = MercatorFit.fit(_geometry!, size.width, size.height, 40);
-      final placed = [
-        for (final p in sorted) _PlacedPoint(p, fit.project(p.city.lon, p.city.lat), cityDotRadius(p.value, maxValue)),
-      ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        if (size.width <= 0 || size.height <= 0) return const SizedBox.shrink();
+        final fit = MercatorFit.fit(_geometry!, size.width, size.height, 40);
+        final placed = [
+          for (final p in sorted)
+            _PlacedPoint(
+              p,
+              fit.project(p.city.lon, p.city.lat),
+              cityDotRadius(p.value, maxValue),
+            ),
+        ];
 
-      void handleHover(Offset local) {
-        setState(() => _pointerLocal = local);
-        for (final e in placed.reversed) {
-          final haloR = math.max(6.0, e.r) * 1.9;
-          if ((e.pos - local).distance <= haloR) {
-            if (widget.hoveredCity != e.point.city.name) {
-              widget.onHoverCity(e.point.city.name);
+        /// La ciudad bajo un punto, o `null` si no hay ninguna cerca.
+        _PlacedPoint? cityAt(Offset local) {
+          for (final e in placed.reversed) {
+            // En táctil el dedo es mucho más grueso que el puntero: se acepta un
+            // radio mayor para que un punto chico no sea imposible de tocar.
+            final base = math.max(6.0, e.r) * 1.9;
+            final haloR = math.max(base, 22.0);
+            if ((e.pos - local).distance <= haloR) return e;
+          }
+          return null;
+        }
+
+        void handleHover(Offset local) {
+          setState(() => _pointerLocal = local);
+          final encontrada = cityAt(local);
+          if (encontrada != null) {
+            if (widget.hoveredCity != encontrada.point.city.name) {
+              widget.onHoverCity(encontrada.point.city.name);
             }
             return;
           }
+          if (widget.hoveredCity != null) widget.onHoverCity(null);
         }
-        if (widget.hoveredCity != null) widget.onHoverCity(null);
-      }
 
-      _PlacedPoint? hoveredPoint;
-      if (widget.hoveredCity != null) {
-        for (final e in placed) {
-          if (e.point.city.name == widget.hoveredCity) {
-            hoveredPoint = e;
-            break;
+        /// Toque: en una pantalla táctil no hay `hover`, así que sin esto el
+        /// mapa era decorativo — nunca se podía abrir la ficha de una ciudad.
+        /// Tocar una la selecciona; tocar fuera la suelta.
+        void handleTap(Offset local) {
+          setState(() => _pointerLocal = local);
+          final encontrada = cityAt(local);
+          widget.onHoverCity(encontrada?.point.city.name);
+        }
+
+        _PlacedPoint? hoveredPoint;
+        if (widget.hoveredCity != null) {
+          for (final e in placed) {
+            if (e.point.city.name == widget.hoveredCity) {
+              hoveredPoint = e;
+              break;
+            }
           }
         }
-      }
 
-      return MouseRegion(
-        onHover: (event) => handleHover(event.localPosition),
-        onExit: (_) {
-          setState(() => _pointerLocal = null);
-          if (widget.hoveredCity != null) widget.onHoverCity(null);
-        },
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            CustomPaint(
-              size: size,
-              painter: _ColombiaLandPainter(
-                geometry: _geometry!,
-                fit: fit,
-                fillColor: colors.surface2,
-                strokeColor: colors.border,
-              ),
+        return MouseRegion(
+          onHover: (event) => handleHover(event.localPosition),
+          onExit: (_) {
+            setState(() => _pointerLocal = null);
+            if (widget.hoveredCity != null) widget.onHoverCity(null);
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (details) => handleTap(details.localPosition),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CustomPaint(
+                  size: size,
+                  painter: _ColombiaLandPainter(
+                    geometry: _geometry!,
+                    fit: fit,
+                    fillColor: colors.surface2,
+                    strokeColor: colors.border,
+                  ),
+                ),
+                for (final e in placed)
+                  _CityDot(
+                    center: e.pos,
+                    radius: e.r,
+                    color: e.point.color,
+                    label: e.point.value >= maxValue * 0.35
+                        ? e.point.city.name
+                        : null,
+                    highlighted: widget.hoveredCity == e.point.city.name,
+                    dimmed:
+                        widget.hoveredCity != null &&
+                        widget.hoveredCity != e.point.city.name,
+                    isDark: widget.isDark,
+                    colors: colors,
+                  ),
+                if (hoveredPoint != null && _pointerLocal != null)
+                  _CityTooltip(
+                    anchor: _pointerLocal!,
+                    point: hoveredPoint.point,
+                    suffix: widget.tooltipSuffix,
+                  ),
+                Positioned(
+                  left: 22,
+                  bottom: 20,
+                  child: _MapLegend(
+                    legend: widget.legend,
+                    maxValue: maxValue,
+                    colors: colors,
+                    isDark: widget.isDark,
+                  ),
+                ),
+              ],
             ),
-            for (final e in placed)
-              _CityDot(
-                center: e.pos,
-                radius: e.r,
-                color: e.point.color,
-                label: e.point.value >= maxValue * 0.35 ? e.point.city.name : null,
-                highlighted: widget.hoveredCity == e.point.city.name,
-                dimmed: widget.hoveredCity != null && widget.hoveredCity != e.point.city.name,
-                isDark: widget.isDark,
-                colors: colors,
-              ),
-            if (hoveredPoint != null && _pointerLocal != null)
-              _CityTooltip(anchor: _pointerLocal!, point: hoveredPoint.point, suffix: widget.tooltipSuffix),
-            Positioned(
-              left: 22,
-              bottom: 20,
-              child: _MapLegend(
-                  legend: widget.legend, maxValue: maxValue, colors: colors, isDark: widget.isDark),
-            ),
-          ],
-        ),
-      );
-    });
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -343,8 +426,9 @@ class _CityDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final haloR = math.max(6.0, radius) * 1.9;
     final box = haloR * 2 + 40; // margen extra para que la etiqueta no se corte
-    final coreBorderColor =
-        highlighted ? colors.text : (isDark ? AppColors.background : Colors.white);
+    final coreBorderColor = highlighted
+        ? colors.text
+        : (isDark ? AppColors.background : Colors.white);
     final coreBorderWidth = highlighted ? 2.0 : (isDark ? 1.3 : 1.6);
 
     return Positioned(
@@ -366,7 +450,10 @@ class _CityDot extends StatelessWidget {
               Container(
                 width: haloR * 2,
                 height: haloR * 2,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.16)),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withValues(alpha: 0.16),
+                ),
               ),
               Container(
                 width: radius * 2,
@@ -374,7 +461,10 @@ class _CityDot extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: color,
-                  border: Border.all(color: coreBorderColor, width: coreBorderWidth),
+                  border: Border.all(
+                    color: coreBorderColor,
+                    width: coreBorderWidth,
+                  ),
                 ),
               ),
               if (label != null)
@@ -383,7 +473,11 @@ class _CityDot extends StatelessWidget {
                   left: 0,
                   right: 0,
                   child: Center(
-                    child: _StrokedLabel(text: label!, fillColor: colors.text2, strokeColor: colors.surface2),
+                    child: _StrokedLabel(
+                      text: label!,
+                      fillColor: colors.text2,
+                      strokeColor: colors.surface2,
+                    ),
                   ),
                 ),
             ],
@@ -401,22 +495,36 @@ class _StrokedLabel extends StatelessWidget {
   final String text;
   final Color fillColor;
   final Color strokeColor;
-  const _StrokedLabel({required this.text, required this.fillColor, required this.strokeColor});
+  const _StrokedLabel({
+    required this.text,
+    required this.fillColor,
+    required this.strokeColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Text(text,
-            style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                foreground: Paint()
-                  ..style = PaintingStyle.stroke
-                  ..strokeWidth = 3.5
-                  ..color = strokeColor)),
-        Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fillColor)),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3.5
+              ..color = strokeColor,
+          ),
+        ),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: fillColor,
+          ),
+        ),
       ],
     );
   }
@@ -426,7 +534,11 @@ class _CityTooltip extends StatelessWidget {
   final Offset anchor;
   final CityMapPoint point;
   final String suffix;
-  const _CityTooltip({required this.anchor, required this.point, required this.suffix});
+  const _CityTooltip({
+    required this.anchor,
+    required this.point,
+    required this.suffix,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -452,37 +564,71 @@ class _CityTooltip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                        width: 9,
-                        height: 9,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: point.color)),
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: point.color,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Text(point.city.name.toUpperCase(),
-                        style: knockoutHeading(fontSize: 21, fontWeight: AppWeights.display, color: Colors.white)),
+                    Text(
+                      point.city.name.toUpperCase(),
+                      style: knockoutHeading(
+                        fontSize: 21,
+                        fontWeight: AppWeights.display,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(point.city.department,
-                    style: TextStyle(fontSize: 11.5, color: Colors.white.withValues(alpha: 0.6))),
+                Text(
+                  point.city.department,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
+                ),
                 const SizedBox(height: 9),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('${point.value}',
-                        style: knockoutHeading(fontSize: 26, fontWeight: AppWeights.display, color: point.color)),
+                    Text(
+                      '${point.value}',
+                      style: knockoutHeading(
+                        fontSize: 26,
+                        fontWeight: AppWeights.display,
+                        color: point.color,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Text(suffix, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.72))),
+                    Text(
+                      suffix,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.72),
+                      ),
+                    ),
                   ],
                 ),
                 if (point.universities.isNotEmpty) ...[
                   const SizedBox(height: 7),
                   Container(
-                      height: 1,
-                      color: Colors.white.withValues(alpha: 0.12),
-                      margin: const EdgeInsets.only(bottom: 7)),
-                  Text(point.universities.join(' · '),
-                      style: TextStyle(fontSize: 11.5, height: 1.4, color: Colors.white.withValues(alpha: 0.66))),
+                    height: 1,
+                    color: Colors.white.withValues(alpha: 0.12),
+                    margin: const EdgeInsets.only(bottom: 7),
+                  ),
+                  Text(
+                    point.universities.join(' · '),
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.4,
+                      color: Colors.white.withValues(alpha: 0.66),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -498,8 +644,12 @@ class _MapLegend extends StatelessWidget {
   final int maxValue;
   final ContentColors colors;
   final bool isDark;
-  const _MapLegend(
-      {required this.legend, required this.maxValue, required this.colors, required this.isDark});
+  const _MapLegend({
+    required this.legend,
+    required this.maxValue,
+    required this.colors,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -512,10 +662,15 @@ class _MapLegend extends StatelessWidget {
     // `body.light .legend` en el prototipo: el vidrio pasa de negro a
     // blanco translúcido en tema claro, el texto sigue los tokens
     // (colors.text3/text2) en vez de un hex fijo.
-    final panelColor =
-        isDark ? AppColors.background.withValues(alpha: 0.72) : const Color(0xDBFFFFFF);
-    final panelBorder = isDark ? Colors.white.withValues(alpha: 0.1) : colors.border;
-    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.14) : colors.border;
+    final panelColor = isDark
+        ? AppColors.background.withValues(alpha: 0.72)
+        : const Color(0xDBFFFFFF);
+    final panelBorder = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : colors.border;
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.14)
+        : colors.border;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -532,23 +687,34 @@ class _MapLegend extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('ESTUDIANTES POR CIUDAD',
-                  style: TextStyle(
-                      fontSize: 10.5,
-                      letterSpacing: 10.5 * 0.14,
-                      fontWeight: FontWeight.w600,
-                      color: colors.text3)),
+              Text(
+                'ESTUDIANTES POR CIUDAD',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  letterSpacing: 10.5 * 0.14,
+                  fontWeight: FontWeight.w600,
+                  color: colors.text3,
+                ),
+              ),
               const SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   for (final v in steps) ...[
-                    _LegendSize(value: v, radius: math.max(4, cityDotRadius(v, maxValue)), colors: colors),
+                    _LegendSize(
+                      value: v,
+                      radius: math.max(4, cityDotRadius(v, maxValue)),
+                      colors: colors,
+                    ),
                     const SizedBox(width: 11),
                   ],
                 ],
               ),
-              Container(margin: const EdgeInsets.only(top: 12, bottom: 11), height: 1, color: dividerColor),
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 11),
+                height: 1,
+                color: dividerColor,
+              ),
               for (final entry in legend)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 7),
@@ -556,11 +722,18 @@ class _MapLegend extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: entry.color)),
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: entry.color,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Text(entry.label, style: TextStyle(fontSize: 11, color: colors.text2)),
+                      Text(
+                        entry.label,
+                        style: TextStyle(fontSize: 11, color: colors.text2),
+                      ),
                     ],
                   ),
                 ),
@@ -576,7 +749,11 @@ class _LegendSize extends StatelessWidget {
   final int value;
   final double radius;
   final ContentColors colors;
-  const _LegendSize({required this.value, required this.radius, required this.colors});
+  const _LegendSize({
+    required this.value,
+    required this.radius,
+    required this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -586,8 +763,9 @@ class _LegendSize extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.gold.withValues(alpha: 0.85)),
+            shape: BoxShape.circle,
+            color: AppColors.gold.withValues(alpha: 0.85),
+          ),
         ),
         const SizedBox(height: 5),
         Text('$value', style: TextStyle(fontSize: 10.5, color: colors.text3)),

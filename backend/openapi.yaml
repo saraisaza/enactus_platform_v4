@@ -1645,6 +1645,40 @@ paths:
         '200': { description: Página de perfiles }
         '403': { description: BuscaTalento es para Donantes y Empresas }
 
+  /notifications/admins:
+    post:
+      tags: [content]
+      summary: Avisarle al equipo de administración, sin saber quiénes son
+      description: |
+        El canal de "necesito ayuda" de un aliado. Existe porque la
+        alternativa era peor: la pantalla buscaba el correo de un admin en la
+        lista completa de usuarios y abría el cliente de correo. Esa lista ya
+        no existe para un aliado —y no debería—, así que el aviso va por la
+        bandeja de la plataforma y a quién le llega lo resuelve el servidor.
+
+        Cualquier cuenta con sesión puede usarlo. El cuerpo se firma con el
+        nombre y el correo de quien lo manda: sin eso el aviso llegaría sin
+        remitente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+                body: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: Enviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { sent: { type: integer } }
+        '409': { description: No hay ninguna cuenta de administración }
+
   /notifications/read:
     post:
       tags: [content]

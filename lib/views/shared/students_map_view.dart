@@ -2,14 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../models/models.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../services/api_errors.dart';
+import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/colombia_cities.dart';
-import '../../utils/constants.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/colombia_map.dart';
 import '../../widgets/common.dart';
@@ -40,15 +38,48 @@ class _StudentsMapViewState extends State<StudentsMapView> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final owner = context.watch<AuthProvider>().currentUser!;
     final colors = _colors;
-    final isCompany = owner.role == Roles.company;
 
-    final mineStudents =
-        isCompany ? data.studentsForCompany(owner.id) : data.studentsForDonor(owner.id);
-    final activeStudents = _scope == 'all' ? data.studentsAndAlumni : mineStudents;
+    // Dos orígenes distintos, y a propósito:
+    //
+    // - "Los que patrocino" salen de `users()`, cuyo alcance ya lo decide el
+    //   servidor para cada rol (una empresa ve su gente; un donante, los que
+    //   apoya). Acá no se vuelve a filtrar por dueño.
+    // - "La red completa" sale de `/talent`, el único listado con alcance más
+    //   ancho, que es exactamente lo que esta vista quiere mostrar.
+    //
+    // Antes las dos salían de tener toda la tabla de usuarios en el navegador.
+    final propios = data.users();
+    final red = _scope == 'all' ? data.talent : null;
 
-    final byCity = <String, List<AppUser>>{};
+    final estado = red == null
+        ? propios.map<List<_Persona>>(
+            (users) => [for (final u in users) _Persona(u.city, u.university)])
+        : red.map<List<_Persona>>(
+            (perfiles) => [for (final t in perfiles) _Persona(t.city, t.university)]);
+
+    return estado.when(
+      loading: () => DecoratedBox(
+        decoration: BoxDecoration(color: colors.bg),
+        child: const Center(child: BrandLoader()),
+      ),
+      error: (e) => DecoratedBox(
+        decoration: BoxDecoration(color: colors.bg),
+        child: ErrorState(e),
+      ),
+      data: (personas) => _buildMap(context, data, colors, personas,
+          propiosVacios: propios.valueOrNull?.isEmpty ?? false),
+    );
+  }
+
+  Widget _buildMap(
+    BuildContext context,
+    DataProvider data,
+    ContentColors colors,
+    List<_Persona> activeStudents, {
+    required bool propiosVacios,
+  }) {
+    final byCity = <String, List<_Persona>>{};
     for (final s in activeStudents) {
       if (s.city.isEmpty) continue;
       byCity.putIfAbsent(s.city, () => []).add(s);
@@ -88,7 +119,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
       (value: totalDepartments, label: 'Departamentos', primary: false),
     ];
 
-    final emptyMine = _scope == 'mine' && mineStudents.isEmpty;
+    final emptyMine = _scope == 'mine' && propiosVacios;
 
     return DecoratedBox(
       decoration: BoxDecoration(color: colors.bg),
@@ -258,7 +289,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
 
 class _CityGroup {
   final ColombiaCity city;
-  final List<AppUser> students;
+  final List<_Persona> students;
   const _CityGroup({required this.city, required this.students});
 }
 
@@ -484,16 +515,24 @@ class _MineEmptyState extends StatelessWidget {
     );
   }
 
+  /// Le avisa al equipo, sin enumerar administradores.
+  ///
+  /// Antes buscaba el correo de un admin en la lista completa de usuarios y
+  /// abría el cliente de correo. Ese listado ya no existe para un aliado —y no
+  /// debería—: el aviso va por la bandeja de la plataforma, y a quién le llega
+  /// lo resuelve el servidor.
   Future<void> _contactAdmin(BuildContext context) async {
-    final admins = data.usersByRole(Roles.admin);
-    if (admins.isEmpty) {
-      showAppSnack(context, 'No hay un administrador registrado todavía.', error: true);
-      return;
+    try {
+      await data.notifyAdmins(
+        title: 'Solicitud de estudiantes patrocinados',
+        body: 'Un aliado pidió que le asignen estudiantes a su aporte.',
+      );
+      if (context.mounted) {
+        showAppSnack(context, 'Le avisamos a tu administrador.');
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
     }
-    await launchUrl(Uri(
-        scheme: 'mailto',
-        path: admins.first.email,
-        query: 'subject=${Uri.encodeComponent('Estudiantes patrocinados')}'));
   }
 }
 
@@ -595,11 +634,15 @@ class _CityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `onTap` además del hover: en una pantalla táctil no hay `hover`, así
+    // que sin esto tocar una ciudad de la lista no hacía nada.
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => onHover(true),
       onExit: (_) => onHover(false),
-      child: AnimatedContainer(
+      child: GestureDetector(
+        onTap: () => onHover(!active),
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         margin: const EdgeInsets.only(bottom: 3),
@@ -638,8 +681,18 @@ class _CityRow extends StatelessWidget {
                   style: knockoutHeading(fontSize: 19, fontWeight: AppWeights.display, color: colors.text2)),
             ),
           ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Lo único que el mapa necesita de cada persona: dónde está y de qué
+/// universidad. Se declara acá para que las dos fuentes —`users()` y
+/// `/talent`, que devuelven modelos distintos— entren por el mismo camino.
+class _Persona {
+  final String city;
+  final String university;
+  const _Persona(this.city, this.university);
 }

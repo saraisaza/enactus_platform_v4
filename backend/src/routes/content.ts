@@ -8,7 +8,7 @@ import {
   evidences,
   notifications,
 } from '../db/schema';
-import { forbidden, notFound } from '../lib/errors';
+import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
 import {
   ADMIN_ROLES,
@@ -494,6 +494,49 @@ async function notifiableUserIds(
   `);
   return rows.map((r) => r.id);
 }
+
+/**
+ * Le avisa al equipo de administración, sin decir quiénes son.
+ *
+ * Existe porque la alternativa era peor: la pantalla de un aliado buscaba el
+ * correo de un admin en la lista completa de usuarios y abría el cliente de
+ * correo. Esa lista ya no existe para un aliado —y no debería—, así que el
+ * aviso va por la bandeja de la plataforma y a quién le llega lo resuelve el
+ * servidor.
+ *
+ * Cualquier cuenta con sesión puede usarlo: es el canal de "necesito ayuda".
+ * Va acotado a 500 caracteres para que no se convierta en otra cosa.
+ */
+notificationRoutes.post('/admins', async (c) => {
+  const user = currentUser(c);
+  const body = z
+    .object({
+      title: z.string().trim().min(1, 'El aviso necesita un título.').max(120),
+      body: z.string().trim().max(500).default(''),
+    })
+    .parse(await c.req.json());
+
+  const db = c.get('db');
+  const admins = await db.execute<{ id: string }>(sql`
+    select id from users
+     where role in ('admin', 'superadmin') and deleted_at is null
+  `);
+  if (admins.length === 0) {
+    throw conflict('No hay ninguna cuenta de administración registrada.');
+  }
+
+  // Quién lo mandó va en el cuerpo, no en el título: el título lo escribe
+  // quien pide, y sin la firma el aviso llegaría sin remitente.
+  await db.insert(notifications).values(
+    admins.map((a) => ({
+      userId: a.id,
+      title: body.title,
+      body: `${body.body}\n\n— ${user.name} (${user.email})`.trim(),
+    })),
+  );
+
+  return c.json({ sent: admins.length }, 201);
+});
 
 notificationRoutes.post('/read', async (c) => {
   const user = currentUser(c);

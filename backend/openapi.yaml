@@ -1064,6 +1064,27 @@ paths:
       responses:
         '200': { description: Página de laboratorios }
         '403': { description: Cuenta de Open Learning }
+    post:
+      tags: [laboratories]
+      summary: Crear un laboratorio, con sus TRES fases
+      description: |
+        Solo Admin. Las tres fases se crean junto con el laboratorio: no es una
+        comodidad, es que un laboratorio sin fases no tiene Ruta y la vista
+        `phase_unlocked` —la que decide qué ve cada estudiante— no tendría de
+        dónde partir. Crearlas por separado dejaría una ventana en la que el
+        laboratorio existe y no sirve.
+
+        Las fases después se editan (`PATCH /phases/{id}`), pero no se agregan
+        ni se borran: siempre son tres.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LabInput' }
+      responses:
+        '201': { description: Creado, con sus tres fases }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El patrocinador no es una cuenta de empresa }
 
   /laboratories/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -1077,6 +1098,226 @@ paths:
         '200': { description: OK }
         '403': { description: Cuenta de Open Learning }
         '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [laboratories]
+      summary: Editar el laboratorio (solo Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LabInput' }
+      responses:
+        '200': { description: Actualizado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El patrocinador no es una cuenta de empresa }
+    delete:
+      tags: [laboratories]
+      summary: Borrado lógico, y solo si no hay nadie adentro
+      description: |
+        Mismo criterio que el borrado de cursos: con estudiantes asignados o
+        certificados emitidos responde 409 con el detalle. Borrarlo dejaría el
+        avance de esas personas apuntando a una Ruta que ya no existe, y sus
+        certificados sin el laboratorio que los respalda.
+      responses:
+        '204': { description: Borrado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Tiene estudiantes o certificados }
+
+  /laboratories/{id}/mentors:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [laboratories]
+      summary: Reemplazar el conjunto de mentores
+      description: |
+        Reemplazo y no alta/baja de a uno: la pantalla edita la lista completa,
+        y dos llamadas (quitar a uno, agregar a otro) pueden quedar a la mitad.
+        Cada id tiene que ser una cuenta viva con rol `mentor`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200': { description: Nuevo conjunto }
+        '409': { description: Hay cuentas que no son mentores }
+
+  /laboratories/{id}/students:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [laboratories]
+      summary: Reemplazar los estudiantes asignados
+      description: |
+        Ojo con lo que esto significa: `student_laboratories` es también lo que
+        da acceso a los CURSOS del laboratorio (regla `studentHasCourse` para
+        Enactus). Quitar a alguien de acá le quita ese material — su avance no
+        se borra, pero deja de verlo.
+
+        Solo estudiantes (o egresados) **Enactus**: un Open Learning acá
+        recibiría acceso sin haber pasado por Enactus, que es justo el
+        aislamiento que la API sostiene en todas las demás lecturas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200': { description: Nuevo conjunto }
+        '409': { description: Hay cuentas que no son estudiantes Enactus }
+
+  /phases/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [laboratories]
+      summary: Editar título, descripción y fecha límite de una fase
+      responses:
+        '200': { description: Actualizada }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /phases/{id}/modules:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [laboratories]
+      summary: Agregar un módulo a la fase (al final)
+      description: |
+        Después de crearlo se recalcula qué módulo es el de **mentoría**: es
+        siempre el último de la fase, y el flag se recalcula en vez de confiar
+        en que alguien lo mueva a mano. También sube `content_version`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties: { title: { type: string, minLength: 1 } }
+      responses:
+        '201': { description: Creado }
+
+  /phases/{id}/modules/order:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [laboratories]
+      summary: Reordenar TODOS los módulos de la fase
+      description: |
+        Un solo endpoint y en dos pasadas: con `unique(phase_id, order_index)`
+        un intercambio de a uno falla en el primer paso. Recalcula el módulo de
+        mentoría al terminar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Reorder' }
+      responses:
+        '200': { description: Nuevo orden }
+        '409': { description: La lista no coincide con los módulos de la fase }
+
+  /phases/{id}/objectives:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [laboratories]
+      summary: Agregar un objetivo a la fase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                category: { type: string, enum: [entrepreneurship, business] }
+                text: { type: string, minLength: 1 }
+      responses:
+        '201': { description: Creado }
+
+  /ruta-modules/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [laboratories]
+      summary: Renombrar un módulo de la Ruta
+      responses: { '200': { description: Actualizado } }
+    delete:
+      tags: [laboratories]
+      summary: Borrar un módulo (renumera el resto)
+      description: |
+        Sus lecciones propias y sus vínculos a cursos caen por CASCADE. Los
+        cursos en sí no se tocan: viven fuera de la Ruta.
+      responses: { '204': { description: Borrado } }
+
+  /ruta-modules/{id}/courses:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [laboratories]
+      summary: Vincular cursos completos al módulo
+      description: |
+        Un curso vive en UN solo módulo por laboratorio. Si ya está en otro
+        módulo de la misma Ruta responde 409 con cuál: si no, su avance se
+        contaría dos veces.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200': { description: Nuevo conjunto }
+        '409': { description: Hay cursos ya vinculados a otro módulo de la Ruta }
+
+  /ruta-modules/{id}/lessons:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [laboratories]
+      summary: Lección propia del módulo (lectura o entrega, no de un curso)
+      description: |
+        Se edita y se borra con `PATCH`/`DELETE /lessons/{id}`, igual que una
+        lección de curso — esas rutas ya distinguen los dos padres.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LessonInput' }
+      responses:
+        '201': { description: Creada }
+        '409': { description: Una lección de tipo `link` sin `externalUrl` }
+
+  /objectives/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [laboratories]
+      summary: Editar un objetivo de fase
+      responses: { '200': { description: Actualizado } }
+    delete:
+      tags: [laboratories]
+      summary: Borrar un objetivo de fase
+      responses: { '204': { description: Borrado } }
+
+  /objectives/{id}/courses:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [laboratories]
+      summary: Los cursos que dan el objetivo por cumplido
+      description: |
+        El objetivo se completa cuando el estudiante terminó el 100% de TODOS
+        ellos. Un objetivo **sin cursos nunca se completa** —no se puede marcar
+        a mano— y eso traba la fase entera para todo el laboratorio, así que la
+        respuesta lo avisa con `neverCompletable: true` en vez de dejarlo pasar
+        callado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200':
+          description: Nuevo conjunto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courseIds:
+                    type: array
+                    items: { type: string, format: uuid }
+                  neverCompletable: { type: boolean }
+        '409': { description: Hay cursos que ya no existen }
 
   /projects:
     get:
@@ -1733,6 +1974,28 @@ components:
         prerequisiteCourseIds:
           type: array
           items: { type: string, format: uuid }
+
+    LabInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        objectives: { type: string }
+        sponsorCompanyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Tiene que ser una cuenta con rol `company`.
+
+    IdList:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items: { type: string, format: uuid }
+          description: El conjunto COMPLETO; reemplaza al anterior.
 
     Reorder:
       type: object

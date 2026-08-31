@@ -21,6 +21,12 @@ import { catalogRoutes } from './routes/catalogs';
 import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
 import { forumRoutes } from './routes/forum';
+import {
+  labAuthoringRoutes,
+  objectiveRoutes,
+  phaseRoutes,
+  rutaModuleRoutes,
+} from './routes/lab-authoring';
 import { labRoutes } from './routes/labs';
 import { lessonRoutes, moduleLessonRoutes } from './routes/lessons';
 import { groupRoutes, projectRoutes } from './routes/orgs';
@@ -90,6 +96,12 @@ export function createApp(database: Database = defaultDb) {
   app.route('/students', studentRoutes);
   app.route('/certificates', certificateRoutes);
   app.route('/laboratories', labRoutes);
+  // Escritura de laboratorios y de su Ruta de Impacto: otro rol (solo Admin)
+  // y otra clase de regla que la lectura, así que otro archivo.
+  app.route('/laboratories', labAuthoringRoutes);
+  app.route('/phases', phaseRoutes);
+  app.route('/ruta-modules', rutaModuleRoutes);
+  app.route('/objectives', objectiveRoutes);
   app.route('/projects', projectRoutes);
   app.route('/groups', groupRoutes);
   app.route('/submissions', submissionRoutes);

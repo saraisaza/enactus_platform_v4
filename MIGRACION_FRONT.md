@@ -161,6 +161,21 @@ HTTP falso con payloads de la **forma real** de la API, así que ejercitan el
 `ApiService` de verdad: si el backend cambia de forma, fallan por la misma
 razón por la que fallaría la app.
 
+### `e2e_provider_contract_test.dart` — por qué existe
+
+Toca **cada** lectura del provider con **cada uno** de los nueve roles y exige
+que ninguna responda error. Una lista vacía está bien —eso es alcance, y es lo
+correcto para muchos roles—; un 400 no.
+
+Existe por dos errores del mismo tipo que ninguna otra prueba veía: `users()` y
+`calendarEvents` pedían `pageSize: 200` cuando el tope del servidor es 100, así
+que respondían 400 **siempre**. Compilaba, el análisis estático no decía nada,
+y las pruebas del backend pasaban porque nunca mandaban ese número. Quedaban
+sin datos el buscador del encabezado, el selector de patrocinador y el
+calendario de los cuatro portales que lo muestran.
+
+La forma de que no vuelva a pasar no es acordarse.
+
 ---
 
 ## Estado por portal
@@ -169,8 +184,8 @@ razón por la que fallaría la app.
 |---|---|
 | Público (portada, ingreso) | ✅ Migrado |
 | **Estudiante / Alumni** | ✅ **Migrado y verificado de punta a punta** |
-| LXD | ⏳ Diferido — `migration_pending/` |
-| Admin | ⏳ Diferido |
+| **LXD** | ✅ **Migrado y verificado de punta a punta** (incluye el constructor de cursos y de lecciones) |
+| Admin | ⏳ Diferido — la API ya está lista (ver abajo) |
 | Mentor | ⏳ Diferido |
 | Asesor | ⏳ Diferido |
 | Empresa | ⏳ Diferido |
@@ -188,9 +203,13 @@ que explica por qué no se parchearon para que compilaran.
 
 ## Lo que falta
 
-- Los seis portales diferidos, en orden: LXD → Admin → Mentor → Asesor →
-  Empresa → Donante. Cada uno necesita endpoints que todavía no existen; el
-  más grande es un listado de usuarios con alcance por rol.
+- Los cinco portales diferidos, en orden: Admin → Mentor → Asesor → Empresa
+  → Donante. **La API que necesitan ya existe**: `/users` con alcance por rol,
+  `/catalogs`, autoría de cursos y autoría de laboratorios con su Ruta de
+  Impacto. Lo que falta de cada uno es la pantalla, no el endpoint — con una
+  excepción conocida: las métricas de impacto agregadas del panel Admin
+  (`hoursByCompetency`, `odsCompletionRate`, `sponsoredHoursByCompany`)
+  todavía no tienen endpoint.
 - **Reproducción de video**: un enlace externo ya se abre; un video propio dice
   claramente que necesita la distribución de CloudFront (Fase 6) en vez de
   quedarse cargando.

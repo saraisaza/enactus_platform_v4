@@ -30,6 +30,7 @@ const uploadBody = z.object({
     'avatar',
     'course_cover',
     'lesson_resource',
+    'site_gallery',
   ]),
   fileName: z.string().trim().min(1, 'Falta el nombre del archivo.'),
   contentType: z.string().trim().min(1, 'Falta el content-type.'),
@@ -47,6 +48,8 @@ const ALLOWED_ROLES: Record<string, readonly string[]> = {
   // `POST /lessons/:id/resource`, cada uno con su propio permiso de edición.
   course_cover: ['lxd', 'admin', 'superadmin'],
   lesson_resource: ['lxd', 'admin', 'superadmin'],
+  // La galería de la portada se ve SIN sesión: solo la administra el equipo.
+  site_gallery: ['admin', 'superadmin'],
 };
 
 const FOLDER: Record<string, string> = {
@@ -56,6 +59,7 @@ const FOLDER: Record<string, string> = {
   avatar: 'avatars',
   course_cover: 'covers',
   lesson_resource: 'lesson-resources',
+  site_gallery: 'site-gallery',
 };
 
 fileRoutes.post('/upload-url', async (c) => {

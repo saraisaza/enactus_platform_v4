@@ -2,7 +2,7 @@ import { and, asc, count, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { auditLog, users } from '../db/schema';
+import { auditLog, refreshTokens, users } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
@@ -434,7 +434,20 @@ userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
   return c.json(publicUser(created!), 201);
 });
 
-const updateBody = createBody.partial().omit({ password: true });
+/**
+ * El parcheo acepta una contraseña NUEVA, opcional.
+ *
+ * Es el único camino para restablecer la de alguien que la perdió, y sin él la
+ * plataforma no tenía ninguno. No se parece a los demás campos: no se guarda
+ * tal cual sino hasheada, y **cierra las sesiones abiertas de esa persona** —
+ * un restablecimiento que deja vivo el token anterior no restablece nada.
+ */
+const updateBody = createBody.partial().extend({
+  password: z
+    .string()
+    .min(6, 'La contraseña necesita al menos 6 caracteres.')
+    .optional(),
+});
 
 userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
   const admin = currentUser(c);
@@ -458,11 +471,28 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     throw forbidden('Solo un superadmin puede otorgar el rol de superadmin.');
   }
 
+  const { password, ...campos } = body;
+
   const [updated] = await db
     .update(users)
-    .set({ ...body, studentType, updatedAt: new Date() })
+    .set({
+      ...campos,
+      studentType,
+      ...(password ? { passwordHash: await hashPassword(password) } : {}),
+      updatedAt: new Date(),
+    })
     .where(eq(users.id, id))
     .returning();
+
+  // Restablecer la contraseña cierra las sesiones abiertas de esa persona. Si
+  // no, quien tuviera el token anterior seguiría dentro — y restablecer una
+  // contraseña justamente se hace cuando se sospecha de eso.
+  if (password) {
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.userId, id), isNull(refreshTokens.revokedAt)));
+  }
 
   await db.insert(auditLog).values({
     actorId: admin.id,
@@ -470,7 +500,12 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     entityType: 'user',
     entityId: id,
     oldValue: { role: before.role, studentType: before.studentType },
-    newValue: { role: updated!.role, studentType: updated!.studentType },
+    newValue: {
+      role: updated!.role,
+      studentType: updated!.studentType,
+      // Queda constancia de QUE se cambió, nunca de a qué.
+      passwordReset: password !== undefined,
+    },
     ip: c.get('requestIp'),
   });
 

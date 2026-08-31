@@ -63,6 +63,7 @@ afterAll(async () => {
 // ---------------------------------------------------------------------------
 
 type Metrics = {
+  counts: Record<string, number | undefined>;
   hoursByCompetency: { code: string; name: string; hours: number }[];
   odsCompletionRate: {
     code: string;
@@ -87,6 +88,38 @@ describe('GET /admin/metrics', () => {
     expect(Array.isArray(m.hoursByCompetency)).toBe(true);
     expect(Array.isArray(m.odsCompletionRate)).toBe(true);
     expect(Array.isArray(m.sponsoredHoursByCompany)).toBe(true);
+  });
+
+  it('los conteos coinciden con la base, sin techo de paginación', async () => {
+    // Es la razón por la que están en el servidor: contar la lista del cliente
+    // dejaría de crecer al llegar a los 100 de una página, y el panel
+    // mostraría un número que parece bien y está mal.
+    const m = await body<Metrics>(await req('/admin/metrics', adminToken));
+
+    const [esperado] = await sql<
+      { cursos: number; laboratorios: number; universidades: number }[]
+    >`
+      select (select count(*)::int from courses where deleted_at is null) as cursos,
+             (select count(*)::int from laboratories where deleted_at is null) as laboratorios,
+             (select count(distinct university)::int from users
+               where university <> '' and deleted_at is null) as universidades
+    `;
+    expect(m.counts.courses).toBe(esperado!.cursos);
+    expect(m.counts.laboratories).toBe(esperado!.laboratorios);
+    expect(m.counts.universities).toBe(esperado!.universidades);
+  });
+
+  it('los conteos excluyen lo borrado lógicamente', async () => {
+    const antes = await body<Metrics>(await req('/admin/metrics', adminToken));
+    const [curso] = await sql<{ id: string }[]>`
+      select id from courses where deleted_at is null limit 1
+    `;
+    await sql`update courses set deleted_at = now() where id = ${curso!.id}`;
+
+    const despues = await body<Metrics>(await req('/admin/metrics', adminToken));
+    expect(despues.counts.courses).toBe(antes.counts.courses! - 1);
+
+    await sql`update courses set deleted_at = null where id = ${curso!.id}`;
   });
 
   it('las horas por competencia coinciden con el cálculo directo', async () => {
@@ -503,5 +536,84 @@ describe('GET /users?include=reviews', () => {
       await req('/users?role=mentor&pageSize=100', adminToken),
     );
     expect(page.data[0]).not.toHaveProperty('reviewsCount');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Galería de la portada
+// ---------------------------------------------------------------------------
+
+describe('Galería de la página principal', () => {
+  let imagenId = '';
+
+  it('agrega una imagen con key de site-gallery/', async () => {
+    const res = await req(
+      '/site-content/gallery',
+      adminToken,
+      json({ s3Key: `site-gallery/prueba-${Date.now()}.png` }),
+    );
+    expect(res.status).toBe(201);
+    const creada = await body<{ id: string }>(res);
+    imagenId = creada.id;
+  });
+
+  it('aparece en la lectura pública, con su id para administrarla', async () => {
+    const res = await app.request('/site-content');
+    expect(res.status).toBe(200);
+    const b = await body<{
+      galleryImages: string[];
+      gallery: { id: string; url: string }[];
+    }>(res);
+    // Sin S3 configurado la galería viene vacía: lo que se prueba es la forma.
+    expect(Array.isArray(b.galleryImages)).toBe(true);
+    expect(Array.isArray(b.gallery)).toBe(true);
+  });
+
+  it('RECHAZA una key de otra carpeta', async () => {
+    // La portada se ve sin sesión: publicar acá el adjunto de una entrega lo
+    // haría firmable para cualquiera que entrara.
+    const res = await req(
+      '/site-content/gallery',
+      adminToken,
+      json({ s3Key: 'submissions/privado.pdf' }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('la misma imagen dos veces es 409, no una fila repetida', async () => {
+    const key = `site-gallery/repetida-${Date.now()}.png`;
+    expect(
+      (await req('/site-content/gallery', adminToken, json({ s3Key: key })))
+        .status,
+    ).toBe(201);
+    expect(
+      (await req('/site-content/gallery', adminToken, json({ s3Key: key })))
+        .status,
+    ).toBe(409);
+  });
+
+  it('un LXD no toca la galería de la portada', async () => {
+    const res = await req(
+      '/site-content/gallery',
+      lxdToken,
+      json({ s3Key: 'site-gallery/suya.png' }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('la quita', async () => {
+    const res = await req(`/site-content/gallery/${imagenId}`, adminToken, {
+      method: 'DELETE',
+    });
+    expect(res.status).toBe(204);
+  });
+
+  it('quitar una que no existe es 404', async () => {
+    const res = await req(
+      '/site-content/gallery/11111111-1111-4111-8111-111111111111',
+      adminToken,
+      { method: 'DELETE' },
+    );
+    expect(res.status).toBe(404);
   });
 });

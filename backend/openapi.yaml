@@ -202,6 +202,10 @@ paths:
 
         Sin fila configurada devuelve los valores por defecto: la portada nunca
         debe quedar en blanco por un dato de configuración que falta.
+
+        La galería viene dos veces: `galleryImages` como lista de URLs ya
+        firmadas —lo que consume la portada, que no sabe qué es un id— y
+        `gallery` como `{id, url}`, para poder administrarla desde el panel.
       responses:
         '200': { description: Contenido del sitio }
     patch:
@@ -210,6 +214,41 @@ paths:
       responses:
         '200': { description: Actualizado }
         '403': { $ref: '#/components/responses/Forbidden' }
+
+  /site-content/gallery:
+    post:
+      tags: [content]
+      summary: Agregar una imagen a la galería de la portada
+      description: |
+        La key va restringida a `site-gallery/`, que es donde la deja
+        `POST /files/upload-url`. Sin esa restricción, quien administra el
+        sitio podría publicar en la portada —que se ve SIN sesión— la key de un
+        adjunto de entrega o de una evidencia privada, y el servidor la firmaría
+        para cualquiera que entrara.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [s3Key]
+              properties:
+                s3Key: { type: string, pattern: '^site-gallery/' }
+      responses:
+        '201': { description: Agregada }
+        '400': { description: La key no viene de `site-gallery/` }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Esa imagen ya está en la galería }
+
+  /site-content/gallery/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    delete:
+      tags: [content]
+      summary: Quitar una imagen de la galería
+      responses:
+        '204': { description: Quitada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /users:
     get:
@@ -1815,10 +1854,18 @@ paths:
   /admin/metrics:
     get:
       tags: [admin]
-      summary: Métricas de impacto formativo
+      summary: Métricas y totales del panel Admin
       description: |
-        Horas por competencia, cobertura de ODS y horas patrocinadas por
-        empresa. Las tres las calculaba el cliente recorriendo toda la base en
+        Los totales de la plataforma (`counts`) más horas por competencia,
+        cobertura de ODS y horas patrocinadas por empresa. Van juntos porque el
+        panel los muestra juntos: pedirlos por separado costaría cuatro viajes
+        para dibujar una pantalla.
+
+        Los `counts` están acá y no se cuentan las listas en el cliente por una
+        razón concreta: los listados vienen paginados de a 100, así que
+        `courses.length` dejaría de crecer al llegar a cien y el panel
+        mostraría un número que parece bien y está mal. Todo excluye lo borrado
+        lógicamente. Las tres las calculaba el cliente recorriendo toda la base en
         memoria; contra una base remota eso sería descargar cada curso, cada
         estudiante y cada progreso para sumar tres números.
 
@@ -1838,6 +1885,24 @@ paths:
               schema:
                 type: object
                 properties:
+                  counts:
+                    type: object
+                    description: Totales de la plataforma, sin techo de paginación.
+                    properties:
+                      students: { type: integer }
+                      alumni: { type: integer }
+                      mentors: { type: integer }
+                      lxds: { type: integer }
+                      advisors: { type: integer }
+                      companies: { type: integer }
+                      donors: { type: integer }
+                      projects: { type: integer }
+                      groups: { type: integer }
+                      courses: { type: integer }
+                      laboratories: { type: integer }
+                      certificates: { type: integer }
+                      universities: { type: integer }
+                      submissionsPending: { type: integer }
                   hoursByCompetency:
                     type: array
                     items:

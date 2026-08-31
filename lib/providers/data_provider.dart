@@ -1615,12 +1615,25 @@ class DataProvider extends ChangeNotifier {
   }
 
   /// Edita la portada. Solo Admin; el servidor lo comprueba.
-  Future<SiteContent> saveSiteContent(Map<String, dynamic> changes) async {
-    final json = await api.patch('/site-content', body: changes);
-    final content = SiteContent.fromJson(Map<String, dynamic>.from(json as Map));
-    _siteContent = AsyncValue.data(content);
-    notifyListeners();
-    return content;
+  ///
+  /// Se recarga en vez de guardar la respuesta: el `PATCH` devuelve la fila de
+  /// configuración a secas, sin los laboratorios ni la galería firmada, y
+  /// ponerla donde estaba el contenido completo dejaría la portada sin ellos
+  /// hasta la próxima recarga.
+  Future<void> saveSiteContent(Map<String, dynamic> changes) async {
+    await api.patch('/site-content', body: changes);
+    await reloadSiteContent();
+  }
+
+  /// Agrega una imagen ya subida a la galería de la portada.
+  Future<void> addGalleryImage(String s3Key) async {
+    await api.post('/site-content/gallery', body: {'s3Key': s3Key});
+    await reloadSiteContent();
+  }
+
+  Future<void> removeGalleryImage(String imageId) async {
+    await api.delete('/site-content/gallery/$imageId');
+    await reloadSiteContent();
   }
 
   // -------------------------------------------------------------------------

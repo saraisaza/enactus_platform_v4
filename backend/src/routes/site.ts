@@ -1,8 +1,9 @@
-import { asc, eq, isNull } from 'drizzle-orm';
+import { asc, eq, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { laboratories, siteContent, siteGalleryImages } from '../db/schema';
+import { conflict, notFound } from '../lib/errors';
 import { createDownloadUrl, isStorageConfigured } from '../lib/s3';
 import { ADMIN_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
@@ -71,16 +72,19 @@ siteRoutes.get('/', async (c) => {
   // por definición, así que el servidor firma al construir la respuesta. Si
   // no lo hiciera, un visitante sin cuenta no tendría forma de ver la galería.
   const gallery = await db
-    .select({ s3Key: siteGalleryImages.s3Key })
+    .select({ id: siteGalleryImages.id, s3Key: siteGalleryImages.s3Key })
     .from(siteGalleryImages)
     .orderBy(asc(siteGalleryImages.orderIndex));
 
-  const galleryImages = isStorageConfigured()
+  const galleryFirmada = isStorageConfigured()
     ? (
         await Promise.all(
           gallery.map(async (g) => {
             try {
-              return (await createDownloadUrl({ key: g.s3Key })).url;
+              return {
+                id: g.id,
+                url: (await createDownloadUrl({ key: g.s3Key })).url,
+              };
             } catch {
               // Una imagen que no se puede firmar se omite. La portada se
               // dibuja igual: una galería incompleta es mejor que una portada
@@ -89,8 +93,10 @@ siteRoutes.get('/', async (c) => {
             }
           }),
         )
-      ).filter((url): url is string => url !== null)
+      ).filter((g): g is { id: string; url: string } => g !== null)
     : [];
+
+  const galleryImages = galleryFirmada.map((g) => g.url);
 
   // Sin fila todavía se devuelven los valores por defecto: la portada nunca
   // debe quedar en blanco por un dato de configuración que falta.
@@ -98,8 +104,62 @@ siteRoutes.get('/', async (c) => {
     ...(row ?? DEFAULTS),
     laboratories: labs,
     galleryImages,
+    // La misma galería con su id, para poder administrarla. `galleryImages`
+    // se queda como está —una lista de URLs listas para pintar— porque es lo
+    // que consume la portada, que no necesita ids ni sabe qué es un id.
+    gallery: galleryFirmada,
   });
 });
+
+const galleryBody = z.object({
+  s3Key: z
+    .string()
+    .trim()
+    .regex(/^site-gallery\//, 'La imagen tiene que subirse desde el editor.'),
+});
+
+/**
+ * Agrega una imagen a la galería de la portada.
+ *
+ * La key va restringida a `site-gallery/`, que es donde la deja
+ * `POST /files/upload-url`. Sin esa restricción, quien administra el sitio
+ * podría publicar en la portada —que se ve SIN sesión— la key de un adjunto
+ * de entrega o de una evidencia privada, y el servidor la firmaría para
+ * cualquiera que entrara.
+ */
+siteRoutes.post('/gallery', requireAuth, requireRole(...ADMIN_ROLES), async (c) => {
+  const body = galleryBody.parse(await c.req.json());
+  const db = c.get('db');
+
+  const [{ next } = { next: 0 }] = await db.execute<{ next: number }>(sql`
+    select coalesce(max(order_index), -1) + 1 as next from site_gallery_images
+  `);
+
+  const [created] = await db
+    .insert(siteGalleryImages)
+    .values({ s3Key: body.s3Key, orderIndex: next })
+    // La misma imagen dos veces no es un error: ya estaba.
+    .onConflictDoNothing()
+    .returning();
+
+  if (!created) throw conflict('Esa imagen ya está en la galería.');
+  return c.json(created, 201);
+});
+
+siteRoutes.delete(
+  '/gallery/:id',
+  requireAuth,
+  requireRole(...ADMIN_ROLES),
+  async (c) => {
+    const [deleted] = await c
+      .get('db')
+      .delete(siteGalleryImages)
+      .where(eq(siteGalleryImages.id, c.req.param('id')))
+      .returning({ id: siteGalleryImages.id });
+    if (!deleted) throw notFound('No se encontró esa imagen.');
+    return c.body(null, 204);
+  },
+);
 
 siteRoutes.patch('/', requireAuth, requireRole(...ADMIN_ROLES), async (c) => {
   const body = bodySchema.parse(await c.req.json());

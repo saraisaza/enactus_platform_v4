@@ -17,6 +17,7 @@ import type { Database } from '../db/client';
  */
 
 export type ImpactMetrics = {
+  counts: PlatformCounts;
   hoursByCompetency: { code: string; name: string; hours: number }[];
   odsCompletionRate: {
     code: string;
@@ -32,6 +33,67 @@ export type ImpactMetrics = {
     hours: number;
   }[];
 };
+
+export type PlatformCounts = {
+  students: number;
+  alumni: number;
+  mentors: number;
+  lxds: number;
+  advisors: number;
+  companies: number;
+  donors: number;
+  projects: number;
+  groups: number;
+  courses: number;
+  laboratories: number;
+  certificates: number;
+  universities: number;
+  submissionsPending: number;
+};
+
+/**
+ * Los totales de la plataforma que muestra el panel Admin.
+ *
+ * Van en el servidor y no contando listas en el cliente por una razón
+ * concreta: los listados vienen paginados de a 100, así que `courses.length`
+ * dejaría de crecer al llegar a cien y el panel mostraría un número que parece
+ * bien y está mal. Un `count(*)` no tiene ese techo.
+ *
+ * Todo excluye lo borrado lógicamente: un curso archivado sigue contando —
+ * existe— pero uno borrado, no.
+ */
+async function platformCounts(db: Database): Promise<PlatformCounts> {
+  const [row] = await db.execute<PlatformCounts>(sql`
+    select
+      (select count(*)::int from users
+        where role = 'student' and deleted_at is null) as students,
+      (select count(*)::int from users
+        where role = 'alumni' and deleted_at is null) as alumni,
+      (select count(*)::int from users
+        where role = 'mentor' and deleted_at is null) as mentors,
+      (select count(*)::int from users
+        where role = 'lxd' and deleted_at is null) as lxds,
+      (select count(*)::int from users
+        where role = 'advisor' and deleted_at is null) as advisors,
+      (select count(*)::int from users
+        where role = 'company' and deleted_at is null) as companies,
+      (select count(*)::int from users
+        where role = 'donor' and deleted_at is null) as donors,
+      (select count(*)::int from projects where deleted_at is null) as projects,
+      (select count(*)::int from groups where deleted_at is null) as groups,
+      (select count(*)::int from courses where deleted_at is null) as courses,
+      (select count(*)::int from laboratories where deleted_at is null) as laboratories,
+      (select count(*)::int from certificates) as certificates,
+      -- Universidades distintas con alguien dentro: es la cifra de alcance
+      -- que muestra el panel, no un catálogo.
+      (select count(distinct university)::int from users
+        where university <> '' and deleted_at is null) as universities,
+      (select count(*)::int from submissions
+        where graded_at is null and reviewed_at is null
+          and deleted_at is null) as "submissionsPending"
+  `);
+  return row!;
+}
 
 /**
  * Horas de formación acumuladas por competencia.
@@ -130,13 +192,15 @@ async function sponsoredHoursByCompany(db: Database) {
 }
 
 export async function impactMetrics(db: Database): Promise<ImpactMetrics> {
-  const [competencies, ods, sponsored] = await Promise.all([
+  const [counts, competencies, ods, sponsored] = await Promise.all([
+    platformCounts(db),
     hoursByCompetency(db),
     odsCompletionRate(db),
     sponsoredHoursByCompany(db),
   ]);
 
   return {
+    counts,
     hoursByCompetency: competencies,
     odsCompletionRate: ods,
     sponsoredHoursByCompany: sponsored,

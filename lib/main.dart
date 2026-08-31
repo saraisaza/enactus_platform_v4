@@ -8,6 +8,7 @@ import 'services/api_service.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
 import 'views/auth/login_view.dart';
+import 'views/admin/admin_portal.dart';
 import 'views/lxd/lxd_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
@@ -141,13 +142,10 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
           role: Roles.mentor,
           child: PendingPortalView(portalName: 'Portal Mentor'));
     case AppRoutes.admin:
-      page = const _RoleGuard(
-          role: Roles.admin,
-          child: PendingPortalView(portalName: 'Portal Admin'));
+      page = const _RoleGuard(role: Roles.admin, child: AdminPortal());
     case AppRoutes.superAdmin:
       page = const _RoleGuard(
-          role: Roles.superAdmin,
-          child: PendingPortalView(portalName: 'Portal Super Admin'));
+          role: Roles.superAdmin, child: AdminPortal(isSuperAdmin: true));
     case AppRoutes.advisor:
       page = const _RoleGuard(
           role: Roles.advisor,

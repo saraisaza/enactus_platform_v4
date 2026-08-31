@@ -92,6 +92,10 @@ class AppUser {
   /// LXD, el Mentor y el Asesor.
   final OverallProgress? overallProgress;
 
+  /// Cuántas entregas revisó este mentor. Solo con `include=reviews`.
+  /// `null` sin el include: no es lo mismo "no lo pedí" que "revisó cero".
+  final int? reviewsCount;
+
   const AppUser({
     required this.id,
     required this.name,
@@ -115,6 +119,7 @@ class AppUser {
     this.team,
     this.sponsorName,
     this.overallProgress,
+    this.reviewsCount,
   });
 
   bool get isEnactusStudent => studentType == StudentType.enactus;
@@ -147,6 +152,7 @@ class AppUser {
             ? null
             : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
         sponsorName: j['sponsorName'] as String?,
+        reviewsCount: (j['reviewsCount'] as num?)?.toInt(),
         overallProgress: j['overallProgress'] == null
             ? null
             : OverallProgress.fromJson(
@@ -1017,22 +1023,28 @@ class OdsGoal {
 /// resueltas de `GET /admin/metrics`, sobre las mismas vistas que usa el resto
 /// de la API: antes podían discrepar del avance que veía el estudiante.
 class ImpactMetrics {
+  final PlatformCounts counts;
   final List<CompetencyHours> hoursByCompetency;
   final List<OdsCoverage> odsCompletionRate;
   final List<SponsoredHours> sponsoredHoursByCompany;
 
   const ImpactMetrics({
+    this.counts = const PlatformCounts(),
     this.hoursByCompetency = const [],
     this.odsCompletionRate = const [],
     this.sponsoredHoursByCompany = const [],
   });
 
-  bool get isEmpty =>
+  /// Sin nada que graficar. Los conteos no cuentan: una plataforma recién
+  /// puesta tiene usuarios y ningún curso con competencias todavía.
+  bool get hasNoCharts =>
       hoursByCompetency.isEmpty &&
       odsCompletionRate.isEmpty &&
       sponsoredHoursByCompany.isEmpty;
 
   factory ImpactMetrics.fromJson(Map<String, dynamic> j) => ImpactMetrics(
+        counts: PlatformCounts.fromJson(
+            Map<String, dynamic>.from(j['counts'] as Map? ?? const {})),
         hoursByCompetency: (j['hoursByCompetency'] as List? ?? const [])
             .map((e) =>
                 CompetencyHours.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -1047,6 +1059,68 @@ class ImpactMetrics {
                     Map<String, dynamic>.from(e as Map)))
                 .toList(),
       );
+}
+
+/// Los totales de la plataforma, contados en el servidor.
+///
+/// No se cuentan las listas del cliente porque vienen paginadas de a 100: al
+/// llegar a cien, `courses.length` dejaría de crecer y el panel mostraría un
+/// número que parece bien y está mal.
+class PlatformCounts {
+  final int students;
+  final int alumni;
+  final int mentors;
+  final int lxds;
+  final int advisors;
+  final int companies;
+  final int donors;
+  final int projects;
+  final int groups;
+  final int courses;
+  final int laboratories;
+  final int certificates;
+  final int universities;
+  final int submissionsPending;
+
+  const PlatformCounts({
+    this.students = 0,
+    this.alumni = 0,
+    this.mentors = 0,
+    this.lxds = 0,
+    this.advisors = 0,
+    this.companies = 0,
+    this.donors = 0,
+    this.projects = 0,
+    this.groups = 0,
+    this.courses = 0,
+    this.laboratories = 0,
+    this.certificates = 0,
+    this.universities = 0,
+    this.submissionsPending = 0,
+  });
+
+  /// Estudiantes y egresados juntos: la cifra de "cuánta gente formamos".
+  int get allStudents => students + alumni;
+
+  factory PlatformCounts.fromJson(Map<String, dynamic> j) {
+    int at(String key) => (j[key] as num?)?.toInt() ?? 0;
+    return PlatformCounts(
+      students: at('students'),
+      alumni: at('alumni'),
+      mentors: at('mentors'),
+      lxds: at('lxds'),
+      advisors: at('advisors'),
+      companies: at('companies'),
+      donors: at('donors'),
+      projects: at('projects'),
+      groups: at('groups'),
+      courses: at('courses'),
+      laboratories: at('laboratories'),
+      certificates: at('certificates'),
+      universities: at('universities'),
+      submissionsPending: at('submissionsPending'),
+    );
+  }
 }
 
 class CompetencyHours {
@@ -2000,6 +2074,11 @@ class SiteContent {
   /// recarga la portada.
   final List<String> galleryImages;
 
+  /// La misma galería con su id, para poder administrarla desde el panel.
+  /// [galleryImages] se queda como lista de URLs porque es lo que pinta la
+  /// portada, que no sabe qué es un id.
+  final List<GalleryImage> gallery;
+
   const SiteContent({
     this.heroTitle = 'eduXaction Colombia',
     this.heroSubtitle = '',
@@ -2012,6 +2091,7 @@ class SiteContent {
     this.statUniversities = 0,
     this.laboratories = const [],
     this.galleryImages = const [],
+    this.gallery = const [],
   });
 
   factory SiteContent.fromJson(Map<String, dynamic> j) => SiteContent(
@@ -2029,6 +2109,23 @@ class SiteContent {
             .toList(),
         galleryImages:
             List<String>.from(j['galleryImages'] as List? ?? const []),
+        gallery: (j['gallery'] as List? ?? const [])
+            .map((e) =>
+                GalleryImage.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+      );
+}
+
+/// Una imagen de la galería de la portada, con su id y su URL ya firmada.
+class GalleryImage {
+  final String id;
+  final String url;
+
+  const GalleryImage({required this.id, this.url = ''});
+
+  factory GalleryImage.fromJson(Map<String, dynamic> j) => GalleryImage(
+        id: j['id'] as String,
+        url: (j['url'] as String?) ?? '',
       );
 }
 

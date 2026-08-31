@@ -983,7 +983,9 @@ class DataProvider extends ChangeNotifier {
       );
 
   Future<List<CalendarEvent>> _fetchCalendarEvents() async {
-    final json = await api.get('/calendar-events', query: {'pageSize': 200});
+    // 100 es el tope del servidor. Con 200 respondía 400 y el calendario
+    // quedaba vacío en los cuatro portales que lo muestran.
+    final json = await api.get('/calendar-events', query: {'pageSize': 100});
     return Page.fromJson(
       Map<String, dynamic>.from(json as Map),
       CalendarEvent.fromJson,

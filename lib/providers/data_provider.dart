@@ -99,6 +99,10 @@ class DataProvider extends ChangeNotifier {
     _submissions = const AsyncValue.idle();
     _commResources = const AsyncValue.idle();
     _evidences = const AsyncValue.idle();
+    _groups = const AsyncValue.idle();
+    _catalogs = const AsyncValue.idle();
+    _talent = const AsyncValue.idle();
+    _impactMetrics = const AsyncValue.idle();
     // `_siteContent` NO se limpia: es público y no depende de quién mire.
     _unreadNotifications = 0;
     _courseById.clear();
@@ -669,6 +673,143 @@ class DataProvider extends ChangeNotifier {
     return _userById[id] ?? current;
   }
 
+  /// Crea una cuenta.
+  ///
+  /// El servidor decide qué roles puede dar de alta quien pide: un Admin
+  /// cualquiera menos superadmin, una Empresa solo LXD y mentores de su
+  /// equipo. Acá no se replica esa regla — se muestra el error que devuelve.
+  Future<AppUser> createUser(Map<String, dynamic> fields) async {
+    final json = await api.post('/users', body: fields);
+    final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    _usersByQuery.clear();
+    notifyListeners();
+    return user;
+  }
+
+  Future<AppUser> updateUser(String id, Map<String, dynamic> changes) async {
+    final json = await api.patch('/users/$id', body: changes);
+    final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    _userById[id] = AsyncValue.data(user);
+    _usersByQuery.clear();
+    notifyListeners();
+    return user;
+  }
+
+  Future<void> deleteUser(String id) async {
+    await api.delete('/users/$id');
+    _userById.remove(id);
+    _usersByQuery.clear();
+    notifyListeners();
+  }
+
+  /// Cambia el permiso de calificar de un LXD.
+  ///
+  /// Son DOS permisos, no uno, y van por su propio endpoint porque cada
+  /// cambio queda registrado con quién, a quién y los valores anterior y
+  /// nuevo. Por eso no se aceptan en el alta ni en el parcheo general.
+  Future<AppUser> setCanGrade(
+    String id, {
+    bool? openLearning,
+    bool? enactus,
+  }) async {
+    final json = await api.patch('/admin/users/$id/can-grade', body: {
+      'canGradeOpenLearning': ?openLearning,
+      'canGradeEnactus': ?enactus,
+    });
+    final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    _userById[id] = AsyncValue.data(user);
+    _usersByQuery.clear();
+    notifyListeners();
+    return user;
+  }
+
+  /// Manda un aviso a una o varias personas.
+  ///
+  /// A quién se le puede escribir lo decide el servidor con los alcances que
+  /// ya existen. Nadie recibe el correo de nadie: el aviso llega a la bandeja
+  /// dentro de la plataforma.
+  Future<int> notify(
+    List<String> userIds, {
+    required String title,
+    String body = '',
+  }) async {
+    final json = await api.post('/notifications',
+        body: {'userIds': userIds, 'title': title, 'body': body});
+    final map = Map<String, dynamic>.from(json as Map);
+    return (map['sent'] as num?)?.toInt() ?? 0;
+  }
+
+  // -------------------------------------------------------------------------
+  // BuscaTalento y métricas de impacto
+  // -------------------------------------------------------------------------
+
+  AsyncValue<List<TalentProfile>> _talent = const AsyncValue.idle();
+
+  /// El directorio de talento Enactus, para Donante y Empresa.
+  ///
+  /// Es el único listado de personas con alcance más ancho que [users]: acá
+  /// los dos roles ven a TODOS los estudiantes Enactus, porque la pantalla
+  /// existe para descubrir a alguien que todavía no conocen. Trae el perfil
+  /// profesional, no los datos de contacto.
+  AsyncValue<List<TalentProfile>> get talent {
+    _lazy(_talent, (v) => _talent = v, () async {
+      final json = await api.get('/talent', query: {'pageSize': 100});
+      return Page.fromJson(
+        Map<String, dynamic>.from(json as Map),
+        TalentProfile.fromJson,
+      ).data;
+    });
+    return _talent;
+  }
+
+  AsyncValue<ImpactMetrics> _impactMetrics = const AsyncValue.idle();
+
+  /// Horas por competencia, cobertura de ODS y horas patrocinadas.
+  ///
+  /// Las tres las calculaba el cliente recorriendo toda la base. Ahora llegan
+  /// resueltas y en una sola petición: la pantalla las muestra juntas.
+  AsyncValue<ImpactMetrics> get impactMetrics {
+    _lazy(_impactMetrics, (v) => _impactMetrics = v, () async {
+      final json = await api.get('/admin/metrics');
+      return ImpactMetrics.fromJson(Map<String, dynamic>.from(json as Map));
+    });
+    return _impactMetrics;
+  }
+
+  Future<void> reloadImpactMetrics() => _refresh(
+        (v) => _impactMetrics = v,
+        () async {
+          final json = await api.get('/admin/metrics');
+          return ImpactMetrics.fromJson(Map<String, dynamic>.from(json as Map));
+        },
+        _impactMetrics.valueOrNull,
+      );
+
+  // -------------------------------------------------------------------------
+  // Respaldo y restauración (Admin / Super Admin)
+  // -------------------------------------------------------------------------
+
+  /// Descarga el respaldo completo.
+  ///
+  /// A diferencia del volcado que hacía la versión con Hive, este **no lleva
+  /// credenciales**: las contraseñas hasheadas y las sesiones abiertas quedan
+  /// fuera. Un respaldo es para restaurar datos, no para llevárselas.
+  Future<Map<String, dynamic>> exportBackup() async {
+    final json = await api.get('/admin/backup');
+    return Map<String, dynamic>.from(json as Map);
+  }
+
+  /// Restaura un respaldo. Reemplaza la base entera y es de superadmin.
+  Future<Map<String, dynamic>> restoreBackup(
+    Map<String, dynamic> payload,
+  ) async {
+    final json = await api.post('/admin/restore', body: payload);
+    final result = Map<String, dynamic>.from(json as Map);
+    _resetAll();
+    notifyListeners();
+    return result;
+  }
+
   // -------------------------------------------------------------------------
   // Seguimiento de un curso (LXD, Mentor, Asesor, Admin)
   // -------------------------------------------------------------------------
@@ -775,6 +916,217 @@ class DataProvider extends ChangeNotifier {
     return _labById[id] ?? current;
   }
 
+  Future<void> reloadLab(String id) => _refresh(
+        (v) => _labById[id] = v,
+        () async {
+          final json = await api.get('/laboratories/$id');
+          return Laboratory.fromJson(Map<String, dynamic>.from(json as Map));
+        },
+        _labById[id]?.valueOrNull,
+      );
+
+  // -------------------------------------------------------------------------
+  // Autoría de laboratorios y de la Ruta de Impacto (Admin)
+  // -------------------------------------------------------------------------
+
+  /// Crea el laboratorio. El servidor le arma **sus tres fases**: un
+  /// laboratorio sin fases no tiene Ruta y nadie podría cursarlo.
+  Future<Laboratory> createLab({
+    required String name,
+    String description = '',
+    String objectives = '',
+    String? sponsorCompanyId,
+  }) async {
+    final json = await api.post('/laboratories', body: {
+      'name': name,
+      'description': description,
+      'objectives': objectives,
+      'sponsorCompanyId': sponsorCompanyId,
+    });
+    final lab = Laboratory.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadLaboratories();
+    return lab;
+  }
+
+  Future<Laboratory> updateLab(String id, Map<String, dynamic> changes) async {
+    final json = await api.patch('/laboratories/$id', body: changes);
+    final lab = Laboratory.fromJson(Map<String, dynamic>.from(json as Map));
+    await _refreshAfterLabMutation(id);
+    return lab;
+  }
+
+  /// Borrado lógico. Con estudiantes o certificados el servidor responde 409
+  /// con cuántos: borrarlo dejaría su avance apuntando a una Ruta inexistente.
+  Future<void> deleteLab(String id) async {
+    await api.delete('/laboratories/$id');
+    _labById.remove(id);
+    await reloadLaboratories();
+    await reloadAllLaboratories();
+  }
+
+  Future<void> setLabMentors(String labId, List<String> mentorIds) async {
+    await api.put('/laboratories/$labId/mentors', body: {'ids': mentorIds});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  /// Reemplaza los estudiantes asignados.
+  ///
+  /// Ojo con lo que significa: la asignación al laboratorio es también lo que
+  /// da acceso a sus CURSOS. Quitar a alguien le quita ese material — su
+  /// avance no se borra, pero deja de verlo.
+  Future<void> setLabStudents(String labId, List<String> studentIds) async {
+    await api.put('/laboratories/$labId/students', body: {'ids': studentIds});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> updatePhase(
+    String phaseId,
+    Map<String, dynamic> changes, {
+    required String labId,
+  }) async {
+    await api.patch('/phases/$phaseId', body: changes);
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> createRutaModule(
+    String phaseId,
+    String title, {
+    required String labId,
+  }) async {
+    await api.post('/phases/$phaseId/modules', body: {'title': title});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> renameRutaModule(
+    String moduleId,
+    String title, {
+    required String labId,
+  }) async {
+    await api.patch('/ruta-modules/$moduleId', body: {'title': title});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> deleteRutaModule(
+    String moduleId, {
+    required String labId,
+  }) async {
+    await api.delete('/ruta-modules/$moduleId');
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> reorderRutaModules(
+    String phaseId,
+    List<String> orderedIds, {
+    required String labId,
+  }) async {
+    await api.put('/phases/$phaseId/modules/order',
+        body: {'orderedIds': orderedIds});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  /// Vincula cursos completos al módulo.
+  ///
+  /// Devuelve cuántos objetivos del curso se importaron a la fase: el
+  /// servidor los copia al vincular, y la pantalla lo dice en vez de dejar que
+  /// aparezcan objetivos nuevos sin explicación.
+  Future<int> setRutaModuleCourses(
+    String moduleId,
+    List<String> courseIds, {
+    required String labId,
+  }) async {
+    final json = await api.put('/ruta-modules/$moduleId/courses',
+        body: {'ids': courseIds});
+    await _refreshAfterLabMutation(labId);
+    final body = Map<String, dynamic>.from(json as Map);
+    return (body['importedObjectives'] as num?)?.toInt() ?? 0;
+  }
+
+  Future<Lesson> createOwnLesson(
+    String moduleId, {
+    required String title,
+    required String type,
+    String description = '',
+    int durationMin = 0,
+    String? externalUrl,
+    required String labId,
+  }) async {
+    final json = await api.post('/ruta-modules/$moduleId/lessons', body: {
+      'title': title,
+      'type': type,
+      'description': description,
+      'durationMin': durationMin,
+      'externalUrl': ?externalUrl,
+    });
+    await _refreshAfterLabMutation(labId);
+    return Lesson.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  Future<void> createObjective(
+    String phaseId, {
+    required String category,
+    required String text,
+    required String labId,
+  }) async {
+    await api.post('/phases/$phaseId/objectives',
+        body: {'category': category, 'text': text});
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> updateObjective(
+    String objectiveId,
+    Map<String, dynamic> changes, {
+    required String labId,
+  }) async {
+    await api.patch('/objectives/$objectiveId', body: changes);
+    await _refreshAfterLabMutation(labId);
+  }
+
+  Future<void> deleteObjective(
+    String objectiveId, {
+    required String labId,
+  }) async {
+    await api.delete('/objectives/$objectiveId');
+    await _refreshAfterLabMutation(labId);
+  }
+
+  /// Los cursos que dan el objetivo por cumplido.
+  ///
+  /// Devuelve `true` si quedó **sin cursos**, que es como decir que no se va a
+  /// poder completar nunca — y con él se traba la fase entera. La pantalla lo
+  /// avisa; el servidor no lo impide, porque un objetivo a medio armar es un
+  /// estado legítimo mientras se edita.
+  Future<bool> setObjectiveCourses(
+    String objectiveId,
+    List<String> courseIds, {
+    required String labId,
+  }) async {
+    final json = await api.put('/objectives/$objectiveId/courses',
+        body: {'ids': courseIds});
+    await _refreshAfterLabMutation(labId);
+    final body = Map<String, dynamic>.from(json as Map);
+    return (body['neverCompletable'] as bool?) ?? courseIds.isEmpty;
+  }
+
+  /// El detalle del laboratorio se vuelve a pedir después de escribirlo: la
+  /// respuesta de una escritura de Ruta no trae la estructura completa.
+  Future<void> _refreshAfterLabMutation(String labId) async {
+    await reloadLab(labId);
+    await reloadLaboratories();
+  }
+
+  Future<void> reloadAllLaboratories() => _refresh(
+        (v) => _allLaboratories = v,
+        () async {
+          final json = await api
+              .get('/laboratories', query: {'pageSize': 100, 'scope': 'all'});
+          return Page.fromJson(
+            Map<String, dynamic>.from(json as Map),
+            Laboratory.fromJson,
+          ).data;
+        },
+        _allLaboratories.valueOrNull,
+      );
+
   // -------------------------------------------------------------------------
   // Proyectos y equipos
   // -------------------------------------------------------------------------
@@ -824,6 +1176,92 @@ class DataProvider extends ChangeNotifier {
       return Group.fromJson(Map<String, dynamic>.from(json as Map));
     });
     return _groupById[id] ?? current;
+  }
+
+  AsyncValue<List<Group>> _groups = const AsyncValue.idle();
+
+  AsyncValue<List<Group>> get groups {
+    _lazy(_groups, (v) => _groups = v, _fetchGroups);
+    return _groups;
+  }
+
+  Future<void> reloadGroups() =>
+      _refresh((v) => _groups = v, _fetchGroups, _groups.valueOrNull);
+
+  Future<List<Group>> _fetchGroups() async {
+    final json = await api.get('/groups', query: {'pageSize': 100});
+    return Page.fromJson(
+      Map<String, dynamic>.from(json as Map),
+      Group.fromJson,
+    ).data;
+  }
+
+  // -------------------------------------------------------------------------
+  // Autoría de proyectos y equipos (Admin, Asesor)
+  // -------------------------------------------------------------------------
+
+  Future<Project> createProject(Map<String, dynamic> fields) async {
+    final json = await api.post('/projects', body: fields);
+    final project = Project.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadProjects();
+    return project;
+  }
+
+  Future<Project> updateProject(
+    String id,
+    Map<String, dynamic> changes,
+  ) async {
+    final json = await api.patch('/projects/$id', body: changes);
+    final project = Project.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadProject(id);
+    await reloadProjects();
+    return project;
+  }
+
+  Future<void> deleteProject(String id) async {
+    await api.delete('/projects/$id');
+    _projectById.remove(id);
+    await reloadProjects();
+  }
+
+  Future<Group> createGroup(Map<String, dynamic> fields) async {
+    final json = await api.post('/groups', body: fields);
+    final group = Group.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadGroups();
+    return group;
+  }
+
+  Future<Group> updateGroup(String id, Map<String, dynamic> changes) async {
+    final json = await api.patch('/groups/$id', body: changes);
+    final group = Group.fromJson(Map<String, dynamic>.from(json as Map));
+    _groupById[id] = AsyncValue.data(group);
+    await reloadGroups();
+    return group;
+  }
+
+  Future<void> deleteGroup(String id) async {
+    await api.delete('/groups/$id');
+    _groupById.remove(id);
+    await reloadGroups();
+  }
+
+  /// Reemplaza los integrantes del equipo, cada uno con su rol en el proyecto.
+  ///
+  /// `members` son mapas `{userId, roleInProject}`: el rol dentro del proyecto
+  /// (investigación, finanzas, …) no es el rol de la plataforma.
+  Future<void> setGroupMembers(
+    String groupId,
+    List<Map<String, dynamic>> members,
+  ) async {
+    await api.put('/groups/$groupId/members', body: {'members': members});
+    await reloadGroups();
+    final current = _groupById[groupId]?.valueOrNull;
+    if (current != null) {
+      final json = await api.get('/groups/$groupId');
+      _groupById[groupId] =
+          AsyncValue.data(Group.fromJson(Map<String, dynamic>.from(json as Map)));
+      notifyListeners();
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -1116,6 +1554,43 @@ class DataProvider extends ChangeNotifier {
     ).data;
   }
 
+  Future<Evidence> createEvidence(Map<String, dynamic> fields) async {
+    final json = await api.post('/evidences', body: fields);
+    final evidence = Evidence.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadEvidences();
+    return evidence;
+  }
+
+  Future<Evidence> updateEvidence(
+    String id,
+    Map<String, dynamic> changes,
+  ) async {
+    final json = await api.patch('/evidences/$id', body: changes);
+    final evidence = Evidence.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadEvidences();
+    return evidence;
+  }
+
+  Future<void> deleteEvidence(String id) async {
+    await api.delete('/evidences/$id');
+    await reloadEvidences();
+  }
+
+  Future<CommunicationResource> createCommunicationResource(
+    Map<String, dynamic> fields,
+  ) async {
+    final json = await api.post('/communication-resources', body: fields);
+    final resource =
+        CommunicationResource.fromJson(Map<String, dynamic>.from(json as Map));
+    await reloadCommunicationResources();
+    return resource;
+  }
+
+  Future<void> deleteCommunicationResource(String id) async {
+    await api.delete('/communication-resources/$id');
+    await reloadCommunicationResources();
+  }
+
   // -------------------------------------------------------------------------
   // Contenido público de la portada
   // -------------------------------------------------------------------------
@@ -1137,6 +1612,15 @@ class DataProvider extends ChangeNotifier {
     // Sin sesión: es el único endpoint público además de `/health`.
     final json = await api.get('/site-content', authenticated: false);
     return SiteContent.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Edita la portada. Solo Admin; el servidor lo comprueba.
+  Future<SiteContent> saveSiteContent(Map<String, dynamic> changes) async {
+    final json = await api.patch('/site-content', body: changes);
+    final content = SiteContent.fromJson(Map<String, dynamic>.from(json as Map));
+    _siteContent = AsyncValue.data(content);
+    notifyListeners();
+    return content;
   }
 
   // -------------------------------------------------------------------------

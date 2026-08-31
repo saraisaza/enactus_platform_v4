@@ -612,17 +612,28 @@ class Objective {
   final String category;
   final String text;
 
+  /// Los cursos que hay que completar para darlo por cumplido.
+  ///
+  /// Vacío significa que **nunca se va a completar**: no se puede marcar a
+  /// mano, así que un objetivo sin cursos traba la fase entera. El editor lo
+  /// avisa, y el servidor lo devuelve en `neverCompletable` al guardarlo.
+  final List<String> courseIds;
+
   const Objective({
     required this.id,
     this.category = ObjectiveCategory.entrepreneurship,
     this.text = '',
+    this.courseIds = const [],
   });
+
+  bool get neverCompletable => courseIds.isEmpty;
 
   factory Objective.fromJson(Map<String, dynamic> j) => Objective(
         id: j['id'] as String,
         category:
             (j['category'] as String?) ?? ObjectiveCategory.entrepreneurship,
         text: (j['text'] as String?) ?? '',
+        courseIds: List<String>.from(j['courseIds'] as List? ?? const []),
       );
 }
 
@@ -638,12 +649,16 @@ class RutaModule {
   final bool isMentorshipModule;
   final List<String> courseIds;
 
+  /// Lecturas y entregas propias del módulo: las que no vienen de un curso.
+  final List<Lesson> ownLessons;
+
   const RutaModule({
     required this.id,
     this.orderIndex = 1,
     this.title = '',
     this.isMentorshipModule = false,
     this.courseIds = const [],
+    this.ownLessons = const [],
   });
 
   factory RutaModule.fromJson(Map<String, dynamic> j) => RutaModule(
@@ -652,6 +667,9 @@ class RutaModule {
         title: (j['title'] as String?) ?? '',
         isMentorshipModule: (j['isMentorshipModule'] as bool?) ?? false,
         courseIds: List<String>.from(j['courseIds'] as List? ?? const []),
+        ownLessons: (j['ownLessons'] as List? ?? const [])
+            .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
       );
 }
 
@@ -991,6 +1009,188 @@ class OdsGoal {
         number: (j['number'] as num?)?.toInt() ?? 0,
         title: (j['title'] as String?) ?? '',
       );
+}
+
+/// Las tres métricas de impacto formativo del panel Admin.
+///
+/// Las calculaba el cliente recorriendo toda la base en memoria. Ahora llegan
+/// resueltas de `GET /admin/metrics`, sobre las mismas vistas que usa el resto
+/// de la API: antes podían discrepar del avance que veía el estudiante.
+class ImpactMetrics {
+  final List<CompetencyHours> hoursByCompetency;
+  final List<OdsCoverage> odsCompletionRate;
+  final List<SponsoredHours> sponsoredHoursByCompany;
+
+  const ImpactMetrics({
+    this.hoursByCompetency = const [],
+    this.odsCompletionRate = const [],
+    this.sponsoredHoursByCompany = const [],
+  });
+
+  bool get isEmpty =>
+      hoursByCompetency.isEmpty &&
+      odsCompletionRate.isEmpty &&
+      sponsoredHoursByCompany.isEmpty;
+
+  factory ImpactMetrics.fromJson(Map<String, dynamic> j) => ImpactMetrics(
+        hoursByCompetency: (j['hoursByCompetency'] as List? ?? const [])
+            .map((e) =>
+                CompetencyHours.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        odsCompletionRate: (j['odsCompletionRate'] as List? ?? const [])
+            .map((e) =>
+                OdsCoverage.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
+        sponsoredHoursByCompany:
+            (j['sponsoredHoursByCompany'] as List? ?? const [])
+                .map((e) => SponsoredHours.fromJson(
+                    Map<String, dynamic>.from(e as Map)))
+                .toList(),
+      );
+}
+
+class CompetencyHours {
+  final String code;
+  final String name;
+  final double hours;
+
+  const CompetencyHours({
+    required this.code,
+    this.name = '',
+    this.hours = 0,
+  });
+
+  factory CompetencyHours.fromJson(Map<String, dynamic> j) => CompetencyHours(
+        code: j['code'] as String,
+        name: (j['name'] as String?) ?? '',
+        hours: (j['hours'] as num?)?.toDouble() ?? 0,
+      );
+}
+
+class OdsCoverage {
+  final String code;
+  final int number;
+  final String title;
+  final double rate;
+
+  /// Los crudos, además de la tasa: un 100% sobre dos personas y otro sobre
+  /// doscientas no son la misma noticia, y la barra sola no lo distingue.
+  final int completed;
+  final int total;
+
+  const OdsCoverage({
+    required this.code,
+    this.number = 0,
+    this.title = '',
+    this.rate = 0,
+    this.completed = 0,
+    this.total = 0,
+  });
+
+  String get label => 'ODS $number: $title';
+
+  factory OdsCoverage.fromJson(Map<String, dynamic> j) => OdsCoverage(
+        code: j['code'] as String,
+        number: (j['number'] as num?)?.toInt() ?? 0,
+        title: (j['title'] as String?) ?? '',
+        rate: (j['rate'] as num?)?.toDouble() ?? 0,
+        completed: (j['completed'] as num?)?.toInt() ?? 0,
+        total: (j['total'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class SponsoredHours {
+  final String companyId;
+  final String companyName;
+  final double hours;
+
+  const SponsoredHours({
+    required this.companyId,
+    this.companyName = '',
+    this.hours = 0,
+  });
+
+  factory SponsoredHours.fromJson(Map<String, dynamic> j) => SponsoredHours(
+        companyId: j['companyId'] as String,
+        companyName: (j['companyName'] as String?) ?? '',
+        hours: (j['hours'] as num?)?.toDouble() ?? 0,
+      );
+}
+
+/// Un perfil de BuscaTalento.
+///
+/// Trae el perfil profesional, **no los datos de contacto**: ni correo, ni
+/// teléfono, ni cédula. Para hablarle está `POST /notifications`, que no
+/// entrega el correo de nadie.
+class TalentProfile {
+  final String id;
+  final String name;
+  final String university;
+  final String career;
+  final String city;
+  final String? avatarS3Key;
+  final UserTeam? team;
+  final List<TalentLab> laboratories;
+  final int objectivesEntrepreneurship;
+  final int objectivesBusiness;
+  final int certificates;
+  final OverallProgress progress;
+
+  const TalentProfile({
+    required this.id,
+    this.name = '',
+    this.university = '',
+    this.career = '',
+    this.city = '',
+    this.avatarS3Key,
+    this.team,
+    this.laboratories = const [],
+    this.objectivesEntrepreneurship = 0,
+    this.objectivesBusiness = 0,
+    this.certificates = 0,
+    this.progress = const OverallProgress(),
+  });
+
+  /// Ya cumplió objetivos EMPRESARIALES: es lo que ordena la lista y la razón
+  /// por la que una empresa entra a esta pantalla.
+  bool get isTopTalent => objectivesBusiness > 0;
+
+  factory TalentProfile.fromJson(Map<String, dynamic> j) {
+    final objetivos =
+        Map<String, dynamic>.from(j['completedObjectives'] as Map? ?? const {});
+    return TalentProfile(
+      id: j['id'] as String,
+      name: (j['name'] as String?) ?? '',
+      university: (j['university'] as String?) ?? '',
+      career: (j['career'] as String?) ?? '',
+      city: (j['city'] as String?) ?? '',
+      avatarS3Key: j['avatarS3Key'] as String?,
+      team: j['team'] == null
+          ? null
+          : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
+      laboratories: (j['laboratories'] as List? ?? const [])
+          .map((e) => TalentLab.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      objectivesEntrepreneurship:
+          (objetivos['entrepreneurship'] as num?)?.toInt() ?? 0,
+      objectivesBusiness: (objetivos['business'] as num?)?.toInt() ?? 0,
+      certificates: (j['certificates'] as num?)?.toInt() ?? 0,
+      progress: j['overallProgress'] == null
+          ? const OverallProgress()
+          : OverallProgress.fromJson(
+              Map<String, dynamic>.from(j['overallProgress'] as Map)),
+    );
+  }
+}
+
+class TalentLab {
+  final String id;
+  final String name;
+
+  const TalentLab({required this.id, this.name = ''});
+
+  factory TalentLab.fromJson(Map<String, dynamic> j) =>
+      TalentLab(id: j['id'] as String, name: (j['name'] as String?) ?? '');
 }
 
 /// Idioma del curso. La columna es texto libre con `es` por defecto; estas son

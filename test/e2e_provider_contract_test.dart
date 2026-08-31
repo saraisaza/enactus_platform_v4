@@ -125,6 +125,12 @@ void main() {
         'evidences': () => d.evidences,
         'siteContent': () => d.siteContent,
         'users()': () => d.users(),
+        'groups': () => d.groups,
+        'allLaboratories': () => d.allLaboratories,
+        // Estos dos tienen alcance propio y responden 403 a quien no
+        // corresponde: `settle` lo distingue de un contrato roto.
+        'talent': () => d.talent,
+        'impactMetrics': () => d.impactMetrics,
       };
 
   for (final role in _cuentas.keys) {

@@ -164,8 +164,15 @@ labRoutes.get('/:id', async (c) => {
   }>(sql`
     select p.id, p.order_index as "orderIndex", p.title, p.description,
            p.deadline::text as deadline,
+           -- courseIds de cada objetivo: son los cursos que hay que
+           -- completar para darlo por cumplido. Sin ellos el editor de Ruta
+           -- mostraría el objetivo pero no qué lo satisface, y guardarlo lo
+           -- dejaría sin cursos — es decir, imposible de completar.
            coalesce((select json_agg(json_build_object(
-                        'id', o.id, 'category', o.category, 'text', o.text)
+                        'id', o.id, 'category', o.category, 'text', o.text,
+                        'courseIds', coalesce((select json_agg(oc.course_id)
+                                                 from objective_courses oc
+                                                where oc.objective_id = o.id), '[]'::json))
                       order by o.order_index)
                        from objectives o where o.phase_id = p.id), '[]'::json) as objectives,
            coalesce((select json_agg(json_build_object(
@@ -173,7 +180,21 @@ labRoutes.get('/:id', async (c) => {
                         'isMentorshipModule', rm.is_mentorship_module,
                         'courseIds', coalesce((select json_agg(rmc.course_id)
                                                  from ruta_module_courses rmc
-                                                where rmc.ruta_module_id = rm.id), '[]'::json))
+                                                where rmc.ruta_module_id = rm.id), '[]'::json),
+                        -- Las lecturas y entregas propias del módulo, las que
+                        -- no vienen de un curso.
+                        'ownLessons', coalesce((select json_agg(json_build_object(
+                                                  'id', l.id, 'title', l.title,
+                                                  'type', l.type,
+                                                  'description', l.description,
+                                                  'durationMin', l.duration_min,
+                                                  'orderIndex', l.order_index,
+                                                  'resourceS3Key', l.resource_s3_key,
+                                                  'resourceFileName', l.resource_file_name,
+                                                  'externalUrl', l.external_url)
+                                                order by l.order_index)
+                                                 from lessons l
+                                                where l.ruta_module_id = rm.id), '[]'::json))
                       order by rm.order_index)
                        from ruta_modules rm where rm.phase_id = p.id), '[]'::json) as modules
       from phases p

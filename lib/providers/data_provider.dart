@@ -455,11 +455,11 @@ class DataProvider extends ChangeNotifier {
   }) {
     final query = <String, dynamic>{
       'pageSize': 200,
-      if (role != null) 'role': role,
-      if (laboratoryId != null) 'laboratoryId': laboratoryId,
-      if (groupId != null) 'groupId': groupId,
-      if (companyId != null) 'companyId': companyId,
-      if (include != null) 'include': include,
+      'role': ?role,
+      'laboratoryId': ?laboratoryId,
+      'groupId': ?groupId,
+      'companyId': ?companyId,
+      'include': ?include,
     };
     final key = query.entries.map((e) => '${e.key}=${e.value}').join('&');
 
@@ -716,9 +716,9 @@ class DataProvider extends ChangeNotifier {
     List<Map<String, dynamic>> files = const [],
   }) async {
     final json = await api.post('/submissions', body: {
-      if (courseId != null) 'courseId': courseId,
-      if (rutaModuleId != null) 'rutaModuleId': rutaModuleId,
-      if (lessonId != null) 'lessonId': lessonId,
+      'courseId': ?courseId,
+      'rutaModuleId': ?rutaModuleId,
+      'lessonId': ?lessonId,
       'taskName': taskName,
       'comment': comment,
       'files': files,

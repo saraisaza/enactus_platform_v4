@@ -509,7 +509,7 @@ class _HeroState extends State<_Hero>
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _particles,
-              builder: (_, __) => CustomPaint(
+              builder: (_, _) => CustomPaint(
                 painter: _ParticlesPainter(_particles.value),
               ),
             ),
@@ -630,7 +630,7 @@ class _AnimatedCounter extends StatelessWidget {
             tween: Tween(begin: 0, end: value.toDouble()),
             duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutCubic,
-            builder: (_, v, __) => Text(
+            builder: (_, v, _) => Text(
               v.round().toString(),
               style: knockoutHeading(
                   fontSize: 36,

@@ -94,10 +94,10 @@ describe('alcance por rol', () => {
     const page = await list(T.advisor!);
     expect(page.data.length).toBeGreaterThan(0);
 
-    const [asesor] = await sql`
+    const [asesor] = await sql<{ university: string | null }[]>`
       select university from users where email = 'asesor@uniandes.edu.co'
     `;
-    const universidades = await sql`
+    const universidades = await sql<{ university: string | null }[]>`
       select distinct university from users
        where id = any(${page.data.map((u) => u.id)}::uuid[])
     `;
@@ -346,7 +346,7 @@ describe('include=team,progress', () => {
       | undefined;
     expect(fila).toBeDefined();
 
-    const [esperado] = await sql`
+    const [esperado] = await sql<{ ratio: number }[]>`
       select coalesce(avg(ratio), 0)::float8 as ratio
         from course_progress where student_id = ${seedId('est1')}
     `;

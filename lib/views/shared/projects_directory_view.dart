@@ -218,7 +218,7 @@ class _StatCard extends StatelessWidget {
             tween: Tween(begin: 0, end: value.toDouble()),
             duration: const Duration(milliseconds: 900),
             curve: Curves.easeOutCubic,
-            builder: (_, v, __) => Text(
+            builder: (_, v, _) => Text(
               v.round().toString(),
               style: knockoutHeading(
                   fontSize: 40,

@@ -105,7 +105,7 @@ class SimpleBarChart extends StatelessWidget {
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
             getTooltipColor: (_) => AppColors.slate,
-            getTooltipItem: (group, _, rod, __) => BarTooltipItem(
+            getTooltipItem: (group, _, rod, _) => BarTooltipItem(
               '${data[group.x].label}\n'
               '${valueFormat?.call(rod.toY) ?? rod.toY.toStringAsFixed(1)}',
               const TextStyle(
@@ -297,7 +297,7 @@ class SimpleLineChart extends StatelessWidget {
             barWidth: 2,
             isCurved: false,
             dotData: FlDotData(
-              getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+              getDotPainter: (_, _, _, _) => FlDotCirclePainter(
                 radius: 4,
                 color: color,
                 strokeWidth: 2,
@@ -355,7 +355,7 @@ class ProgressRing extends StatelessWidget {
                 tween: Tween(begin: 0, end: value),
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutCubic,
-                builder: (_, v, __) => CircularProgressIndicator(
+                builder: (_, v, _) => CircularProgressIndicator(
                   value: v,
                   strokeWidth: strokeWidth,
                   strokeCap: StrokeCap.round,

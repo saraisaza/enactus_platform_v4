@@ -487,7 +487,7 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                 children: [
                   AnimatedBuilder(
                     animation: _glow,
-                    builder: (_, __) {
+                    builder: (_, _) {
                       final t = _glow.value;
                       return Container(
                         width: 7,

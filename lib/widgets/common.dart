@@ -316,7 +316,7 @@ class _AnimatedValue extends StatelessWidget {
       tween: Tween(begin: 0, end: number.toDouble()),
       duration: const Duration(milliseconds: 900),
       curve: Curves.easeOutCubic,
-      builder: (_, v, __) => Text('${v.round()}$suffix', style: style),
+      builder: (_, v, _) => Text('${v.round()}$suffix', style: style),
     );
   }
 }
@@ -369,7 +369,7 @@ class ThinProgressBar extends StatelessWidget {
               tween: Tween(begin: 0, end: value),
               duration: const Duration(milliseconds: 700),
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => LinearProgressIndicator(
+              builder: (_, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 6,
                 backgroundColor: AppColors.surfaceAlt,

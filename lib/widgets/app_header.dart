@@ -617,7 +617,7 @@ class _NotificationBell extends StatelessWidget {
             .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
         child: FadeTransition(opacity: anim, child: child),
       ),
-      pageBuilder: (context, _, __) => Align(
+      pageBuilder: (context, _, _) => Align(
         alignment: Alignment.topRight,
         child: Padding(
           padding: const EdgeInsets.only(top: 114, right: 20),
@@ -661,7 +661,7 @@ class _NotificationListBody extends StatelessWidget {
         shrinkWrap: true,
         padding: const EdgeInsets.all(8),
         itemCount: notifications.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (_, i) {
           final n = notifications[i];
           return ListTile(

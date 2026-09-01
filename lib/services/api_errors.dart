@@ -74,10 +74,20 @@ class ConflictError extends ApiException {
 }
 
 /// Algo falló del lado del servidor (5xx). No es culpa de quien lo usa.
+///
+/// **Conserva el `code` del servidor.** Antes lo fijaba en `internal_error`, y
+/// eso aplastaba los 503 que el backend distingue a propósito —
+/// `storage_not_configured`, `cdn_not_configured`, `storage_unavailable`, que
+/// además dicen QUÉ falta— en un genérico "el servidor tuvo un problema". La
+/// pantalla no podía diferenciar "esto no está configurado en este entorno"
+/// (reintentar no sirve) de "se cayó un momento" (reintentar sí sirve), que es
+/// justo para lo que existen los errores tipados.
 class ServerError extends ApiException {
   final int status;
 
-  const ServerError(this.status, [
+  const ServerError(
+    this.status, [
     super.message = 'El servidor tuvo un problema. Probá de nuevo en un momento.',
-  ]) : super(code: 'internal_error');
+    String code = 'internal_error',
+  ]) : super(code: code);
 }

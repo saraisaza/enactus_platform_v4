@@ -5,7 +5,7 @@ Estado al cierre del portal Estudiante.
 | | |
 |---|---|
 | `flutter analyze` | **0 issues** |
-| `flutter test` | **133/133** (tres corridas seguidas, sin intermitencias) |
+| `flutter test` | **160/160** |
 | `flutter build web --release` | ✅ |
 | Backend | **453/453**, `typecheck` y `lint` limpios |
 | Recorrido real contra el backend vivo | ✅ contrato + flujos de punta a punta |
@@ -204,14 +204,115 @@ perfil y del editor de Ruta respectivamente.
 ## Lo que falta
 
 - **Nada de la migración.** Los ocho portales están en `lib/` y se dibujan.
-
-- **Reproducción de video**: un enlace externo ya se abre; un video propio dice
-  claramente que necesita la distribución de CloudFront (Fase 6) en vez de
-  quedarse cargando.
-- Pasada de tipografía y consistencia, cuando todos los portales estén en
-  verde.
-- Fase 6: infraestructura, CloudFront con URLs firmadas, RDS a subred privada,
+- **Reproducción de video: cerrada** — ver la sección propia más abajo.
+- **Barra de progreso de subida: parcial.** Ver "Lo que quedó a medias".
+- **Pasada de tipografía: inventario hecho, migración no.** Ver "Lo que quedó a
+  medias".
+- Fase 6: infraestructura, la distribución de CloudFront, RDS a subred privada,
   OIDC.
+
+---
+
+## Reproducción de video ✅
+
+Los dos orígenes, cada uno como corresponde:
+
+| Origen | Cómo se reproduce |
+|---|---|
+| `external` | `<iframe>` de `youtube-nocookie.com` / `player.vimeo.com` en el navegador; fuera del navegador se abre en la app del sistema |
+| `uploaded` | `GET /lessons/:id/video-url` → URL firmada de CloudFront (5 min) → `<video>` HTML5 |
+
+**`video_source_io` / `video_source_web` estaban huérfanos.** Nadie los
+importaba y seguían apuntando a `course_resources/`, la carpeta local de la era
+Hive. Se extendieron en vez de reemplazarlos: la mitad que de verdad cambia
+entre plataformas es el iframe —solo existe en el navegador— así que el par
+sigue teniendo razón de ser, ahora con `createSignedVideoController(url)` y
+`buildEmbeddedVideo(embedUrl)`.
+
+**El enlace que la gente pega no se puede embeber.** `youtube.com/watch?v=…`
+responde `X-Frame-Options` y el iframe queda gris, sin ningún error. Por eso
+`embedUrlFor()` convierte a la URL de *embed* y devuelve `null` para lo que no
+reconoce, en cuyo caso se ofrece abrir el enlace afuera — nunca se embebe a
+ciegas. Es la función con más casos raros del reproductor y la que falla en
+silencio, así que tiene 19 pruebas propias (watch, youtu.be, shorts, embed,
+móvil, con parámetros, Vimeo con y sin canal, y seis formas de basura).
+
+**Se usa `youtube-nocookie.com`**: no deja cookies de seguimiento hasta que
+alguien da play.
+
+### Un error que se estaba tragando la API
+
+`ServerError` fijaba `code: 'internal_error'` y **descartaba el código del
+servidor**. El backend distingue a propósito sus 503 —`cdn_not_configured`,
+`storage_not_configured`, `storage_unavailable`— y dice *qué* falta; el cliente
+lo aplastaba todo en "El servidor tuvo un problema. Probá de nuevo".
+
+La pantalla no podía diferenciar "esto no está configurado en este entorno"
+(reintentar no sirve nunca) de "se cayó un momento" (reintentar sí sirve), que
+es exactamente para lo que existen los errores tipados. Ahora el `code` viaja
+hasta la pantalla, y el reproductor **no ofrece reintentar** ante un 503 de
+configuración: mandar a alguien a apretar un botón que no puede funcionar es
+peor que no ofrecerlo.
+
+### Verificado contra el servidor real
+
+Con el backend local (sin CloudFront), `e2e_provider_contract_test` exige que
+el error llegue como `cdn_not_configured` con el mensaje que nombra la
+variable — no como `internal_error`. Antes del arreglo esa prueba fallaba.
+
+Y con un backend levantado con una llave de firma temporal (fuera del repo), el
+cliente recibe la URL firmada de verdad:
+
+```
+BASE = http://localhost:3099
+URL FIRMADA -> https://videos.enactus.co/lab_impacto/curso_medicion_impacto/
+               leccion_1.mp4?Expires=1788277118&Signature=ehDhfj3X…&
+               Key-Pair-Id=KTESTLOCAL01
+```
+
+**Lo que NO está verificado**: que el `<video>` y el `<iframe>` pinten de
+verdad. `video_player` necesita el plugin de la plataforma, que en
+`flutter test` no existe, y montar un doble probaría el doble. Para el video
+propio hace falta además la distribución de CloudFront, que todavía no existe:
+la URL está bien firmada pero apunta a un dominio que no responde. Queda
+anotado como pendiente de comprobación en navegador, no dado por hecho.
+
+---
+
+## Lo que quedó a medias, y por qué
+
+**Barra de progreso de la subida.** El flujo de tres pasos está completo y el
+archivo nunca pasa por la API, pero `onProgress` avanza en dos tramos
+(0 al empezar, 1 al terminar) en vez de por bytes. `package:http` no expone el
+progreso de subida en web; hacerlo de verdad requiere `XMLHttpRequest.upload`
+vía `package:web`, con el mismo patrón io/web que ya usa el video. Es acotado
+—unas 60 líneas— pero es trabajo aparte y no estaba pedido como bloqueante.
+Hoy la barra se mueve dos veces; no miente, pero no informa.
+
+**Tipografía.** El inventario que pedía el punto 7:
+
+| Qué | Cuántos | Debería salir de |
+|---|---|---|
+| `fontSize:` inline | 589 | `Theme.of(context).textTheme` |
+| `EdgeInsets` con números crudos | 345 | escala de espaciado en `app_theme.dart` |
+| `BorderRadius.circular(N)` | ~150, con 9 valores distintos | tokens de radio |
+| `Color(0x…)` fuera del tema | 10 | ver abajo |
+
+Los 589 `fontSize` se concentran en cuatro valores (12, 12.5, 13, 13.5) que ya
+tienen equivalente en el `textTheme` que `app_theme.dart` construye y casi
+nadie usa. **No se migraron**: son 589 puntos de cambio visual en ocho
+portales, sin pruebas de regresión visual que los respalden, para un beneficio
+de consistencia — exactamente el tipo de refactor que el pedido acota con "no
+rediseñes nada". El inventario está acá para decidirlo con números; hacerlo
+merece su propia tarea con capturas antes/después.
+
+De los 10 `Color(0x…)` sueltos, **7 son legítimos**: los tres colores por tipo
+de evento del calendario y los degradados del logo animado no son tokens de
+marca reutilizables, son valores de un dibujo puntual. Los 3 que sí deberían
+salir del tema son `calendar_view.dart:271` (`0xFF0B0B0C`),
+`animated_logo.dart:163` (`0xFF0B0B0D`) y `colombia_map.dart:667`
+(`0xDBFFFFFF`): son casi-negros y un blanco translúcido que ya existen en
+`AppColors`.
 
 ---
 

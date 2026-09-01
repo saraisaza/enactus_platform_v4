@@ -312,12 +312,21 @@ class ApiService {
           code: 'too_many_requests',
         );
       default:
+        // El `code` viaja hasta la pantalla: un 503 `cdn_not_configured` no se
+        // arregla reintentando y un `storage_unavailable` sí, y la única forma
+        // de distinguirlos es este identificador.
         if (response.statusCode >= 500) {
-          throw ServerError(response.statusCode,
-              message ?? 'El servidor tuvo un problema. Probá de nuevo.');
+          throw ServerError(
+            response.statusCode,
+            message ?? 'El servidor tuvo un problema. Probá de nuevo.',
+            code.isEmpty ? 'internal_error' : code,
+          );
         }
-        throw ServerError(response.statusCode,
-            message ?? 'Respuesta inesperada del servidor.');
+        throw ServerError(
+          response.statusCode,
+          message ?? 'Respuesta inesperada del servidor.',
+          code.isEmpty ? 'unexpected_response' : code,
+        );
     }
   }
 

@@ -271,6 +271,55 @@ void main() {
             '${fallos.entries.map((e) => '  · ${e.key} → ${e.value}').join('\n')}');
   }, timeout: const Timeout(Duration(seconds: 90)));
 
+  /// El video propio se pide por CloudFront, nunca por S3 firmado.
+  ///
+  /// Contra el backend real hoy esto devuelve **503 `cdn_not_configured`**: la
+  /// distribución todavía no existe. Eso NO es un fallo de la prueba, es el
+  /// estado verdadero — y es justo lo que hay que fijar, porque el error tiene
+  /// que llegar identificable hasta la pantalla. Cuando la distribución exista,
+  /// la misma prueba verá un 200 con la URL firmada.
+  test('el video propio se pide a /lessons/:id/video-url y el error se distingue',
+      () async {
+    if (!up) return;
+    final sesion = await signIn('student');
+    expect(sesion, isNotNull);
+    final data = sesion!.data;
+
+    expect(await settle(() => data.courses), isNull);
+    final cursos = data.courses.valueOrNull!;
+
+    // Se busca una lección con video PROPIO en los cursos de esta estudiante.
+    String? lessonId;
+    for (final curso in cursos) {
+      expect(await settle(() => data.courseById(curso.id)), isNull);
+      for (final modulo in data.courseById(curso.id).valueOrNull!.modules) {
+        for (final leccion in modulo.lessons) {
+          if (leccion.isUploadedVideo) lessonId = leccion.id;
+        }
+      }
+    }
+    expect(lessonId, isNotNull,
+        reason: 'El seed debería traer alguna lección con video subido.');
+
+    final error = await settle(() => data.lessonVideoUrl(lessonId!));
+
+    if (error == null) {
+      // Hay CloudFront configurado: tiene que venir una URL firmada.
+      final url = data.lessonVideoUrl(lessonId!).valueOrNull!;
+      expect(url, contains('Signature='));
+      expect(url, contains('Key-Pair-Id='));
+      return;
+    }
+
+    // Sin CloudFront, el 503 tiene que llegar con SU código, no aplastado en
+    // `internal_error`: la pantalla distingue "no está configurado"
+    // (reintentar no sirve) de "se cayó un rato" (reintentar sí sirve).
+    expect(error.code, 'cdn_not_configured',
+        reason: 'Llegó "${error.code}: ${error.message}". Si el código se '
+            'pierde, la pantalla no puede explicar qué pasa.');
+    expect(error.message, contains('CLOUDFRONT'));
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
   test('el LXD ve empresas para poder elegir patrocinador', () async {
     if (!up) return;
     final sesion = await signIn('lxd');

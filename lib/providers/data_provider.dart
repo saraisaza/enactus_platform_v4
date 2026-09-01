@@ -1692,6 +1692,49 @@ class DataProvider extends ChangeNotifier {
     return _fileUrls[s3Key] ?? current;
   }
 
+  final Map<String, AsyncValue<String>> _videoUrls = {};
+  final Map<String, DateTime> _videoUrlExpiry = {};
+
+  /// URL firmada de CloudFront para reproducir el video PROPIO de una lección.
+  ///
+  /// No pasa por [fileUrl] a propósito: el servidor rechaza con 400 cualquier
+  /// key de video en `/files/download-url` —servir video desde S3 firmado
+  /// cuesta varias veces más que por CDN— y expone `GET /lessons/:id/video-url`
+  /// como único camino.
+  ///
+  /// Vence en 5 minutos, mucho antes que un archivo normal, así que se
+  /// refresca sola. Alcanza igual: CloudFront valida la firma al abrir la
+  /// conexión, no durante la reproducción, así que un video de una hora se ve
+  /// entero con una URL de cinco minutos.
+  AsyncValue<String> lessonVideoUrl(String lessonId) {
+    final expiry = _videoUrlExpiry[lessonId];
+    if (expiry != null && DateTime.now().isAfter(expiry)) {
+      _videoUrls.remove(lessonId);
+      _videoUrlExpiry.remove(lessonId);
+    }
+
+    final current = _videoUrls[lessonId] ?? const AsyncValue<String>.idle();
+    _lazy(current, (v) => _videoUrls[lessonId] = v, () async {
+      final json = await api.get('/lessons/$lessonId/video-url');
+      final info = Map<String, dynamic>.from(json as Map);
+      final seconds = (info['expiresInSeconds'] as num?)?.toInt() ?? 300;
+      _videoUrlExpiry[lessonId] =
+          DateTime.now().add(Duration(seconds: (seconds * 0.9).round()));
+      return info['url'] as String;
+    });
+    return _videoUrls[lessonId] ?? current;
+  }
+
+  /// Vuelve a pedir la URL del video. Lo usa el botón de reintentar del
+  /// reproductor: sin esto, un fallo de red dejaría la lección muerta hasta
+  /// recargar la página entera.
+  Future<void> reloadLessonVideoUrl(String lessonId) {
+    _videoUrls.remove(lessonId);
+    _videoUrlExpiry.remove(lessonId);
+    notifyListeners();
+    return Future.value();
+  }
+
   /// La misma URL, pero para quien necesita esperar el valor: descargar un
   /// adjunto al tocar un botón, por ejemplo, donde no hay estado que mostrar.
   Future<String> resolveFileUrl(String s3Key) async {

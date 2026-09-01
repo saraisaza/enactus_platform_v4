@@ -44,6 +44,10 @@ dependencies:
   file_picker: ^11.0.2
   http: ^1.2.2
   shared_preferences: ^2.5.5
+  # Solo para el `<iframe>` del reproductor de video externo
+  # (`services/video_source_web.dart`). Ya venía como dependencia transitiva;
+  # se declara porque se importa directo.
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

@@ -39,96 +39,16 @@
 // ingreso NO está, ninguna pestaña quedó en estado de error—: sin ellas, "no
 // lanzó excepciones" también lo cumple una pantalla que no llegó a existir.
 
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:enactus_platform/main.dart';
-import 'package:enactus_platform/providers/auth_provider.dart';
-import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/utils/constants.dart';
 import 'package:enactus_platform/views/auth/login_view.dart';
 import 'package:enactus_platform/widgets/async_states.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
 
-import 'helpers/fake_api.dart';
-
-late final Map<String, dynamic> _fixtures;
-
-Map<String, dynamic> _me(String role) =>
-    Map<String, dynamic>.from(_fixtures['me'][role] as Map);
-
-/// Las respuestas reales del backend, por ruta, para el portal de [role].
-FakeApi _fake(String role) {
-  final rutas = <String, Object?>{
-    ...Map<String, Object?>.from(_fixtures['compartidas'] as Map),
-    '/auth/me': _me(role),
-    // La Ruta de Impacto se pide por id del usuario con sesión.
-    '/students/${_me(role)['id']}/ruta-progress': _fixtures['rutaProgress'],
-  };
-
-  return FakeApi(
-    routes: rutas,
-    // Los fallos que el servidor devuelve HOY se reproducen tal cual (hoy:
-    // 503 en `/files/download-url`, S3 sin configurar). Fingir un 200 ahí
-    // probaría una pantalla que nadie ve.
-    statuses: Map<String, int>.from(
-        (_fixtures['estados'] as Map?)?.cast<String, int>() ?? const {}),
-    // Sin `fallback`: una ruta que el fixture no tenga hace fallar la prueba
-    // diciendo cuál es. Antes el fallback devolvía una página vacía para
-    // cualquier cosa, y las respuestas que no son páginas —la Ruta de
-    // Impacto, las métricas— reventaban en su `fromJson`; la pantalla se
-    // dibujaba en estado de ERROR y la prueba lo contaba como éxito.
-    // Regenerar los fixtures: python3 tool/capturar_payloads.py
-  );
-}
-
-/// Sesión ya iniciada: `EnactusApp` restaura desde el token guardado.
-void _conSesionGuardada() => SharedPreferences.setMockInitialValues({
-      'enactus.accessToken': 'token-de-prueba',
-      'enactus.refreshToken': 'refresh-de-prueba',
-    });
-
-Widget _app(String role) {
-  final api = _fake(role).build();
-  final data = DataProvider(api);
-  final auth = AuthProvider(api, data);
-  return EnactusApp(
-    api: api,
-    data: data,
-    auth: auth,
-    initialRoute: AppRoutes.forRole(role),
-  );
-}
-
-/// Fija el tamaño **lógico** de la ventana. Ver la nota 1 del encabezado.
-void _tamano(WidgetTester tester, Size logico) {
-  tester.view.devicePixelRatio = 1.0;
-  tester.view.physicalSize = logico;
-  addTearDown(tester.view.reset);
-}
-
-/// Monta, deja pasar unos frames y devuelve las excepciones que lanzó Flutter.
-Future<List<String>> _montar(WidgetTester tester, Widget app) async {
-  final excepciones = <String>[];
-  final anterior = FlutterError.onError;
-  FlutterError.onError = (details) => excepciones.add(
-      '${details.exception}\n${details.context}\n'
-      '${details.informationCollector?.call().take(4).join('\n') ?? ''}');
-  try {
-    await tester.pumpWidget(app);
-    for (var i = 0; i < 8; i++) {
-      await tester.pump(const Duration(milliseconds: 120));
-    }
-  } finally {
-    FlutterError.onError = anterior;
-  }
-  return excepciones;
-}
+import 'helpers/portal_harness.dart';
 
 /// El portal de verdad está en pantalla — no el ingreso ni un estado de error.
 void _esElPortal(String role, String donde) {
@@ -142,18 +62,6 @@ void _esElPortal(String role, String donde) {
           'error en $donde: se estaría midiendo la maquetación del error.');
 }
 
-const _roles = [
-  Roles.superAdmin,
-  Roles.admin,
-  Roles.lxd,
-  Roles.mentor,
-  Roles.advisor,
-  Roles.company,
-  Roles.donor,
-  Roles.student,
-  Roles.alumni,
-];
-
 void main() {
   setUpAll(() async {
     // Lo mismo que hace `main()` antes de `runApp`. Sin esto, cualquier
@@ -161,29 +69,22 @@ void main() {
     // inicializado", no "la pantalla está rota".
     await initializeDateFormatting('es');
 
-    final archivo = File('test/fixtures/api_payloads.json');
-    if (!archivo.existsSync()) {
-      fail('Faltan los fixtures. Generalos con:\n'
-          '  cd backend && npm run db:reset && npm run dev\n'
-          '  python3 tool/capturar_payloads.py');
-    }
-    _fixtures =
-        jsonDecode(archivo.readAsStringSync()) as Map<String, dynamic>;
+    cargarFixtures();
   });
 
-  setUp(_conSesionGuardada);
+  setUp(conSesionGuardada);
 
   for (final (etiqueta, tamano) in const [
     ('teléfono', Size(390, 844)),
     ('tablet', Size(768, 1024)),
     ('escritorio', Size(1440, 900)),
   ]) {
-    for (final role in _roles) {
+    for (final role in rolesDePortal) {
       testWidgets('${Roles.label(role)} en $etiqueta: su portal se dibuja',
           (tester) async {
-        _tamano(tester, tamano);
+        fijarTamano(tester, tamano);
 
-        final excepciones = await _montar(tester, _app(role));
+        final excepciones = await montar(tester, appDe(role));
 
         _esElPortal(role, '$etiqueta (${tamano.width.round()}px)');
         expect(excepciones, isEmpty,
@@ -199,12 +100,12 @@ void main() {
   /// la inicial no lo vería nunca. Se hace en escritorio porque ahí la barra
   /// lateral muestra los rótulos y se puede tocar cada uno por su nombre; en
   /// tablet son solo íconos con `Tooltip` y en teléfono viven en un `Drawer`.
-  for (final role in _roles) {
+  for (final role in rolesDePortal) {
     testWidgets('${Roles.label(role)}: TODAS sus pestañas se dibujan',
         (tester) async {
-      _tamano(tester, const Size(1440, 900));
+      fijarTamano(tester, const Size(1440, 900));
 
-      final excepciones = await _montar(tester, _app(role));
+      final excepciones = await montar(tester, appDe(role));
       _esElPortal(role, 'la pestaña inicial');
       expect(excepciones, isEmpty,
           reason: 'Al montar ${Roles.label(role)}:\n${excepciones.join('\n')}');
@@ -216,12 +117,7 @@ void main() {
               'Antes esto era un `return` y las nueve pruebas de pestañas '
               'pasaban sin tocar ninguna.');
 
-      final rotulos = tester
-          .widgetList<Text>(
-              find.descendant(of: barra.first, matching: find.byType(Text)))
-          .map((t) => t.data)
-          .whereType<String>()
-          .toList();
+      final rotulos = rotulosDeBarraLateral(tester, barra);
       expect(rotulos.length, greaterThan(1),
           reason: 'La barra lateral de ${Roles.label(role)} devolvió '
               '$rotulos: en escritorio cada pestaña tiene su rótulo.');

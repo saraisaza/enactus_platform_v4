@@ -5,7 +5,7 @@ Estado al cierre del portal Estudiante.
 | | |
 |---|---|
 | `flutter analyze` | **0 issues** |
-| `flutter test` | **165/165** |
+| `flutter test` | **179/179** |
 | `flutter build web --release` | ✅ |
 | Backend | **476/476**, `typecheck` y `lint` limpios |
 | Recorrido real contra el backend vivo | ✅ contrato + flujos de punta a punta |
@@ -371,14 +371,45 @@ indirección, no de consistencia: los valores ya están concentrados en cuatro
 tamaños (12, 12.5, 13, 13.5). Cambiarlos es exactamente lo que el pedido acota
 con "no rediseñes nada". El inventario queda acá para decidirlo con números.
 
+### Declararlas no alcanzaba: la mitad de la interfaz las ignoraba
+
+Apuntar `AppFonts` a las fuentes nuevas y declararlas en `pubspec.yaml` dejó
+**el texto de los botones con la fuente del sistema**. La causa: el `textStyle`
+de un `ButtonStyle` **reemplaza** el estilo del botón en vez de fusionarse con
+el `textTheme`, y el del tema no declaraba familia. Así que la etiqueta de cada
+botón elevado de la plataforma se pintaba con lo que trajera el navegador —
+distinto en cada uno.
+
+No era el único: **ocho `TextStyle` del tema no declaraban familia** — botones,
+tooltips, etiquetas y placeholders de los campos, encabezado y celdas de las
+tablas, snackbars y chips. Los botones eran solo los que se veían en pantalla.
+Todos corregidos.
+
+Esto no lo detecta nada de lo que había: ni `flutter analyze`, ni el build, ni
+las pruebas de maquetación. Un texto con la fuente equivocada ocupa un ancho
+parecido y no desborda.
+
+### `typography_test.dart` — cómo se comprueba ahora
+
+Monta los nueve portales, recorre las once pestañas del Admin, y además la
+portada y el ingreso (que no son portales y quedaban fuera). En cada pantalla
+recorre el árbol ya renderizado y lee la familia **resuelta** de cada texto —
+el `TextSpan` del `RichText`, después de mezclarse con el `DefaultTextStyle`.
+Eso es literalmente lo que se pinta.
+
+Falla si aparece cualquier familia que no sea Knockout, Space Grotesk, Manrope
+(solo el wordmark, por reglas de marca) o las de íconos. **Y falla igual si no
+hay familia**: heredar la del sistema es tan malo como la equivocada, solo que
+más difícil de ver.
+
 ### Lo que NO está verificado
 
-**Nadie ha mirado la app con las fuentes nuevas.** Lo que sí está comprobado:
-el bundle las carga (`FontManifest.json` trae `Knockout` y `SpaceGrotesk`, y
-Oswald/DM Sans ya no están), y `portals_render_test` monta los nueve portales
-en tres anchos recorriendo todas las pestañas **sin un solo desbordamiento** —
-que es el riesgo real de cambiar de tipografía, porque cambian las métricas del
-texto. Falta la mirada humana.
+**Nadie ha mirado la app con las fuentes nuevas.** Comprobado sí está: que el
+bundle las carga (`FontManifest.json` trae `Knockout` y `SpaceGrotesk`;
+Oswald/DM Sans ya no están), que **todo** el texto las usa (arriba), y que los
+nueve portales se dibujan en tres anchos recorriendo todas las pestañas **sin
+un solo desbordamiento** — el riesgo real de cambiar de tipografía, porque
+cambian las métricas del texto. Falta la mirada humana.
 
 ---
 

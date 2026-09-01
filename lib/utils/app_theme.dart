@@ -351,8 +351,12 @@ ThemeData buildAppTheme() {
         shadowColor: const WidgetStatePropertyAll(Colors.black87),
         overlayColor:
             WidgetStatePropertyAll(Colors.white.withValues(alpha: 0.12)),
-        textStyle: const WidgetStatePropertyAll(
-            TextStyle(fontWeight: AppWeights.uiSemibold)),
+        // `fontFamily` explícita: el `textStyle` de un `ButtonStyle`
+        // REEMPLAZA el estilo del botón, no se fusiona con el `textTheme`.
+        // Sin ella, la etiqueta de CADA botón elevado de la plataforma se
+        // pintaba con la fuente del sistema — distinta en cada navegador.
+        textStyle: const WidgetStatePropertyAll(TextStyle(
+            fontFamily: AppFonts.ui, fontWeight: AppWeights.uiSemibold)),
         padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(horizontal: 22, vertical: 16)),
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(
@@ -395,7 +399,10 @@ ThemeData buildAppTheme() {
         ],
       ),
       textStyle: const TextStyle(
-          color: AppColors.textPrimary, fontSize: 12.5, height: 1.5),
+          fontFamily: AppFonts.ui,
+          color: AppColors.textPrimary,
+          fontSize: 12.5,
+          height: 1.5),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -410,8 +417,10 @@ ThemeData buildAppTheme() {
       ),
       enabledBorder: OutlineInputBorderWith(AppColors.border),
       focusedBorder: OutlineInputBorderWith(AppColors.gold),
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
-      hintStyle: const TextStyle(color: AppColors.textMuted),
+      labelStyle: const TextStyle(
+          fontFamily: AppFonts.ui, color: AppColors.textSecondary),
+      hintStyle: const TextStyle(
+          fontFamily: AppFonts.ui, color: AppColors.textMuted),
     ),
     dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
     dialogTheme: const DialogThemeData(
@@ -423,14 +432,16 @@ ThemeData buildAppTheme() {
     listTileTheme: const ListTileThemeData(iconColor: AppColors.textSecondary),
     dataTableTheme: DataTableThemeData(
       headingTextStyle: const TextStyle(
+          fontFamily: AppFonts.ui,
           color: AppColors.gold,
           fontWeight: AppWeights.uiSemibold,
           fontSize: 13),
-      // DM Sans no trae numerales tabulares por defecto (Oswald sí) — se
+      // Space Grotesk no trae numerales tabulares por defecto — se
       // activan a mano acá para que las columnas numéricas de las 3
       // DataTable de la app (Usuarios, dashboard LXD, seguimiento de
       // curso) alineen bien.
       dataTextStyle: const TextStyle(
+          fontFamily: AppFonts.ui,
           color: AppColors.textPrimary,
           fontSize: 13,
           fontFeatures: [FontFeature.tabularFigures()]),
@@ -444,13 +455,17 @@ ThemeData buildAppTheme() {
     ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: AppColors.slate,
-      contentTextStyle: TextStyle(color: AppColors.textPrimary),
+      contentTextStyle: TextStyle(
+          fontFamily: AppFonts.ui, color: AppColors.textPrimary),
       behavior: SnackBarBehavior.floating,
     ),
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: AppColors.surfaceAlt,
       side: const BorderSide(color: AppColors.border),
-      labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+      labelStyle: const TextStyle(
+          fontFamily: AppFonts.ui,
+          color: AppColors.textPrimary,
+          fontSize: 12),
     ),
   );
 }

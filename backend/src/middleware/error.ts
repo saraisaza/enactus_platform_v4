@@ -45,6 +45,26 @@ export function onError(error: Error, c: Context): Response {
     );
   }
 
+  // Un id mal formado en la URL (`/lessons/no-es-un-uuid`) llegaba hasta
+  // PostgreSQL y volvía como 500 «error inesperado»: código equivocado —no
+  // pasó nada inesperado, el id no vale— y ruido en el log de errores, que es
+  // donde se miran los problemas de verdad.
+  //
+  // Se responde 404 y no 400 por coherencia con el resto de la API: un id
+  // fuera de alcance también da 404, así que un 400 acá permitiría distinguir
+  // "ese id no existe" de "ese id existe pero no es tuyo" solo por la forma.
+  if (isInvalidTextRepresentation(error)) {
+    return c.json(
+      {
+        error: {
+          code: 'not_found',
+          message: 'No encontramos lo que buscabas: el identificador no es válido.',
+        },
+      },
+      404,
+    );
+  }
+
   if (error instanceof HTTPException) {
     return c.json(
       { error: { code: 'http_error', message: error.message } },
@@ -66,6 +86,28 @@ export function onError(error: Error, c: Context): Response {
     },
     500,
   );
+}
+
+/**
+ * ¿Es el `22P02` de PostgreSQL (*invalid_text_representation*)?
+ *
+ * Se comprueba SOLO ese SQLSTATE, no cualquier error de base: mapear más
+ * ampliamente convertiría fallos reales en 404 silenciosos, que es peor que un
+ * 500 honesto. Drizzle envuelve el error de `postgres`, así que hay que
+ * recorrer la cadena de `cause`.
+ */
+function isInvalidTextRepresentation(error: unknown): boolean {
+  for (let actual: unknown = error, saltos = 0; actual && saltos < 5; saltos++) {
+    if (
+      typeof actual === 'object' &&
+      'code' in actual &&
+      (actual as { code?: unknown }).code === '22P02'
+    ) {
+      return true;
+    }
+    actual = (actual as { cause?: unknown }).cause;
+  }
+  return false;
 }
 
 export function onNotFound(c: Context): Response {

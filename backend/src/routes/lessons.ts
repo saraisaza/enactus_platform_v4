@@ -12,6 +12,7 @@ import {
   quizQuestionOptions,
   quizQuestions,
 } from '../db/schema';
+import { createVideoUrl } from '../lib/cloudfront';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import {
   assertValidDocumentUpload,
@@ -19,6 +20,7 @@ import {
   createUploadUrl,
   videoKeyFor,
 } from '../lib/s3';
+import { authorizeLessonVideo } from '../services/file-access';
 import {
   CONTENT_ROLES,
   currentUser,
@@ -267,6 +269,24 @@ lessonRoutes.post('/:id/video', requireRole(...CONTENT_ROLES), async (c) => {
     .returning();
 
   return c.json(updated);
+});
+
+/**
+ * URL de REPRODUCCIÓN del video propio de una lección.
+ *
+ * Es el endpoint que menciona el rechazo de `/files/download-url`: los videos
+ * no se sirven por S3 firmado (cuesta varias veces más), se sirven por
+ * CloudFront con una URL de vigencia corta.
+ *
+ * Sin `requireRole`: quien mira un video no es quien lo edita. El alcance lo
+ * resuelve `authorizeLessonVideo` contra la fila de la lección — un estudiante
+ * sin acceso al curso recibe 404, no 403, para no confirmar que existe.
+ */
+lessonRoutes.get('/:id/video-url', async (c) => {
+  const user = currentUser(c);
+  const db = c.get('db');
+  const { key } = await authorizeLessonVideo(db, user, c.req.param('id'));
+  return c.json(createVideoUrl({ key }));
 });
 
 /** Video externo: se guarda el enlace, no hay archivo ni S3 de por medio. */

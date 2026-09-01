@@ -12,8 +12,10 @@ import {
   courseTags,
   courses,
 } from '../db/schema';
+import { createVideoUrl } from '../lib/cloudfront';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
+import { authorizeCourseIntroVideo } from '../services/file-access';
 import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import {
@@ -229,6 +231,21 @@ async function withStats(
     };
   });
 }
+
+/**
+ * URL de reproducción del video de introducción propio del curso.
+ *
+ * Mismo mecanismo y misma razón que el de una lección
+ * (`GET /lessons/:id/video-url`): CloudFront, vigencia corta, nunca S3
+ * firmado. Va antes que `GET /:id` porque Hono resuelve por orden de registro
+ * y `/:id` capturaría también este camino.
+ */
+courseRoutes.get('/:id/intro-video-url', async (c) => {
+  const user = currentUser(c);
+  const db = c.get('db');
+  const { key } = await authorizeCourseIntroVideo(db, user, c.req.param('id'));
+  return c.json(createVideoUrl({ key }));
+});
 
 courseRoutes.get('/:id', async (c) => {
   const user = currentUser(c);

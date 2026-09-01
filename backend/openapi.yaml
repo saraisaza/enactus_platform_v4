@@ -796,6 +796,71 @@ paths:
                 durationSec: { type: integer }
       responses: { '200': { description: Lección actualizada } }
 
+  /lessons/{id}/video-url:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [lessons]
+      summary: URL firmada de CloudFront para reproducir el video propio
+      description: |
+        **El video propio nunca se sirve por URL firmada de S3.** Es una
+        decisión de costo: la salida de S3 se cobra desde el primer byte y la
+        de CloudFront trae 1 TB al mes. `POST /files/download-url` rechaza con
+        400 cualquier key de video —comprobándolo contra la fila que la
+        referencia, no por el prefijo del nombre— y este es el único camino
+        para verlo.
+
+        La URL vence en 5 minutos. Alcanza: CloudFront valida la firma al
+        abrir la conexión, no durante la reproducción, así que un video de una
+        hora se ve entero.
+
+        **No exige rol de contenido**: quien mira un video no es quien lo
+        edita. El alcance es el mismo que el del material de la lección — la
+        estudiante del laboratorio, el LXD que creó el curso, el mentor que lo
+        acompaña y el admin. Fuera de ese alcance responde **404, no 403**: un
+        403 confirmaría que la lección existe.
+
+        Un video **externo** responde 409, no una URL: se reproduce con la suya,
+        que ya viaja en el detalle de la lección.
+      responses:
+        '200':
+          description: URL de reproducción
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                  expiresInSeconds: { type: integer, example: 300 }
+        '404': { description: No existe o está fuera de tu alcance }
+        '409': { description: La lección no tiene video propio }
+        '503':
+          description: |
+            `cdn_not_configured` — faltan CLOUDFRONT_DOMAIN,
+            CLOUDFRONT_KEY_PAIR_ID o CLOUDFRONT_PRIVATE_KEY en este entorno.
+            Se dice cuál falta en vez de devolver una URL que el reproductor
+            va a rechazar con un error opaco.
+
+  /courses/{id}/intro-video-url:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: URL firmada de CloudFront para el video de introducción
+      description: |
+        Mismo mecanismo y misma razón que `GET /lessons/{id}/video-url`.
+      responses:
+        '200':
+          description: URL de reproducción
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                  expiresInSeconds: { type: integer, example: 300 }
+        '404': { description: No existe o está fuera de tu alcance }
+        '409': { description: El curso no tiene video de intro propio }
+        '503': { description: '`cdn_not_configured`' }
+
   /lessons/{id}/quiz-attempt:
     parameters: [{ $ref: '#/components/parameters/id' }]
     post:

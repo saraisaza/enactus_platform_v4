@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 
 import type { Database } from '../db/client';
-import { badRequest, forbidden, notFound } from '../lib/errors';
+import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { isStudentLike } from '../middleware/auth';
 import type { AuthUser } from '../middleware/context';
 
@@ -45,14 +45,32 @@ export type FileGrant = {
  * Se rechaza acá, en el único punto que firma lecturas, para que la regla no
  * dependa de que nadie se olvide.
  */
-function assertNotVideo(key: string): void {
-  if (/^lessons\//.test(key) || /^course-intros\//.test(key)) {
+async function assertNotVideo(db: Database, key: string): Promise<void> {
+  const rechazar = (): never => {
     throw badRequest(
       'Los videos no se sirven por URL firmada de S3: se reproducen por CloudFront. ' +
-        'Usá el endpoint de reproducción de la lección.',
+        'Usá GET /lessons/:id/video-url o GET /courses/:id/intro-video-url.',
       { key },
     );
-  }
+  };
+
+  // Camino rápido: es la forma que genera `videoKeyFor`, así que cubre todo lo
+  // que se suba de acá en adelante sin tocar la base.
+  if (/^lessons\//.test(key) || /^course-intros\//.test(key)) rechazar();
+
+  // Y el camino seguro, que es el que manda: el prefijo es una convención de
+  // nombres y este archivo entero existe porque adivinar por el prefijo no
+  // alcanza. Las keys del seed —`lab_ia_tecnologia/curso_intro_ia/leccion_1.mp4`—
+  // no empiezan por `lessons/` y la regla de costo tiene que valer igual.
+  const [video] = await db.execute<{ ok: number }>(sql`
+    select 1 as ok
+      from lessons where video_s3_key = ${key}
+     union all
+    select 1 as ok
+      from courses where intro_video_s3_key = ${key} and deleted_at is null
+     limit 1
+  `);
+  if (video) rechazar();
 }
 
 /**
@@ -66,7 +84,7 @@ export async function authorizeFileRead(
   user: AuthUser,
   key: string,
 ): Promise<FileGrant> {
-  assertNotVideo(key);
+  await assertNotVideo(db, key);
 
   const isAdmin = user.role === 'admin' || user.role === 'superadmin';
 
@@ -215,6 +233,107 @@ export async function authorizeFileRead(
   }
 
   throw notFound('No encontramos ese archivo.');
+}
+
+/**
+ * Autoriza la REPRODUCCIÓN del video propio de una lección.
+ *
+ * Es el otro lado de [assertNotVideo]: los videos no se firman por S3, pero
+ * alguien tiene que poder verlos. La regla de acceso es exactamente la misma
+ * que para el material de la lección —una lección cuelga de un módulo de curso
+ * o de uno de Ruta, y cada caso se autoriza distinto—, así que se reusa
+ * [assertCourseVisible] / [assertLabVisible] en vez de escribir una segunda
+ * definición de "sus cursos" que pueda separarse de la primera.
+ *
+ * Devuelve la key. Firmar es responsabilidad de `lib/cloudfront.ts`.
+ */
+export async function authorizeLessonVideo(
+  db: Database,
+  user: AuthUser,
+  lessonId: string,
+): Promise<{ key: string }> {
+  const [lesson] = await db.execute<{
+    videoType: string | null;
+    videoS3Key: string | null;
+    videoUrl: string | null;
+    courseId: string | null;
+    laboratoryId: string | null;
+  }>(sql`
+    select l.video_type as "videoType",
+           l.video_s3_key as "videoS3Key",
+           l.video_url as "videoUrl",
+           cm.course_id as "courseId",
+           ph.laboratory_id as "laboratoryId"
+      from lessons l
+      left join course_modules cm on cm.id = l.course_module_id
+      left join ruta_modules rm on rm.id = l.ruta_module_id
+      left join phases ph on ph.id = rm.phase_id
+     where l.id = ${lessonId}
+     limit 1
+  `);
+  if (!lesson) throw notFound('No se encontró la lección.');
+
+  // El acceso se comprueba ANTES de contar qué tipo de video tiene: si no,
+  // el 409 "esta lección no tiene video propio" delataría la existencia y la
+  // configuración de una lección ajena.
+  if (lesson.courseId) {
+    await assertCourseVisible(db, user, lesson.courseId);
+  } else if (lesson.laboratoryId) {
+    await assertLabVisible(db, user, lesson.laboratoryId);
+  } else {
+    throw notFound('No se encontró la lección.');
+  }
+
+  if (lesson.videoType !== 'uploaded' || !lesson.videoS3Key) {
+    // Un video externo (YouTube/Vimeo) se abre con su propia URL, que ya viaja
+    // en el detalle de la lección. Pedir una URL firmada para él es un error
+    // del cliente, no una falta de permiso.
+    throw conflict(
+      lesson.videoType === 'external'
+        ? 'Esta lección tiene video externo: se reproduce con su propia URL.'
+        : 'Esta lección no tiene video propio.',
+      { videoType: lesson.videoType },
+    );
+  }
+
+  return { key: lesson.videoS3Key };
+}
+
+/**
+ * Lo mismo para el video de introducción de un curso, que usa las mismas
+ * columnas con prefijo `intro_video_`.
+ */
+export async function authorizeCourseIntroVideo(
+  db: Database,
+  user: AuthUser,
+  courseId: string,
+): Promise<{ key: string }> {
+  const [course] = await db.execute<{
+    id: string;
+    introVideoType: string | null;
+    introVideoS3Key: string | null;
+  }>(sql`
+    select id,
+           intro_video_type as "introVideoType",
+           intro_video_s3_key as "introVideoS3Key"
+      from courses
+     where id = ${courseId} and deleted_at is null
+     limit 1
+  `);
+  if (!course) throw notFound('No se encontró el curso.');
+
+  await assertCourseVisible(db, user, course.id);
+
+  if (course.introVideoType !== 'uploaded' || !course.introVideoS3Key) {
+    throw conflict(
+      course.introVideoType === 'external'
+        ? 'Este curso tiene video de intro externo: se reproduce con su propia URL.'
+        : 'Este curso no tiene video de introducción propio.',
+      { videoType: course.introVideoType },
+    );
+  }
+
+  return { key: course.introVideoS3Key };
 }
 
 /**

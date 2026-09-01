@@ -728,12 +728,95 @@ explícitamente**: con bucket configurado exigen una URL firmada de verdad
 sin bucket, exigen que el 503 diga qué falta. La suite no depende de si quien
 la corre tiene AWS.
 
+### Reproducción de video por CloudFront ✅
+
+Era el último requisito del Grupo 1 que faltaba. Dos endpoints nuevos:
+
+| Método | Ruta | Qué hace |
+|---|---|---|
+| GET | `/lessons/:id/video-url` | URL firmada de CloudFront, vence en 5 min |
+| GET | `/courses/:id/intro-video-url` | lo mismo para el video de intro |
+
+**Ninguno exige rol de contenido**: quien mira un video no es quien lo edita.
+El alcance es el mismo que el del material de la lección y se resuelve con
+`assertCourseVisible` / `assertLabVisible` — las funciones que ya usa
+`/files/download-url`— en vez de escribir una segunda definición de "sus
+cursos" que pueda separarse de la primera. Fuera del alcance responde **404, no
+403**: un 403 confirmaría que la lección existe.
+
+**Cinco minutos de vigencia alcanzan** aunque el video dure una hora:
+CloudFront valida la firma al abrir la conexión, no durante la reproducción.
+
+Se firma con *canned policy* (un recurso, una fecha) y no con *custom policy*:
+esta última agrega rango de IP y comodines de ruta, que acá no aportan nada, y
+su política viaja en la query alargando la URL.
+
+**Sin configurar responde 503 `cdn_not_configured` diciendo qué variable
+falta**, con el mismo criterio que S3 — es preferible a una URL que el
+reproductor va a rechazar con un error opaco.
+
+### Un agujero que apareció al escribir esto
+
+`assertNotVideo` —la guardia que impide servir video por S3 firmado— comprobaba
+el **prefijo** de la key (`lessons/`, `course-intros/`). Pero las keys del seed
+son `lab_ia_tecnologia/curso_intro_ia/leccion_1.mp4`: no coinciden. La regla no
+se estaba aplicando sobre ellas. No hubo fuga —esas keys terminaban en 404
+porque la búsqueda de lecturas no consulta `video_s3_key`— pero se sostenía por
+accidente, no por la regla.
+
+Es exactamente lo que el propio archivo dice que no hay que hacer: *"la
+autorización no puede estar en el prefijo de la key —eso es adivinar— sino en
+la fila que la referencia"*. Ahora el prefijo queda como camino rápido y la
+decisión la toma una consulta contra `lessons.video_s3_key` y
+`courses.intro_video_s3_key`.
+
+### Y un código HTTP incorrecto
+
+Un id mal formado en la URL (`/lessons/no-es-un-uuid`) llegaba hasta PostgreSQL
+y volvía como **500 «error inesperado»**. Ni el código era correcto —no pasó
+nada inesperado: el id no vale— ni ayudaba que ensuciara el log de errores,
+que es donde se miran los problemas de verdad. Ahora el manejador reconoce el
+SQLSTATE `22P02` y responde **404**, por coherencia: un id fuera de alcance
+también da 404, así que un 400 permitiría distinguir "no existe" de "existe
+pero no es tuyo" solo por la forma del identificador. Se mapea **solo** ese
+SQLSTATE: mapear más ampliamente convertiría fallos reales en 404 silenciosos.
+
+### Verificación — salida real
+
+```
+$ npm run typecheck → limpio     $ npm run lint → limpio
+$ npm test
+ ✓ tests/video-playback.test.ts (23 tests)
+ Test Files  18 passed (18)      Tests  476 passed (476)
+```
+
+La firma es código propio, no de la SDK de AWS, así que no alcanza con mirar la
+forma de la URL: la prueba genera un par de llaves RSA en la corrida y
+**verifica la firma contra la pública**. Si la política cambiara un espacio,
+CloudFront respondería 403 y acá se ve.
+
+Y contra el servidor real, levantado con una llave temporal fuera del repo:
+
+```
+estudiante del laboratorio     → HTTP 200
+  host=videos.enactus.co  path=/lab_ia_tecnologia/curso_intro_ia/leccion_1.mp4
+  expiresInSeconds=300    Signature sin +,=,/ : True
+  openssl dgst -sha1 -verify … → Verified OK
+estudiante de OTRO laboratorio → HTTP 404   (no 403: no confirma que exista)
+Open Learning                  → HTTP 404
+admin                          → HTTP 200
+id mal formado                 → HTTP 404 not_found
+esa misma key por S3 firmado   → HTTP 400 bad_request
+sin CLOUDFRONT_* configurado   → HTTP 503 cdn_not_configured, nombra las 3
+```
+
+La llave de prueba se generó en un directorio temporal y se borró al terminar.
+No hay material de llave en el repositorio, ni de ejemplo.
+
 ### Lo que sigue sin verificar
 
-**Las URLs firmadas de CloudFront** para *servir* el video. El esquema y los
-endpoints ya distinguen `external` de `uploaded`, y la subida funciona, pero
-generar la URL de reproducción necesita una distribución de CloudFront con su
-key group — va en la Fase 6.
-
-Hasta entonces el video propio está guardado y es recuperable con credenciales,
-pero no hay forma de reproducirlo desde el cliente.
+**La distribución de CloudFront no existe todavía.** La API firma URLs válidas
+—verificado con `openssl`— pero apuntan a un dominio que aún no responde.
+Crear la distribución con su *key group*, su *origin access control* contra el
+bucket y la llave real en Secrets Manager es trabajo de infraestructura: Fase 6.
+Lo que ya no falta es código.

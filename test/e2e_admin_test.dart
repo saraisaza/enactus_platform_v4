@@ -134,12 +134,26 @@ void main() {
   test('el conteo de cursos NO tiene el techo de una página', () async {
     if (!up) return;
     final s = await signInAdmin();
-    final metrics = await load<ImpactMetrics>(() => s.data.impactMetrics);
-    final pagina = await load<List<Course>>(() => s.data.courses);
 
-    // Con pocos cursos coinciden; lo que importa es que el conteo NO salga de
-    // `pagina.length`, que se queda clavado en 100 al crecer.
-    expect(metrics.counts.courses, greaterThanOrEqualTo(pagina.length));
+    // Las tres lecturas van EN ESTE ORDEN a propósito. `flutter test` corre
+    // las suites e2e en paralelo contra una sola base, así que otra suite
+    // puede crear o borrar un curso entre dos peticiones: comparar un conteo
+    // con una página leída en otro instante falla sin que nada esté roto.
+    // Encerrando la página entre dos conteos, uno de los dos abarca cualquier
+    // escritura ajena —el de después si crearon, el de antes si borraron— y
+    // el invariante que importa sigue en pie.
+    final antes = await load<ImpactMetrics>(() => s.data.impactMetrics);
+    final pagina = await load<List<Course>>(() => s.data.courses);
+    await s.data.reloadImpactMetrics();
+    final despues = await load<ImpactMetrics>(() => s.data.impactMetrics);
+
+    final techo = antes.counts.courses > despues.counts.courses
+        ? antes.counts.courses
+        : despues.counts.courses;
+
+    // Lo que se prueba es que el conteo NO salga de `pagina.length`, que se
+    // queda clavado en 100 cuando la plataforma crezca.
+    expect(techo, greaterThanOrEqualTo(pagina.length));
   }, timeout: const Timeout(Duration(seconds: 40)));
 
   // -------------------------------------------------------------------------

@@ -1,0 +1,3194 @@
+{
+  "_generado_por": "tool/capturar_payloads.py contra la base sembrada",
+  "compartidas": {
+    "/site-content": {
+      "id": 1,
+      "heroTitle": "eduXaction Colombia",
+      "heroSubtitle": "Formamos líderes que transforman comunidades a través del emprendimiento social.",
+      "bannerText": "Convocatoria National Expo 2026 abierta",
+      "aboutText": "Conectamos estudiantes, mentores, universidades, empresas y donantes para crear proyectos de impacto social en toda Colombia.",
+      "meetingLink": "https://meet.google.com/eduxaction-mentoria",
+      "statStudents": 6,
+      "statProjects": 2,
+      "statLabs": 6,
+      "statUniversities": 2,
+      "updatedBy": "5e430818-0a81-5e8f-9754-b7886062571e",
+      "createdAt": "2026-08-29T15:11:10.038Z",
+      "updatedAt": "2026-09-01T03:33:20.498Z",
+      "laboratories": [
+        {
+          "id": "d88d5053-9545-5ade-96d7-210470d688a8",
+          "name": "Laboratorio Agricultura",
+          "description": "Agricultura sostenible y seguridad alimentaria."
+        },
+        {
+          "id": "0d4a00d9-8b6c-57c9-b2c3-8e059175f4fe",
+          "name": "Laboratorio Agua",
+          "description": "Gestión hídrica, saneamiento y acceso a agua potable."
+        },
+        {
+          "id": "06cfd993-d62d-590e-83f5-a66e4cd4af82",
+          "name": "Laboratorio Emprendimiento",
+          "description": "Modelos de negocio y emprendimiento social."
+        },
+        {
+          "id": "ae8fa0e0-76d8-5204-9a9c-9462ed7cca66",
+          "name": "Laboratorio Energía",
+          "description": "Energías renovables y eficiencia energética."
+        },
+        {
+          "id": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+          "name": "Laboratorio IA y Tecnología",
+          "description": "Inteligencia artificial y desarrollo tecnológico aplicado a impacto social."
+        },
+        {
+          "id": "b98b0c2f-61df-567c-88fd-5796752132a0",
+          "name": "Laboratorio Impacto",
+          "description": "Medición y gestión de impacto social."
+        }
+      ],
+      "galleryImages": [],
+      "gallery": []
+    },
+    "/catalogs": {
+      "competencies": [
+        {
+          "code": "communication",
+          "name": "Comunicación"
+        },
+        {
+          "code": "user_centered_design",
+          "name": "Diseño Centrado en el Usuario"
+        },
+        {
+          "code": "entrepreneurship",
+          "name": "Emprendimiento"
+        },
+        {
+          "code": "finance",
+          "name": "Finanzas"
+        },
+        {
+          "code": "project_management",
+          "name": "Gestión de Proyectos"
+        },
+        {
+          "code": "innovation",
+          "name": "Innovación"
+        },
+        {
+          "code": "artificial_intelligence",
+          "name": "Inteligencia Artificial"
+        },
+        {
+          "code": "leadership",
+          "name": "Liderazgo"
+        },
+        {
+          "code": "impact_measurement",
+          "name": "Medición de Impacto"
+        },
+        {
+          "code": "pitch",
+          "name": "Pitch"
+        },
+        {
+          "code": "sustainability",
+          "name": "Sostenibilidad"
+        },
+        {
+          "code": "teamwork",
+          "name": "Trabajo en equipo"
+        }
+      ],
+      "ods": [
+        {
+          "code": "ods_1",
+          "number": 1,
+          "title": "Fin de la pobreza"
+        },
+        {
+          "code": "ods_2",
+          "number": 2,
+          "title": "Hambre cero"
+        },
+        {
+          "code": "ods_3",
+          "number": 3,
+          "title": "Salud y bienestar"
+        },
+        {
+          "code": "ods_4",
+          "number": 4,
+          "title": "Educación de calidad"
+        },
+        {
+          "code": "ods_5",
+          "number": 5,
+          "title": "Igualdad de género"
+        },
+        {
+          "code": "ods_6",
+          "number": 6,
+          "title": "Agua limpia y saneamiento"
+        },
+        {
+          "code": "ods_7",
+          "number": 7,
+          "title": "Energía asequible y no contaminante"
+        },
+        {
+          "code": "ods_8",
+          "number": 8,
+          "title": "Trabajo decente y crecimiento económico"
+        },
+        {
+          "code": "ods_9",
+          "number": 9,
+          "title": "Industria, innovación e infraestructura"
+        },
+        {
+          "code": "ods_10",
+          "number": 10,
+          "title": "Reducción de las desigualdades"
+        },
+        {
+          "code": "ods_11",
+          "number": 11,
+          "title": "Ciudades y comunidades sostenibles"
+        },
+        {
+          "code": "ods_12",
+          "number": 12,
+          "title": "Producción y consumo responsables"
+        },
+        {
+          "code": "ods_13",
+          "number": 13,
+          "title": "Acción por el clima"
+        },
+        {
+          "code": "ods_14",
+          "number": 14,
+          "title": "Vida submarina"
+        },
+        {
+          "code": "ods_15",
+          "number": 15,
+          "title": "Vida de ecosistemas terrestres"
+        },
+        {
+          "code": "ods_16",
+          "number": 16,
+          "title": "Paz, justicia e instituciones sólidas"
+        },
+        {
+          "code": "ods_17",
+          "number": 17,
+          "title": "Alianzas para lograr los objetivos"
+        }
+      ]
+    },
+    "/admin/metrics": {
+      "counts": {
+        "students": 5,
+        "alumni": 1,
+        "mentors": 1,
+        "lxds": 3,
+        "advisors": 1,
+        "companies": 1,
+        "donors": 1,
+        "projects": 2,
+        "groups": 2,
+        "courses": 9,
+        "laboratories": 6,
+        "certificates": 0,
+        "universities": 2,
+        "submissionsPending": 2
+      },
+      "hoursByCompetency": [
+        {
+          "code": "innovation",
+          "name": "Innovación",
+          "hours": 10.7
+        },
+        {
+          "code": "artificial_intelligence",
+          "name": "Inteligencia Artificial",
+          "hours": 10.7
+        }
+      ],
+      "odsCompletionRate": [
+        {
+          "code": "ods_4",
+          "number": 4,
+          "title": "Educación de calidad",
+          "total": 2,
+          "completed": 1,
+          "rate": 0.5
+        },
+        {
+          "code": "ods_9",
+          "number": 9,
+          "title": "Industria, innovación e infraestructura",
+          "total": 2,
+          "completed": 1,
+          "rate": 0.5
+        }
+      ],
+      "sponsoredHoursByCompany": [
+        {
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "companyName": "Bancolombia",
+          "hours": 10.7
+        }
+      ]
+    },
+    "/users": {
+      "data": [
+        {
+          "id": "d31d3a32-79e5-594c-a76d-f907dfb9fa7d",
+          "name": "Ana María Torres",
+          "email": "lxd.agua@enactus.co",
+          "role": "lxd",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": false,
+          "canGradeEnactus": false,
+          "profile": {
+            "company": "EPM",
+            "position": "Ingeniera Ambiental Senior",
+            "interests": "Sostenibilidad, comunidades rurales",
+            "languages": "Español",
+            "specialty": "Gestión hídrica",
+            "experience": "8 años en proyectos de saneamiento",
+            "availability": "Lunes 5-7 pm"
+          },
+          "joinedAt": "2024-02-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "6e3c390c-4a86-51c8-8f84-c28d48474426",
+          "name": "Andrés Castro",
+          "email": "estudiante4@unal.edu.co",
+          "role": "student",
+          "studentType": "enactus",
+          "phone": "3184445566",
+          "cedula": "1040404040",
+          "city": "",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Eléctrica",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2025-02-01T00:00:00.000Z",
+          "team": {
+            "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+            "groupName": "Equipo SolAndino",
+            "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+            "projectName": "SolAndino",
+            "projectStage": "validation",
+            "roleInProject": "operations"
+          },
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 1,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "name": "Bancolombia",
+          "email": "empresa@bancolombia.com",
+          "role": "company",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "Bancolombia",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2021-09-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "ad943f47-4405-51d5-b446-7c606464f0e5",
+          "name": "Camila Rivas",
+          "email": "camila.rivas@gmail.com",
+          "role": "student",
+          "studentType": "open_learning",
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2026-05-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 1,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+          "name": "Carlos Rodríguez",
+          "email": "lxd.ia@enactus.co",
+          "role": "lxd",
+          "studentType": null,
+          "phone": "3109876543",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": true,
+          "profile": {
+            "company": "Bancolombia",
+            "position": "Líder de Ciencia de Datos",
+            "interests": "Educación, impacto social, tecnología",
+            "languages": "Español, Inglés",
+            "specialty": "Inteligencia Artificial",
+            "experience": "10 años en analítica y ML",
+            "availability": "Martes y jueves 6-8 pm"
+          },
+          "joinedAt": "2023-08-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "682dc3b1-aa55-59f1-98ee-7704177ec036",
+          "name": "Daniela Herrera",
+          "email": "mentor.ia@enactus.co",
+          "role": "mentor",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {
+            "company": "Bancolombia"
+          },
+          "joinedAt": "2024-05-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+          "name": "Dr. Jorge Martínez",
+          "email": "asesor@uniandes.edu.co",
+          "role": "advisor",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "Universidad de los Andes",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2022-01-15T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "name": "Fundación Impacto",
+          "email": "donante@gmail.com",
+          "role": "donor",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": "ENACTUS-2026-4589",
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2022-03-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "8dd51763-9070-50a0-ac68-10608739f045",
+          "name": "Juliana Restrepo",
+          "email": "alumni1@uniandes.edu.co",
+          "role": "alumni",
+          "studentType": "enactus",
+          "phone": "3195556677",
+          "cedula": "1050505050",
+          "city": "",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2023-01-15T00:00:00.000Z",
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida",
+            "projectStage": "pilot",
+            "roleInProject": "research"
+          },
+          "sponsorName": "Bancolombia",
+          "overallProgress": {
+            "ratio": 0.41665,
+            "coursesTotal": 2,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "5e430818-0a81-5e8f-9754-b7886062571e",
+          "name": "Laura Gómez",
+          "email": "admin@enactus.co",
+          "role": "admin",
+          "studentType": null,
+          "phone": "3001234567",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2021-06-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "0a52147e-5f14-5261-af73-cf9152bdba6a",
+          "name": "Mateo Ruiz",
+          "email": "estudiante2@uniandes.edu.co",
+          "role": "student",
+          "studentType": "enactus",
+          "phone": "3162223344",
+          "cedula": "1020202020",
+          "city": "",
+          "university": "Universidad de los Andes",
+          "career": "Administración",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2025-01-20T00:00:00.000Z",
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida",
+            "projectStage": "pilot",
+            "roleInProject": "finance"
+          },
+          "sponsorName": "Bancolombia",
+          "overallProgress": {
+            "ratio": 0.5,
+            "coursesTotal": 1,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "name": "Sara Nieto",
+          "email": "estudiante1@uniandes.edu.co",
+          "role": "student",
+          "studentType": "enactus",
+          "phone": "3150000000",
+          "cedula": "1010101010",
+          "city": "",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "avatarS3Key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png",
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2025-01-20T00:00:00.000Z",
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida",
+            "projectStage": "pilot",
+            "roleInProject": "leader"
+          },
+          "sponsorName": "Bancolombia",
+          "overallProgress": {
+            "ratio": 0.75,
+            "coursesTotal": 2,
+            "coursesDone": 1
+          }
+        },
+        {
+          "id": "9ff1d78f-4eb5-5b0b-905e-2506ee8e846e",
+          "name": "Sofía Ramírez",
+          "email": "lxd.impacto@enactus.co",
+          "role": "lxd",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {
+            "company": "Bancolombia",
+            "position": "Especialista en Medición de Impacto",
+            "interests": "Medición de impacto, datos para el desarrollo",
+            "languages": "Español, Inglés",
+            "specialty": "Teoría de cambio e indicadores sociales",
+            "experience": "6 años en evaluación de impacto social",
+            "availability": "Miércoles 4-6 pm"
+          },
+          "joinedAt": "2024-04-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "b711221e-8ee5-5ca9-b910-3529fa68ae68",
+          "name": "Super Admin 1",
+          "email": "superadmin1@enactus.co",
+          "role": "superadmin",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2021-03-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "ffa31e77-ba7a-5ae1-a60e-f5674d43fe9c",
+          "name": "Super Admin 2",
+          "email": "superadmin2@enactus.co",
+          "role": "superadmin",
+          "studentType": null,
+          "phone": "",
+          "cedula": "",
+          "city": "",
+          "university": "",
+          "career": "",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": null,
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2021-03-01T00:00:00.000Z",
+          "team": null,
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 0,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "name": "Valentina López",
+          "email": "estudiante3@unal.edu.co",
+          "role": "student",
+          "studentType": "enactus",
+          "phone": "3173334455",
+          "cedula": "1030303030",
+          "city": "",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Ambiental",
+          "companyName": "",
+          "impactCode": null,
+          "companyId": null,
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "avatarS3Key": null,
+          "canGradeOpenLearning": true,
+          "canGradeEnactus": false,
+          "profile": {},
+          "joinedAt": "2025-02-01T00:00:00.000Z",
+          "team": {
+            "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+            "groupName": "Equipo SolAndino",
+            "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+            "projectName": "SolAndino",
+            "projectStage": "validation",
+            "roleInProject": "leader"
+          },
+          "sponsorName": null,
+          "overallProgress": {
+            "ratio": 0.5,
+            "coursesTotal": 2,
+            "coursesDone": 1
+          }
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 16,
+      "totalPages": 1
+    },
+    "/projects": {
+      "data": [
+        {
+          "id": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+          "name": "AquaVida",
+          "description": "Filtros de agua de bajo costo para comunidades rurales.",
+          "problem": "Comunidades de la Guajira sin acceso a agua potable.",
+          "solution": "Filtros cerámicos producidos localmente con capacitación comunitaria.",
+          "community": "Comunidades wayúu, La Guajira",
+          "stage": "pilot",
+          "impactIndicators": "320 familias con acceso a agua · 15 líderes capacitados",
+          "expoEnabled": true,
+          "createdAt": "2026-08-29T15:11:09.950Z",
+          "updatedAt": "2026-08-29T15:11:09.950Z",
+          "deletedAt": null
+        },
+        {
+          "id": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+          "name": "SolAndino",
+          "description": "Micro-redes solares para escuelas rurales.",
+          "problem": "Escuelas rurales de Boyacá sin electricidad confiable.",
+          "solution": "Paneles solares con baterías gestionadas por la comunidad educativa.",
+          "community": "Escuelas rurales, Boyacá",
+          "stage": "validation",
+          "impactIndicators": "4 escuelas · 260 estudiantes beneficiados",
+          "expoEnabled": true,
+          "createdAt": "2026-08-29T15:11:09.950Z",
+          "updatedAt": "2026-08-29T15:11:09.950Z",
+          "deletedAt": null
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 2,
+      "totalPages": 1
+    },
+    "/groups": {
+      "data": [
+        {
+          "id": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "name": "Equipo AquaVida",
+          "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+          "university": "Universidad de los Andes",
+          "advisorId": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+          "createdAt": "2026-08-29T15:11:09.953Z",
+          "updatedAt": "2026-08-29T15:11:09.953Z",
+          "deletedAt": null
+        },
+        {
+          "id": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+          "name": "Equipo SolAndino",
+          "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+          "university": "Universidad Nacional",
+          "advisorId": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+          "createdAt": "2026-08-29T15:11:09.953Z",
+          "updatedAt": "2026-08-29T15:11:09.953Z",
+          "deletedAt": null
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 2,
+      "totalPages": 1
+    },
+    "/laboratories": {
+      "data": [
+        {
+          "id": "d88d5053-9545-5ade-96d7-210470d688a8",
+          "name": "Laboratorio Agricultura",
+          "description": "Agricultura sostenible y seguridad alimentaria.",
+          "objectives": "Desarrollar proyectos agro con enfoque regenerativo.",
+          "sponsorCompanyId": null,
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        },
+        {
+          "id": "0d4a00d9-8b6c-57c9-b2c3-8e059175f4fe",
+          "name": "Laboratorio Agua",
+          "description": "Gestión hídrica, saneamiento y acceso a agua potable.",
+          "objectives": "Diseñar soluciones de acceso y calidad de agua para comunidades.",
+          "sponsorCompanyId": null,
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        },
+        {
+          "id": "06cfd993-d62d-590e-83f5-a66e4cd4af82",
+          "name": "Laboratorio Emprendimiento",
+          "description": "Modelos de negocio y emprendimiento social.",
+          "objectives": "Construir y validar modelos de negocio sostenibles.",
+          "sponsorCompanyId": null,
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        },
+        {
+          "id": "ae8fa0e0-76d8-5204-9a9c-9462ed7cca66",
+          "name": "Laboratorio Energía",
+          "description": "Energías renovables y eficiencia energética.",
+          "objectives": "Prototipar soluciones de energía limpia y asequible.",
+          "sponsorCompanyId": null,
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        },
+        {
+          "id": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+          "name": "Laboratorio IA y Tecnología",
+          "description": "Inteligencia artificial y desarrollo tecnológico aplicado a impacto social.",
+          "objectives": "Formar en fundamentos de IA, datos y desarrollo de soluciones digitales.",
+          "sponsorCompanyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        },
+        {
+          "id": "b98b0c2f-61df-567c-88fd-5796752132a0",
+          "name": "Laboratorio Impacto",
+          "description": "Medición y gestión de impacto social.",
+          "objectives": "Aprender metodologías de medición de impacto (teoría de cambio, indicadores).",
+          "sponsorCompanyId": null,
+          "contentVersion": 1,
+          "createdAt": "2026-08-29T15:11:09.931Z",
+          "updatedAt": "2026-08-29T15:11:09.931Z",
+          "deletedAt": null
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 6,
+      "totalPages": 1
+    },
+    "/courses": {
+      "data": [
+        {
+          "id": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+          "name": "Introducción a la Inteligencia Artificial",
+          "subtitle": "IA aplicada al impacto social, desde cero",
+          "description": "Fundamentos de IA aplicados a proyectos sociales.",
+          "fullDescription": "Aprende los fundamentos de la inteligencia artificial y cómo aplicarla a proyectos de impacto social: datos, modelos y casos reales de comunidades colombianas.",
+          "coverS3Key": null,
+          "introVideoType": null,
+          "introVideoUrl": null,
+          "introVideoS3Key": null,
+          "introVideoSizeBytes": null,
+          "introVideoDurationSec": null,
+          "introVideoMimeType": null,
+          "laboratoryId": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+          "creatorId": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+          "isOpenLearning": false,
+          "isRutaExpo": false,
+          "legacyProjectId": null,
+          "level": "intermediate",
+          "estimatedHours": 8,
+          "language": "es",
+          "status": "published",
+          "generatesCertificate": true,
+          "certifiedHours": 8,
+          "openDate": null,
+          "closeDate": null,
+          "maxStudents": 0,
+          "visible": true,
+          "sponsorCompanyId": null,
+          "createdAt": "2026-08-29T15:11:09.964Z",
+          "updatedAt": "2026-08-29T15:11:09.964Z",
+          "deletedAt": null,
+          "laboratoryName": "Laboratorio IA y Tecnología",
+          "creatorName": "Carlos Rodríguez"
+        },
+        {
+          "id": "4e98ef1a-dff4-56c9-956a-c925468fa7c9",
+          "name": "Medición de Impacto Social",
+          "subtitle": "",
+          "description": "Teoría de cambio e indicadores de impacto.",
+          "fullDescription": "",
+          "coverS3Key": null,
+          "introVideoType": null,
+          "introVideoUrl": null,
+          "introVideoS3Key": null,
+          "introVideoSizeBytes": null,
+          "introVideoDurationSec": null,
+          "introVideoMimeType": null,
+          "laboratoryId": "b98b0c2f-61df-567c-88fd-5796752132a0",
+          "creatorId": "9ff1d78f-4eb5-5b0b-905e-2506ee8e846e",
+          "isOpenLearning": false,
+          "isRutaExpo": false,
+          "legacyProjectId": null,
+          "level": "basic",
+          "estimatedHours": 0,
+          "language": "es",
+          "status": "published",
+          "generatesCertificate": false,
+          "certifiedHours": 0,
+          "openDate": null,
+          "closeDate": null,
+          "maxStudents": 0,
+          "visible": true,
+          "sponsorCompanyId": null,
+          "createdAt": "2026-08-29T15:11:09.964Z",
+          "updatedAt": "2026-08-29T15:11:09.964Z",
+          "deletedAt": null,
+          "laboratoryName": "Laboratorio Impacto",
+          "creatorName": "Sofía Ramírez"
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 2,
+      "totalPages": 1
+    },
+    "/certificates": {
+      "data": [],
+      "page": 1,
+      "pageSize": 100,
+      "total": 0,
+      "totalPages": 0
+    },
+    "/submissions": {
+      "data": [
+        {
+          "id": "324a0f44-8777-5165-847d-6fc8fd2192d4",
+          "courseId": "96c3e4cc-d1f2-58d6-adbf-f9095e64ac12",
+          "rutaModuleId": null,
+          "studentId": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "groupId": null,
+          "lessonId": null,
+          "taskName": "Diagnóstico hídrico de mi comunidad",
+          "comment": "Diagnóstico realizado en el municipio de Sesquilé.",
+          "submittedAt": "2026-07-01T00:00:00.000Z",
+          "grade": null,
+          "gradingMode": null,
+          "gradedBy": null,
+          "gradedAt": null,
+          "feedback": "",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "createdAt": "2026-08-29T15:11:10.024Z",
+          "updatedAt": "2026-08-29T15:11:10.024Z",
+          "deletedAt": null,
+          "studentName": "Valentina López",
+          "courseName": "Gestión Hídrica Comunitaria",
+          "lessonTitle": null
+        },
+        {
+          "id": "e0d8bf36-a672-5ddb-9182-e8a3a3fdea4a",
+          "courseId": "36058fa0-1b48-54dc-85c8-da5cc3a87137",
+          "rutaModuleId": null,
+          "studentId": null,
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "lessonId": null,
+          "taskName": "Annual Report (borrador)",
+          "comment": "Primera versión del Annual Report del equipo.",
+          "submittedAt": "2026-06-28T00:00:00.000Z",
+          "grade": null,
+          "gradingMode": null,
+          "gradedBy": null,
+          "gradedAt": null,
+          "feedback": "",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "createdAt": "2026-08-29T15:11:10.024Z",
+          "updatedAt": "2026-08-29T15:11:10.024Z",
+          "deletedAt": null,
+          "studentName": null,
+          "courseName": "RUTA NATIONAL EXPO — AquaVida",
+          "lessonTitle": null
+        },
+        {
+          "id": "c9a4a437-ade2-5793-bb95-b77f31533dfe",
+          "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+          "rutaModuleId": null,
+          "studentId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "groupId": null,
+          "lessonId": null,
+          "taskName": "Ensayo: IA para el bien social",
+          "comment": "Adjunto mi ensayo sobre aplicaciones de IA en salud rural.",
+          "submittedAt": "2026-06-20T00:00:00.000Z",
+          "grade": "4.50",
+          "gradingMode": "scale5",
+          "gradedBy": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+          "gradedAt": "2026-06-20T00:00:00.000Z",
+          "feedback": "Excelente análisis. Profundiza en la parte de datos.",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "createdAt": "2026-08-29T15:11:10.024Z",
+          "updatedAt": "2026-08-29T15:11:10.024Z",
+          "deletedAt": null,
+          "studentName": "Sara Nieto",
+          "courseName": "Introducción a la Inteligencia Artificial",
+          "lessonTitle": null
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 3,
+      "totalPages": 1
+    },
+    "/evidences": {
+      "data": [
+        {
+          "id": "c2c2cc14-1186-5337-aae2-fa96cfef2609",
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "projectId": null,
+          "type": "report",
+          "title": "Reporte de impacto Q2 2026",
+          "description": "Resumen trimestral de resultados de los proyectos apoyados.",
+          "s3Key": null,
+          "fileName": null,
+          "contentType": null,
+          "sizeBytes": null,
+          "evidenceDate": "2026-06-30T00:00:00.000Z",
+          "createdAt": "2026-08-29T15:11:10.028Z",
+          "updatedAt": "2026-08-29T15:11:10.028Z",
+          "deletedAt": null
+        },
+        {
+          "id": "e5d9837f-3a6c-513d-9fb0-efe570551cba",
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+          "type": "testimonial",
+          "title": "Testimonio de la comunidad",
+          "description": "\"El filtro cambió la salud de nuestros niños\" — Líder comunitaria wayúu.",
+          "s3Key": null,
+          "fileName": null,
+          "contentType": null,
+          "sizeBytes": null,
+          "evidenceDate": "2026-06-10T00:00:00.000Z",
+          "createdAt": "2026-08-29T15:11:10.028Z",
+          "updatedAt": "2026-08-29T15:11:10.028Z",
+          "deletedAt": null
+        },
+        {
+          "id": "17bcaf23-49e8-5797-b35c-f2819d5407b7",
+          "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+          "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+          "type": "story",
+          "title": "La historia de Sara",
+          "description": "Gracias a tu aporte, Sara lidera el proyecto AquaVida que hoy lleva agua potable a 320 familias en La Guajira.",
+          "s3Key": null,
+          "fileName": null,
+          "contentType": null,
+          "sizeBytes": null,
+          "evidenceDate": "2026-05-15T00:00:00.000Z",
+          "createdAt": "2026-08-29T15:11:10.028Z",
+          "updatedAt": "2026-08-29T15:11:10.028Z",
+          "deletedAt": null
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 3,
+      "totalPages": 1
+    },
+    "/calendar-events": {
+      "data": [],
+      "page": 1,
+      "pageSize": 100,
+      "total": 0,
+      "totalPages": 0
+    },
+    "/forum-posts": {
+      "data": [
+        {
+          "id": "da2f173c-5883-59db-934e-4bd3cb82cf96",
+          "authorId": "5e430818-0a81-5e8f-9754-b7886062571e",
+          "authorName": "Laura Gómez",
+          "authorRole": "admin",
+          "body": "¡Bienvenidos al foro de la comunidad eduXaction Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.",
+          "category": "announcement",
+          "pinned": true,
+          "createdAt": "2026-06-02 04:00:00-05",
+          "replyCount": 0,
+          "likeCount": 0,
+          "likedByMe": false
+        },
+        {
+          "id": "c71c41b9-d169-5259-b57e-76a283b780d8",
+          "authorId": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "authorName": "Valentina López",
+          "authorRole": "student",
+          "body": "Compartiendo un logro del Laboratorio Agua: instalamos el primer filtro comunitario piloto en La Guajira. ¡Gracias a todos los que nos dieron ideas en este foro! 🎉",
+          "category": "progress",
+          "pinned": false,
+          "createdAt": "2026-07-22 11:45:00-05",
+          "replyCount": 0,
+          "likeCount": 0,
+          "likedByMe": false
+        },
+        {
+          "id": "cbdcac74-c7e0-55a1-8ec2-f7d79b042df7",
+          "authorId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "authorName": "Sara Nieto",
+          "authorRole": "student",
+          "body": "¿Alguien ha usado modelos de IA para predecir deserción escolar? Estamos empezando esa parte del proyecto en el Laboratorio de IA y Tecnología y nos vendría bien aprender de otros equipos.",
+          "category": "question",
+          "pinned": false,
+          "createdAt": "2026-07-10 06:15:00-05",
+          "replyCount": 0,
+          "likeCount": 0,
+          "likedByMe": false
+        },
+        {
+          "id": "3d100bdd-7419-5924-9403-2b85f3c553c3",
+          "authorId": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+          "authorName": "Dr. Jorge Martínez",
+          "authorRole": "advisor",
+          "body": "Muy orgulloso del equipo AquaVida de la Universidad de los Andes: pasaron a etapa Piloto esta semana. Si algún otro equipo está trabajando temas de agua, con gusto conectamos experiencias 🚰",
+          "category": "progress",
+          "pinned": false,
+          "createdAt": "2026-06-15 09:30:00-05",
+          "replyCount": 0,
+          "likeCount": 0,
+          "likedByMe": false
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 4,
+      "totalPages": 1
+    },
+    "/forum-posts/stats": {
+      "activeUsersThisWeek": 0,
+      "mostActiveTeams": [
+        {
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "groupName": "Equipo AquaVida",
+          "count": 1
+        },
+        {
+          "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+          "groupName": "Equipo SolAndino",
+          "count": 1
+        }
+      ]
+    },
+    "/communication-resources": {
+      "data": [],
+      "page": 1,
+      "pageSize": 100,
+      "total": 0,
+      "totalPages": 0
+    },
+    "/talent": {
+      "data": [
+        {
+          "id": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "name": "Sara Nieto",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "city": "",
+          "avatarS3Key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png",
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida"
+          },
+          "laboratories": [
+            {
+              "id": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+              "name": "Laboratorio IA y Tecnología"
+            },
+            {
+              "id": "b98b0c2f-61df-567c-88fd-5796752132a0",
+              "name": "Laboratorio Impacto"
+            }
+          ],
+          "completedObjectives": {
+            "entrepreneurship": 1,
+            "business": 1
+          },
+          "certificates": 0,
+          "overallProgress": {
+            "ratio": 0.75,
+            "coursesTotal": 2,
+            "coursesDone": 1
+          }
+        },
+        {
+          "id": "6e3c390c-4a86-51c8-8f84-c28d48474426",
+          "name": "Andrés Castro",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Eléctrica",
+          "city": "",
+          "avatarS3Key": null,
+          "team": {
+            "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+            "groupName": "Equipo SolAndino",
+            "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+            "projectName": "SolAndino"
+          },
+          "laboratories": [
+            {
+              "id": "ae8fa0e0-76d8-5204-9a9c-9462ed7cca66",
+              "name": "Laboratorio Energía"
+            }
+          ],
+          "completedObjectives": {
+            "entrepreneurship": 0,
+            "business": 0
+          },
+          "certificates": 0,
+          "overallProgress": {
+            "ratio": 0,
+            "coursesTotal": 1,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "8dd51763-9070-50a0-ac68-10608739f045",
+          "name": "Juliana Restrepo",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "city": "",
+          "avatarS3Key": null,
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida"
+          },
+          "laboratories": [
+            {
+              "id": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+              "name": "Laboratorio IA y Tecnología"
+            },
+            {
+              "id": "b98b0c2f-61df-567c-88fd-5796752132a0",
+              "name": "Laboratorio Impacto"
+            }
+          ],
+          "completedObjectives": {
+            "entrepreneurship": 0,
+            "business": 0
+          },
+          "certificates": 0,
+          "overallProgress": {
+            "ratio": 0.41665,
+            "coursesTotal": 2,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "0a52147e-5f14-5261-af73-cf9152bdba6a",
+          "name": "Mateo Ruiz",
+          "university": "Universidad de los Andes",
+          "career": "Administración",
+          "city": "",
+          "avatarS3Key": null,
+          "team": {
+            "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+            "groupName": "Equipo AquaVida",
+            "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+            "projectName": "AquaVida"
+          },
+          "laboratories": [
+            {
+              "id": "06cfd993-d62d-590e-83f5-a66e4cd4af82",
+              "name": "Laboratorio Emprendimiento"
+            }
+          ],
+          "completedObjectives": {
+            "entrepreneurship": 0,
+            "business": 0
+          },
+          "certificates": 0,
+          "overallProgress": {
+            "ratio": 0.5,
+            "coursesTotal": 1,
+            "coursesDone": 0
+          }
+        },
+        {
+          "id": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "name": "Valentina López",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Ambiental",
+          "city": "",
+          "avatarS3Key": null,
+          "team": {
+            "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+            "groupName": "Equipo SolAndino",
+            "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+            "projectName": "SolAndino"
+          },
+          "laboratories": [
+            {
+              "id": "d88d5053-9545-5ade-96d7-210470d688a8",
+              "name": "Laboratorio Agricultura"
+            },
+            {
+              "id": "0d4a00d9-8b6c-57c9-b2c3-8e059175f4fe",
+              "name": "Laboratorio Agua"
+            }
+          ],
+          "completedObjectives": {
+            "entrepreneurship": 0,
+            "business": 0
+          },
+          "certificates": 0,
+          "overallProgress": {
+            "ratio": 0.5,
+            "coursesTotal": 2,
+            "coursesDone": 1
+          }
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 5,
+      "totalPages": 1
+    },
+    "/notifications": {
+      "data": [
+        {
+          "id": "961b54c6-d47e-5035-9219-06645f99e822",
+          "userId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "title": "Entrega calificada",
+          "body": "Tu ensayo de IA fue calificado con 4.5. ¡Revisa la retroalimentación!",
+          "readAt": null,
+          "createdAt": "2026-06-21T00:00:00.000Z"
+        }
+      ],
+      "page": 1,
+      "pageSize": 100,
+      "total": 1,
+      "totalPages": 1,
+      "unread": 1
+    },
+    "/courses/f5883732-7819-58a7-bc9a-e67556e5dc2d": {
+      "id": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+      "name": "Introducción a la Inteligencia Artificial",
+      "subtitle": "IA aplicada al impacto social, desde cero",
+      "description": "Fundamentos de IA aplicados a proyectos sociales.",
+      "fullDescription": "Aprende los fundamentos de la inteligencia artificial y cómo aplicarla a proyectos de impacto social: datos, modelos y casos reales de comunidades colombianas.",
+      "coverS3Key": null,
+      "introVideoType": null,
+      "introVideoUrl": null,
+      "introVideoS3Key": null,
+      "introVideoSizeBytes": null,
+      "introVideoDurationSec": null,
+      "introVideoMimeType": null,
+      "laboratoryId": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+      "creatorId": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+      "isOpenLearning": false,
+      "isRutaExpo": false,
+      "legacyProjectId": null,
+      "level": "intermediate",
+      "estimatedHours": 8,
+      "language": "es",
+      "status": "published",
+      "generatesCertificate": true,
+      "certifiedHours": 8,
+      "openDate": null,
+      "closeDate": null,
+      "maxStudents": 0,
+      "visible": true,
+      "sponsorCompanyId": null,
+      "createdAt": "2026-08-29T15:11:09.964Z",
+      "updatedAt": "2026-08-29T15:11:09.964Z",
+      "deletedAt": null,
+      "laboratoryName": "Laboratorio IA y Tecnología",
+      "creatorName": "Carlos Rodríguez",
+      "modules": [
+        {
+          "id": "6b986ad9-280c-5e43-991d-a4f7eaf1f7a2",
+          "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+          "orderIndex": 1,
+          "title": "Módulo 1: Fundamentos",
+          "createdAt": "2026-08-29T15:11:09.979Z",
+          "updatedAt": "2026-08-29T15:11:09.979Z",
+          "lessons": [
+            {
+              "id": "00463bbe-88f4-5e6d-bfa2-552eba364e9c",
+              "title": "¿Qué es la IA?",
+              "type": "video",
+              "description": "",
+              "durationMin": 15,
+              "orderIndex": 1,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": "uploaded",
+              "videoUrl": null,
+              "videoS3Key": "lab_ia_tecnologia/curso_intro_ia/leccion_1.mp4",
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": null
+            },
+            {
+              "id": "96b77b16-4c74-53d4-a03b-e93cbff0f442",
+              "title": "Datos y modelos",
+              "type": "video",
+              "description": "",
+              "durationMin": 20,
+              "orderIndex": 2,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": "uploaded",
+              "videoUrl": null,
+              "videoS3Key": "lab_ia_tecnologia/curso_intro_ia/leccion_2.mp4",
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": null
+            },
+            {
+              "id": "0a992242-339a-5e80-aaf8-22222691aaa4",
+              "title": "Material de apoyo",
+              "type": "pdf",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 3,
+              "resourceS3Key": "lab_ia_tecnologia/curso_intro_ia/material.pdf",
+              "resourceFileName": "material.pdf",
+              "externalUrl": null,
+              "videoType": null,
+              "videoUrl": null,
+              "videoS3Key": null,
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": null
+            }
+          ]
+        },
+        {
+          "id": "dd14d0c2-0aac-5fd6-93e0-840e0e0440a2",
+          "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+          "orderIndex": 2,
+          "title": "Módulo 2: Evaluación",
+          "createdAt": "2026-08-29T15:11:09.979Z",
+          "updatedAt": "2026-08-29T15:11:09.979Z",
+          "lessons": [
+            {
+              "id": "7b5494ec-cb56-5aa2-bf73-05803ad41fb9",
+              "title": "Quiz: conceptos básicos",
+              "type": "quiz",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 1,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": null,
+              "videoUrl": null,
+              "videoS3Key": null,
+              "videoDurationSec": null,
+              "quiz": [
+                {
+                  "id": "0b4b604a-9789-5f3b-8db6-e8ff59f9b156",
+                  "kind": "multiple",
+                  "question": "¿Qué es el aprendizaje supervisado?",
+                  "options": [
+                    "Modelos entrenados con datos etiquetados",
+                    "Modelos sin datos",
+                    "Un tipo de hardware"
+                  ]
+                },
+                {
+                  "id": "88e92677-e6ad-58b8-ba23-11cc50bb1061",
+                  "kind": "truefalse",
+                  "question": "La IA puede ayudar a predecir la deserción escolar.",
+                  "options": []
+                },
+                {
+                  "id": "8efe62cb-8ab5-5b33-b381-94313866abae",
+                  "kind": "short",
+                  "question": "¿Cómo se llaman los datos usados para entrenar un modelo?",
+                  "options": []
+                },
+                {
+                  "id": "7c967791-d6e8-5c30-9b64-a6ea2609be6e",
+                  "kind": "order",
+                  "question": "Ordena las etapas de un proyecto de IA:",
+                  "options": [
+                    "Recolectar datos",
+                    "Entrenar el modelo",
+                    "Evaluar resultados",
+                    "Desplegar la solución"
+                  ]
+                }
+              ],
+              "activity": null
+            },
+            {
+              "id": "48b14131-0ec7-5f83-bbb3-64f17cb060ee",
+              "title": "Proyecto: IA para tu comunidad",
+              "type": "activity",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 2,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": null,
+              "videoUrl": null,
+              "videoS3Key": null,
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": {
+                "description": "Propón una solución de IA para un problema real de tu comunidad. Incluye el problema, los datos necesarios y el impacto esperado.",
+                "deadline": null,
+                "requiresFile": true,
+                "requiresText": true,
+                "maxFiles": 2,
+                "gradingMode": "points100",
+                "allowedTypes": [
+                  "pdf",
+                  "document"
+                ],
+                "rubric": [
+                  {
+                    "criterion": "Contenido",
+                    "points": 20
+                  },
+                  {
+                    "criterion": "Presentación",
+                    "points": 20
+                  },
+                  {
+                    "criterion": "Investigación",
+                    "points": 20
+                  },
+                  {
+                    "criterion": "Creatividad",
+                    "points": 20
+                  },
+                  {
+                    "criterion": "Impacto",
+                    "points": 20
+                  }
+                ]
+              }
+            },
+            {
+              "id": "c5380006-0011-553f-8e31-48ad6c40a28a",
+              "title": "Encuesta de satisfacción del curso",
+              "type": "survey",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 3,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": null,
+              "videoUrl": null,
+              "videoS3Key": null,
+              "videoDurationSec": null,
+              "quiz": [
+                {
+                  "id": "b15c28c6-7aac-506a-bac7-a41147db0baa",
+                  "kind": "short",
+                  "question": "¿Qué fue lo que más te gustó del curso?",
+                  "options": []
+                },
+                {
+                  "id": "b7182c4b-78aa-5e3d-a6bd-79971fe26f50",
+                  "kind": "short",
+                  "question": "¿Qué mejorarías?",
+                  "options": []
+                }
+              ],
+              "activity": null
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "IA",
+        "Innovación",
+        "Tecnología"
+      ],
+      "objectives": [
+        {
+          "id": "72a21445-d1a5-449a-b4b8-8cd339992d36",
+          "category": "business",
+          "text": "Comprender los fundamentos de la IA y el aprendizaje automático"
+        },
+        {
+          "id": "1d8ec946-17d6-4b66-8e33-5fdb2454f325",
+          "category": "entrepreneurship",
+          "text": "Identificar oportunidades de IA en proyectos sociales"
+        }
+      ],
+      "competencies": [
+        "artificial_intelligence",
+        "innovation"
+      ],
+      "ods": [
+        "ods_4",
+        "ods_9"
+      ],
+      "learningOutcomes": [
+        "Propone una solución de IA para un problema comunitario real"
+      ],
+      "prerequisiteCourseIds": []
+    },
+    "/courses/4e98ef1a-dff4-56c9-956a-c925468fa7c9": {
+      "id": "4e98ef1a-dff4-56c9-956a-c925468fa7c9",
+      "name": "Medición de Impacto Social",
+      "subtitle": "",
+      "description": "Teoría de cambio e indicadores de impacto.",
+      "fullDescription": "",
+      "coverS3Key": null,
+      "introVideoType": null,
+      "introVideoUrl": null,
+      "introVideoS3Key": null,
+      "introVideoSizeBytes": null,
+      "introVideoDurationSec": null,
+      "introVideoMimeType": null,
+      "laboratoryId": "b98b0c2f-61df-567c-88fd-5796752132a0",
+      "creatorId": "9ff1d78f-4eb5-5b0b-905e-2506ee8e846e",
+      "isOpenLearning": false,
+      "isRutaExpo": false,
+      "legacyProjectId": null,
+      "level": "basic",
+      "estimatedHours": 0,
+      "language": "es",
+      "status": "published",
+      "generatesCertificate": false,
+      "certifiedHours": 0,
+      "openDate": null,
+      "closeDate": null,
+      "maxStudents": 0,
+      "visible": true,
+      "sponsorCompanyId": null,
+      "createdAt": "2026-08-29T15:11:09.964Z",
+      "updatedAt": "2026-08-29T15:11:09.964Z",
+      "deletedAt": null,
+      "laboratoryName": "Laboratorio Impacto",
+      "creatorName": "Sofía Ramírez",
+      "modules": [
+        {
+          "id": "b4a6a981-08f1-5c41-95c9-ef6204b310aa",
+          "courseId": "4e98ef1a-dff4-56c9-956a-c925468fa7c9",
+          "orderIndex": 1,
+          "title": "Módulo 1: Teoría de cambio",
+          "createdAt": "2026-08-29T15:11:09.979Z",
+          "updatedAt": "2026-08-29T15:11:09.979Z",
+          "lessons": [
+            {
+              "id": "fb6457ba-f6cf-5454-9dd1-7b026b828af9",
+              "title": "Construyendo la teoría de cambio",
+              "type": "video",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 1,
+              "resourceS3Key": null,
+              "resourceFileName": null,
+              "externalUrl": null,
+              "videoType": "uploaded",
+              "videoUrl": null,
+              "videoS3Key": "lab_impacto/curso_medicion_impacto/leccion_1.mp4",
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": null
+            },
+            {
+              "id": "fff72e2f-039b-5bee-a347-50caf1043060",
+              "title": "Plantilla de indicadores",
+              "type": "pdf",
+              "description": "",
+              "durationMin": 0,
+              "orderIndex": 2,
+              "resourceS3Key": "lab_impacto/curso_medicion_impacto/material.pdf",
+              "resourceFileName": "material.pdf",
+              "externalUrl": null,
+              "videoType": null,
+              "videoUrl": null,
+              "videoS3Key": null,
+              "videoDurationSec": null,
+              "quiz": [],
+              "activity": null
+            }
+          ]
+        }
+      ],
+      "tags": [],
+      "objectives": [],
+      "competencies": [],
+      "ods": [],
+      "learningOutcomes": [],
+      "prerequisiteCourseIds": []
+    },
+    "/laboratories/d88d5053-9545-5ade-96d7-210470d688a8": {
+      "id": "d88d5053-9545-5ade-96d7-210470d688a8",
+      "name": "Laboratorio Agricultura",
+      "description": "Agricultura sostenible y seguridad alimentaria.",
+      "objectives": "Desarrollar proyectos agro con enfoque regenerativo.",
+      "sponsorCompanyId": null,
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "bfda0fe2-ab17-5f04-8f63-d48f3ff4a928",
+          "orderIndex": 1,
+          "title": "Fase 1",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "d207f2dd-d827-5c3e-96e7-244d16e7b527",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "479cb15f-bef6-577b-9412-531050c1d01a",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [],
+      "lxds": [],
+      "sponsorName": null,
+      "studentsAssigned": 1
+    },
+    "/laboratories/0d4a00d9-8b6c-57c9-b2c3-8e059175f4fe": {
+      "id": "0d4a00d9-8b6c-57c9-b2c3-8e059175f4fe",
+      "name": "Laboratorio Agua",
+      "description": "Gestión hídrica, saneamiento y acceso a agua potable.",
+      "objectives": "Diseñar soluciones de acceso y calidad de agua para comunidades.",
+      "sponsorCompanyId": null,
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "163c9176-da94-5a2e-b3ea-54571864194e",
+          "orderIndex": 1,
+          "title": "Fase 1",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "1ea94168-dbb5-568f-87cc-167a873bcc1b",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "78b0012a-e1a2-5c69-a123-dee54001d014",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [],
+      "lxds": [
+        {
+          "id": "d31d3a32-79e5-594c-a76d-f907dfb9fa7d",
+          "name": "Ana María Torres",
+          "email": "lxd.agua@enactus.co",
+          "avatarS3Key": null,
+          "availability": "Lunes 5-7 pm"
+        }
+      ],
+      "sponsorName": null,
+      "studentsAssigned": 1
+    },
+    "/laboratories/06cfd993-d62d-590e-83f5-a66e4cd4af82": {
+      "id": "06cfd993-d62d-590e-83f5-a66e4cd4af82",
+      "name": "Laboratorio Emprendimiento",
+      "description": "Modelos de negocio y emprendimiento social.",
+      "objectives": "Construir y validar modelos de negocio sostenibles.",
+      "sponsorCompanyId": null,
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "9e6439af-bd92-52fb-8d6b-7f7e89f31d4d",
+          "orderIndex": 1,
+          "title": "Fase 1",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "2f80c1d5-1762-5fb5-aa11-02928b853003",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "d4ecc694-76e5-5b3f-941f-aca0a8fd1e0f",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [],
+      "lxds": [],
+      "sponsorName": null,
+      "studentsAssigned": 1
+    },
+    "/laboratories/ae8fa0e0-76d8-5204-9a9c-9462ed7cca66": {
+      "id": "ae8fa0e0-76d8-5204-9a9c-9462ed7cca66",
+      "name": "Laboratorio Energía",
+      "description": "Energías renovables y eficiencia energética.",
+      "objectives": "Prototipar soluciones de energía limpia y asequible.",
+      "sponsorCompanyId": null,
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "9ce9e415-6161-56f5-861d-a276aab198f8",
+          "orderIndex": 1,
+          "title": "Fase 1",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "ffde1744-7731-5d54-bdc0-d47f9b94dd5a",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "d2f4a421-9b17-5184-841f-0cf572766a29",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [],
+      "lxds": [],
+      "sponsorName": null,
+      "studentsAssigned": 1
+    },
+    "/laboratories/b0b722b7-5dc6-58de-b9ad-77b0415e8d85": {
+      "id": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+      "name": "Laboratorio IA y Tecnología",
+      "description": "Inteligencia artificial y desarrollo tecnológico aplicado a impacto social.",
+      "objectives": "Formar en fundamentos de IA, datos y desarrollo de soluciones digitales.",
+      "sponsorCompanyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "92057f90-fcf5-571a-a256-61bebf360dd9",
+          "orderIndex": 1,
+          "title": "Fase 1: Fundamentos",
+          "description": "Introducción a la inteligencia artificial y su aplicación a proyectos sociales.",
+          "deadline": "2026-07-01",
+          "objectives": [
+            {
+              "id": "96425799-bf4b-5d46-80cf-5fe485f7c84c",
+              "category": "entrepreneurship",
+              "text": "Identificar oportunidades de IA en proyectos sociales",
+              "courseIds": [
+                "f5883732-7819-58a7-bc9a-e67556e5dc2d"
+              ]
+            },
+            {
+              "id": "549c1d6e-51fb-58f2-ad33-d80e236e7676",
+              "category": "business",
+              "text": "Comprender los fundamentos de la IA y el aprendizaje automático",
+              "courseIds": [
+                "f5883732-7819-58a7-bc9a-e67556e5dc2d"
+              ]
+            }
+          ],
+          "modules": [
+            {
+              "id": "adcf7274-28bf-5c76-b65b-03e82a8e6cf1",
+              "title": "Módulo 1: Introducción a la IA",
+              "orderIndex": 1,
+              "isMentorshipModule": false,
+              "courseIds": [
+                "f5883732-7819-58a7-bc9a-e67556e5dc2d"
+              ],
+              "ownLessons": [
+                {
+                  "id": "ce9f9c92-237b-5013-8cb6-40eab870b695",
+                  "title": "Guía de la Fase 1",
+                  "type": "pdf",
+                  "description": "",
+                  "durationMin": 0,
+                  "orderIndex": 1,
+                  "resourceS3Key": "lab_ia_tecnologia/ruta_impacto/guia_fase1.pdf",
+                  "resourceFileName": "guia_fase1.pdf",
+                  "externalUrl": null
+                }
+              ]
+            },
+            {
+              "id": "bef5b36a-84aa-586f-9bd5-01808248810e",
+              "title": "Módulo 2: Mentoría",
+              "orderIndex": 2,
+              "isMentorshipModule": true,
+              "courseIds": [],
+              "ownLessons": [
+                {
+                  "id": "34f5f1e8-06b5-540f-ad54-ab040c9c6339",
+                  "title": "Confirmar asistencia a la reunión",
+                  "type": "activity",
+                  "description": "Después de tu reunión con el Mentor, confirma aquí que asististe.",
+                  "durationMin": 0,
+                  "orderIndex": 1,
+                  "resourceS3Key": null,
+                  "resourceFileName": null,
+                  "externalUrl": null
+                }
+              ]
+            }
+          ],
+          "completedByCount": 0
+        },
+        {
+          "id": "ff7975f0-bb6d-54c8-9076-243c11d57e7f",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": "2026-08-02",
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "6de112a1-e5c0-5265-aad3-ca38b40ad8d4",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [
+        {
+          "id": "682dc3b1-aa55-59f1-98ee-7704177ec036",
+          "name": "Daniela Herrera",
+          "email": "mentor.ia@enactus.co",
+          "avatarS3Key": null,
+          "availability": ""
+        }
+      ],
+      "lxds": [
+        {
+          "id": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+          "name": "Carlos Rodríguez",
+          "email": "lxd.ia@enactus.co",
+          "avatarS3Key": null,
+          "availability": "Martes y jueves 6-8 pm"
+        }
+      ],
+      "sponsorName": "Bancolombia",
+      "studentsAssigned": 2
+    },
+    "/laboratories/b98b0c2f-61df-567c-88fd-5796752132a0": {
+      "id": "b98b0c2f-61df-567c-88fd-5796752132a0",
+      "name": "Laboratorio Impacto",
+      "description": "Medición y gestión de impacto social.",
+      "objectives": "Aprender metodologías de medición de impacto (teoría de cambio, indicadores).",
+      "sponsorCompanyId": null,
+      "contentVersion": 1,
+      "createdAt": "2026-08-29T15:11:09.931Z",
+      "updatedAt": "2026-08-29T15:11:09.931Z",
+      "deletedAt": null,
+      "phases": [
+        {
+          "id": "d778a236-33f0-5cd2-815e-5702197bf50a",
+          "orderIndex": 1,
+          "title": "Fase 1",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "e7b16627-6cca-54ce-b8d5-3474f017a1f5",
+          "orderIndex": 2,
+          "title": "Fase 2",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        },
+        {
+          "id": "3ddcb76b-997f-52e4-a3a8-02e349eac748",
+          "orderIndex": 3,
+          "title": "Fase 3",
+          "description": "",
+          "deadline": null,
+          "objectives": [],
+          "modules": [],
+          "completedByCount": 0
+        }
+      ],
+      "mentors": [],
+      "lxds": [
+        {
+          "id": "9ff1d78f-4eb5-5b0b-905e-2506ee8e846e",
+          "name": "Sofía Ramírez",
+          "email": "lxd.impacto@enactus.co",
+          "avatarS3Key": null,
+          "availability": "Miércoles 4-6 pm"
+        }
+      ],
+      "sponsorName": null,
+      "studentsAssigned": 2
+    },
+    "/projects/de5dfeb9-bfed-5690-b787-f486fbbdaac7": {
+      "id": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+      "name": "AquaVida",
+      "description": "Filtros de agua de bajo costo para comunidades rurales.",
+      "problem": "Comunidades de la Guajira sin acceso a agua potable.",
+      "solution": "Filtros cerámicos producidos localmente con capacitación comunitaria.",
+      "community": "Comunidades wayúu, La Guajira",
+      "stage": "pilot",
+      "impactIndicators": "320 familias con acceso a agua · 15 líderes capacitados",
+      "expoEnabled": true,
+      "createdAt": "2026-08-29T15:11:09.950Z",
+      "updatedAt": "2026-08-29T15:11:09.950Z",
+      "deletedAt": null,
+      "ods": [
+        "ods_6",
+        "ods_3"
+      ],
+      "team": [
+        {
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "groupName": "Equipo AquaVida",
+          "userId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "name": "Sara Nieto",
+          "roleInProject": "leader",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "avatarS3Key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"
+        },
+        {
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "groupName": "Equipo AquaVida",
+          "userId": "8dd51763-9070-50a0-ac68-10608739f045",
+          "name": "Juliana Restrepo",
+          "roleInProject": "research",
+          "university": "Universidad de los Andes",
+          "career": "Ingeniería Industrial",
+          "avatarS3Key": null
+        },
+        {
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "groupName": "Equipo AquaVida",
+          "userId": "0a52147e-5f14-5261-af73-cf9152bdba6a",
+          "name": "Mateo Ruiz",
+          "roleInProject": "finance",
+          "university": "Universidad de los Andes",
+          "career": "Administración",
+          "avatarS3Key": null
+        }
+      ],
+      "teams": [
+        {
+          "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+          "groupName": "Equipo AquaVida",
+          "university": "Universidad de los Andes",
+          "advisorName": "Dr. Jorge Martínez"
+        }
+      ]
+    },
+    "/projects/54b33dde-4fba-583a-a6f1-013b4619cc16": {
+      "id": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+      "name": "SolAndino",
+      "description": "Micro-redes solares para escuelas rurales.",
+      "problem": "Escuelas rurales de Boyacá sin electricidad confiable.",
+      "solution": "Paneles solares con baterías gestionadas por la comunidad educativa.",
+      "community": "Escuelas rurales, Boyacá",
+      "stage": "validation",
+      "impactIndicators": "4 escuelas · 260 estudiantes beneficiados",
+      "expoEnabled": true,
+      "createdAt": "2026-08-29T15:11:09.950Z",
+      "updatedAt": "2026-08-29T15:11:09.950Z",
+      "deletedAt": null,
+      "ods": [
+        "ods_7",
+        "ods_4"
+      ],
+      "team": [
+        {
+          "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+          "groupName": "Equipo SolAndino",
+          "userId": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "name": "Valentina López",
+          "roleInProject": "leader",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Ambiental",
+          "avatarS3Key": null
+        },
+        {
+          "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+          "groupName": "Equipo SolAndino",
+          "userId": "6e3c390c-4a86-51c8-8f84-c28d48474426",
+          "name": "Andrés Castro",
+          "roleInProject": "operations",
+          "university": "Universidad Nacional",
+          "career": "Ingeniería Eléctrica",
+          "avatarS3Key": null
+        }
+      ],
+      "teams": [
+        {
+          "groupId": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+          "groupName": "Equipo SolAndino",
+          "university": "Universidad Nacional",
+          "advisorName": "Dr. Jorge Martínez"
+        }
+      ]
+    },
+    "/groups/abc6ee31-e3f9-5c24-aeee-004145d16051": {
+      "id": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+      "name": "Equipo AquaVida",
+      "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+      "university": "Universidad de los Andes",
+      "advisorId": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+      "createdAt": "2026-08-29T15:11:09.953Z",
+      "updatedAt": "2026-08-29T15:11:09.953Z",
+      "deletedAt": null,
+      "members": [
+        {
+          "userId": "8dd51763-9070-50a0-ac68-10608739f045",
+          "name": "Juliana Restrepo",
+          "roleInProject": "research"
+        },
+        {
+          "userId": "0a52147e-5f14-5261-af73-cf9152bdba6a",
+          "name": "Mateo Ruiz",
+          "roleInProject": "finance"
+        },
+        {
+          "userId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+          "name": "Sara Nieto",
+          "roleInProject": "leader"
+        }
+      ],
+      "checklist": [
+        {
+          "id": "eb575c3b-1f1f-4e17-a27d-9b0bff00f088",
+          "label": "Inscripción del equipo confirmada",
+          "done": true
+        },
+        {
+          "id": "7249d73a-940e-44fe-85be-e08e5b2823d6",
+          "label": "Annual Report entregado",
+          "done": false
+        },
+        {
+          "id": "7da39d84-83ad-4317-ac99-64fabacb20ea",
+          "label": "Impact Page publicada",
+          "done": false
+        },
+        {
+          "id": "a0ab7c34-4af6-4e9a-93dc-7fe65317b473",
+          "label": "Pitch Deck versión final",
+          "done": false
+        },
+        {
+          "id": "35b758fb-197d-4de3-b380-d1ed27659c8a",
+          "label": "Video del proyecto grabado",
+          "done": false
+        },
+        {
+          "id": "939ea7fa-c87b-4ca6-95ff-ff7b2e3d4ed2",
+          "label": "Simulación de pitch realizada",
+          "done": false
+        },
+        {
+          "id": "7f28582c-7194-43c2-803d-04ce683ce2e0",
+          "label": "Documentación de viaje completa",
+          "done": false
+        }
+      ]
+    },
+    "/groups/68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc": {
+      "id": "68eeb8f4-e7ed-52db-bcc0-d5ad609dc4fc",
+      "name": "Equipo SolAndino",
+      "projectId": "54b33dde-4fba-583a-a6f1-013b4619cc16",
+      "university": "Universidad Nacional",
+      "advisorId": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+      "createdAt": "2026-08-29T15:11:09.953Z",
+      "updatedAt": "2026-08-29T15:11:09.953Z",
+      "deletedAt": null,
+      "members": [
+        {
+          "userId": "6e3c390c-4a86-51c8-8f84-c28d48474426",
+          "name": "Andrés Castro",
+          "roleInProject": "operations"
+        },
+        {
+          "userId": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+          "name": "Valentina López",
+          "roleInProject": "leader"
+        }
+      ],
+      "checklist": [
+        {
+          "id": "2852748b-24b0-46f4-9037-f11c9318a174",
+          "label": "Inscripción del equipo confirmada",
+          "done": true
+        },
+        {
+          "id": "ffe1856e-66d8-4de2-ab0b-194703939fc5",
+          "label": "Annual Report entregado",
+          "done": false
+        },
+        {
+          "id": "1f9c71aa-d3e5-42be-a4c2-af839fa1ecb1",
+          "label": "Impact Page publicada",
+          "done": false
+        },
+        {
+          "id": "4c09cbec-90c7-46f8-9aa7-b559d445da1c",
+          "label": "Pitch Deck versión final",
+          "done": false
+        },
+        {
+          "id": "67cb4bab-a2aa-4d4d-ba9d-028aef9a8cdd",
+          "label": "Video del proyecto grabado",
+          "done": false
+        },
+        {
+          "id": "e56b0347-b178-42db-ba33-62637d60598c",
+          "label": "Simulación de pitch realizada",
+          "done": false
+        },
+        {
+          "id": "415a246f-3e36-4a25-8ee6-5a9be1ea8db9",
+          "label": "Documentación de viaje completa",
+          "done": false
+        }
+      ]
+    },
+    "/users/d31d3a32-79e5-594c-a76d-f907dfb9fa7d": {
+      "id": "d31d3a32-79e5-594c-a76d-f907dfb9fa7d",
+      "name": "Ana María Torres",
+      "email": "lxd.agua@enactus.co",
+      "role": "lxd",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": false,
+      "canGradeEnactus": false,
+      "profile": {
+        "company": "EPM",
+        "position": "Ingeniera Ambiental Senior",
+        "interests": "Sostenibilidad, comunidades rurales",
+        "languages": "Español",
+        "specialty": "Gestión hídrica",
+        "experience": "8 años en proyectos de saneamiento",
+        "availability": "Lunes 5-7 pm"
+      },
+      "joinedAt": "2024-02-01T00:00:00.000Z"
+    },
+    "/users/6e3c390c-4a86-51c8-8f84-c28d48474426": {
+      "id": "6e3c390c-4a86-51c8-8f84-c28d48474426",
+      "name": "Andrés Castro",
+      "email": "estudiante4@unal.edu.co",
+      "role": "student",
+      "studentType": "enactus",
+      "phone": "3184445566",
+      "cedula": "1040404040",
+      "city": "",
+      "university": "Universidad Nacional",
+      "career": "Ingeniería Eléctrica",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2025-02-01T00:00:00.000Z"
+    },
+    "/users/0e383be9-7d74-54eb-b3b3-19d19506d772": {
+      "id": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "name": "Bancolombia",
+      "email": "empresa@bancolombia.com",
+      "role": "company",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "Bancolombia",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-09-01T00:00:00.000Z"
+    },
+    "/users/ad943f47-4405-51d5-b446-7c606464f0e5": {
+      "id": "ad943f47-4405-51d5-b446-7c606464f0e5",
+      "name": "Camila Rivas",
+      "email": "camila.rivas@gmail.com",
+      "role": "student",
+      "studentType": "open_learning",
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2026-05-01T00:00:00.000Z"
+    },
+    "/users/1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f": {
+      "id": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+      "name": "Carlos Rodríguez",
+      "email": "lxd.ia@enactus.co",
+      "role": "lxd",
+      "studentType": null,
+      "phone": "3109876543",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": true,
+      "profile": {
+        "company": "Bancolombia",
+        "position": "Líder de Ciencia de Datos",
+        "interests": "Educación, impacto social, tecnología",
+        "languages": "Español, Inglés",
+        "specialty": "Inteligencia Artificial",
+        "experience": "10 años en analítica y ML",
+        "availability": "Martes y jueves 6-8 pm"
+      },
+      "joinedAt": "2023-08-01T00:00:00.000Z"
+    },
+    "/users/682dc3b1-aa55-59f1-98ee-7704177ec036": {
+      "id": "682dc3b1-aa55-59f1-98ee-7704177ec036",
+      "name": "Daniela Herrera",
+      "email": "mentor.ia@enactus.co",
+      "role": "mentor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {
+        "company": "Bancolombia"
+      },
+      "joinedAt": "2024-05-01T00:00:00.000Z"
+    },
+    "/users/a9d853b6-8c40-5868-b5f7-706aea5b7829": {
+      "id": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+      "name": "Dr. Jorge Martínez",
+      "email": "asesor@uniandes.edu.co",
+      "role": "advisor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2022-01-15T00:00:00.000Z"
+    },
+    "/users/650391ed-f0cf-5b2c-a103-35a9d420ca33": {
+      "id": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "name": "Fundación Impacto",
+      "email": "donante@gmail.com",
+      "role": "donor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": "ENACTUS-2026-4589",
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2022-03-01T00:00:00.000Z"
+    },
+    "/users/8dd51763-9070-50a0-ac68-10608739f045": {
+      "id": "8dd51763-9070-50a0-ac68-10608739f045",
+      "name": "Juliana Restrepo",
+      "email": "alumni1@uniandes.edu.co",
+      "role": "alumni",
+      "studentType": "enactus",
+      "phone": "3195556677",
+      "cedula": "1050505050",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "Ingeniería Industrial",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2023-01-15T00:00:00.000Z"
+    },
+    "/users/5e430818-0a81-5e8f-9754-b7886062571e": {
+      "id": "5e430818-0a81-5e8f-9754-b7886062571e",
+      "name": "Laura Gómez",
+      "email": "admin@enactus.co",
+      "role": "admin",
+      "studentType": null,
+      "phone": "3001234567",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-06-01T00:00:00.000Z"
+    },
+    "/users/0a52147e-5f14-5261-af73-cf9152bdba6a": {
+      "id": "0a52147e-5f14-5261-af73-cf9152bdba6a",
+      "name": "Mateo Ruiz",
+      "email": "estudiante2@uniandes.edu.co",
+      "role": "student",
+      "studentType": "enactus",
+      "phone": "3162223344",
+      "cedula": "1020202020",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "Administración",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2025-01-20T00:00:00.000Z"
+    },
+    "/users/4a25a5c5-452b-5940-871c-b4cd5ea46cda": {
+      "id": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+      "name": "Sara Nieto",
+      "email": "estudiante1@uniandes.edu.co",
+      "role": "student",
+      "studentType": "enactus",
+      "phone": "3150000000",
+      "cedula": "1010101010",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "Ingeniería Industrial",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "avatarS3Key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png",
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2025-01-20T00:00:00.000Z"
+    },
+    "/users/9ff1d78f-4eb5-5b0b-905e-2506ee8e846e": {
+      "id": "9ff1d78f-4eb5-5b0b-905e-2506ee8e846e",
+      "name": "Sofía Ramírez",
+      "email": "lxd.impacto@enactus.co",
+      "role": "lxd",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {
+        "company": "Bancolombia",
+        "position": "Especialista en Medición de Impacto",
+        "interests": "Medición de impacto, datos para el desarrollo",
+        "languages": "Español, Inglés",
+        "specialty": "Teoría de cambio e indicadores sociales",
+        "experience": "6 años en evaluación de impacto social",
+        "availability": "Miércoles 4-6 pm"
+      },
+      "joinedAt": "2024-04-01T00:00:00.000Z"
+    },
+    "/users/b711221e-8ee5-5ca9-b910-3529fa68ae68": {
+      "id": "b711221e-8ee5-5ca9-b910-3529fa68ae68",
+      "name": "Super Admin 1",
+      "email": "superadmin1@enactus.co",
+      "role": "superadmin",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-03-01T00:00:00.000Z"
+    },
+    "/users/ffa31e77-ba7a-5ae1-a60e-f5674d43fe9c": {
+      "id": "ffa31e77-ba7a-5ae1-a60e-f5674d43fe9c",
+      "name": "Super Admin 2",
+      "email": "superadmin2@enactus.co",
+      "role": "superadmin",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-03-01T00:00:00.000Z"
+    },
+    "/users/a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054": {
+      "id": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054",
+      "name": "Valentina López",
+      "email": "estudiante3@unal.edu.co",
+      "role": "student",
+      "studentType": "enactus",
+      "phone": "3173334455",
+      "cedula": "1030303030",
+      "city": "",
+      "university": "Universidad Nacional",
+      "career": "Ingeniería Ambiental",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2025-02-01T00:00:00.000Z"
+    },
+    "/students/8dd51763-9070-50a0-ac68-10608739f045/course-progress/f5883732-7819-58a7-bc9a-e67556e5dc2d": {
+      "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+      "courseName": "Introducción a la Inteligencia Artificial",
+      "totalLessons": 6,
+      "completedLessons": 2,
+      "ratio": 0.3333,
+      "isComplete": false,
+      "studentId": "8dd51763-9070-50a0-ac68-10608739f045",
+      "completedLessonIds": [
+        "00463bbe-88f4-5e6d-bfa2-552eba364e9c",
+        "96b77b16-4c74-53d4-a03b-e93cbff0f442"
+      ]
+    },
+    "/students/8dd51763-9070-50a0-ac68-10608739f045/course-progress/4e98ef1a-dff4-56c9-956a-c925468fa7c9": {
+      "courseId": "4e98ef1a-dff4-56c9-956a-c925468fa7c9",
+      "courseName": "Medición de Impacto Social",
+      "totalLessons": 2,
+      "completedLessons": 1,
+      "ratio": 0.5,
+      "isComplete": false,
+      "studentId": "8dd51763-9070-50a0-ac68-10608739f045",
+      "completedLessonIds": [
+        "fb6457ba-f6cf-5454-9dd1-7b026b828af9"
+      ]
+    },
+    "/students/4a25a5c5-452b-5940-871c-b4cd5ea46cda/course-progress/f5883732-7819-58a7-bc9a-e67556e5dc2d": {
+      "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+      "courseName": "Introducción a la Inteligencia Artificial",
+      "totalLessons": 6,
+      "completedLessons": 6,
+      "ratio": 1,
+      "isComplete": true,
+      "studentId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+      "completedLessonIds": [
+        "96b77b16-4c74-53d4-a03b-e93cbff0f442",
+        "0a992242-339a-5e80-aaf8-22222691aaa4",
+        "7b5494ec-cb56-5aa2-bf73-05803ad41fb9",
+        "48b14131-0ec7-5f83-bbb3-64f17cb060ee",
+        "c5380006-0011-553f-8e31-48ad6c40a28a",
+        "00463bbe-88f4-5e6d-bfa2-552eba364e9c"
+      ]
+    },
+    "/students/4a25a5c5-452b-5940-871c-b4cd5ea46cda/course-progress/4e98ef1a-dff4-56c9-956a-c925468fa7c9": {
+      "courseId": "4e98ef1a-dff4-56c9-956a-c925468fa7c9",
+      "courseName": "Medición de Impacto Social",
+      "totalLessons": 2,
+      "completedLessons": 1,
+      "ratio": 0.5,
+      "isComplete": false,
+      "studentId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+      "completedLessonIds": [
+        "fb6457ba-f6cf-5454-9dd1-7b026b828af9"
+      ]
+    },
+    "/files/download-url": {
+      "error": {
+        "code": "storage_unavailable",
+        "message": "No pudimos preparar el archivo: el almacenamiento no está disponible en este momento. Si el problema sigue, avisá al equipo técnico.",
+        "details": {
+          "detail": "Your session has expired. Please reauthenticate."
+        }
+      }
+    }
+  },
+  "estados": {
+    "/files/download-url": 503
+  },
+  "me": {
+    "superadmin": {
+      "id": "b711221e-8ee5-5ca9-b910-3529fa68ae68",
+      "name": "Super Admin 1",
+      "email": "superadmin1@enactus.co",
+      "role": "superadmin",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-03-01T00:00:00.000Z"
+    },
+    "admin": {
+      "id": "5e430818-0a81-5e8f-9754-b7886062571e",
+      "name": "Laura Gómez",
+      "email": "admin@enactus.co",
+      "role": "admin",
+      "studentType": null,
+      "phone": "3001234567",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-06-01T00:00:00.000Z"
+    },
+    "lxd": {
+      "id": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
+      "name": "Carlos Rodríguez",
+      "email": "lxd.ia@enactus.co",
+      "role": "lxd",
+      "studentType": null,
+      "phone": "3109876543",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": true,
+      "profile": {
+        "company": "Bancolombia",
+        "position": "Líder de Ciencia de Datos",
+        "interests": "Educación, impacto social, tecnología",
+        "languages": "Español, Inglés",
+        "specialty": "Inteligencia Artificial",
+        "experience": "10 años en analítica y ML",
+        "availability": "Martes y jueves 6-8 pm"
+      },
+      "joinedAt": "2023-08-01T00:00:00.000Z"
+    },
+    "mentor": {
+      "id": "682dc3b1-aa55-59f1-98ee-7704177ec036",
+      "name": "Daniela Herrera",
+      "email": "mentor.ia@enactus.co",
+      "role": "mentor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {
+        "company": "Bancolombia"
+      },
+      "joinedAt": "2024-05-01T00:00:00.000Z"
+    },
+    "advisor": {
+      "id": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
+      "name": "Dr. Jorge Martínez",
+      "email": "asesor@uniandes.edu.co",
+      "role": "advisor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2022-01-15T00:00:00.000Z"
+    },
+    "company": {
+      "id": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "name": "Bancolombia",
+      "email": "empresa@bancolombia.com",
+      "role": "company",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "Bancolombia",
+      "impactCode": null,
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2021-09-01T00:00:00.000Z"
+    },
+    "donor": {
+      "id": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "name": "Fundación Impacto",
+      "email": "donante@gmail.com",
+      "role": "donor",
+      "studentType": null,
+      "phone": "",
+      "cedula": "",
+      "city": "",
+      "university": "",
+      "career": "",
+      "companyName": "",
+      "impactCode": "ENACTUS-2026-4589",
+      "companyId": null,
+      "donorId": null,
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2022-03-01T00:00:00.000Z"
+    },
+    "student": {
+      "id": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+      "name": "Sara Nieto",
+      "email": "estudiante1@uniandes.edu.co",
+      "role": "student",
+      "studentType": "enactus",
+      "phone": "3150000000",
+      "cedula": "1010101010",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "Ingeniería Industrial",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "avatarS3Key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png",
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2025-01-20T00:00:00.000Z",
+      "team": {
+        "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+        "groupName": "Equipo AquaVida",
+        "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+        "projectName": "AquaVida",
+        "roleInProject": "leader"
+      },
+      "sponsorName": "Bancolombia"
+    },
+    "alumni": {
+      "id": "8dd51763-9070-50a0-ac68-10608739f045",
+      "name": "Juliana Restrepo",
+      "email": "alumni1@uniandes.edu.co",
+      "role": "alumni",
+      "studentType": "enactus",
+      "phone": "3195556677",
+      "cedula": "1050505050",
+      "city": "",
+      "university": "Universidad de los Andes",
+      "career": "Ingeniería Industrial",
+      "companyName": "",
+      "impactCode": null,
+      "companyId": "0e383be9-7d74-54eb-b3b3-19d19506d772",
+      "donorId": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
+      "avatarS3Key": null,
+      "canGradeOpenLearning": true,
+      "canGradeEnactus": false,
+      "profile": {},
+      "joinedAt": "2023-01-15T00:00:00.000Z",
+      "team": {
+        "groupId": "abc6ee31-e3f9-5c24-aeee-004145d16051",
+        "groupName": "Equipo AquaVida",
+        "projectId": "de5dfeb9-bfed-5690-b787-f486fbbdaac7",
+        "projectName": "AquaVida",
+        "roleInProject": "research"
+      },
+      "sponsorName": "Bancolombia"
+    }
+  },
+  "rutaProgress": {
+    "studentId": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
+    "studentName": "Sara Nieto",
+    "laboratories": [
+      {
+        "laboratoryId": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+        "laboratoryName": "Laboratorio IA y Tecnología",
+        "phasesTotal": 3,
+        "phasesDone": 0,
+        "isComplete": false,
+        "certificateIssued": false,
+        "phases": [
+          {
+            "phaseId": "92057f90-fcf5-571a-a256-61bebf360dd9",
+            "orderIndex": 1,
+            "title": "Fase 1: Fundamentos",
+            "description": "Introducción a la inteligencia artificial y su aplicación a proyectos sociales.",
+            "deadline": "2026-07-01",
+            "deadlineStatus": "overdue",
+            "modulesTotal": 2,
+            "modulesDone": 1,
+            "isComplete": false,
+            "isUnlocked": true,
+            "objectives": [
+              {
+                "objectiveId": "96425799-bf4b-5d46-80cf-5fe485f7c84c",
+                "category": "entrepreneurship",
+                "text": "Identificar oportunidades de IA en proyectos sociales",
+                "isComplete": true
+              },
+              {
+                "objectiveId": "549c1d6e-51fb-58f2-ad33-d80e236e7676",
+                "category": "business",
+                "text": "Comprender los fundamentos de la IA y el aprendizaje automático",
+                "isComplete": true
+              }
+            ],
+            "modules": [
+              {
+                "moduleId": "adcf7274-28bf-5c76-b65b-03e82a8e6cf1",
+                "title": "Módulo 1: Introducción a la IA",
+                "orderIndex": 1,
+                "isMentorshipModule": false,
+                "ownLessonsTotal": 1,
+                "ownLessonsDone": 1,
+                "coursesTotal": 1,
+                "coursesDone": 1,
+                "isComplete": true,
+                "isUnlocked": true,
+                "courses": [
+                  {
+                    "courseId": "f5883732-7819-58a7-bc9a-e67556e5dc2d",
+                    "courseName": "Introducción a la Inteligencia Artificial",
+                    "totalLessons": 6,
+                    "completedLessons": 6,
+                    "ratio": 1,
+                    "isComplete": true
+                  }
+                ],
+                "ownLessons": [
+                  {
+                    "id": "ce9f9c92-237b-5013-8cb6-40eab870b695",
+                    "title": "Guía de la Fase 1",
+                    "type": "pdf",
+                    "description": "",
+                    "orderIndex": 1,
+                    "resourceS3Key": "lab_ia_tecnologia/ruta_impacto/guia_fase1.pdf",
+                    "resourceFileName": "guia_fase1.pdf",
+                    "externalUrl": null,
+                    "videoType": null,
+                    "videoUrl": null,
+                    "videoS3Key": null,
+                    "isComplete": true
+                  }
+                ]
+              },
+              {
+                "moduleId": "bef5b36a-84aa-586f-9bd5-01808248810e",
+                "title": "Módulo 2: Mentoría",
+                "orderIndex": 2,
+                "isMentorshipModule": true,
+                "ownLessonsTotal": 1,
+                "ownLessonsDone": 0,
+                "coursesTotal": 0,
+                "coursesDone": 0,
+                "isComplete": false,
+                "isUnlocked": true,
+                "courses": [],
+                "ownLessons": [
+                  {
+                    "id": "34f5f1e8-06b5-540f-ad54-ab040c9c6339",
+                    "title": "Confirmar asistencia a la reunión",
+                    "type": "activity",
+                    "description": "Después de tu reunión con el Mentor, confirma aquí que asististe.",
+                    "orderIndex": 1,
+                    "resourceS3Key": null,
+                    "resourceFileName": null,
+                    "externalUrl": null,
+                    "videoType": null,
+                    "videoUrl": null,
+                    "videoS3Key": null,
+                    "isComplete": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "phaseId": "ff7975f0-bb6d-54c8-9076-243c11d57e7f",
+            "orderIndex": 2,
+            "title": "Fase 2",
+            "description": "",
+            "deadline": "2026-08-02",
+            "deadlineStatus": "overdue",
+            "modulesTotal": 0,
+            "modulesDone": 0,
+            "isComplete": false,
+            "isUnlocked": false,
+            "objectives": [],
+            "modules": []
+          },
+          {
+            "phaseId": "6de112a1-e5c0-5265-aad3-ca38b40ad8d4",
+            "orderIndex": 3,
+            "title": "Fase 3",
+            "description": "",
+            "deadline": null,
+            "deadlineStatus": "none",
+            "modulesTotal": 0,
+            "modulesDone": 0,
+            "isComplete": false,
+            "isUnlocked": false,
+            "objectives": [],
+            "modules": []
+          }
+        ]
+      },
+      {
+        "laboratoryId": "b98b0c2f-61df-567c-88fd-5796752132a0",
+        "laboratoryName": "Laboratorio Impacto",
+        "phasesTotal": 3,
+        "phasesDone": 0,
+        "isComplete": false,
+        "certificateIssued": false,
+        "phases": [
+          {
+            "phaseId": "d778a236-33f0-5cd2-815e-5702197bf50a",
+            "orderIndex": 1,
+            "title": "Fase 1",
+            "description": "",
+            "deadline": null,
+            "deadlineStatus": "none",
+            "modulesTotal": 0,
+            "modulesDone": 0,
+            "isComplete": false,
+            "isUnlocked": true,
+            "objectives": [],
+            "modules": []
+          },
+          {
+            "phaseId": "e7b16627-6cca-54ce-b8d5-3474f017a1f5",
+            "orderIndex": 2,
+            "title": "Fase 2",
+            "description": "",
+            "deadline": null,
+            "deadlineStatus": "none",
+            "modulesTotal": 0,
+            "modulesDone": 0,
+            "isComplete": false,
+            "isUnlocked": false,
+            "objectives": [],
+            "modules": []
+          },
+          {
+            "phaseId": "3ddcb76b-997f-52e4-a3a8-02e349eac748",
+            "orderIndex": 3,
+            "title": "Fase 3",
+            "description": "",
+            "deadline": null,
+            "deadlineStatus": "none",
+            "modulesTotal": 0,
+            "modulesDone": 0,
+            "isComplete": false,
+            "isUnlocked": false,
+            "objectives": [],
+            "modules": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -192,6 +192,85 @@ void main() {
     expect(fallos, isEmpty, reason: 'Filtros rotos: $fallos');
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  /// Las lecturas POR ID, que las de arriba no tocan.
+  ///
+  /// El mapa `gettersDe` solo cubre los getters sin id, y eso dejaba fuera
+  /// justo las pantallas de detalle: la Ruta de Impacto, el avance en un
+  /// curso, el perfil de una persona, un laboratorio, un proyecto, un equipo.
+  /// El hueco se notó cuando `RutaProgress.fromJson` reventó con un
+  /// `type 'Null' is not a subtype of type 'String'` sin que ninguna prueba
+  /// fallara: nadie estaba mirando ese contrato contra el servidor.
+  test('las lecturas por id tampoco fallan (Ruta, curso, perfil, lab…)',
+      () async {
+    if (!up) return;
+    final sesion = await signIn('student');
+    expect(sesion, isNotNull);
+    final data = sesion!.data;
+    final admin = (await signIn('admin'))!.data;
+
+    // Se toman ids REALES de los listados, no inventados: un id inventado
+    // daría 404 y la prueba pasaría sin haber ejercitado ningún parseo.
+    expect(await settle(() => data.courses), isNull);
+    final cursos = data.courses.valueOrNull!;
+    expect(cursos, isNotEmpty, reason: 'El seed debería traer cursos.');
+
+    expect(await settle(() => admin.users(role: Roles.student)), isNull);
+    final estudiantes = admin.users(role: Roles.student).valueOrNull!;
+    expect(estudiantes, isNotEmpty);
+
+    expect(await settle(() => admin.laboratories), isNull);
+    expect(await settle(() => admin.projects), isNull);
+    expect(await settle(() => admin.groups), isNull);
+
+    final fallos = <String, String>{};
+
+    Future<void> comprobar(String nombre, dynamic Function() leer) async {
+      final error = await settle(leer);
+      if (error != null && error is! ForbiddenError) {
+        fallos[nombre] = '${error.code}: ${error.message}';
+      }
+    }
+
+    await comprobar('rutaProgress', () => data.rutaProgress);
+    await comprobar(
+        'courseProgress', () => data.courseProgress(cursos.first.id));
+    await comprobar('courseById', () => data.courseById(cursos.first.id));
+    await comprobar('userById', () => admin.userById(estudiantes.first.id));
+
+    final labs = admin.laboratories.valueOrNull ?? const [];
+    if (labs.isNotEmpty) {
+      await comprobar('labById', () => admin.labById(labs.first.id));
+    }
+    final proyectos = admin.projects.valueOrNull ?? const [];
+    if (proyectos.isNotEmpty) {
+      await comprobar('projectById', () => admin.projectById(proyectos.first.id));
+    }
+    final equipos = admin.groups.valueOrNull ?? const [];
+    if (equipos.isNotEmpty) {
+      await comprobar('groupById', () => admin.groupById(equipos.first.id));
+    }
+
+    // Estos dos no son getters con estado: devuelven `Future` y lanzan.
+    try {
+      await data.rutaProgressOf(estudiantes.first.id);
+    } on ApiException catch (e) {
+      // Un estudiante mirando a OTRO recibe 403, y está bien: lo que no puede
+      // pasar es un 400 (contrato mal armado) ni un 500.
+      if (e is! ForbiddenError) {
+        fallos['rutaProgressOf'] = '${e.code}: ${e.message}';
+      }
+    }
+    try {
+      await admin.rutaProgressOf(estudiantes.first.id);
+    } on ApiException catch (e) {
+      fallos['rutaProgressOf (admin)'] = '${e.code}: ${e.message}';
+    }
+
+    expect(fallos, isEmpty,
+        reason: 'Lecturas por id rotas:\n'
+            '${fallos.entries.map((e) => '  · ${e.key} → ${e.value}').join('\n')}');
+  }, timeout: const Timeout(Duration(seconds: 90)));
+
   test('el LXD ve empresas para poder elegir patrocinador', () async {
     if (!up) return;
     final sesion = await signIn('lxd');

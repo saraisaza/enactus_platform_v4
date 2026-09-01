@@ -10,7 +10,7 @@ verificación y pegado su salida real.
 | 2 — Migraciones y seed | ✅ Cerrada | 28 ago 2026 |
 | 3 — Auth y autorización | ✅ Cerrada | 28 ago 2026 |
 | 4 — API REST | ✅ Cerrada | 28 ago 2026 · 4 grupos + OpenAPI |
-| 5 — Cliente Flutter | ⬜ Pendiente | — |
+| 5 — Cliente Flutter | ✅ Cerrada | 31 ago 2026 · los 8 portales · ver [MIGRACION_FRONT.md](MIGRACION_FRONT.md) |
 | 6 — Infraestructura y CI/CD | ⬜ Pendiente | — |
 
 ---

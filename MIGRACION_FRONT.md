@@ -4,11 +4,11 @@ Estado al cierre del portal Estudiante.
 
 | | |
 |---|---|
-| `flutter analyze` | **0 errores, 0 warnings** (16 infos de estilo previos) |
-| `flutter test` | **55/55** |
+| `flutter analyze` | **0 issues** |
+| `flutter test` | **133/133** (tres corridas seguidas, sin intermitencias) |
 | `flutter build web --release` | ✅ |
-| Backend | **240/240** |
-| Recorrido real contra el backend vivo | ✅ 12 pruebas de punta a punta |
+| Backend | **453/453**, `typecheck` y `lint` limpios |
+| Recorrido real contra el backend vivo | ✅ contrato + flujos de punta a punta |
 
 ---
 
@@ -205,16 +205,6 @@ perfil y del editor de Ruta respectivamente.
 
 - **Nada de la migración.** Los ocho portales están en `lib/` y se dibujan.
 
-### Prueba de humo: los ocho portales se dibujan
-
-`e2e_provider_contract_test` monta el portal de cada uno de los nueve roles y
-exige que Flutter no lance ninguna excepción. Compilar no prueba que una
-pantalla funcione: un `Row` que desborda es un fallo de ejecución.
-
-Lo encontró de inmediato: **el pie de página desbordaba por 559 px en los
-ocho portales**, en cualquier ventana de escritorio angosta. Sus dos líneas
-de texto no tenían techo, así que exigían su ancho natural, y dentro de un
-`Wrap` nadie las obliga a encoger. Estaba ahí desde antes de la migración.
 - **Reproducción de video**: un enlace externo ya se abre; un video propio dice
   claramente que necesita la distribución de CloudFront (Fase 6) en vez de
   quedarse cargando.
@@ -222,6 +212,80 @@ de texto no tenían techo, así que exigían su ancho natural, y dentro de un
   verde.
 - Fase 6: infraestructura, CloudFront con URLs firmadas, RDS a subred privada,
   OIDC.
+
+---
+
+## Cómo se prueba que una pantalla se dibuja (y las tres veces que no se probó)
+
+`test/portals_render_test.dart` monta el portal de los nueve roles en tres
+anchos y recorre TODAS sus pestañas: 36 casos. Compilar no prueba que una
+pantalla funcione — un `Row` que desborda es un fallo de ejecución.
+
+La suite **pasó en verde tres veces sin probar nada**. Vale la pena dejar
+escrito cómo, porque las tres formas son fáciles de repetir:
+
+1. **`setSurfaceSize` fija píxeles físicos.** En `flutter_test` el
+   `devicePixelRatio` es 3.0, así que "1440×900" eran **480×300 lógicos**,
+   "768" eran 256 y "390" eran 130. Los tres anchos caían en `compact` y el
+   caso de escritorio —la barra lateral de 230px con texto— no se ejecutó
+   nunca. Se arregla fijando `devicePixelRatio = 1.0` y `physicalSize`.
+2. **La sesión se borraba en el primer frame.** `EnactusApp.initState` llama
+   `restoreSession()` tras el primer frame; sin token guardado eso hace
+   `_setUser(null)` y el guardia de rol muestra el ingreso. Las 36 pruebas
+   verificaban `LoginView`. Se arregla sembrando el token —que además
+   ejercita el camino real de restauración— en vez de un atajo de pruebas:
+   `debugSetSession` se eliminó de `AuthProvider`.
+3. **El recorrido de pestañas hacía `return` si no encontraba la barra.** Y no
+   la encontraba, por (1). Nueve pruebas verdes que no tocaban ninguna
+   pestaña. Un `return` silencioso convierte "no pude probar" en "probé y está
+   bien": ahora cualquier ausencia es `fail`.
+
+De ahí que las afirmaciones sean explícitas —el portal está montado, el
+ingreso NO está, ninguna pestaña quedó en estado de error—: sin ellas, "no
+lanzó excepciones" también lo cumple una pantalla que nunca llegó a existir.
+
+### Los payloads no se inventan: se capturan
+
+`tool/capturar_payloads.py` graba las respuestas reales del backend sembrado
+en `test/fixtures/api_payloads.json`, con la cuenta que de verdad puede ver
+cada cosa. Una pantalla puede dibujarse perfecto con datos imaginarios y
+romperse con los de verdad.
+
+La API falsa **no tiene comodín**: una ruta sin fixture hace fallar la prueba
+diciendo cuál falta. Antes respondía una página vacía para todo, y las
+respuestas que no son páginas —la Ruta de Impacto, las métricas— reventaban en
+su `fromJson`; la pantalla se dibujaba en **estado de error** y la prueba lo
+contaba como éxito. También se reproducen los fallos reales tal cual: hoy
+`/files/download-url` responde 503 porque S3 no está configurado en este
+entorno, y así se guarda — fingir un 200 probaría una pantalla que nadie ve.
+
+### Lo que apareció al mirar de verdad
+
+| Dónde | Qué |
+|---|---|
+| `CardSkeleton` | Desbordaba toda tarjeta baja. El borde de 1px de un `BoxDecoration` mete su grosor hacia adentro: el hueco real es 34 menos, no 32 — y el título de 18px no cabía con `height: 44`. Se veía justo mientras alguien esperaba. |
+| `StatusChip` | La etiqueta pedía su ancho natural dentro de un `Wrap`; un rótulo largo en una tarjeta angosta desbordaba. |
+| `StageRail` | Las dos leyendas ("Etapa 2 de 6" / "Sigue: Validación") sin flex, en una tarjeta de grilla más estrecha que su suma. |
+| **Los 23 desplegables** | Sin `isExpanded`, un `DropdownButtonFormField` se dimensiona al ítem **más ancho de su lista**, no al ancho que se le dio: un nombre largo de estudiante desbordaba el campo por 87px. Con nombres cortos no se ve; aparece con los reales. |
+
+### El otro hueco: las lecturas por id
+
+`e2e_provider_contract_test` solo tocaba los getters **sin** id, y eso dejaba
+fuera justo las pantallas de detalle: la Ruta de Impacto, el avance en un
+curso, el perfil de una persona, un laboratorio, un proyecto, un equipo. Se
+notó cuando `RutaProgress.fromJson` reventó con un `type 'Null' is not a
+subtype of type 'String'` sin que ninguna prueba fallara. Ahora se prueban
+contra el servidor real, con ids tomados de los listados —no inventados: un id
+inventado daría 404 y la prueba pasaría sin ejercitar ningún parseo.
+
+### Una intermitencia real, no un capricho del corredor
+
+`flutter test` corre las suites e2e **en paralelo contra una sola base**, así
+que otra suite puede crear o borrar un curso entre dos peticiones de esta. El
+conteo de cursos comparaba un número con una página leída en otro instante y
+fallaba sin que nada estuviera roto. Ahora la página va encerrada entre dos
+conteos: uno de los dos abarca cualquier escritura ajena, y el invariante
+—que el conteo no salga de `pagina.length`— sigue en pie.
 
 ### Pendiente de seguridad, fuera del código
 

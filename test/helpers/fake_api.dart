@@ -23,6 +23,11 @@ class FakeApi {
   /// Rutas que deben responder 404, para probar los estados de error.
   final Set<String> notFound;
 
+  /// Código HTTP por ruta, cuando no es 200. Sirve para reproducir un fallo
+  /// REAL del servidor (p. ej. el 503 de `/files/download-url` cuando S3 no
+  /// está configurado) en vez de fingir un éxito que la app no recibe nunca.
+  final Map<String, int> statuses;
+
   /// Qué se pidió, en orden. Sirve para afirmar que una pantalla NO pide algo
   /// que no le corresponde.
   final List<String> requested = [];
@@ -44,10 +49,12 @@ class FakeApi {
   FakeApi({
     Map<String, Object?>? routes,
     Set<String>? notFound,
+    Map<String, int>? statuses,
     this.fallback,
     this.delay = Duration.zero,
   })  : routes = routes ?? {},
-        notFound = notFound ?? {};
+        notFound = notFound ?? {},
+        statuses = statuses ?? {};
 
   ApiService build() {
     final client = MockClient((request) async {
@@ -65,7 +72,7 @@ class FakeApi {
         // vacío, que haría pasar una prueba por la razón equivocada.
         fail('El fake no tiene respuesta para $path. Agregala en `routes`.');
       }
-      return http.Response(jsonEncode(body), 200,
+      return http.Response(jsonEncode(body), statuses[path] ?? 200,
           headers: {'content-type': 'application/json'});
     });
 

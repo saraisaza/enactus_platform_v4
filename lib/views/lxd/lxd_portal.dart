@@ -583,6 +583,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12.5)),
                   data: (labs) => DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: _labId,
                     decoration: const InputDecoration(
                         labelText: 'Laboratorio (opcional)'),
@@ -1028,6 +1029,7 @@ class _GradeDialogState extends State<_GradeDialog> {
               // Una entrega libre no trae escala: se elige acá.
               if (widget.submission.gradingMode == null) ...[
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _mode,
                   decoration:
                       const InputDecoration(labelText: 'Escala de calificación'),
@@ -1270,6 +1272,13 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                     SizedBox(
                       width: 260,
                       child: DropdownButtonFormField<String>(
+                        // Sin `isExpanded`, un desplegable se dimensiona al
+                        // ítem MÁS ANCHO de su lista, no al ancho que se le
+                        // dio: un nombre largo de estudiante desbordaba este
+                        // campo por 87px. Con los nombres del seed no se veía;
+                        // aparece con los reales. Va en los 23 desplegables de
+                        // la app por la misma razón.
+                        isExpanded: true,
                         initialValue: _studentId,
                         decoration:
                             const InputDecoration(labelText: 'Estudiante'),
@@ -1284,6 +1293,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                     SizedBox(
                       width: 300,
                       child: DropdownButtonFormField<String>(
+                        isExpanded: true,
                         initialValue: _labId,
                         decoration: const InputDecoration(
                             labelText: 'Laboratorio (Ruta completa)'),

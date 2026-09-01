@@ -300,6 +300,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
           _campo(_indicators, 'Indicadores de impacto'),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _stage,
             decoration: const InputDecoration(labelText: 'Etapa actual'),
             items: [
@@ -1541,6 +1542,7 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _type,
             decoration: const InputDecoration(labelText: 'Tipo'),
             items: [

@@ -113,17 +113,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fija la sesión sin pasar por el ingreso. **Solo para pruebas.**
-  ///
-  /// Las pruebas de maquetación montan un portal directamente; sin sesión, el
-  /// guardia de rol redirige al ingreso y la prueba verificaría esa pantalla
-  /// creyendo que verifica el portal. No hay forma de llegar acá desde la app.
-  @visibleForTesting
-  void debugSetSession(Map<String, dynamic> user) {
-    _restoring = false;
-    _setUser(AppUser.fromJson(user));
-    notifyListeners();
-  }
+  // Acá vivía `debugSetSession`, un atajo para que las pruebas de maquetación
+  // montaran un portal sin pasar por el ingreso. No servía: `EnactusApp`
+  // llama `restoreSession()` tras el primer frame y, sin token guardado, eso
+  // volvía a dejar la sesión en nulo — el guardia de rol mostraba el ingreso
+  // y la prueba verificaba esa pantalla creyendo que verificaba el portal.
+  // Las pruebas siembran el token y usan el camino de restauración de
+  // verdad; el proveedor de autenticación no necesita puerta trasera.
 
   void _setUser(AppUser? user) {
     _currentUser = user;

@@ -618,9 +618,16 @@ class StatusChip extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 5),
-          Text(label,
-              style: TextStyle(
-                  color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+          // `Flexible`: la ficha vive casi siempre dentro de un `Wrap`, que le
+          // ofrece a lo sumo su propio ancho. Con la etiqueta pidiendo su
+          // ancho natural, un rótulo largo en una tarjeta angosta desborda —
+          // por poco, pero desborda. Prefiere recortar antes que romper.
+          Flexible(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+          ),
         ],
       ),
     );

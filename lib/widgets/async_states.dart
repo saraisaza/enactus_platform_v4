@@ -119,10 +119,19 @@ class CardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 16 de padding arriba y abajo. Lo que queda es lo que hay para pintar.
-    final inner = height - 32;
+    // 16 de padding arriba y abajo, MÁS el borde de 1px de cada lado: un
+    // `BoxDecoration` con `border` mete su grosor hacia adentro, así que el
+    // hueco real es 34 menos, no 32. Ese par de píxeles era un desbordamiento
+    // de 2 en toda tarjeta baja.
+    final inner = height - 34;
     final showBody = inner >= 62;
     final showChips = inner >= 100;
+
+    // El título también tiene que caber. Con `height: 44` —hay llamadas así—
+    // quedan 12px útiles y una barra de 18 desborda el `Column` por 6: la
+    // pantalla de carga se ve rota justo mientras alguien espera. Se recorta
+    // en vez de desbordar, y con menos de 6px no se dibuja nada.
+    final titulo = inner.clamp(0.0, 18.0);
 
     return Container(
       height: height,
@@ -135,7 +144,7 @@ class CardSkeleton extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Skeleton(width: 150, height: 18),
+          if (titulo >= 6) Skeleton(width: 150, height: titulo),
           if (showBody) ...[
             const SizedBox(height: 12),
             const Skeleton(height: 12),

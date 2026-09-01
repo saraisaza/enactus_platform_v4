@@ -864,6 +864,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: a.gradingMode,
           decoration: const InputDecoration(labelText: 'Calificación'),
           items: [

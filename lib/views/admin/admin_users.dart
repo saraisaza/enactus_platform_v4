@@ -636,6 +636,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         ],
         if (_isNew)
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _role,
             decoration: const InputDecoration(labelText: 'Rol'),
             items: [
@@ -705,6 +706,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   List<Widget> _camposEstudiante() => [
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: _studentType,
           decoration:
               const InputDecoration(labelText: 'Tipo de estudiante'),

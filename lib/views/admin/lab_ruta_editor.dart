@@ -779,6 +779,7 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _category,
             decoration: const InputDecoration(labelText: 'Categoría'),
             items: [

@@ -689,20 +689,33 @@ class StageRail extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 7),
+        // Las dos leyendas van en `Flexible`: "Sigue: Validación de mercado"
+        // pide su ancho natural y el riel vive dentro de una tarjeta de
+        // grilla, que en pantallas angostas es más estrecha que la suma de
+        // los dos textos. Sin flex, el `Row` desborda — se veía en el
+        // Directorio de Proyectos con las tarjetas a un ancho normal.
         caption ??
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Etapa ${currentIndex + 1} de $total',
-                  style: TextStyle(fontSize: 11.5, color: colors.text3),
+                Flexible(
+                  child: Text(
+                    'Etapa ${currentIndex + 1} de $total',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11.5, color: colors.text3),
+                  ),
                 ),
-                Text(
-                  currentIndex >= total - 1
-                      ? 'Etapa final'
-                      : 'Sigue: '
-                            '${ProjectStage.label(projectStages[currentIndex + 1])}',
-                  style: TextStyle(fontSize: 11.5, color: colors.text3),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    currentIndex >= total - 1
+                        ? 'Etapa final'
+                        : 'Sigue: '
+                              '${ProjectStage.label(projectStages[currentIndex + 1])}',
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11.5, color: colors.text3),
+                  ),
                 ),
               ],
             ),

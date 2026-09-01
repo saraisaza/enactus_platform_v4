@@ -488,6 +488,7 @@ Future<void> showCalendarEventDialog(
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<CalendarEventType>(
+                  isExpanded: true,
                   initialValue: type,
                   decoration: const InputDecoration(labelText: 'Tipo de evento'),
                   items: [
@@ -507,6 +508,7 @@ Future<void> showCalendarEventDialog(
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))
                       : DropdownButtonFormField<String>(
+                        isExpanded: true,
                           initialValue: courseId.isEmpty ? null : courseId,
                           decoration:
                               const InputDecoration(labelText: 'Curso'),
@@ -525,6 +527,7 @@ Future<void> showCalendarEventDialog(
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))
                       : DropdownButtonFormField<String>(
+                        isExpanded: true,
                           initialValue: labId.isEmpty ? null : labId,
                           decoration: const InputDecoration(
                               labelText: 'Laboratorio'),

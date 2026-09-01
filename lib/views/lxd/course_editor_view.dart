@@ -360,6 +360,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
           builder: (context, constraints) {
             final fields = [
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _level,
                 decoration: const InputDecoration(labelText: 'Nivel'),
                 items: [
@@ -378,6 +379,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
                     labelText: 'Duración estimada (horas)'),
               ),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _language,
                 decoration: const InputDecoration(labelText: 'Idioma'),
                 items: [
@@ -1332,6 +1334,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
               loading: () => const CardListSkeleton(count: 1, height: 60),
               error: (e) => ErrorBanner(e),
               data: (companies) => DropdownButtonFormField<String?>(
+                isExpanded: true,
                 initialValue:
                     companies.any((c) => c.id == _sponsorId) ? _sponsorId : null,
                 decoration: const InputDecoration(

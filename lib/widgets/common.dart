@@ -590,8 +590,7 @@ class SectionTitle extends StatelessWidget {
           style: knockoutHeading(
               fontSize: 26,
               color: AppColors.textPrimary,
-              height: 1.05,
-              letterSpacing: 26 * 0.012)),
+              height: 1.05)),
     );
   }
 }

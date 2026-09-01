@@ -664,7 +664,7 @@ class _MapLegend extends StatelessWidget {
     // (colors.text3/text2) en vez de un hex fijo.
     final panelColor = isDark
         ? AppColors.background.withValues(alpha: 0.72)
-        : const Color(0xDBFFFFFF);
+        : Colors.white.withValues(alpha: 0.86);
     final panelBorder = isDark
         ? Colors.white.withValues(alpha: 0.1)
         : colors.border;

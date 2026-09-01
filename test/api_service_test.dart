@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -370,46 +371,89 @@ void main() {
     });
   });
 
+  /// La subida NO pasa por el cliente inyectado.
+  ///
+  /// `uploadToSignedUrl` va por `putWithProgress` (`upload_io` / `upload_web`)
+  /// justo para poder informar el avance por bytes: `package:http` no expone
+  /// el progreso de envío, y en el navegador su cliente usa `fetch`, que no
+  /// lo expone en ninguno. Por eso acá se levanta un servidor de verdad en vez
+  /// de un `MockClient`.
+  ///
+  /// El servidor es LOCAL a propósito. Estas pruebas apuntaban a
+  /// `bucket.s3.amazonaws.com`: el `MockClient` ya no interceptaba nada, así
+  /// que la del rechazo salía a internet de verdad y "pasaba" porque S3
+  /// respondía 403 a un pedido sin firma. Una prueba unitaria que depende de
+  /// la conexión y de un tercero no prueba lo que dice probar.
   group('subida directa a S3', () {
-    test('manda los bytes con el content-type y reporta progreso', () async {
-      String? tipoVisto;
-      var bytesVistos = 0;
-      final progreso = <double>[];
+    late HttpServer servidor;
+    late Uri destino;
+    String? tipoVisto;
+    var bytesVistos = 0;
+    var estadoAResponder = 200;
 
-      final api = ApiService(
-        tokenStore: TokenStore(),
-        client: MockClient((request) async {
-          tipoVisto = request.headers['Content-Type'];
-          bytesVistos = request.bodyBytes.length;
-          return http.Response('', 200);
-        }),
-      );
+    setUp(() async {
+      tipoVisto = null;
+      bytesVistos = 0;
+      estadoAResponder = 200;
+      servidor = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      destino = Uri.parse('http://127.0.0.1:${servidor.port}/k');
+      servidor.listen((request) async {
+        tipoVisto = request.headers.contentType?.toString();
+        await for (final trozo in request) {
+          bytesVistos += trozo.length;
+        }
+        request.response.statusCode = estadoAResponder;
+        await request.response.close();
+      });
+    });
+
+    tearDown(() => servidor.close(force: true));
+
+    test('manda los bytes con el content-type y reporta progreso', () async {
+      final progreso = <double>[];
+      final api = ApiService(tokenStore: TokenStore());
 
       await api.uploadToSignedUrl(
-        uploadUrl: 'https://bucket.s3.amazonaws.com/k?X-Amz-Signature=abc',
+        uploadUrl: '$destino?X-Amz-Signature=abc',
         bytes: List<int>.filled(2048, 7),
         contentType: 'video/mp4',
         onProgress: progreso.add,
       );
 
-      expect(tipoVisto, 'video/mp4');
+      expect(tipoVisto, contains('video/mp4'));
       expect(bytesVistos, 2048);
+      expect(progreso.first, 0);
       expect(progreso.last, 1);
     });
 
     test('un rechazo de S3 se convierte en ServerError', () async {
-      final api = ApiService(
-        tokenStore: TokenStore(),
-        client: MockClient((_) async => http.Response('AccessDenied', 403)),
-      );
+      // S3 responde 403 cuando la firma venció: tiene que llegar como error de
+      // aplicación con mensaje, no como un fallo de transporte.
+      estadoAResponder = 403;
+      final api = ApiService(tokenStore: TokenStore());
 
       await expectLater(
         api.uploadToSignedUrl(
-          uploadUrl: 'https://bucket.s3.amazonaws.com/k',
+          uploadUrl: destino.toString(),
           bytes: const [1, 2, 3],
           contentType: 'video/mp4',
         ),
         throwsA(isA<ServerError>()),
+      );
+    });
+
+    test('sin nadie escuchando es NetworkError, no ServerError', () async {
+      // Distinguirlos importa: reintentar sirve para uno y no para el otro.
+      await servidor.close(force: true);
+      final api = ApiService(tokenStore: TokenStore());
+
+      await expectLater(
+        api.uploadToSignedUrl(
+          uploadUrl: destino.toString(),
+          bytes: const [1, 2, 3],
+          contentType: 'video/mp4',
+        ),
+        throwsA(isA<NetworkError>()),
       );
     });
   });

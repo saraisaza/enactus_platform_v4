@@ -160,7 +160,7 @@ class _CompactMark extends StatelessWidget {
       height: side,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0B0D),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(side * 0.25),
       ),
       child: _SweepingX(

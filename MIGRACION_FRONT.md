@@ -5,9 +5,9 @@ Estado al cierre del portal Estudiante.
 | | |
 |---|---|
 | `flutter analyze` | **0 issues** |
-| `flutter test` | **160/160** |
+| `flutter test` | **165/165** |
 | `flutter build web --release` | ✅ |
-| Backend | **453/453**, `typecheck` y `lint` limpios |
+| Backend | **476/476**, `typecheck` y `lint` limpios |
 | Recorrido real contra el backend vivo | ✅ contrato + flujos de punta a punta |
 
 ---
@@ -279,40 +279,106 @@ anotado como pendiente de comprobación en navegador, no dado por hecho.
 
 ---
 
-## Lo que quedó a medias, y por qué
+## Barra de progreso de la subida ✅
 
-**Barra de progreso de la subida.** El flujo de tres pasos está completo y el
-archivo nunca pasa por la API, pero `onProgress` avanza en dos tramos
-(0 al empezar, 1 al terminar) en vez de por bytes. `package:http` no expone el
-progreso de subida en web; hacerlo de verdad requiere `XMLHttpRequest.upload`
-vía `package:web`, con el mismo patrón io/web que ya usa el video. Es acotado
-—unas 60 líneas— pero es trabajo aparte y no estaba pedido como bloqueante.
-Hoy la barra se mueve dos veces; no miente, pero no informa.
+`onProgress` avanzaba en dos tramos —0 al empezar, 1 al terminar— porque
+`package:http` no expone el avance de envío. Con el tope de 500 MB que acepta
+la API, eso son varios minutos de barra congelada en 0: indistinguible de una
+subida colgada.
 
-**Tipografía.** El inventario que pedía el punto 7:
+Ahora informa por bytes, con el mismo patrón io/web que el video:
 
-| Qué | Cuántos | Debería salir de |
+- **Navegador** (`upload_web.dart`): `XMLHttpRequest.upload.onprogress`. El
+  `BrowserClient` de `package:http` usa `fetch`, que no informa progreso de
+  envío en ningún navegador — por eso hay que bajar a XHR.
+- **Escritorio** (`upload_io.dart`): `StreamedRequest` emitiendo el cuerpo en
+  trozos de 64 KB.
+
+**El 100% se emite al confirmar, no con el último trozo.** El progreso dice que
+los bytes salieron, no que S3 los aceptó: la subida todavía puede fallar con la
+firma vencida. La mitad io lo hacía mal —emitía `1.0` dos veces— y lo encontró
+la prueba que compara las dos mitades.
+
+Las pruebas levantan un servidor HTTP real y verifican que el archivo llegue
+entero y byte a byte, que el progreso sea monótono y dentro de `[0,1]`, y que
+un 403 llegue como `ServerError` mientras que un puerto muerto llegue como
+`NetworkError` — distinguirlos importa, porque reintentar sirve para uno y no
+para el otro.
+
+### Y una prueba que salía a internet
+
+Las dos pruebas de subida de `api_service_test.dart` usaban un `MockClient`
+apuntando a `bucket.s3.amazonaws.com`. Al dejar la subida de pasar por el
+cliente inyectado, el mock dejó de interceptar: una falló, y **la otra siguió
+"pasando" porque salía a internet de verdad** y S3 respondía 403 a un pedido
+sin firma. Una prueba unitaria que depende de la conexión y de un tercero no
+prueba lo que dice probar. Ahora las dos van contra un servidor local.
+
+---
+
+## Tipografía: las fuentes reales ✅
+
+El pedido era "Knockout 92 (display) y Space Grotesk (UI/cuerpo) aplicadas de
+forma consistente vía el tema". La app usaba **Oswald y DM Sans**.
+
+No era una decisión de diseño: **los archivos reales estaban en el repo desde
+siempre**, pero solo dentro de las carpetas de handoff
+(`assets/design_handoff_*/assets/media/`), sin declarar en `pubspec.yaml`. Los
+handoff especifican "Knockout" pantalla por pantalla. Era una deuda, no una
+elección.
+
+| | Antes | Ahora |
 |---|---|---|
-| `fontSize:` inline | 589 | `Theme.of(context).textTheme` |
-| `EdgeInsets` con números crudos | 345 | escala de espaciado en `app_theme.dart` |
-| `BorderRadius.circular(N)` | ~150, con 9 valores distintos | tokens de radio |
-| `Color(0x…)` fuera del tema | 10 | ver abajo |
+| Display | Oswald | **Knockout 92** |
+| Interfaz | DM Sans | **Space Grotesk** (variable, eje `wght` 300–700) |
+| Peso display | `w700` | **`w400`** |
+| Tracking títulos | `0.014em` | **`0.045em`** |
 
-Los 589 `fontSize` se concentran en cuatro valores (12, 12.5, 13, 13.5) que ya
-tienen equivalente en el `textTheme` que `app_theme.dart` construye y casi
-nadie usa. **No se migraron**: son 589 puntos de cambio visual en ocho
-portales, sin pruebas de regresión visual que los respalden, para un beneficio
-de consistencia — exactamente el tipo de refactor que el pedido acota con "no
-rediseñes nada". El inventario está acá para decidirlo con números; hacerlo
-merece su propia tarea con capturas antes/después.
+Los dos últimos no son cosméticos:
+
+- **`w700` → `w400`.** Knockout 92 es un corte único, sin eje de peso. Pedirle
+  700 hacía que Flutter **sintetizara** una negrita falsa: engorda los trazos
+  por software y cierra las contraformas, que en una condensada se nota de
+  inmediato. El w700 tenía sentido con Oswald, que sí trae varios pesos.
+- **`0.014em` → `0.045em`.** El 0.045 es el valor de los handoff: aparece 12
+  veces, más que ningún otro, junto a cada título Knockout. El 0.014 no salía
+  del diseño — el propio comentario en `app_theme.dart` decía que estaba
+  afinado a mano para Oswald, que es más angosta.
+
+Se quitaron además tres `letterSpacing` sueltos que estaban calibrados para
+Oswald (`54 * 0.002`, `26 * 0.012`, `58 * 0.004`) para que salgan del tema como
+todos los demás.
+
+### Colores fuera del tema
 
 De los 10 `Color(0x…)` sueltos, **7 son legítimos**: los tres colores por tipo
 de evento del calendario y los degradados del logo animado no son tokens de
-marca reutilizables, son valores de un dibujo puntual. Los 3 que sí deberían
-salir del tema son `calendar_view.dart:271` (`0xFF0B0B0C`),
-`animated_logo.dart:163` (`0xFF0B0B0D`) y `colombia_map.dart:667`
-(`0xDBFFFFFF`): son casi-negros y un blanco translúcido que ya existen en
-`AppColors`.
+marca reutilizables, son valores de un dibujo puntual. Los otros 3 sí
+duplicaban tokens y ahora salen de `AppColors` (`animated_logo`,
+`calendar_view`) o se expresan como lo que son (`colombia_map`: blanco al 86%,
+no un hex opaco).
+
+### Lo que queda inventariado, y por qué NO se migró
+
+| Qué | Cuántos |
+|---|---|
+| `fontSize:` inline | 589 |
+| `EdgeInsets` con números crudos | 345 |
+| `BorderRadius.circular(N)` | ~150, con 9 valores distintos |
+
+Son 589 puntos de cambio visual en ocho portales para un beneficio de
+indirección, no de consistencia: los valores ya están concentrados en cuatro
+tamaños (12, 12.5, 13, 13.5). Cambiarlos es exactamente lo que el pedido acota
+con "no rediseñes nada". El inventario queda acá para decidirlo con números.
+
+### Lo que NO está verificado
+
+**Nadie ha mirado la app con las fuentes nuevas.** Lo que sí está comprobado:
+el bundle las carga (`FontManifest.json` trae `Knockout` y `SpaceGrotesk`, y
+Oswald/DM Sans ya no están), y `portals_render_test` monta los nueve portales
+en tres anchos recorriendo todas las pestañas **sin un solo desbordamiento** —
+que es el riesgo real de cambiar de tipografía, porque cambian las métricas del
+texto. Falta la mirada humana.
 
 ---
 

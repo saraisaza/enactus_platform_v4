@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'api_errors.dart';
 import 'token_store.dart';
+import 'upload_io.dart' if (dart.library.js_interop) 'upload_web.dart';
 
 /// Cliente HTTP contra la API de Enactus.
 ///
@@ -133,39 +134,42 @@ class ApiService {
   /// Sube los bytes DIRECTO a S3 con la URL firmada que dio la API.
   ///
   /// El archivo nunca pasa por la API: API Gateway corta el payload en 10 MB.
-  /// [onProgress] recibe 0..1 — hoy avanza en dos tramos (enviado / terminado)
-  /// porque `package:http` no expone el progreso real de subida en web; para
-  /// una barra continua haría falta `dart:html`/`XMLHttpRequest` directo.
+  ///
+  /// [onProgress] recibe 0..1 **por bytes enviados**, no en dos saltos. No se
+  /// usa `package:http` acá: en el navegador su cliente va por `fetch`, que no
+  /// informa avance de envío en ningún navegador, así que la barra saltaría de
+  /// 0 a 1 — inútil justo para lo que dura minutos, que es un video de 500 MB.
+  /// La mitad web baja a `XMLHttpRequest` (`upload.onprogress`) y la de
+  /// escritorio emite el cuerpo por trozos; ver `upload_web.dart` /
+  /// `upload_io.dart`.
   Future<void> uploadToSignedUrl({
     required String uploadUrl,
     required List<int> bytes,
     required String contentType,
     void Function(double progress)? onProgress,
   }) async {
-    onProgress?.call(0);
     try {
-      final response = await _client
-          .put(
-            Uri.parse(uploadUrl),
-            headers: {'Content-Type': contentType},
-            body: bytes,
-          )
-          .timeout(_uploadTimeout);
+      final status = await putWithProgress(
+        url: Uri.parse(uploadUrl),
+        bytes: bytes,
+        contentType: contentType,
+        timeout: _uploadTimeout,
+        onProgress: onProgress,
+      );
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (status < 200 || status >= 300) {
         throw ServerError(
-          response.statusCode,
-          'No se pudo subir el archivo (${response.statusCode}). '
+          status,
+          'No se pudo subir el archivo ($status). '
           'Si el problema persiste, avisale al equipo técnico.',
         );
       }
-      onProgress?.call(1);
-    } on TimeoutException {
+    } on UploadTimeoutException {
       throw const NetworkError(
         'La subida tardó demasiado. Probá con una conexión más estable.',
       );
-    } on http.ClientException catch (e) {
-      throw NetworkError('No se pudo subir el archivo: ${e.message}');
+    } on UploadTransportException catch (e) {
+      throw NetworkError(e.message);
     }
   }
 

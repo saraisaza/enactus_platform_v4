@@ -574,7 +574,6 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                   fontSize: 58,
                   color: colors.goldInk,
                   height: 1.00,
-                  letterSpacing: 58 * 0.004,
                 ),
               ),
               if (widget.subtitle != null) ...[

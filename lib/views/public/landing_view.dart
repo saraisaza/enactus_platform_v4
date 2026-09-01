@@ -576,8 +576,7 @@ class _HeroContent extends StatelessWidget {
                 style: knockoutHeading(
                     fontSize: 54,
                     color: AppColors.gold,
-                    height: 0.98,
-                    letterSpacing: 54 * 0.002)),
+                    height: 0.98)),
             const SizedBox(height: 18),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),

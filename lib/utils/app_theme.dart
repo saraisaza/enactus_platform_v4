@@ -255,14 +255,23 @@ class ContentColors {
 ///   defecto a todo el textTheme, así que no hace falta declararla a mano
 ///   salvo en TextStyle sueltos que no heredan del tema.
 class AppFonts {
-  static const display = 'Oswald';
+  /// Knockout 92 — la display del diseño. Hasta ahora la app usaba **Oswald**
+  /// como sustituta: el archivo real estaba en el repo pero solo dentro de las
+  /// carpetas de handoff (`assets/design_handoff_*/assets/media/`), sin
+  /// declarar en `pubspec.yaml`. Los handoff especifican "Knockout" pantalla
+  /// por pantalla, así que la sustitución era una deuda, no una decisión.
+  static const display = 'Knockout';
 
   /// Manrope — SOLO el wordmark "eduXaction" ([AnimatedLogo] en
   /// widgets/animated_logo.dart), pesos 700/800 (los únicos dos
   /// registrados en pubspec.yaml). No es un tercer rol de texto general:
   /// nunca lo uses en un título ([display]) ni en texto de interfaz ([ui]).
   static const logo = 'Manrope';
-  static const ui = 'DMSans';
+
+  /// Space Grotesk — la UI del diseño; antes DM Sans, por lo mismo que
+  /// [display]. Es variable (eje `wght` 300–700) y cubre los tres pesos que
+  /// usa [AppWeights].
+  static const ui = 'SpaceGrotesk';
 }
 
 /// Pesos realmente cargados en pubspec.yaml.
@@ -274,16 +283,19 @@ class AppWeights {
   static const uiMedium = FontWeight.w500;
   static const uiSemibold = FontWeight.w600;
 
-  /// Oswald (rol display): el diseño pide SemiBold (600), pero
-  /// `assets/media/oswald/` solo trae Light/Regular/Bold — no hay archivo
-  /// 600 descargado. Se usa Bold (700, el peso real más cercano) en vez de
-  /// dejar que Flutter sintetice un 600 falso (se ve mal, contraformas
-  /// cerradas). En cuanto se agregue Oswald-SemiBold.ttf a
-  /// assets/media/oswald/ y a pubspec.yaml, este único valor pasa a
-  /// FontWeight.w600 y corrige TODOS los títulos de la app a la vez — por
-  /// eso [knockoutHeading] usa esto como default en vez de que cada
-  /// pantalla escriba FontWeight.w700/w800/w900 suelto.
-  static const display = FontWeight.w700;
+  /// Knockout 92 (rol display) es un **corte único**: el peso ya está en la
+  /// fuente, no se pide con `fontWeight`. Por eso va en 400.
+  ///
+  /// Antes era w700, y tenía sentido: la sustituta era Oswald, que sí trae
+  /// varios pesos y a la que el diseño le pedía SemiBold. Con Knockout ya
+  /// declarada, pedir 700 hace que Flutter **sintetice** una negrita falsa —
+  /// engorda los trazos por software y cierra las contraformas, que en una
+  /// condensada se nota de inmediato.
+  ///
+  /// Sigue siendo el único lugar donde se define, así que cambiarlo corrige
+  /// todos los títulos de la app a la vez: por eso [knockoutHeading] lo usa
+  /// como default en vez de que cada pantalla escriba su propio peso.
+  static const display = FontWeight.w400;
 }
 
 ThemeData buildAppTheme() {
@@ -449,18 +461,18 @@ OutlineInputBorder OutlineInputBorderWith(Color color) => OutlineInputBorder(
       borderSide: BorderSide(color: color),
     );
 
-/// Tracking (letter-spacing) como fracción del tamaño de fuente, para
-/// títulos genéricos que no piden un valor propio — corresponde al rol
-/// "Título de tarjeta" de la tabla tipográfica (+0.014em), el más común
-/// entre los ~60 títulos de la app que no son hero/encabezado de
-/// sección/saludo de portal/cifra (esos 5 roles pasan su propio
-/// [letterSpacing] a [knockoutHeading]). Oswald es condensada y de
-/// altura-x alta; sin tracking las mayúsculas se ven pegadas entre sí.
-const double kKnockoutTrackingRatio = 0.014;
+/// Tracking (letter-spacing) como fracción del tamaño de fuente, para los
+/// títulos en Knockout.
+///
+/// **0.045em es el valor de los handoff de diseño**: aparece 12 veces en
+/// `assets/design_handoff_*/README.md`, más que ningún otro, y es el que
+/// acompaña a cada título Knockout. El 0.014 anterior no salía del diseño:
+/// estaba afinado a mano para Oswald, la sustituta, que es más angosta y de
+/// altura-x más alta. Con la fuente real corresponde el valor real.
+const double kKnockoutTrackingRatio = 0.045;
 
-/// Letter-spacing sugerido para un tamaño de fuente dado, usando Oswald.
-/// Útil para TextStyle sueltos que no vienen del textTheme. Ver
-/// knockoutHeading() más abajo.
+/// Letter-spacing sugerido para un tamaño de fuente dado. Útil para TextStyle
+/// sueltos que no vienen del textTheme. Ver knockoutHeading() más abajo.
 double knockoutTracking(double fontSize) => fontSize * kKnockoutTrackingRatio;
 
 /// Construye un TextStyle de título en Oswald listo para usar: familia,

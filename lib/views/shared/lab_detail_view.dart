@@ -92,7 +92,7 @@ class _LabBody extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(lab.name.toUpperCase(),
-                              style: knockoutHeading(
+                              style: displayHeading(
                                   fontSize: 32,
                                   fontWeight: AppWeights.display,
                                   color: AppColors.textPrimary)),

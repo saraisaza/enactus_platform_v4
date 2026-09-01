@@ -76,27 +76,37 @@ flutter:
     - assets/data/colombia-110m.json
 
   fonts:
-    # Knockout 92 — la display REAL del diseño. Es un corte único (OTF/CFF sin
-    # eje de peso), así que se declara solo en 400: pedirle 600 o 700 hace que
-    # Flutter sintetice un falso negrita que emborrona las contraformas de una
-    # condensada. Ver AppWeights.display en app_theme.dart.
-    - family: Knockout
+    # Knockout 92 y Space Grotesk son las fuentes del handoff de diseño, pero
+    # NO se distribuyen con la app: se eliminaron del repositorio a propósito.
+    # Knockout es comercial (Hoefler&Co) y un build web publica el archivo
+    # como descarga abierta. Oswald y DM Sans son las sustitutas, las dos con
+    # licencia OFL — libres de redistribuir.
+    #
+    # Oswald: solo hay Light/Regular/Bold descargados en assets/media/oswald/
+    # (falta el SemiBold/600 que pide el diseño — ver AppWeights.display en
+    # app_theme.dart, que usa Bold/700 como sustituto real más cercano en
+    # vez de dejar que Flutter sintetice un 600 falso).
+    - family: Oswald
       fonts:
-        - asset: assets/media/knockout/Knockout-92.otf
+        - asset: assets/media/oswald/Oswald-Light.ttf
+          weight: 300
+        - asset: assets/media/oswald/Oswald-Regular.ttf
           weight: 400
-    # Space Grotesk — la UI REAL del diseño. Es una variable font con eje
-    # `wght` de 300 a 700, y los tres pesos que usa la app (400/500/600) caen
-    # dentro. Se declara el MISMO archivo en los tres: en web el motor resuelve
-    # el eje a partir del `fontWeight`, así que no hace falta un archivo por
-    # peso ni tocar los ~600 TextStyle que ya piden w400/w500/w600.
-    - family: SpaceGrotesk
+        - asset: assets/media/oswald/Oswald-Bold.ttf
+          weight: 700
+    # DM Sans: estáticas "por defecto" (sin prefijo de tamaño óptico), las
+    # correctas para texto de interfaz a tamaños chicos — no las variantes
+    # _18pt/_24pt/_36pt (pensadas para texto grande) ni la variable font.
+    - family: DMSans
       fonts:
-        - asset: assets/media/space_grotesk/SpaceGrotesk-Variable.ttf
+        - asset: assets/media/DM_Sans/static/DMSans-Regular.ttf
           weight: 400
-        - asset: assets/media/space_grotesk/SpaceGrotesk-Variable.ttf
+        - asset: assets/media/DM_Sans/static/DMSans-Medium.ttf
           weight: 500
-        - asset: assets/media/space_grotesk/SpaceGrotesk-Variable.ttf
+        - asset: assets/media/DM_Sans/static/DMSans-SemiBold.ttf
           weight: 600
+        - asset: assets/media/DM_Sans/static/DMSans-ExtraBold.ttf
+          weight: 800
     # Manrope: solo para el logotipo "eduXaction" (AnimatedLogo) — 700/800
     # son los únicos dos pesos que ese widget usa, per las reglas de marca.
     - family: Manrope

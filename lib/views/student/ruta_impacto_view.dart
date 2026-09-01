@@ -99,7 +99,7 @@ class LabsView extends StatelessWidget {
                 if (otherLabs.isNotEmpty) ...[
                   const SizedBox(height: 36),
                   Text('OTROS LABORATORIOS DE LA RED',
-                      style: knockoutHeading(
+                      style: displayHeading(
                           fontSize: 30,
                           fontWeight: AppWeights.display,
                           color: colors.text)),
@@ -255,7 +255,7 @@ class _LabCard extends StatelessWidget {
                       right: 16,
                       bottom: -24,
                       child: Text('$odsNum',
-                          style: knockoutHeading(
+                          style: displayHeading(
                               fontSize: 104,
                               fontWeight: AppWeights.display,
                               color: Colors.white.withValues(alpha: 0.28),
@@ -304,7 +304,7 @@ class _LabCard extends StatelessWidget {
                       child: Text(lab.name.toUpperCase(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: knockoutHeading(
+                          style: displayHeading(
                               fontSize: 32, fontWeight: AppWeights.display, color: Colors.white, height: 1.0)),
                     ),
                   ],
@@ -645,7 +645,7 @@ class _LabDetailBodyState extends State<LabDetailBody> {
                     colors: colors),
                 const SizedBox(height: 32),
                 Text('RUTA DE IMPACTO',
-                    style: knockoutHeading(
+                    style: displayHeading(
                         fontSize: 34,
                         fontWeight: AppWeights.display,
                         color: colors.text)),
@@ -787,7 +787,7 @@ class _LabIdentityBand extends StatelessWidget {
               right: 24,
               bottom: -30,
               child: Text('$odsNum',
-                  style: knockoutHeading(
+                  style: displayHeading(
                       fontSize: 132, fontWeight: AppWeights.display, color: Colors.white.withValues(alpha: 0.24), height: 1.0)),
             ),
             Row(
@@ -806,7 +806,7 @@ class _LabIdentityBand extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.85))),
                       const SizedBox(height: 8),
                       Text(lab.name.toUpperCase(),
-                          style: knockoutHeading(
+                          style: displayHeading(
                               fontSize: 52, fontWeight: AppWeights.display, color: Colors.white, height: 0.96)),
                       if (lab.description.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -903,7 +903,7 @@ class _LabStatsRow extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(t.value,
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 40,
                             fontWeight: AppWeights.display,
                             color: t.primary ? colors.goldInk : colors.text,
@@ -1057,7 +1057,7 @@ class _PhaseDetailCard extends StatelessWidget {
                   border: Border.all(color: circleBorder, width: 2),
                 ),
                 child: Text('${index + 1}',
-                    style: knockoutHeading(fontSize: 22, fontWeight: AppWeights.display, color: circleTextColor)),
+                    style: displayHeading(fontSize: 22, fontWeight: AppWeights.display, color: circleTextColor)),
               ),
               const Spacer(),
               Container(
@@ -1076,7 +1076,7 @@ class _PhaseDetailCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(title.toUpperCase(),
-              style: knockoutHeading(fontSize: 27, fontWeight: AppWeights.display, color: colors.text)),
+              style: displayHeading(fontSize: 27, fontWeight: AppWeights.display, color: colors.text)),
           if (phase.description.isNotEmpty || !published) ...[
             const SizedBox(height: 8),
             Text(
@@ -1210,7 +1210,7 @@ class _DetailCard extends StatelessWidget {
               ),
               const SizedBox(width: 11),
               Text(title.toUpperCase(),
-                  style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+                  style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
             ],
           ),
           const SizedBox(height: 16),
@@ -1377,7 +1377,7 @@ class _LabLxdCard extends StatelessWidget {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
                         child: Text(lxd.name.isEmpty ? '?' : lxd.name[0].toUpperCase(),
-                            style: knockoutHeading(fontSize: 22, fontWeight: AppWeights.display, color: Colors.white)),
+                            style: displayHeading(fontSize: 22, fontWeight: AppWeights.display, color: Colors.white)),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -1749,7 +1749,7 @@ class _PhaseRow extends StatelessWidget {
                   border: Border.all(color: unlocked ? accent : colors.border, width: 2),
                 ),
                 child: Text('${index + 1}',
-                    style: knockoutHeading(
+                    style: displayHeading(
                         fontSize: 22,
                         fontWeight: AppWeights.display,
                         color: unlocked ? Colors.white : colors.text3)),
@@ -1778,7 +1778,7 @@ class _PhaseRow extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(title.toUpperCase(),
-                            style: knockoutHeading(
+                            style: displayHeading(
                                 fontSize: 27, fontWeight: AppWeights.display, color: colors.text)),
                       ),
                       Container(
@@ -2030,7 +2030,7 @@ class _ExpoCard extends StatelessWidget {
                             color: AppColors.ink.withValues(alpha: 0.7))),
                     const SizedBox(height: 8),
                     Text('National Expo',
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 32,
                             fontWeight: AppWeights.display,
                             color: AppColors.ink)),
@@ -2054,7 +2054,7 @@ class _ExpoCard extends StatelessWidget {
                           Text('Checklist del equipo',
                               style: TextStyle(fontSize: 12.5, color: colors.text3)),
                           Text('$done/$total',
-                              style: knockoutHeading(
+                              style: displayHeading(
                                   fontSize: 22, fontWeight: AppWeights.display, color: colors.goldInk)),
                         ],
                       ),
@@ -2207,7 +2207,7 @@ class _ModuleBody extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(title.toUpperCase(),
-                                  style: knockoutHeading(
+                                  style: displayHeading(
                                       fontSize: 22,
                                       fontWeight: AppWeights.display,
                                       color: AppColors.gold)),

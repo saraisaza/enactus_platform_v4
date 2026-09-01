@@ -223,7 +223,7 @@ class _CourseCard extends StatelessWidget {
                               Text(course.name.toUpperCase(),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: knockoutHeading(
+                                  style: displayHeading(
                                       fontSize: 27,
                                       fontWeight: AppWeights.display,
                                       color: Colors.white,

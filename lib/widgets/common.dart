@@ -304,7 +304,7 @@ class _AnimatedValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final match = RegExp(r'^(\d+)(.*)$').firstMatch(value);
-    final style = knockoutHeading(
+    final style = displayHeading(
         fontSize: 26,
         color: AppColors.textPrimary,
         height: 1.0,
@@ -468,7 +468,7 @@ class EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(title!.toUpperCase(),
-                style: knockoutHeading(
+                style: displayHeading(
                     fontSize: 38, fontWeight: AppWeights.display, color: c.text)),
             const SizedBox(height: 16),
             ConstrainedBox(
@@ -587,10 +587,11 @@ class SectionTitle extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 12),
       child: Text(text.toUpperCase(),
-          style: knockoutHeading(
+          style: displayHeading(
               fontSize: 26,
               color: AppColors.textPrimary,
-              height: 1.05)),
+              height: 1.05,
+              letterSpacing: 26 * 0.012)),
     );
   }
 }

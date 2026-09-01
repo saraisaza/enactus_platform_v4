@@ -74,7 +74,7 @@ class _LoginViewState extends State<LoginView> {
                         const SizedBox(height: 20),
                         Text('Bienvenido de nuevo'.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: knockoutHeading(fontSize: 26)),
+                            style: displayHeading(fontSize: 26)),
                         const SizedBox(height: 6),
                         const Text(
                           'Ingresa con la cuenta creada por tu administrador',

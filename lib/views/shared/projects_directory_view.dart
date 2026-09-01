@@ -220,7 +220,7 @@ class _StatCard extends StatelessWidget {
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => Text(
               v.round().toString(),
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 40,
                   fontWeight: AppWeights.display,
                   color: isPrimary ? colors.goldInk : colors.text,
@@ -327,7 +327,7 @@ Widget _buildProjectCover(Project project, ContentColors colors,
           right: 14,
           bottom: -16,
           child: Text('$odsNum',
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 82,
                   fontWeight: AppWeights.display,
                   color: Colors.white.withValues(alpha: 0.32),
@@ -415,7 +415,7 @@ class _ProjectCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(project.name.toUpperCase(),
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 29,
                             fontWeight: AppWeights.display,
                             color: colors.text,
@@ -709,7 +709,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                             ),
                             const SizedBox(height: 20),
                             Text(project.name.toUpperCase(),
-                                style: knockoutHeading(
+                                style: displayHeading(
                                     fontSize: 36, fontWeight: AppWeights.display, color: colors.text)),
                             if (project.description.isNotEmpty) ...[
                               const SizedBox(height: 8),

@@ -21,8 +21,10 @@ import 'helpers/portal_harness.dart';
 /// tema. Eso es exactamente lo que se pinta.
 ///
 /// Familias permitidas y por qué:
-/// - **Knockout** — títulos (`AppFonts.display`).
-/// - **SpaceGrotesk** — todo el resto de la interfaz (`AppFonts.ui`).
+/// - **Oswald** — títulos (`AppFonts.display`), sustituta OFL de Knockout 92.
+/// - **DMSans** — el resto de la interfaz (`AppFonts.ui`), sustituta de Space
+///   Grotesk. Las dos del handoff se eliminaron del repositorio: Knockout es
+///   comercial y un build web publicaría el archivo.
 /// - **Manrope** — SOLO el wordmark "eduXaction", por reglas de marca
 ///   (`AppFonts.logo`, ver `assets/media/README.md`).
 /// - **MaterialIcons / CupertinoIcons** — los íconos son glifos de fuente;
@@ -75,17 +77,20 @@ void main() {
 
   setUp(conSesionGuardada);
 
-  test('el tema apunta a las dos fuentes del diseño', () {
-    // Si alguien vuelve a poner una sustituta, esto lo dice en una línea en
-    // vez de dejar que se descubra mirando la pantalla.
-    expect(AppFonts.display, 'Knockout');
-    expect(AppFonts.ui, 'SpaceGrotesk');
+  test('la app usa las sustitutas OFL, no las del handoff', () {
+    // Knockout 92 y Space Grotesk se eliminaron del repositorio a propósito:
+    // Knockout es comercial y un build web publica el archivo como descarga
+    // abierta. Esto fija la decisión donde se ve, en vez de dejar que alguien
+    // vuelva a agregarlas sin darse cuenta.
+    expect(AppFonts.display, 'Oswald');
+    expect(AppFonts.ui, 'DMSans');
   });
 
-  test('Knockout es de un solo corte: no se le pide un peso sintético', () {
-    // Knockout 92 no tiene eje de peso. Pedirle 600 o 700 hace que Flutter
-    // engrose los trazos por software y cierre las contraformas.
-    expect(AppWeights.display, FontWeight.w400);
+  test('a Oswald se le pide un peso que existe como archivo', () {
+    // `assets/media/oswald/` trae Light/Regular/Bold. Pedir 600 haría que
+    // Flutter sintetice un peso falso: trazos engordados por software y
+    // contraformas cerradas.
+    expect(AppWeights.display, FontWeight.w700);
   });
 
   for (final role in rolesDePortal) {

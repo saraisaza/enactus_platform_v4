@@ -574,7 +574,7 @@ class _CityTooltip extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       point.city.name.toUpperCase(),
-                      style: knockoutHeading(
+                      style: displayHeading(
                         fontSize: 21,
                         fontWeight: AppWeights.display,
                         color: Colors.white,
@@ -598,7 +598,7 @@ class _CityTooltip extends StatelessWidget {
                   children: [
                     Text(
                       '${point.value}',
-                      style: knockoutHeading(
+                      style: displayHeading(
                         fontSize: 26,
                         fontWeight: AppWeights.display,
                         color: point.color,

@@ -103,7 +103,7 @@ class _CalendarViewState extends State<CalendarView> {
               icon: const Icon(Icons.chevron_left),
               onPressed: () => _changeMonth(-1),
             ),
-            Text(monthLabel.toUpperCase(), style: knockoutHeading(fontSize: 20)),
+            Text(monthLabel.toUpperCase(), style: displayHeading(fontSize: 20)),
             IconButton(
               icon: const Icon(Icons.chevron_right),
               onPressed: () => _changeMonth(1),

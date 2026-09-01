@@ -278,7 +278,7 @@ class _ContinueCard extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.85))),
                     const SizedBox(height: 8),
                     Text(course.name.toUpperCase(),
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 38,
                             fontWeight: AppWeights.display,
                             color: Colors.white)),
@@ -356,7 +356,7 @@ class _CourseProgressCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Progreso por curso'.toUpperCase(),
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
                   color: colors.text)),
@@ -517,7 +517,7 @@ class _PendingCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Pendientes'.toUpperCase(),
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
                   color: colors.text)),
@@ -640,7 +640,7 @@ class _RecentActivityCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Actividad reciente'.toUpperCase(),
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
                   color: colors.text)),
@@ -779,7 +779,7 @@ class _ProjectCard extends StatelessWidget {
                     letterSpacing: 1)),
             const SizedBox(height: 8),
             Text(project.name.toUpperCase(),
-                style: knockoutHeading(
+                style: displayHeading(
                     fontSize: 30,
                     fontWeight: AppWeights.display,
                     color: colors.text)),

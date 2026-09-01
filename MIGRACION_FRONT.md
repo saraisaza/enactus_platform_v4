@@ -316,38 +316,42 @@ prueba lo que dice probar. Ahora las dos van contra un servidor local.
 
 ---
 
-## Tipografía: las fuentes reales ✅
+## Tipografía: Knockout 92 y Space Grotesk NO se distribuyen
 
-El pedido era "Knockout 92 (display) y Space Grotesk (UI/cuerpo) aplicadas de
-forma consistente vía el tema". La app usaba **Oswald y DM Sans**.
+El handoff especifica Knockout 92 (display) y Space Grotesk (UI) pantalla por
+pantalla, y en algún momento los archivos estuvieron en el repositorio. **Ya no
+están, y no deben volver**: se eliminaron a propósito.
 
-No era una decisión de diseño: **los archivos reales estaban en el repo desde
-siempre**, pero solo dentro de las carpetas de handoff
-(`assets/design_handoff_*/assets/media/`), sin declarar en `pubspec.yaml`. Los
-handoff especifican "Knockout" pantalla por pantalla. Era una deuda, no una
-elección.
+El motivo es de licencia, no de diseño. Knockout es una tipografía comercial de
+Hoefler&Co y un build web publica el archivo como descarga abierta para
+cualquiera que abra la página — embeberla sin licencia de webfont es
+distribuirla.
 
-| | Antes | Ahora |
+| Rol | Fuente que se distribuye | Licencia |
 |---|---|---|
-| Display | Oswald | **Knockout 92** |
-| Interfaz | DM Sans | **Space Grotesk** (variable, eje `wght` 300–700) |
-| Peso display | `w700` | **`w400`** |
-| Tracking títulos | `0.014em` | **`0.045em`** |
+| Display (títulos) | **Oswald** | OFL |
+| Interfaz (todo lo demás) | **DM Sans** | OFL |
+| Wordmark "eduXaction" | Manrope | OFL |
 
-Los dos últimos no son cosméticos:
+Se eliminaron las seis copias que quedaban: `assets/media/knockout/`,
+`assets/media/space_grotesk/` y las cuatro dentro de
+`assets/design_handoff_*/assets/media/`. Nada en `lib/` las nombra: los
+identificadores pasaron de `knockoutHeading` / `knockoutTracking` /
+`kKnockoutTrackingRatio` a `displayHeading` / `displayTracking` /
+`kDisplayTrackingRatio`, para que ninguna API pública se llame como una fuente
+que no se puede usar.
 
-- **`w700` → `w400`.** Knockout 92 es un corte único, sin eje de peso. Pedirle
-  700 hacía que Flutter **sintetizara** una negrita falsa: engorda los trazos
-  por software y cierra las contraformas, que en una condensada se nota de
-  inmediato. El w700 tenía sentido con Oswald, que sí trae varios pesos.
-- **`0.014em` → `0.045em`.** El 0.045 es el valor de los handoff: aparece 12
-  veces, más que ningún otro, junto a cada título Knockout. El 0.014 no salía
-  del diseño — el propio comentario en `app_theme.dart` decía que estaba
-  afinado a mano para Oswald, que es más angosta.
+Los valores del tema están **afinados a Oswald**, no al handoff:
 
-Se quitaron además tres `letterSpacing` sueltos que estaban calibrados para
-Oswald (`54 * 0.002`, `26 * 0.012`, `58 * 0.004`) para que salgan del tema como
-todos los demás.
+- **Peso `w700`.** El diseño pide SemiBold (600) pero `assets/media/oswald/`
+  solo trae Light/Regular/Bold. Se usa el peso real más cercano en vez de dejar
+  que Flutter sintetice un 600 falso, que engorda los trazos por software.
+- **Tracking `0.014em`, no el `0.045em` del handoff.** Ese 0.045 está medido
+  sobre Knockout; Oswald es más angosta y de altura-x más alta, y con 0.045 las
+  mayúsculas quedan sueltas.
+
+Los dos valores viven en un solo lugar (`AppFonts` y `kDisplayTrackingRatio`):
+si algún día se compra la licencia, cambiarlos alcanza para toda la app.
 
 ### Colores fuera del tema
 
@@ -371,10 +375,11 @@ indirección, no de consistencia: los valores ya están concentrados en cuatro
 tamaños (12, 12.5, 13, 13.5). Cambiarlos es exactamente lo que el pedido acota
 con "no rediseñes nada". El inventario queda acá para decidirlo con números.
 
-### Declararlas no alcanzaba: la mitad de la interfaz las ignoraba
+### El bug que quedó al descubierto por el camino
 
-Apuntar `AppFonts` a las fuentes nuevas y declararlas en `pubspec.yaml` dejó
-**el texto de los botones con la fuente del sistema**. La causa: el `textStyle`
+Al intentar el cambio de fuentes apareció un defecto que no dependía de cuáles
+fueran, y que sigue corregido: **el texto de los botones se pintaba con la
+fuente del sistema**, distinta en cada navegador. La causa: el `textStyle`
 de un `ButtonStyle` **reemplaza** el estilo del botón en vez de fusionarse con
 el `textTheme`, y el del tema no declaraba familia. Así que la etiqueta de cada
 botón elevado de la plataforma se pintaba con lo que trajera el navegador —
@@ -397,19 +402,21 @@ recorre el árbol ya renderizado y lee la familia **resuelta** de cada texto —
 el `TextSpan` del `RichText`, después de mezclarse con el `DefaultTextStyle`.
 Eso es literalmente lo que se pinta.
 
-Falla si aparece cualquier familia que no sea Knockout, Space Grotesk, Manrope
-(solo el wordmark, por reglas de marca) o las de íconos. **Y falla igual si no
-hay familia**: heredar la del sistema es tan malo como la equivocada, solo que
-más difícil de ver.
+Falla si aparece cualquier familia que no sea Oswald, DM Sans, Manrope (solo el
+wordmark, por reglas de marca) o las de íconos. **Y falla igual si no hay
+familia**: heredar la del sistema es tan malo como la equivocada, solo que más
+difícil de ver.
 
-### Lo que NO está verificado
+Además fija por escrito qué fuentes se distribuyen, así que si alguien vuelve a
+agregar Knockout o Space Grotesk, falla en una línea en vez de descubrirse en
+una revisión de licencias.
 
-**Nadie ha mirado la app con las fuentes nuevas.** Comprobado sí está: que el
-bundle las carga (`FontManifest.json` trae `Knockout` y `SpaceGrotesk`;
-Oswald/DM Sans ya no están), que **todo** el texto las usa (arriba), y que los
-nueve portales se dibujan en tres anchos recorriendo todas las pestañas **sin
-un solo desbordamiento** — el riesgo real de cambiar de tipografía, porque
-cambian las métricas del texto. Falta la mirada humana.
+### Verificado
+
+El bundle carga `Oswald`, `DMSans` y `Manrope`, y **ningún** archivo de
+Knockout o Space Grotesk queda en `build/web`. Todo el texto de los nueve
+portales, las once pestañas del Admin, la portada y el ingreso usa una de esas
+tres. Y los portales se dibujan en tres anchos sin desbordamientos.
 
 ---
 

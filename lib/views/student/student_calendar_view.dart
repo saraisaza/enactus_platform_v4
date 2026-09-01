@@ -131,7 +131,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                     child: Text(
                         DateFormat('MMMM yyyy', 'es').format(_visibleMonth).toUpperCase(),
                         textAlign: TextAlign.center,
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 20, fontWeight: AppWeights.display, color: colors.text)),
                   ),
                   IconButton(
@@ -157,7 +157,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Próximos eventos'.toUpperCase(),
-                  style: knockoutHeading(
+                  style: displayHeading(
                       fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
               const SizedBox(height: 14),
               if (upcoming.isEmpty)
@@ -363,7 +363,7 @@ class _UpcomingRow extends StatelessWidget {
                 child: Column(
                   children: [
                     Text('${event.startsAt.day}',
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 22, fontWeight: AppWeights.display, color: color)),
                     Text(DateFormat('EEE', 'es').format(event.startsAt).toUpperCase(),
                         style: TextStyle(

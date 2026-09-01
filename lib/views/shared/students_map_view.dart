@@ -162,7 +162,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                             ),
                             const SizedBox(height: 10),
                             Text('Estudiantes en el país'.toUpperCase(),
-                                style: knockoutHeading(
+                                style: displayHeading(
                                     fontSize: 58, fontWeight: AppWeights.display, color: colors.goldInk, height: 0.94)),
                             const SizedBox(height: 12),
                             Text(
@@ -403,7 +403,7 @@ class _CountUpStat extends StatelessWidget {
             duration: const Duration(milliseconds: 800),
             curve: Curves.easeOutCubic,
             builder: (context, v, _) => Text('${v.round()}',
-                style: knockoutHeading(
+                style: displayHeading(
                     fontSize: 40, fontWeight: AppWeights.display, color: primary ? colors.goldInk : colors.text, height: 1.0)),
           ),
           const SizedBox(height: 6),
@@ -563,7 +563,7 @@ class _CityListCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Ciudades'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 4),
           Text(hint, style: TextStyle(fontSize: 12.5, color: colors.text3)),
           const SizedBox(height: 16),
@@ -678,7 +678,7 @@ class _CityRow extends StatelessWidget {
               width: 30,
               child: Text('${point.value}',
                   textAlign: TextAlign.right,
-                  style: knockoutHeading(fontSize: 19, fontWeight: AppWeights.display, color: colors.text2)),
+                  style: displayHeading(fontSize: 19, fontWeight: AppWeights.display, color: colors.text2)),
             ),
           ],
           ),

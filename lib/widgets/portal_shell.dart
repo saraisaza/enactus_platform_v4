@@ -284,7 +284,7 @@ class TabBody extends StatelessWidget {
       children: [
         Text(
           title.toUpperCase(),
-          style: knockoutHeading(
+          style: displayHeading(
             fontSize: 30,
             fontWeight: AppWeights.display,
             color: AppColors.gold,
@@ -570,10 +570,11 @@ class _ContentScreenShellState extends State<ContentScreenShell>
               const SizedBox(height: 10),
               Text(
                 widget.title.toUpperCase(),
-                style: knockoutHeading(
+                style: displayHeading(
                   fontSize: 58,
                   color: colors.goldInk,
                   height: 1.00,
+                  letterSpacing: 58 * 0.004,
                 ),
               ),
               if (widget.subtitle != null) ...[

@@ -968,7 +968,7 @@ class _RulesCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Normas del foro'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           for (final rule in _rules)
             Padding(
@@ -1010,7 +1010,7 @@ class _TopTeamsCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Equipos más activos'.toUpperCase(),
-              style: knockoutHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           for (var i = 0; i < teams.length; i++)
             Padding(
@@ -1026,7 +1026,7 @@ class _TopTeamsCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Text('${i + 1}',
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 17,
                             fontWeight: AppWeights.display,
                             color: i == 0 ? colors.bg : colors.text3)),

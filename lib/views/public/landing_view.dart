@@ -141,7 +141,7 @@ class LandingView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 40, bottom: 6),
                     child: Text('Nuestros Laboratorios'.toUpperCase(),
-                        style: knockoutHeading(
+                        style: displayHeading(
                             fontSize: 30,
                             fontWeight: AppWeights.display,
                             color: AppColors.gold)),
@@ -175,7 +175,7 @@ class LandingView extends StatelessWidget {
                                           color: AppColors.gold, size: 30),
                                       const SizedBox(height: 12),
                                       Text(labs[i].name.toUpperCase(),
-                                          style: knockoutHeading(
+                                          style: displayHeading(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700)),
                                       const SizedBox(height: 6),
@@ -200,7 +200,7 @@ class LandingView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 6),
                       child: Text('Nuestro trabajo en imágenes'.toUpperCase(),
-                          style: knockoutHeading(
+                          style: displayHeading(
                               fontSize: 30,
                               fontWeight: AppWeights.display,
                               color: AppColors.gold)),
@@ -261,7 +261,7 @@ class LandingView extends StatelessWidget {
                       children: [
                         Text('¿Listo para sumarte? 💛'.toUpperCase(),
                             textAlign: TextAlign.center,
-                            style: knockoutHeading(
+                            style: displayHeading(
                                 fontSize: 24,
                                 fontWeight: AppWeights.display,
                                 color: AppColors.textPrimary)),
@@ -324,7 +324,7 @@ class _ExpoShowcase extends StatelessWidget {
         children: [
           Text('Campeones National Expo 2026'.toUpperCase(),
               textAlign: TextAlign.center,
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 30, fontWeight: AppWeights.display, color: AppColors.gold)),
           const SizedBox(height: 6),
           const Text(
@@ -573,10 +573,11 @@ class _HeroContent extends StatelessWidget {
           children: [
             Text(title.toUpperCase(),
                 textAlign: TextAlign.center,
-                style: knockoutHeading(
+                style: displayHeading(
                     fontSize: 54,
                     color: AppColors.gold,
-                    height: 0.98)),
+                    height: 0.98,
+                    letterSpacing: 54 * 0.002)),
             const SizedBox(height: 18),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
@@ -631,7 +632,7 @@ class _AnimatedCounter extends StatelessWidget {
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => Text(
               v.round().toString(),
-              style: knockoutHeading(
+              style: displayHeading(
                   fontSize: 36,
                   color: AppColors.gold,
                   height: 1.0,

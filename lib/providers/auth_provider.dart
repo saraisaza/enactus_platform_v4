@@ -113,6 +113,18 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fija la sesión sin pasar por el ingreso. **Solo para pruebas.**
+  ///
+  /// Las pruebas de maquetación montan un portal directamente; sin sesión, el
+  /// guardia de rol redirige al ingreso y la prueba verificaría esa pantalla
+  /// creyendo que verifica el portal. No hay forma de llegar acá desde la app.
+  @visibleForTesting
+  void debugSetSession(Map<String, dynamic> user) {
+    _restoring = false;
+    _setUser(AppUser.fromJson(user));
+    notifyListeners();
+  }
+
   void _setUser(AppUser? user) {
     _currentUser = user;
     // El provider de datos necesita saber de quién son "mis" cursos, y tiene

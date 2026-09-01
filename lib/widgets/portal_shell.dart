@@ -15,8 +15,11 @@ class PortalTab {
   final String label;
   final IconData icon;
   final Widget Function(BuildContext) builder;
-  const PortalTab(
-      {required this.label, required this.icon, required this.builder});
+  const PortalTab({
+    required this.label,
+    required this.icon,
+    required this.builder,
+  });
 }
 
 /// Estructura común de todos los portales: header, barra lateral con
@@ -35,12 +38,13 @@ class PortalShell extends StatefulWidget {
   /// de su pestaña sin duplicar el header ni la barra lateral.
   final Widget? contentOverride;
 
-  const PortalShell(
-      {super.key,
-      required this.portalTitle,
-      required this.tabs,
-      this.initialSelectedIndex = 0,
-      this.contentOverride});
+  const PortalShell({
+    super.key,
+    required this.portalTitle,
+    required this.tabs,
+    this.initialSelectedIndex = 0,
+    this.contentOverride,
+  });
 
   @override
   State<PortalShell> createState() => _PortalShellState();
@@ -73,9 +77,11 @@ class _PortalShellState extends State<PortalShell> {
     final content = AnimatedSwitcher(
       duration: const Duration(milliseconds: 200),
       child: KeyedSubtree(
-        key: ValueKey(widget.contentOverride != null && !_overrideDismissed
-            ? 'override-$_selected'
-            : _selected),
+        key: ValueKey(
+          widget.contentOverride != null && !_overrideDismissed
+              ? 'override-$_selected'
+              : _selected,
+        ),
         child: (widget.contentOverride != null && !_overrideDismissed)
             ? widget.contentOverride!
             : widget.tabs[_selected].builder(context),
@@ -144,12 +150,15 @@ class _PortalShellState extends State<PortalShell> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
-                child: Text(widget.portalTitle.toUpperCase(),
-                    style: const TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        letterSpacing: 1)),
+                child: Text(
+                  widget.portalTitle.toUpperCase(),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    letterSpacing: 1,
+                  ),
+                ),
               ),
               for (var i = 0; i < widget.tabs.length; i++)
                 _SidebarItem(
@@ -174,11 +183,12 @@ class _SidebarItem extends StatefulWidget {
   final bool selected;
   final bool compact;
   final VoidCallback onTap;
-  const _SidebarItem(
-      {required this.tab,
-      required this.selected,
-      required this.compact,
-      required this.onTap});
+  const _SidebarItem({
+    required this.tab,
+    required this.selected,
+    required this.compact,
+    required this.onTap,
+  });
 
   @override
   State<_SidebarItem> createState() => _SidebarItemState();
@@ -214,18 +224,20 @@ class _SidebarItemState extends State<_SidebarItem> {
             borderRadius: BorderRadius.circular(8),
             border: Border(
               left: BorderSide(
-                  color: active
-                      ? AppColors.gold
-                      : (_hover
+                color: active
+                    ? AppColors.gold
+                    : (_hover
                           ? AppColors.gold.withValues(alpha: 0.55)
                           : Colors.transparent),
-                  width: 3),
+                width: 3,
+              ),
             ),
           ),
           child: widget.compact
               ? Tooltip(
                   message: widget.tab.label,
-                  child: Icon(widget.tab.icon, color: color, size: 22))
+                  child: Icon(widget.tab.icon, color: color, size: 22),
+                )
               : Row(
                   children: [
                     Icon(widget.tab.icon, color: color, size: 20),
@@ -237,8 +249,9 @@ class _SidebarItemState extends State<_SidebarItem> {
                         style: TextStyle(
                           color: color,
                           fontSize: 13.5,
-                          fontWeight:
-                              active ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -256,29 +269,37 @@ class TabBody extends StatelessWidget {
   final String? subtitle;
   final List<Widget> children;
   final List<Widget> actions;
-  const TabBody(
-      {super.key,
-      required this.title,
-      this.subtitle,
-      required this.children,
-      this.actions = const []});
+  const TabBody({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.children,
+    this.actions = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
     final titleBlock = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title.toUpperCase(),
-            style: knockoutHeading(
-                fontSize: 30,
-                fontWeight: AppWeights.display,
-                color: AppColors.gold)),
+        Text(
+          title.toUpperCase(),
+          style: knockoutHeading(
+            fontSize: 30,
+            fontWeight: AppWeights.display,
+            color: AppColors.gold,
+          ),
+        ),
         if (subtitle != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(subtitle!,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14)),
+            child: Text(
+              subtitle!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
           ),
       ],
     );
@@ -312,20 +333,13 @@ class TabBody extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                header,
-                const SizedBox(height: 20),
-                ...children,
-              ],
+              children: [header, const SizedBox(height: 20), ...children],
             ),
           ),
         ),
         const SliverFillRemaining(
           hasScrollBody: false,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: AppFooter(),
-          ),
+          child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
         ),
       ],
     );
@@ -353,10 +367,14 @@ class ContentScreenShell extends StatefulWidget {
   /// consistencia de la cabecera sin acción de filtro.
   final String? searchHint;
   final ValueChanged<String>? onSearchChanged;
-  final Widget Function(BuildContext context, ContentColors colors, bool isDark)?
-      trailingBuilder;
+  final Widget Function(
+    BuildContext context,
+    ContentColors colors,
+    bool isDark,
+  )?
+  trailingBuilder;
   final Widget Function(BuildContext context, ContentColors colors, bool isDark)
-      bodyBuilder;
+  bodyBuilder;
 
   const ContentScreenShell({
     super.key,
@@ -378,10 +396,12 @@ class _ContentScreenShellState extends State<ContentScreenShell>
   bool _isDark = true;
   final _searchCtrl = TextEditingController();
   late final AnimationController _glow = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 2400))
-    ..repeat();
+    vsync: this,
+    duration: const Duration(milliseconds: 2400),
+  )..repeat();
 
-  ContentColors get _colors => _isDark ? ContentColors.dark : ContentColors.light;
+  ContentColors get _colors =>
+      _isDark ? ContentColors.dark : ContentColors.light;
 
   @override
   void dispose() {
@@ -399,7 +419,12 @@ class _ContentScreenShellState extends State<ContentScreenShell>
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
+              padding: EdgeInsets.fromLTRB(
+                context.isCompact ? 16 : 40,
+                34,
+                context.isCompact ? 16 : 40,
+                60,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -422,40 +447,53 @@ class _ContentScreenShellState extends State<ContentScreenShell>
   }
 
   Widget _buildControlsRow(ContentColors colors) {
+    // `mainAxisAlignment.end` en vez de un `Spacer`, y el buscador en
+    // `Flexible`: con `Spacer` el hueco se come todo el espacio libre y el
+    // buscador de 320px queda pidiendo su ancho fijo, que en un teléfono no
+    // entra junto al botón de tema.
     return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        const Spacer(),
         if (widget.searchHint != null) ...[
-          Container(
-            width: 320,
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              border: Border.all(color: colors.border),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.search_rounded, size: 20, color: colors.text3),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    onChanged: widget.onSearchChanged,
-                    style: TextStyle(fontSize: 14, color: colors.text),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      hintText: widget.searchHint,
-                      hintStyle: TextStyle(fontSize: 14, color: colors.text3),
-                    ),
-                  ),
+          Flexible(
+            child: ConstrainedBox(
+              // Antes 320px fijos: con el relleno lateral no entraba en un
+              // teléfono y desbordaba la fila entera.
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: Container(
+                height: 44,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  border: Border.all(color: colors.border),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Icon(Icons.search_rounded, size: 20, color: colors.text3),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchCtrl,
+                        onChanged: widget.onSearchChanged,
+                        style: TextStyle(fontSize: 14, color: colors.text),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          hintText: widget.searchHint,
+                          hintStyle: TextStyle(
+                            fontSize: 14,
+                            color: colors.text3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -477,7 +515,9 @@ class _ContentScreenShellState extends State<ContentScreenShell>
       runSpacing: 20,
       children: [
         ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 320, maxWidth: 620),
+          // Sin `minWidth`: un mínimo más ancho que un teléfono no lo puede
+          // rescatar ningún padre — es el desbordamiento garantizado.
+          constraints: const BoxConstraints(maxWidth: 620),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -497,8 +537,9 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.gold
-                                  .withValues(alpha: 0.55 * (1 - t)),
+                              color: AppColors.gold.withValues(
+                                alpha: 0.55 * (1 - t),
+                              ),
                               spreadRadius: 5 * t,
                             ),
                           ],
@@ -507,26 +548,45 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                     },
                   ),
                   const SizedBox(width: 9),
-                  Text(widget.eyebrow.toUpperCase(),
+                  // `Flexible`: el rótulo suele ser una fecha larga
+                  // ("SEMANA DEL 25 DE AGO AL 31 DE AGO") y dentro de un `Row`
+                  // sin flex exige su ancho intrínseco, que en un teléfono no
+                  // existe.
+                  Flexible(
+                    child: Text(
+                      widget.eyebrow.toUpperCase(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          fontSize: 12,
-                          letterSpacing: 12 * 0.16,
-                          fontWeight: FontWeight.w600,
-                          color: colors.text3)),
+                        fontSize: 12,
+                        letterSpacing: 12 * 0.16,
+                        fontWeight: FontWeight.w600,
+                        color: colors.text3,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
-              Text(widget.title.toUpperCase(),
-                  style: knockoutHeading(
-                      fontSize: 58,
-                      color: colors.goldInk,
-                      height: 1.00,
-                      letterSpacing: 58 * 0.004)),
+              Text(
+                widget.title.toUpperCase(),
+                style: knockoutHeading(
+                  fontSize: 58,
+                  color: colors.goldInk,
+                  height: 1.00,
+                  letterSpacing: 58 * 0.004,
+                ),
+              ),
               if (widget.subtitle != null) ...[
                 const SizedBox(height: 12),
-                Text(widget.subtitle!,
-                    style: TextStyle(
-                        fontSize: 15.5, color: colors.text2, height: 1.4)),
+                Text(
+                  widget.subtitle!,
+                  style: TextStyle(
+                    fontSize: 15.5,
+                    color: colors.text2,
+                    height: 1.4,
+                  ),
+                ),
               ],
             ],
           ),
@@ -542,8 +602,11 @@ class _ContentThemeToggleButton extends StatelessWidget {
   final bool isDark;
   final ContentColors colors;
   final VoidCallback onTap;
-  const _ContentThemeToggleButton(
-      {required this.isDark, required this.colors, required this.onTap});
+  const _ContentThemeToggleButton({
+    required this.isDark,
+    required this.colors,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -592,13 +655,14 @@ class StageRail extends StatelessWidget {
   /// cuando el texto de `projectStages` no aplica.
   final Widget? caption;
 
-  const StageRail(
-      {super.key,
-      required this.accentColor,
-      required this.colors,
-      required this.currentIndex,
-      this.totalOverride,
-      this.caption});
+  const StageRail({
+    super.key,
+    required this.accentColor,
+    required this.colors,
+    required this.currentIndex,
+    this.totalOverride,
+    this.caption,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -629,14 +693,17 @@ class StageRail extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Etapa ${currentIndex + 1} de $total',
-                    style: TextStyle(fontSize: 11.5, color: colors.text3)),
                 Text(
-                    currentIndex >= total - 1
-                        ? 'Etapa final'
-                        : 'Sigue: '
+                  'Etapa ${currentIndex + 1} de $total',
+                  style: TextStyle(fontSize: 11.5, color: colors.text3),
+                ),
+                Text(
+                  currentIndex >= total - 1
+                      ? 'Etapa final'
+                      : 'Sigue: '
                             '${ProjectStage.label(projectStages[currentIndex + 1])}',
-                    style: TextStyle(fontSize: 11.5, color: colors.text3)),
+                  style: TextStyle(fontSize: 11.5, color: colors.text3),
+                ),
               ],
             ),
       ],

@@ -27,6 +27,15 @@ class FakeApi {
   /// que no le corresponde.
   final List<String> requested = [];
 
+  /// Qué responder cuando la ruta no está en [routes].
+  ///
+  /// Por defecto es `null` y una ruta sin respuesta hace fallar la prueba
+  /// ruidosamente: en una prueba de navegación, pedir algo que no se esperaba
+  /// ES el hallazgo. Las pruebas de MAQUETACIÓN lo usan al revés —les importa
+  /// que la pantalla se dibuje en cada ancho, no qué pidió— y ahí enumerar
+  /// cincuenta rutas solo agrega ruido.
+  final Object? Function(String path)? fallback;
+
   /// Retraso artificial de cada respuesta. En cero, `MockClient` resuelve tan
   /// rápido que el estado de carga se pierde entre dos `pump`; con un retraso
   /// se puede observar, que es justo lo que algunas pruebas necesitan.
@@ -35,6 +44,7 @@ class FakeApi {
   FakeApi({
     Map<String, Object?>? routes,
     Set<String>? notFound,
+    this.fallback,
     this.delay = Duration.zero,
   })  : routes = routes ?? {},
         notFound = notFound ?? {};
@@ -49,7 +59,7 @@ class FakeApi {
         return _error(404, 'not_found', 'No encontramos lo que buscabas.');
       }
 
-      final body = routes[path];
+      final body = routes[path] ?? fallback?.call(path);
       if (body == null) {
         // Falta una ruta en el fake: se falla ruidosamente en vez de devolver
         // vacío, que haría pasar una prueba por la razón equivocada.

@@ -21,7 +21,6 @@ library;
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,7 +28,6 @@ import 'package:enactus_platform/providers/auth_provider.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
-import 'package:enactus_platform/main.dart';
 import 'package:enactus_platform/utils/constants.dart';
 
 bool up = false;
@@ -47,7 +45,9 @@ const _cuentas = <String, (String, String)>{
   'alumni': ('alumni1@uniandes.edu.co', 'Alumni123'),
 };
 
-final Map<String, DataProvider> _sessions = {};
+typedef Sesion = ({ApiService api, DataProvider data, AuthProvider auth});
+
+final Map<String, Sesion> _sessions = {};
 
 Future<bool> _backendUp() async {
   try {
@@ -64,7 +64,7 @@ Future<bool> _backendUp() async {
 
 /// Entra UNA vez por rol: el servidor corta a 10 intentos por correo cada 5
 /// minutos y una suite que entra en cada prueba se bloquea sola.
-Future<DataProvider?> signIn(String role) async {
+Future<Sesion?> signIn(String role) async {
   final cached = _sessions[role];
   if (cached != null) return cached;
 
@@ -77,8 +77,9 @@ Future<DataProvider?> signIn(String role) async {
   final user = await auth.login(credenciales.$1, credenciales.$2);
   if (user == null) return null;
 
-  _sessions[role] = data;
-  return data;
+  final sesion = (api: api, data: data, auth: auth);
+  _sessions[role] = sesion;
+  return sesion;
 }
 
 /// Sondea un getter hasta que tenga dato o error. Devuelve el error, o `null`
@@ -105,6 +106,17 @@ void main() {
       // ignore: avoid_print
       print('\n⚠️  Backend apagado en ${ApiService.baseUrl} — se saltan estas '
           'pruebas.\n   Levantalo con: cd backend && npm run dev\n');
+      return;
+    }
+
+    // Se entra con TODAS las cuentas acá, antes de que empiece ninguna prueba.
+    //
+    // No es una optimización: dentro de `testWidgets` el tiempo es falso y una
+    // petición real nunca completa —la prueba se cuelga hasta el timeout— así
+    // que el ingreso tiene que ocurrir en un contexto asíncrono de verdad.
+    // `setUpAll` lo es; el cuerpo de un `testWidgets`, no.
+    for (final role in _cuentas.keys) {
+      await signIn(role);
     }
   });
 
@@ -138,11 +150,11 @@ void main() {
   for (final role in _cuentas.keys) {
     test('$role: ninguna lectura del provider responde con error', () async {
       if (!up) return;
-      final data = await signIn(role);
-      expect(data, isNotNull, reason: 'No se pudo entrar como $role');
+      final sesion = await signIn(role);
+      expect(sesion, isNotNull, reason: 'No se pudo entrar como $role');
 
       final fallos = <String, String>{};
-      for (final entry in gettersDe(data!).entries) {
+      for (final entry in gettersDe(sesion!.data).entries) {
         final error = await settle(entry.value);
         // 403 es una respuesta legítima: hay lecturas que un rol no tiene.
         // Lo que no puede pasar es un 400 (contrato mal armado) ni un 500.
@@ -159,16 +171,17 @@ void main() {
 
   test('los filtros de users() que usan los portales tampoco fallan', () async {
     if (!up) return;
-    final data = await signIn('admin');
-    expect(data, isNotNull);
+    final sesion = await signIn('admin');
+    expect(sesion, isNotNull);
+    final data = sesion!.data;
 
     final variantes = <String, dynamic Function()>{
-      'role=student': () => data!.users(role: Roles.student),
-      'role=company': () => data!.users(role: Roles.company),
-      'role=mentor': () => data!.users(role: Roles.mentor),
-      'role=lxd': () => data!.users(role: Roles.lxd),
+      'role=student': () => data.users(role: Roles.student),
+      'role=company': () => data.users(role: Roles.company),
+      'role=mentor': () => data.users(role: Roles.mentor),
+      'role=lxd': () => data.users(role: Roles.lxd),
       'include=team,progress': () =>
-          data!.users(role: Roles.student, include: 'team,progress'),
+          data.users(role: Roles.student, include: 'team,progress'),
     };
 
     final fallos = <String, String>{};
@@ -181,60 +194,14 @@ void main() {
 
   test('el LXD ve empresas para poder elegir patrocinador', () async {
     if (!up) return;
-    final data = await signIn('lxd');
-    expect(data, isNotNull);
+    final sesion = await signIn('lxd');
+    expect(sesion, isNotNull);
+    final data = sesion!.data;
 
-    final error = await settle(() => data!.users(role: Roles.company));
+    final error = await settle(() => data.users(role: Roles.company));
     expect(error, isNull);
     // Sin esto puede GUARDAR un patrocinio pero no ver de quién es.
-    expect(data!.users(role: Roles.company).valueOrNull, isNotEmpty);
+    expect(data.users(role: Roles.company).valueOrNull, isNotEmpty);
   }, timeout: const Timeout(Duration(seconds: 40)));
 
-  /// Cada rol entra a SU portal y la pantalla se dibuja.
-  ///
-  /// Compilar no prueba que un portal funcione: un `AsyncValue` en error, un
-  /// campo que no llegó o un `Row` que desborda son fallos de ejecución. Esta
-  /// prueba entra con cada cuenta, monta el portal que le toca y exige que no
-  /// haya ninguna excepción de Flutter — que es exactamente lo que veía quien
-  /// abría la app.
-  for (final role in _cuentas.keys) {
-    testWidgets('$role: su portal se dibuja sin excepciones', (tester) async {
-      if (!up) return;
-      final data = await signIn(role);
-      expect(data, isNotNull, reason: 'No se pudo entrar como $role');
-
-      final excepciones = <Object>[];
-      final anterior = FlutterError.onError;
-      FlutterError.onError = (details) => excepciones.add(
-          '${details.exception}\n${details.context}\n'
-          '${details.informationCollector?.call().join('\n') ?? ''}');
-
-      try {
-        await tester.pumpWidget(_appDe(role, data!));
-        // Varios `pump` en vez de `pumpAndSettle`: las peticiones reales no
-        // completan dentro del tiempo falso de `testWidgets`, así que lo que
-        // se comprueba es que el estado de carga se dibuje sin reventar.
-        for (var i = 0; i < 5; i++) {
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-      } finally {
-        FlutterError.onError = anterior;
-      }
-
-      expect(excepciones, isEmpty,
-          reason: 'El portal de $role lanzó: ${excepciones.join('\n')}');
-    }, timeout: const Timeout(Duration(seconds: 90)));
-  }
-}
-
-/// Monta la app directamente en la ruta del rol, sin pasar por el arranque.
-Widget _appDe(String role, DataProvider data) {
-  final api = ApiService();
-  final auth = AuthProvider(api, data);
-  return EnactusApp(
-    api: api,
-    data: data,
-    auth: auth,
-    initialRoute: AppRoutes.forRole(role),
-  );
 }

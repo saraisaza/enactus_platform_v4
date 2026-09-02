@@ -130,6 +130,27 @@ Future<List<String>> montar(WidgetTester tester, Widget app) async {
   return excepciones;
 }
 
+/// Los textos del CUERPO de la pestaña — sin encabezado, barra lateral ni pie.
+///
+/// Existe por un hueco que encontró la auditoría de pruebas (mutación F2):
+/// se hizo que `StudentDashboardView` devolviera un `Container()` vacío y las
+/// 124 pruebas siguieron en verde. `_esElPortal` comprobaba que el armazón
+/// estuviera montado y que no hubiera estado de error, y una pantalla en
+/// blanco cumple las dos cosas.
+///
+/// No sirve contar los textos de toda la pantalla: el encabezado y el pie
+/// aportan varias decenas por sí solos y taparían el cuerpo vacío. Por eso el
+/// conteo se ancla a la llave `portal-content` de `PortalShell`.
+List<String> textosDelContenido(WidgetTester tester) => tester
+    .widgetList<Text>(find.descendant(
+      of: find.byKey(const Key('portal-content')),
+      matching: find.byType(Text),
+    ))
+    .map((t) => t.data)
+    .whereType<String>()
+    .where((s) => s.trim().isNotEmpty)
+    .toList();
+
 /// Los rótulos de la barra lateral, en escritorio (en tablet son solo íconos).
 List<String> rotulosDeBarraLateral(WidgetTester tester, Finder barra) => tester
     .widgetList<Text>(

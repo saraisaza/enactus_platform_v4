@@ -182,6 +182,90 @@ describe('GET /auth/me', () => {
   });
 });
 
+/**
+ * El token NO es la fuente de verdad. El registro vivo, sí.
+ *
+ * Este bloque existe por un hueco que encontró la auditoría de pruebas
+ * (BLOQUE 1, mutación M8): se le quitó a `requireAuth` el filtro
+ * `isNull(users.deletedAt)` —o sea, una cuenta desactivada seguía entrando— y
+ * **ninguna de las 502 pruebas se puso roja**. La regla estaba escrita en el
+ * comentario del middleware y en ningún assert.
+ *
+ * Importa de verdad: el access token dura 12 horas. Sin esta verificación,
+ * desactivar a alguien que se fue de la organización no lo saca hasta la
+ * mañana siguiente, y quitarle `can_grade` a un LXD tampoco surte efecto —
+ * justo los dos momentos en que se revoca un permiso son aquellos en los que
+ * hay prisa por que surta efecto.
+ */
+describe('los permisos se leen del registro vivo, no del token', () => {
+  it('desactivar la cuenta invalida el token YA emitido, sin esperar 12 h', async () => {
+    const { accessToken } = await login(app, ...CREDS.otroEnactus);
+
+    // Antes de tocar nada, el token sirve.
+    expect(
+      (await app.request('/auth/me', { headers: auth(accessToken) })).status,
+    ).toBe(200);
+
+    await sql`update users set deleted_at = now() where email = ${CREDS.otroEnactus[0]}`;
+    try {
+      const res = await app.request('/auth/me', { headers: auth(accessToken) });
+      expect(res.status).toBe(401);
+      const body = (await res.json()) as { error: { message: string } };
+      expect(body.error.message).toContain('ya no existe');
+    } finally {
+      await sql`update users set deleted_at = null where email = ${CREDS.otroEnactus[0]}`;
+    }
+  });
+
+  it('quitar can_grade surte efecto en la petición siguiente', async () => {
+    const guard = guardApp(makeTestApp().db);
+    const { accessToken } = await login(app, ...CREDS.lxdPuede);
+
+    expect(
+      (await guard.request('/calificar', { method: 'POST', headers: auth(accessToken) }))
+        .status,
+    ).toBe(200);
+
+    await sql`update users
+                 set can_grade_enactus = false, can_grade_open_learning = false
+               where email = ${CREDS.lxdPuede[0]}`;
+    try {
+      // Mismo token, sin volver a entrar: el permiso se releyó de la base.
+      const res = await guard.request('/calificar', {
+        method: 'POST',
+        headers: auth(accessToken),
+      });
+      expect(res.status).toBe(403);
+    } finally {
+      await sql`update users
+                   set can_grade_enactus = true, can_grade_open_learning = true
+                 where email = ${CREDS.lxdPuede[0]}`;
+    }
+  });
+
+  it('cambiar el rol surte efecto aunque el token diga el rol viejo', async () => {
+    // El claim `role` del token queda desactualizado a propósito: si la
+    // autorización lo leyera a él en vez del registro, un rol degradado
+    // seguiría entrando donde ya no debe.
+    const guard = guardApp(makeTestApp().db);
+    const { accessToken } = await login(app, ...CREDS.lxdPuede);
+
+    expect(
+      (await guard.request('/solo-contenido', { headers: auth(accessToken) })).status,
+    ).toBe(200);
+
+    await sql`update users set role = 'donor' where email = ${CREDS.lxdPuede[0]}`;
+    try {
+      const res = await guard.request('/solo-contenido', {
+        headers: auth(accessToken),
+      });
+      expect(res.status).toBe(403);
+    } finally {
+      await sql`update users set role = 'lxd' where email = ${CREDS.lxdPuede[0]}`;
+    }
+  });
+});
+
 describe('POST /auth/refresh — rotación', () => {
   it('emite un par nuevo y revoca el anterior', async () => {
     const { refreshToken } = await login(app, ...CREDS.admin);

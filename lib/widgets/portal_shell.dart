@@ -74,17 +74,27 @@ class _PortalShellState extends State<PortalShell> {
 
     // El footer vive dentro del scroll de cada pestaña: solo aparece al
     // desplazarse hasta el final.
-    final content = AnimatedSwitcher(
-      duration: const Duration(milliseconds: 200),
-      child: KeyedSubtree(
-        key: ValueKey(
-          widget.contentOverride != null && !_overrideDismissed
-              ? 'override-$_selected'
-              : _selected,
+    //
+    // La `Key` de afuera es para las pruebas y vale la pena explicarla: sin
+    // ella, "la pestaña dibujó algo" solo se podía comprobar contando textos
+    // de TODA la pantalla — y el encabezado, la barra lateral y el pie ya
+    // aportan varias decenas. Una pestaña entera podía quedar en blanco sin
+    // que ninguna prueba lo notara (auditoría de pruebas, mutación F2). Con
+    // esta llave el cuerpo de la pestaña se mira solo.
+    final content = KeyedSubtree(
+      key: const Key('portal-content'),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: KeyedSubtree(
+          key: ValueKey(
+            widget.contentOverride != null && !_overrideDismissed
+                ? 'override-$_selected'
+                : _selected,
+          ),
+          child: (widget.contentOverride != null && !_overrideDismissed)
+              ? widget.contentOverride!
+              : widget.tabs[_selected].builder(context),
         ),
-        child: (widget.contentOverride != null && !_overrideDismissed)
-            ? widget.contentOverride!
-            : widget.tabs[_selected].builder(context),
       ),
     );
 

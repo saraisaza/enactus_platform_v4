@@ -45,10 +45,35 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:enactus_platform/utils/constants.dart';
 import 'package:enactus_platform/views/auth/login_view.dart';
+import 'package:enactus_platform/widgets/app_header.dart';
 import 'package:enactus_platform/widgets/async_states.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
 
 import 'helpers/portal_harness.dart';
+
+/// Mínimo de textos que tiene que dibujar el cuerpo de una pestaña.
+///
+/// El número sale de medir, no de estimar: recorriendo las 63 pestañas de los
+/// nueve portales, la más escueta ("Recursos Comunicaciones" del Mentor,
+/// "Certificados" del Estudiante) dibuja 9 y la más cargada 398. Una pestaña
+/// en blanco dibuja 0. Cinco queda lejos del piso real —así ninguna pestaña
+/// legítima se vuelve intermitente— y lejísimos de cero.
+const _minimoDeContenido = 5;
+
+/// El cuerpo de la pestaña dibujó algo.
+///
+/// Sin esto, `_esElPortal` daba por bueno un portal cuya pestaña quedó
+/// completamente vacía: comprobaba el armazón y la ausencia de error, y una
+/// pantalla en blanco cumple las dos. Se verificó reemplazando
+/// `StudentDashboardView` por un `Container()` — las 124 pruebas siguieron
+/// verdes (auditoría de pruebas, mutación F2).
+void _dibujoContenido(WidgetTester tester, String role, String donde) {
+  final textos = textosDelContenido(tester);
+  expect(textos.length, greaterThanOrEqualTo(_minimoDeContenido),
+      reason: 'El cuerpo de $donde en ${Roles.label(role)} dibujó '
+          '${textos.length} textos: $textos.\n'
+          'El armazón puede estar montado y la pestaña estar en blanco.');
+}
 
 /// El portal de verdad está en pantalla — no el ingreso ni un estado de error.
 void _esElPortal(String role, String donde) {
@@ -87,6 +112,8 @@ void main() {
         final excepciones = await montar(tester, appDe(role));
 
         _esElPortal(role, '$etiqueta (${tamano.width.round()}px)');
+        _dibujoContenido(
+            tester, role, 'la pestaña inicial en $etiqueta');
         expect(excepciones, isEmpty,
             reason: 'El portal de ${Roles.label(role)} a '
                 '${tamano.width.round()}px lanzó:\n${excepciones.join('\n')}');
@@ -142,11 +169,50 @@ void main() {
           FlutterError.onError = anterior;
         }
         _esElPortal(role, 'la pestaña "$rotulo"');
+        _dibujoContenido(tester, role, 'la pestaña "$rotulo"');
       }
 
       expect(rotos, isEmpty,
           reason: 'Pestañas rotas en ${Roles.label(role)}:\n'
               '${rotos.join('\n')}');
+    });
+  }
+
+  /// El encabezado dibuja quién es la persona y en qué portal está.
+  ///
+  /// Igual que con las pestañas, ninguna prueba lo cubría: se reemplazó todo
+  /// el `build` de `AppHeader` por un `Container()` y las 124 pruebas
+  /// siguieron verdes (auditoría de pruebas, mutación F3). El encabezado lo
+  /// heredan los ocho portales y las pantallas de autoría, así que quedarse
+  /// en blanco es una caída visible en toda la plataforma.
+  ///
+  /// Se afirma sobre el nombre y el rol —lo que identifica la sesión— y no
+  /// sobre el logo: un `find.byType(AnimatedLogo)` seguiría pasando si el
+  /// logo se dibujara pero el resto de la fila no.
+  for (final role in rolesDePortal) {
+    testWidgets('${Roles.label(role)}: el encabezado dibuja la sesión',
+        (tester) async {
+      fijarTamano(tester, const Size(1440, 900));
+      await montar(tester, appDe(role));
+      _esElPortal(role, 'el encabezado');
+
+      final nombre = usuarioDe(role)['name'] as String;
+      final enElEncabezado = find.descendant(
+        of: find.byType(AppHeader),
+        matching: find.textContaining(nombre),
+      );
+      expect(enElEncabezado, findsWidgets,
+          reason: 'El encabezado de ${Roles.label(role)} no muestra "$nombre": '
+              'puede haberse quedado en blanco.');
+
+      expect(
+        find.descendant(
+          of: find.byType(AppHeader),
+          matching: find.textContaining(Roles.label(role)),
+        ),
+        findsWidgets,
+        reason: 'El encabezado de ${Roles.label(role)} no dice el rol.',
+      );
     });
   }
 }

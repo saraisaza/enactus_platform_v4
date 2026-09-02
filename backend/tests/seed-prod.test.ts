@@ -3,7 +3,12 @@ import type { Sql } from 'postgres';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import * as schema from '../src/db/schema';
-import { seedProduccion } from '../src/db/seed-prod';
+import {
+  contrasenasCompartidas,
+  seedProduccion,
+  type CredencialCreada,
+  type CuentaInicial,
+} from '../src/db/seed-prod';
 import { makeTestClient, resetTestDatabase } from './helpers/db';
 
 /**
@@ -35,9 +40,9 @@ afterAll(async () => {
   if (sql) await sql.end();
 });
 
-const ADMINS = [
-  { name: 'Persona Uno', email: 'uno@enactuscolombia.org' },
-  { name: 'Persona Dos', email: 'dos@enactuscolombia.org' },
+const ADMINS: CuentaInicial[] = [
+  { name: 'Persona Uno', email: 'uno@enactuscolombia.org', role: 'superadmin' },
+  { name: 'Persona Dos', email: 'dos@enactuscolombia.org', role: 'superadmin' },
 ];
 
 describe('seed:prod', () => {
@@ -128,5 +133,106 @@ describe('seed:prod', () => {
 
     const [usuario] = await db.select().from(schema.users);
     expect(await verifyPassword(credencial!.password, usuario!.passwordHash)).toBe(true);
+  });
+});
+
+describe('roles y contraseñas elegidas', () => {
+  it('crea admins además de superadmins, con el rol que dice el archivo', async () => {
+    // El equipo real no es solo superadmins: hay una cuenta de arranque y
+    // varias de administración. Si todas quedaran como superadmin, cualquiera
+    // de ellas podría restaurar un respaldo encima de la base entera.
+    const db = await conBase();
+    await seedProduccion(db, [
+      { name: 'Sistemas', email: 'sistemas@ejemplo.org', role: 'superadmin' },
+      { name: 'Una', email: 'una@ejemplo.org', role: 'admin' },
+      { name: 'Otra', email: 'otra@ejemplo.org', role: 'admin' },
+    ]);
+
+    const usuarios = await db.select().from(schema.users);
+    const porRol = usuarios.reduce<Record<string, number>>((acc, u) => {
+      acc[u.role] = (acc[u.role] ?? 0) + 1;
+      return acc;
+    }, {});
+    expect(porRol).toEqual({ superadmin: 1, admin: 2 });
+  });
+
+  it('respeta la contraseña elegida y la marca como tal', async () => {
+    const db = await conBase();
+    const [credencial] = await seedProduccion(db, [
+      {
+        name: 'Sistemas',
+        email: 'sistemas@ejemplo.org',
+        role: 'superadmin',
+        password: 'UnaClaveLargaDeVerdad2026$',
+      },
+    ]);
+
+    expect(credencial!.password).toBe('UnaClaveLargaDeVerdad2026$');
+    expect(credencial!.elegida).toBe(true);
+  });
+
+  it('la contraseña elegida sirve para entrar', async () => {
+    const { verifyPassword } = await import('../src/lib/password');
+    const db = await conBase();
+    await seedProduccion(db, [
+      {
+        name: 'Sistemas',
+        email: 'sistemas@ejemplo.org',
+        role: 'superadmin',
+        password: 'UnaClaveLargaDeVerdad2026$',
+      },
+    ]);
+
+    const [usuario] = await db.select().from(schema.users);
+    expect(
+      await verifyPassword('UnaClaveLargaDeVerdad2026$', usuario!.passwordHash),
+    ).toBe(true);
+  });
+
+  it('mezcla elegidas y generadas sin confundirlas', async () => {
+    const db = await conBase();
+    const credenciales = await seedProduccion(db, [
+      { name: 'Con clave', email: 'con@ejemplo.org', role: 'superadmin', password: 'ClaveElegida2026$' },
+      { name: 'Sin clave', email: 'sin@ejemplo.org', role: 'admin' },
+    ]);
+
+    expect(credenciales.find((c) => c.email === 'con@ejemplo.org')!.elegida).toBe(true);
+    const generada = credenciales.find((c) => c.email === 'sin@ejemplo.org')!;
+    expect(generada.elegida).toBe(false);
+    expect(generada.password.length).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe('aviso de contraseñas compartidas', () => {
+  const cred = (email: string, password: string): CredencialCreada => ({
+    email,
+    role: 'admin',
+    password,
+    elegida: true,
+  });
+
+  it('agrupa las cuentas que comparten contraseña', () => {
+    // Una clave compartida borra la diferencia entre esas cuentas: una
+    // filtración las compromete todas a la vez, y ninguna puede sostener
+    // después que no fue ella.
+    const grupos = contrasenasCompartidas([
+      cred('una@ejemplo.org', 'LaMismaClave2026$'),
+      cred('otra@ejemplo.org', 'LaMismaClave2026$'),
+      cred('tercera@ejemplo.org', 'LaMismaClave2026$'),
+      cred('sola@ejemplo.org', 'UnaClavePropia2026$'),
+    ]);
+
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0]).toHaveLength(3);
+    expect(grupos[0]).not.toContain('sola@ejemplo.org');
+  });
+
+  it('no avisa cuando cada cuenta tiene la suya', () => {
+    expect(
+      contrasenasCompartidas([
+        cred('una@ejemplo.org', 'ClavePropiaUna2026$'),
+        cred('otra@ejemplo.org', 'ClavePropiaOtra2026$'),
+      ]),
+    ).toHaveLength(0);
   });
 });

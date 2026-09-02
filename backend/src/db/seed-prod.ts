@@ -14,7 +14,7 @@ import { COMPETENCIES, LABS, ODS } from './seed';
 
 /**
  * Seed de PRODUCCIÓN. Lo mínimo para que la plataforma exista y nada más:
- * los super admins reales, los 6 laboratorios y los dos catálogos.
+ * las cuentas de administración reales, los 6 laboratorios y los catálogos.
  *
  * Es el hermano serio de `db:seed`, que siembra datos de demostración —
  * estudiantes inventados, entregas, foro, y cuentas con contraseñas de ejemplo
@@ -22,12 +22,13 @@ import { COMPETENCIES, LABS, ODS } from './seed';
  *
  * Tres decisiones que lo hacen seguro de correr:
  *
- * 1. **Las identidades no están en el código.** Los super admins se leen de un
- *    archivo que se pasa por parámetro. Hardcodearlos significaría tener los
- *    correos de la organización en el repositorio y, peor, invitar a poner
- *    también la contraseña.
- * 2. **Las contraseñas las genera él, al azar, y se imprimen UNA vez.** No hay
- *    contraseña por defecto que alguien pueda adivinar leyendo el repositorio.
+ * 1. **Las identidades no están en el código.** Se leen de un archivo que se
+ *    pasa por parámetro. Hardcodearlas significaría tener los correos de la
+ *    organización en el repositorio y, peor, invitar a poner también las
+ *    contraseñas.
+ * 2. **Si no se indica contraseña, la genera al azar** y la imprime UNA vez.
+ *    No hay contraseña por defecto que alguien pueda adivinar leyendo el
+ *    repositorio.
  * 3. **Se niega a correr sobre una base que ya tiene gente**, salvo `--force`.
  *    Correrlo dos veces por accidente no duplica ni pisa nada.
  *
@@ -35,37 +36,77 @@ import { COMPETENCIES, LABS, ODS } from './seed';
  *
  *     npm run seed:prod -- ./admins.json
  *
- * con un archivo así (NO se versiona):
+ * con un archivo así (NO se versiona, está en .gitignore):
  *
- *     [{ "name": "Nombre Real", "email": "persona@enactuscolombia.org" }]
+ *     [
+ *       { "name": "Nombre Real", "email": "persona@enactuscolombia.org",
+ *         "role": "superadmin" },
+ *       { "name": "Otra Persona", "email": "otra@enactuscolombia.org",
+ *         "role": "admin", "password": "la-que-eligieron" }
+ *     ]
  */
 
 type Db = ReturnType<typeof drizzle<typeof s>>;
 
-const adminsSchema = z
-  .array(
-    z.object({
-      name: z.string().trim().min(1, 'Cada admin necesita nombre.'),
-      email: z.email('Correo inválido.'),
-    }),
-  )
-  .min(1, 'Hace falta al menos un super admin: si no, nadie puede entrar.');
-
 /**
- * Contraseña inicial: 24 caracteres de `randomBytes`, en base64url.
+ * Piso de 12 caracteres para una contraseña elegida a mano.
  *
- * Se entrega por un canal seguro y se cambia al primer ingreso. Ojo con esto
- * último: **hoy la plataforma no obliga al cambio** — no existe el campo que
- * lo marcaría. Está anotado en REVISION_FINAL.md como casilla abierta; hasta
- * que exista, el cambio es un acuerdo con la persona, no algo que el sistema
- * garantice.
+ * `createBody` de `/users` acepta 6, que está bien para dar de alta a un
+ * estudiante desde la plataforma —esa cuenta la crea alguien ya autenticado y
+ * no abre nada—. Acá no: estas son las cuentas que administran la plataforma
+ * entera y se crean antes de que exista cualquier otro control. El piso es más
+ * alto a propósito.
  */
-const contrasenaInicial = () => randomBytes(18).toString('base64url');
+const CARACTERES_MINIMOS = 12;
+
+const cuentaSchema = z.object({
+  name: z.string().trim().min(1, 'Cada cuenta necesita nombre.'),
+  email: z.email('Correo inválido.'),
+  /**
+   * Por defecto `superadmin`: si el archivo no dice el rol, la intención más
+   * probable es la cuenta de arranque. Equivocarse hacia arriba se ve y se
+   * corrige; equivocarse hacia abajo deja la plataforma sin quien administre.
+   */
+  role: z.enum(['superadmin', 'admin']).default('superadmin'),
+  /** Si no viene, se genera una al azar y se imprime al final. */
+  password: z
+    .string()
+    .min(
+      CARACTERES_MINIMOS,
+      `Una contraseña de administración necesita al menos ${CARACTERES_MINIMOS} caracteres.`,
+    )
+    .optional(),
+});
+
+export type CuentaInicial = z.infer<typeof cuentaSchema>;
+
+const adminsSchema = z
+  .array(cuentaSchema)
+  .min(1, 'Hace falta al menos una cuenta: si no, nadie puede entrar.')
+  .refine(
+    (cuentas) => cuentas.some((c) => c.role === 'superadmin'),
+    'Hace falta al menos un superadmin: es el único rol que puede restaurar un respaldo.',
+  )
+  .refine((cuentas) => {
+    const correos = cuentas.map((c) => c.email.trim().toLowerCase());
+    return new Set(correos).size === correos.length;
+  }, 'Hay correos repetidos en el archivo.');
+
+/** Contraseña generada: 24 caracteres de `randomBytes`, en base64url. */
+const contrasenaGenerada = () => randomBytes(18).toString('base64url');
+
+export interface CredencialCreada {
+  email: string;
+  role: 'superadmin' | 'admin';
+  password: string;
+  /** `true` si la eligió quien corrió el comando, `false` si la generamos. */
+  elegida: boolean;
+}
 
 export async function seedProduccion(
   db: Db,
-  admins: { name: string; email: string }[],
-): Promise<{ email: string; password: string }[]> {
+  cuentas: CuentaInicial[],
+): Promise<CredencialCreada[]> {
   // --- catálogos: son datos objetivos, iguales en cualquier entorno ---
   await db.insert(s.odsGoals).values(
     ODS.map((title, i) => ({ code: `ods_${i + 1}`, number: i + 1, title })),
@@ -102,23 +143,46 @@ export async function seedProduccion(
     ),
   );
 
-  // --- super admins ---
-  const credenciales: { email: string; password: string }[] = [];
+  // --- cuentas de administración ---
+  const credenciales: CredencialCreada[] = [];
   const filas: (typeof s.users.$inferInsert)[] = [];
-  for (const admin of admins) {
-    const password = contrasenaInicial();
-    credenciales.push({ email: admin.email, password });
+  for (const cuenta of cuentas) {
+    const password = cuenta.password ?? contrasenaGenerada();
+    credenciales.push({
+      email: cuenta.email,
+      role: cuenta.role,
+      password,
+      elegida: cuenta.password !== undefined,
+    });
     filas.push({
-      name: admin.name,
-      email: admin.email,
+      name: cuenta.name,
+      email: cuenta.email,
       passwordHash: await hashPassword(password),
-      role: 'superadmin',
+      role: cuenta.role,
       joinedAt: new Date(),
     });
   }
   await db.insert(s.users).values(filas);
 
   return credenciales;
+}
+
+/**
+ * Contraseñas repetidas entre cuentas distintas.
+ *
+ * No aborta: es una decisión de quien opera, no un error de formato. Pero se
+ * dice, porque una clave compartida por varias personas borra la diferencia
+ * entre esas cuentas — una filtración las compromete todas a la vez, y ninguna
+ * puede sostener después que no fue ella.
+ */
+export function contrasenasCompartidas(
+  credenciales: CredencialCreada[],
+): string[][] {
+  const porClave = new Map<string, string[]>();
+  for (const c of credenciales) {
+    porClave.set(c.password, [...(porClave.get(c.password) ?? []), c.email]);
+  }
+  return [...porClave.values()].filter((correos) => correos.length > 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,15 +196,18 @@ async function main() {
 
   if (!ruta) {
     throw new Error(
-      'Falta el archivo de super admins.\n\n' +
+      'Falta el archivo de cuentas.\n\n' +
         '  npm run seed:prod -- ./admins.json\n\n' +
         'Contenido esperado:\n' +
-        '  [{ "name": "Nombre Real", "email": "persona@enactuscolombia.org" }]\n\n' +
+        '  [{ "name": "Nombre Real", "email": "persona@enactuscolombia.org",\n' +
+        '     "role": "superadmin" }]\n\n' +
+        '`role` es "superadmin" o "admin" (por defecto superadmin).\n' +
+        '`password` es opcional: sin ella se genera una al azar.\n\n' +
         'Ese archivo NO se versiona.',
     );
   }
 
-  const admins = adminsSchema.parse(
+  const cuentas = adminsSchema.parse(
     JSON.parse(readFileSync(ruta, 'utf8')) as unknown,
   );
 
@@ -161,18 +228,40 @@ async function main() {
 
     console.log(`Sembrando producción en ${redactUrl(databaseUrl)}…`);
     console.log(`Entorno: ${env.NODE_ENV}`);
-    const credenciales = await seedProduccion(db, admins);
+    const credenciales = await seedProduccion(db, cuentas);
 
     console.log('\nListo:');
     console.log(`  ${ODS.length} ODS · ${COMPETENCIES.length} competencias`);
     console.log(`  ${LABS.length} laboratorios, con 3 fases cada uno`);
-    console.log(`  ${credenciales.length} super admins\n`);
-    console.log('CONTRASEÑAS INICIALES — se muestran UNA sola vez.');
-    console.log('Entregalas por un canal seguro y pedí el cambio al entrar:\n');
-    for (const c of credenciales) {
-      console.log(`  ${c.email.padEnd(38)} ${c.password}`);
+    console.log(`  ${credenciales.length} cuentas de administración\n`);
+
+    const generadas = credenciales.filter((c) => !c.elegida);
+    if (generadas.length > 0) {
+      console.log('CONTRASEÑAS GENERADAS — se muestran UNA sola vez.');
+      console.log('Entregalas por un canal seguro:\n');
+      for (const c of generadas) {
+        console.log(`  ${c.role.padEnd(10)} ${c.email.padEnd(38)} ${c.password}`);
+      }
+      console.log('');
     }
-    console.log('');
+
+    const elegidas = credenciales.filter((c) => c.elegida);
+    if (elegidas.length > 0) {
+      console.log('Cuentas con contraseña elegida (no se muestra):\n');
+      for (const c of elegidas) {
+        console.log(`  ${c.role.padEnd(10)} ${c.email}`);
+      }
+      console.log('');
+    }
+
+    for (const compartida of contrasenasCompartidas(credenciales)) {
+      console.log(
+        `AVISO: ${compartida.length} cuentas comparten la misma contraseña:\n` +
+          compartida.map((e) => `  · ${e}`).join('\n') +
+          '\n  Una filtración las compromete a todas, y ninguna puede sostener\n' +
+          '  después que no fue ella. Conviene una distinta por persona.\n',
+      );
+    }
   } finally {
     await sql.end();
   }

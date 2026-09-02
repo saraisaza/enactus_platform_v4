@@ -10,7 +10,7 @@ Cuenta: `158151706149` · Región principal: `us-east-1`
 
 ## Estado real de la infraestructura
 
-Relevado con `aws` CLI el 1 de septiembre de 2026.
+Relevado con `aws` CLI el 1 de septiembre de 2026, revisado el 2.
 
 | Recurso | Estado |
 |---|---|
@@ -23,8 +23,9 @@ Relevado con `aws` CLI el 1 de septiembre de 2026.
 | RDS | ❌ **no existe** — 0 instancias en 6 regiones, 0 snapshots |
 | Secrets Manager | ❌ vacío |
 | Lambda / API Gateway / CloudFront | ❌ no existen |
-| Alarmas de AWS Budgets | ❌ ninguna |
-| Roles IAM | ❌ ninguno (no hay rol de ejecución ni de OIDC) |
+| Alarmas de AWS Budgets | ✅ 4 avisos — ver abajo |
+| Rol OIDC `enactus-github-deploy` | ✅ existe, sin llave |
+| Rol de ejecución de la Lambda | ❌ no existe (no hay Lambda) |
 
 Es decir: **la plataforma todavía no está desplegada en ningún entorno.** Lo
 que existe es el dominio, el certificado y el almacenamiento.
@@ -247,22 +248,43 @@ cada 15 minutos) no mira la IP y sigue funcionando igual.
 npm run seed:prod -- ./admins.json
 ```
 
-con un archivo que **no se versiona** (está en `.gitignore`):
+con un archivo que **no se versiona** (está en `.gitignore` y conviene dejarlo
+en `chmod 600`):
 
 ```json
-[{ "name": "Nombre Real", "email": "persona@enactuscolombia.org" }]
+[
+  { "name": "Nombre Real", "email": "persona@enactuscolombia.org",
+    "role": "superadmin" },
+  { "name": "Otra Persona", "email": "otra@enactuscolombia.org",
+    "role": "admin", "password": "la-que-eligieron" }
+]
 ```
 
+- **`role`** es `superadmin` o `admin`; por defecto `superadmin`. La diferencia
+  que importa: solo un superadmin puede **restaurar un respaldo** encima de la
+  base entera, y solo un superadmin puede crear otro superadmin. Los admin
+  hacen el resto del trabajo de administración.
+- **`password`** es opcional. Sin ella se genera una al azar de 24 caracteres y
+  se imprime **una sola vez**. Con ella, se usa tal cual — con un piso de 12
+  caracteres, más alto que los 6 que acepta `POST /users`, porque estas cuentas
+  se crean antes de que exista cualquier otro control.
+
 Deja exactamente: los 17 ODS, las 12 competencias, los 6 laboratorios con sus
-3 fases vacías y sin plazos, y los super admins. Nada más — ni proyectos, ni
-cursos, ni entregas, ni foro.
+3 fases vacías y sin plazos, y las cuentas de administración. Nada más — ni
+proyectos, ni cursos, ni entregas, ni foro.
 
-Las contraseñas las genera al azar (24 caracteres) y **las imprime una sola
-vez**. Se entregan por un canal seguro. Ojo: hoy la plataforma **no obliga** a
-cambiarlas al primer ingreso — no existe el campo que lo marcaría. Ver casilla
-abierta 2 en `REVISION_FINAL.md`.
+Se niega a correr sobre una base que ya tiene usuarios, salvo `--force`. Y
+avisa —sin abortar— si dos cuentas comparten contraseña: una clave compartida
+borra la diferencia entre esas cuentas, así que una filtración las compromete
+todas a la vez y ninguna puede sostener después que no fue ella.
 
-Se niega a correr sobre una base que ya tiene usuarios, salvo `--force`.
+**Borrá el archivo cuando termines.** Una vez sembrada la base, las
+contraseñas ya están hasheadas adentro; el archivo solo sigue siendo una copia
+en claro esperando a que alguien la encuentre.
+
+Ojo: hoy la plataforma **no obliga** a cambiar la contraseña al primer ingreso
+— no existe el campo que lo marcaría. Ver casilla abierta 2 en
+`REVISION_FINAL.md`.
 
 ---
 

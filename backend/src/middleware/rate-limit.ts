@@ -29,18 +29,26 @@ export function resetRateLimits(): void {
 export function rateLimit(options: {
   max: number;
   windowMs: number;
+  /**
+   * Si la clave necesita mirar el cuerpo. `false` en el límite general: es
+   * middleware global y la mayoría de las peticiones son GET sin cuerpo —
+   * intentar parsearlo en cada una sería trabajo puro por nada.
+   */
+  readsBody?: boolean;
   /** Cómo se agrupa: por IP, o por IP + correo del cuerpo. */
   keyOf: (c: { get: (k: 'requestIp') => string }, body: unknown) => string;
 }) {
   return createMiddleware<AppEnv>(async (c, next) => {
     // El cuerpo se lee acá y se cachea: Hono permite volver a leerlo después.
     let body: unknown = undefined;
-    try {
-      body = await c.req.json();
-    } catch {
-      // Sin cuerpo JSON: se limita solo por IP. No es un error todavía —
-      // la validación con zod lo va a rechazar más adelante con su mensaje.
-      body = undefined;
+    if (options.readsBody !== false) {
+      try {
+        body = await c.req.json();
+      } catch {
+        // Sin cuerpo JSON: se limita solo por IP. No es un error todavía —
+        // la validación con zod lo va a rechazar más adelante con su mensaje.
+        body = undefined;
+      }
     }
 
     const key = options.keyOf(c, body);

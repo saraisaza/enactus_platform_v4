@@ -94,17 +94,116 @@ de ciclo de vida que expire versiones no actuales a los 30–90 días.
 
 ---
 
-## Pendiente de decisión
+## Presupuesto y alarmas de costo
 
-Estas tres bloquean el resto del despliegue y no las puedo resolver solo:
+Existe **antes** que cualquier recurso facturable, a propósito.
 
-1. **Correo para las alarmas de AWS Budgets.** No hay ninguna alarma y el
-   presupuesto está sin configurar. Es lo primero que debería existir antes de
-   crear nada facturable.
-2. **Pooling a Postgres: RDS Proxy (~US$15/mes) o driver serverless.** El Proxy
-   cuesta más que la propia instancia `db.t4g.micro` que se está ahorrando al
-   compartirla entre entornos. Para la concurrencia esperada, `postgres.js` con
-   `max: 1` y prepared statements apagados alcanza.
-3. **Un perfil que no sea root para desplegar.** Todo lo de arriba se hizo con
-   la credencial de root, que además **no tiene MFA**. Activar MFA en root solo
-   lo puede hacer una persona.
+```
+Presupuesto  enactus-mensual · US$100/mes · tipo COST
+Avisos       gasto real > $20, > $50, > $100  (valor absoluto)
+             PRONÓSTICO > 80% del presupuesto (≈ $80)
+Destino      sistemas@enactuscolombia.org
+```
+
+El aviso por **pronóstico** es el que sirve: los tres por gasto real llegan
+cuando la plata ya se gastó; el de pronóstico avisa cuando AWS proyecta que el
+mes va a cerrar por encima, con días de margen para apagar algo.
+
+```bash
+aws budgets describe-notifications-for-budget \
+  --account-id 158151706149 --budget-name enactus-mensual
+```
+
+---
+
+## Identidades
+
+Root queda **solo** para lo que exige root: facturación y cierre de cuenta.
+
+| Identidad | Para qué | Credencial |
+|---|---|---|
+| `enactus-deploy` (usuario) | operar la infraestructura desde la CLI | llave en `~/.aws`, perfil `enactus-deploy` |
+| `enactus-github-deploy` (rol) | el pipeline | **ninguna** — OIDC |
+| `enactus-s3-dev` (usuario) | el backend en local contra S3 | llave en `backend/.env` |
+| root | facturación | sin llave de acceso ✅ |
+
+### El rol de GitHub no tiene llave
+
+```
+arn:aws:iam::158151706149:role/enactus-github-deploy
+proveedor OIDC: token.actions.githubusercontent.com
+```
+
+La confianza está acotada a **ramas y entornos concretos**, no a
+`repo:owner/repo:*`:
+
+```
+repo:saraisaza/enactus_platform_v2:ref:refs/heads/main
+repo:saraisaza/enactus_platform_v2:ref:refs/heads/develop
+repo:saraisaza/enactus_platform_v2:environment:staging
+repo:saraisaza/enactus_platform_v2:environment:produccion
+```
+
+La diferencia importa: con `:*` cualquier workflow del repositorio puede
+asumir el rol, incluido el que corre sobre un *pull request* — y un PR lo abre
+cualquiera. Acotado a las dos ramas de despliegue, un PR no alcanza el rol
+aunque el workflow lo intente.
+
+En GitHub no hay ningún secreto de AWS que guardar: el workflow pide un token
+al proveedor OIDC y lo cambia por credenciales temporales.
+
+### `enactus-deploy` tiene `PowerUserAccess`, no administrador
+
+`PowerUserAccess` cubre todos los servicios y **excluye IAM**. Encima lleva una
+política propia (`enactus-roles-de-servicio`) que permite crear y pasar roles
+**solo** bajo el prefijo `enactus-*` y los roles vinculados a servicios.
+
+Así puede crear el rol de ejecución de la Lambda —que hace falta— pero no
+crearse un usuario nuevo ni ampliarse los permisos. Comprobado:
+
+```
+$ aws iam create-user --user-name prueba-de-limite --profile enactus-deploy
+AccessDenied: not authorized to perform: iam:CreateUser
+```
+
+---
+
+## Concurrencia y conexiones
+
+**Sin RDS Proxy.** Cuesta ~US$15/mes, más que la propia instancia
+`db.t4g.micro`, y con la concurrencia esperada no aporta.
+
+En su lugar, dos medidas que se complementan:
+
+1. **`postgres.js` con `max: 1` y `prepare: false` en producción**
+   (`src/db/connection.ts`). Cada invocación de Lambda es un proceso aislado:
+   un pool grande por proceso no aporta nada y sí multiplica las conexiones.
+2. **`reserved concurrency` de la Lambda fijada en 40.** Es la válvula. Sin
+   ese tope, un pico crea contenedores sin límite y **cada uno abre su
+   conexión**; una `db.t4g.micro` aguanta ~100 y se agota — y cuando se agota
+   no falla solo el pico, falla todo, incluido el login de quien ya estaba
+   adentro. Con el tope, es imposible por construcción: 40 contenedores × 1
+   conexión = 40, menos de la mitad del techo.
+
+Los prepared statements se apagan aunque con conexión directa no molesten:
+si algún día hay que meter un pooler en modo transacción, se rompen ahí. Vale
+más que ese cambio sea de configuración y no de código.
+
+**Si 40 deja de alcanzar** —error `Rate Exceeded` o `429` en la Lambda, o
+latencia por espera de concurrencia— la respuesta NO es subir el tope sin más:
+subirlo acerca las conexiones al techo de la base. Ahí se reevalúa, en este
+orden:
+
+1. Subir a `db.t4g.small` (~US$14 más al mes, duplica memoria y conexiones).
+2. Recién entonces, RDS Proxy: mantiene un pool compartido y desacopla la
+   concurrencia de la Lambda del número de conexiones.
+
+---
+
+## Pendiente
+
+- **MFA en root.** Solo lo puede activar una persona.
+- **Confirmar el repositorio de GitHub.** La confianza del rol apunta a
+  `saraisaza/enactus_platform_v2`, que es lo que dice `git remote`. Si el
+  repositorio de despliegue es otro, hay que actualizar la política de
+  confianza o el pipeline no va a poder asumir el rol.

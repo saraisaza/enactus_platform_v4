@@ -14,8 +14,24 @@ import { databaseUrl, env } from '../env';
  * ~80-100 en total (ver AUDITORIA_BACKEND.md, observación 2).
  */
 export function createClient(url: string = databaseUrl) {
+  const enLambda = env.NODE_ENV === 'production';
+
   return postgres(url, {
-    max: env.NODE_ENV === 'production' ? 1 : 5,
+    max: enLambda ? 1 : 5,
+    // Sin prepared statements en producción.
+    //
+    // Con conexión directa a RDS no molestan —incluso son más rápidos—, así
+    // que la razón no es rendimiento: es dejar abierta la salida de
+    // emergencia. Si la concurrencia supera el tope de la Lambda y hace falta
+    // meter un pooler adelante (RDS Proxy o pgbouncer en modo transacción),
+    // los prepared statements se rompen ahí: el pooler reparte la misma
+    // conexión física entre transacciones distintas y el `statement` con
+    // nombre ya no existe donde se lo espera.
+    //
+    // Apagarlos hoy hace que ese cambio sea de configuración y no de código,
+    // y evita descubrir el problema el día que haga falta escalar — que es
+    // justo el peor día. Ver "Concurrencia y conexiones" en RUNBOOK.md.
+    prepare: !enLambda,
     idle_timeout: 20,
     connect_timeout: 10,
     // Por defecto postgres.js vuelca el objeto entero de cada NOTICE, y un

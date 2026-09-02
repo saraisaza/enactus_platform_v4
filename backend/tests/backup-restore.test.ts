@@ -104,15 +104,15 @@ describe('respaldo → destrucción → restauración', () => {
     // El driver convierte un objeto de JavaScript con `String(...)` si no se
     // serializa antes: `profile` llegaba a PostgreSQL como el literal
     // `[object Object]` y el perfil del LXD quedaba en basura.
-    const [{ corruptos }] = await sql`
-      select count(*)::int as corruptos from users
+    const corruptos = await sql<{ total: number }[]>`
+      select count(*)::int as total from users
        where profile::text like '%object Object%'`;
-    expect(corruptos).toBe(0);
+    expect(corruptos[0]?.total).toBe(0);
 
-    const [lxd] = await sql`
+    const lxd = await sql<{ cargo: string }[]>`
       select profile->>'position' as cargo from users
        where email = 'lxd.ia@enactus.co'`;
-    expect(lxd!.cargo).toBe('Líder de Ciencia de Datos');
+    expect(lxd[0]?.cargo).toBe('Líder de Ciencia de Datos');
   });
 
   it('el archivo de respaldo NO lleva contraseñas ni sesiones', async () => {

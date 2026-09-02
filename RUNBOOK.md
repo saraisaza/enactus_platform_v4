@@ -138,10 +138,10 @@ La confianza está acotada a **ramas y entornos concretos**, no a
 `repo:owner/repo:*`:
 
 ```
-repo:saraisaza/enactus_platform_v2:ref:refs/heads/main
-repo:saraisaza/enactus_platform_v2:ref:refs/heads/develop
-repo:saraisaza/enactus_platform_v2:environment:staging
-repo:saraisaza/enactus_platform_v2:environment:produccion
+repo:saraisaza/enactus_platform_v4:ref:refs/heads/main
+repo:saraisaza/enactus_platform_v4:ref:refs/heads/develop
+repo:saraisaza/enactus_platform_v4:environment:staging
+repo:saraisaza/enactus_platform_v4:environment:produccion
 ```
 
 La diferencia importa: con `:*` cualquier workflow del repositorio puede
@@ -203,7 +203,20 @@ orden:
 ## Pendiente
 
 - **MFA en root.** Solo lo puede activar una persona.
-- **Confirmar el repositorio de GitHub.** La confianza del rol apunta a
-  `saraisaza/enactus_platform_v2`, que es lo que dice `git remote`. Si el
-  repositorio de despliegue es otro, hay que actualizar la política de
-  confianza o el pipeline no va a poder asumir el rol.
+- **Repuntar `origin` a v4.** La confianza del rol ya apunta a
+  `enactus_platform_v4`, pero el checkout local todavía tiene `origin` en
+  `enactus_platform_v2`. Existen los DOS repositorios, así que no es un enlace
+  roto: es apuntar al equivocado.
+
+  `v4` es el correcto — su `main` (38 commits, `01f3395`) es **ancestro
+  directo** del HEAD local, que tiene esos 38 más 52 nuevos. `v2` tiene 5
+  commits y una rama `gh-pages`, y no comparte esa historia.
+
+  ```bash
+  git remote set-url origin https://github.com/saraisaza/enactus_platform_v4.git
+  git fetch origin
+  git merge-base --is-ancestor origin/main HEAD && echo "fast-forward limpio"
+  ```
+
+  Nunca se hizo `push`, así que no hay nada publicado en el repositorio
+  equivocado.

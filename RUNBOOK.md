@@ -203,10 +203,22 @@ orden:
 ## Pendiente
 
 - **MFA en root.** Solo lo puede activar una persona.
-- **Repuntar `origin` a v4.** La confianza del rol ya apunta a
-  `enactus_platform_v4`, pero el checkout local todavía tiene `origin` en
-  `enactus_platform_v2`. Existen los DOS repositorios, así que no es un enlace
-  roto: es apuntar al equivocado.
+- **Publicar el trabajo.** `origin` ya apunta a
+  `saraisaza/enactus_platform_v4` y el HEAD local está **53 commits adelante,
+  0 atrás**: sería un fast-forward limpio, sin `--force`.
+
+  No se hizo `push` todavía a propósito: la Fase 6 pide *branch protection* en
+  `main` con PR obligatorio y sin push directo. Subir 53 commits directo a
+  `main` sería estrenar la convención rompiéndola. El camino que corresponde:
+
+  ```bash
+  git switch -c feature/backend-y-migracion
+  git push -u origin feature/backend-y-migracion
+  # y abrir el PR contra main
+  ```
+
+  Hasta que exista el pipeline, el PR no tiene CI que lo valide — pero deja la
+  historia revisable y `main` protegido desde el primer día.
 
   `v4` es el correcto — su `main` (38 commits, `01f3395`) es **ancestro
   directo** del HEAD local, que tiene esos 38 más 52 nuevos. `v2` tiene 5

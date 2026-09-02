@@ -1,8 +1,15 @@
 # Infraestructura de AWS
 
 Los archivos de esta carpeta son **configuración, no secretos**. Ninguna llave,
-ningún token: las credenciales viven en `backend/.env` (que está en
-`.gitignore`) y, en producción, en Secrets Manager.
+ningún token.
+
+Los secretos van en dos lugares distintos, y conviene no mezclarlos:
+
+- **Los que la aplicación lee** (`JWT_SECRET`, `CLOUDFRONT_PRIVATE_KEY`) — en
+  `backend/.env` en local, en Secrets Manager en AWS.
+- **Las credenciales de AWS** — en `backend/.env` en local y **en ningún lado**
+  en AWS: las inyecta el runtime de Lambda desde el rol de ejecución. Ver
+  "La Lambda SÍ tiene `AWS_ACCESS_KEY_ID` en su entorno", más abajo.
 
 ---
 
@@ -70,6 +77,11 @@ firmar, así que el prefijo es una segunda defensa, no la única.
 
 ### Cómo se aplica
 
+El mismo documento de política se usa de dos formas distintas según dónde
+corra el backend. **Solo una de las dos tiene llave.**
+
+**En local — usuario IAM con llave:**
+
 ```bash
 aws iam create-user --user-name enactus-backend-dev
 aws iam put-user-policy \
@@ -80,8 +92,35 @@ aws iam create-access-key --user-name enactus-backend-dev
 ```
 
 La llave que devuelve el último comando va a `backend/.env`
-(`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`) en local y a Secrets Manager en
-AWS. **Nunca al repositorio.**
+(`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`). **Nunca al repositorio.**
+
+**En AWS — el mismo JSON, pero sobre el ROL de ejecución de la Lambda:**
+
+```bash
+aws iam put-role-policy \
+  --role-name enactus-backend-lambda \
+  --policy-name enactus-media-dev-s3 \
+  --policy-document file://backend/infra/s3-policy.json
+```
+
+Acá no se crea ninguna llave y **no se guarda ninguna en Secrets Manager**.
+Secrets Manager es para `JWT_SECRET` y `CLOUDFRONT_PRIVATE_KEY`, que sí son
+secretos que la aplicación necesita leer; las credenciales de AWS no.
+
+#### La Lambda SÍ tiene `AWS_ACCESS_KEY_ID` en su entorno
+
+Vale la pena decirlo explícito, porque "usa un rol" se lee fácil como "no tiene
+credenciales" — y de ahí a ponérselas a mano hay un paso.
+
+El runtime de Lambda inyecta `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` y
+`AWS_SESSION_TOKEN` en cada invocación, derivadas del rol de ejecución. Son
+**temporales y se rotan solas**, y el SDK las toma del entorno sin que haya que
+configurar nada.
+
+Lo que **no** se puede hacer es declararlas como variables de entorno propias
+de la función: Lambda reserva esos tres nombres y rechaza el deploy. Y aunque
+se pudiera, meter ahí la llave larga del usuario de desarrollo cambiaría una
+credencial temporal y rotada por una permanente — al revés de lo que se busca.
 
 Después, y esto es la mitad que importa:
 

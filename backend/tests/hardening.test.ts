@@ -256,6 +256,21 @@ describe('los errores no filtran nada de adentro', () => {
     }
   });
 
+  it('un cuerpo que no es JSON da 400, no 500', async () => {
+    // Un 500 acá no filtra nada, pero miente sobre de quién es la culpa: es un
+    // error del cliente contado como caída del servidor. Ensucia la tasa de
+    // 5xx —la señal sobre la que se montan las alarmas— y una alarma que
+    // suena por el JSON mal armado de alguien enseña a ignorarla.
+    const res = await app.request('/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{esto no es json',
+    });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe('invalid_json');
+  });
+
   it('un 401 no dice si la cuenta existe', async () => {
     const inexistente = await app.request(
       '/auth/login',

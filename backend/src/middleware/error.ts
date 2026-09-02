@@ -65,6 +65,23 @@ export function onError(error: Error, c: Context): Response {
     );
   }
 
+  // Cuerpo que no es JSON válido. Es un error de QUIEN LLAMA, no una caída:
+  // devolvía 500 «error inesperado», y eso tiene dos costos concretos —
+  // ensucia la tasa de 5xx, que es la señal sobre la que se van a montar las
+  // alarmas, y una alarma que suena por el JSON mal armado de un cliente
+  // enseña a ignorarla. Se responde 400, como cualquier otro dato inválido.
+  if (esJsonMalFormado(error)) {
+    return c.json(
+      {
+        error: {
+          code: 'invalid_json',
+          message: 'El cuerpo de la petición no es JSON válido.',
+        },
+      },
+      400,
+    );
+  }
+
   if (error instanceof HTTPException) {
     return c.json(
       { error: { code: 'http_error', message: error.message } },
@@ -85,6 +102,21 @@ export function onError(error: Error, c: Context): Response {
       },
     },
     500,
+  );
+}
+
+/**
+ * ¿El cuerpo venía mal armado?
+ *
+ * `c.req.json()` levanta un `SyntaxError` cuando el JSON no parsea. Se exige
+ * además que el mensaje hable de JSON: `SyntaxError` a secas también lo lanza
+ * un bug nuestro, y ese sí tiene que seguir siendo un 500 ruidoso — degradarlo
+ * a 400 escondería un error real detrás de un código que nadie mira.
+ */
+function esJsonMalFormado(error: unknown): boolean {
+  return (
+    error instanceof SyntaxError &&
+    /JSON|Unexpected (token|end of)/i.test(error.message)
   );
 }
 

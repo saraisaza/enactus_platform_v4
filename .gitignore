@@ -55,3 +55,7 @@ app.*.map.json
 /graphify-out/
 
 echo ".dev.vars" >> .gitignore
+
+# Identidades reales de los super admins para seed:prod. Nunca al repo.
+admins.json
+backend/admins.json

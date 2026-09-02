@@ -17,6 +17,7 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:rollback": "tsx src/db/rollback.ts",
     "db:seed": "tsx src/db/seed.ts",
+    "seed:prod": "tsx src/db/seed-prod.ts",
     "db:reset": "tsx src/db/reset.ts",
     "dev": "tsx watch src/local.ts"
   },

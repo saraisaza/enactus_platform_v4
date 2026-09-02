@@ -4,7 +4,7 @@ import { hashPassword } from '../lib/password';
 import { createClient, redactUrl } from './connection';
 import { seedId } from './seed-ids';
 import * as s from './schema';
-import { databaseUrl } from '../env';
+import { databaseUrl, env } from '../env';
 
 /**
  * Datos iniciales, equivalentes a `lib/services/seed_service.dart`.
@@ -35,7 +35,7 @@ import { databaseUrl } from '../env';
 
 type Db = ReturnType<typeof drizzle<typeof s>>;
 
-const ODS = [
+export const ODS = [
   'Fin de la pobreza',
   'Hambre cero',
   'Salud y bienestar',
@@ -55,7 +55,7 @@ const ODS = [
   'Alianzas para lograr los objetivos',
 ];
 
-const COMPETENCIES: [string, string][] = [
+export const COMPETENCIES: [string, string][] = [
   ['leadership', 'Liderazgo'],
   ['innovation', 'Innovación'],
   ['entrepreneurship', 'Emprendimiento'],
@@ -332,7 +332,7 @@ async function seedUsers(db: Db) {
 // Laboratorios, fases y módulos de la Ruta de Impacto
 // ---------------------------------------------------------------------------
 
-const LABS: [string, string, string, string][] = [
+export const LABS: [string, string, string, string][] = [
   [
     'lab_ia',
     'Laboratorio IA y Tecnología',
@@ -1119,6 +1119,22 @@ async function seedSiteContent(db: Db) {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  // Este seed siembra datos de DEMOSTRACIÓN: estudiantes inventados, entregas,
+  // evidencias, publicaciones de foro, y cuentas con contraseñas de ejemplo
+  // (`Admin123`, `Est123`). Contra una base de producción con estudiantes
+  // reales eso no es "datos de prueba de más": es contaminación de datos
+  // personales reales con basura, y siete cuentas de contraseña conocida.
+  //
+  // `db:reset` ya se negaba a correr en producción. Este no, y la diferencia
+  // entre una cosa y la otra era un `NODE_ENV` mal puesto en una terminal.
+  if (env.NODE_ENV === 'production') {
+    throw new Error(
+      'db:seed siembra datos de DEMOSTRACIÓN y está bloqueado en producción.\n' +
+        'Para preparar una base de producción se usa `npm run seed:prod`, que ' +
+        'crea solo los super admins reales, los 6 laboratorios y los catálogos.',
+    );
+  }
+
   const sql = createClient(databaseUrl);
   const db = drizzle(sql, { schema: s, casing: 'snake_case' });
   try {

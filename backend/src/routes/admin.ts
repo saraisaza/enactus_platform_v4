@@ -1,9 +1,12 @@
+import { randomBytes } from 'node:crypto';
+
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { auditLog, users } from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
+import { hashPassword } from '../lib/password';
 import { publicUser } from '../lib/dto';
 import {
   ADMIN_ROLES,
@@ -189,6 +192,21 @@ const BACKUP_TABLES = [
   'expo_checklist_items',
 ] as const;
 
+/**
+ * Un valor del JSON, listo para pasarle al driver.
+ *
+ * Las columnas `jsonb` (`profile`, `new_value` del log) vuelven del `select`
+ * como objetos de JavaScript. Pasados tal cual al `insert`, el driver los
+ * convierte con `String(...)` y llegan a PostgreSQL como el literal
+ * `[object Object]`. Se serializan acá.
+ */
+function valorParaSql(valor: unknown): unknown {
+  if (valor !== null && typeof valor === 'object' && !(valor instanceof Date)) {
+    return JSON.stringify(valor);
+  }
+  return valor;
+}
+
 adminRoutes.get('/backup', async (c) => {
   const db = c.get('db');
   const data: Record<string, unknown[]> = {};
@@ -251,6 +269,30 @@ adminRoutes.post('/restore', async (c) => {
   const restored: Record<string, number> = {};
 
   await db.transaction(async (tx) => {
+    // Las contraseñas NO viajan en el archivo —eso es deliberado y correcto:
+    // el respaldo termina en el portátil de alguien, y un hash bcrypt se
+    // rompe sin prisa y sin conexión—. Pero `password_hash` es `not null`, así
+    // que sin ellas el `insert` de `users` fallaba SIEMPRE y, como todo va en
+    // una transacción, la restauración entera se caía. La función existía en
+    // la interfaz y no había funcionado nunca.
+    //
+    // Se resuelve conservando los hashes que YA están en esta base, antes de
+    // borrar nada, y volviéndolos a poner por id. El archivo sigue sin
+    // credenciales y la restauración funciona.
+    const hashesActuales = new Map<string, string>();
+    for (const fila of await tx.execute<{ id: string; password_hash: string }>(
+      sql`select id, password_hash from users`,
+    )) {
+      hashesActuales.set(fila.id, fila.password_hash);
+    }
+
+    // Para una cuenta que está en el respaldo pero ya no en esta base, no hay
+    // hash que recuperar. Se le pone uno imposible de adivinar —derivado de
+    // bytes aleatorios de esta misma ejecución— en vez de dejarla sin
+    // contraseña: la cuenta queda restaurada y visible para administración,
+    // pero no se puede entrar a ella hasta que le asignen una nueva.
+    const hashInservible = await hashPassword(randomBytes(32).toString('hex'));
+
     // En orden inverso, para no chocar con las claves ajenas.
     for (const table of [...BACKUP_TABLES].reverse()) {
       await tx.execute(sql`delete from ${sql.identifier(table)}`);
@@ -259,14 +301,23 @@ adminRoutes.post('/restore', async (c) => {
       const rows = payload.data[table] ?? [];
       restored[table] = rows.length;
       for (const row of rows) {
-        const cols = Object.keys(row);
+        const fila =
+          table === 'users'
+            ? {
+                ...row,
+                password_hash:
+                  hashesActuales.get(String(row.id)) ?? hashInservible,
+              }
+            : row;
+
+        const cols = Object.keys(fila);
         if (cols.length === 0) continue;
         const identifiers = sql.join(
           cols.map((col) => sql.identifier(col)),
           sql`, `,
         );
         const values = sql.join(
-          cols.map((col) => sql`${row[col]}`),
+          cols.map((col) => sql`${valorParaSql(fila[col])}`),
           sql`, `,
         );
         await tx.execute(

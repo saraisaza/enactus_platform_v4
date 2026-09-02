@@ -1,6 +1,7 @@
 import type { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { LIMITE_GENERAL_POR_MINUTO as LIMITE_GENERAL } from '../src/app';
 import { resetRateLimits } from '../src/middleware/rate-limit';
 import { auth, json, login, makeTestApp } from './helpers/app';
 import { seedTestDatabase } from './helpers/db';
@@ -102,7 +103,7 @@ describe('límite moderado en toda la API', () => {
     const pedir = (ip: string) =>
       app.request('/health', { headers: { 'x-forwarded-for': ip } });
 
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < LIMITE_GENERAL; i++) {
       await pedir('203.0.113.7');
     }
     expect((await pedir('203.0.113.7')).status).toBe(429);
@@ -111,10 +112,24 @@ describe('límite moderado en toda la API', () => {
     expect((await pedir('198.51.100.9')).status).toBe(200);
   });
 
+  it('una carga de portal completa NO se topa con el límite', () => {
+    // El número que protege esta prueba: medido con un proxy contador delante
+    // de la API, un portal hace ~19 peticiones al cargar. El límite estaba en
+    // 300/min, o sea ~15 personas por minuto y por IP — y un campus entero
+    // sale por una sola IP. Bajarlo otra vez a ese orden deja sin entrar a una
+    // sala de cómputo, así que el margen se fija acá.
+    const PETICIONES_POR_PORTAL = 19;
+    const PERSONAS_POR_CAMPUS = 40;
+
+    expect(LIMITE_GENERAL).toBeGreaterThanOrEqual(
+      PETICIONES_POR_PORTAL * PERSONAS_POR_CAMPUS,
+    );
+  });
+
   it('el 429 dice cuánto esperar', async () => {
     const pedir = () =>
       app.request('/health', { headers: { 'x-forwarded-for': '203.0.113.8' } });
-    for (let i = 0; i < 300; i++) await pedir();
+    for (let i = 0; i < LIMITE_GENERAL; i++) await pedir();
 
     const res = await pedir();
     expect(res.status).toBe(429);
@@ -123,6 +138,85 @@ describe('límite moderado en toda la API', () => {
     };
     expect(body.error.code).toBe('too_many_requests');
     expect(body.error.details?.retryAfterSeconds).toBeGreaterThan(0);
+  });
+
+  it('rotar x-forwarded-for NO abre la fuerza bruta contra una cuenta', async () => {
+    // El ataque, tal cual se reprodujo con curl contra la API corriendo:
+    // mismo atacante, misma cuenta, una IP declarada distinta por intento.
+    // Antes pasaban 60 de 60 sin un solo 429, porque el único límite se
+    // agrupaba por una IP que el cliente elegía.
+    //
+    // Si alguien vuelve a atar el freno de login solo a la IP, esta prueba
+    // vuelve a ponerse roja.
+    const intentar = (n: number) =>
+      app.request('/auth/login', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': `10.0.${Math.floor(n / 256)}.${n % 256}`,
+        },
+        body: JSON.stringify({
+          email: 'admin@enactus.co',
+          password: `intento-${n}`,
+        }),
+      });
+
+    let frenados = 0;
+    let aceptados = 0;
+    for (let i = 0; i < 40; i++) {
+      if ((await intentar(i)).status === 429) frenados++;
+      else aceptados++;
+    }
+
+    expect(frenados).toBeGreaterThan(0);
+    // 20 fallos por correo cada 15 min: la mitad de 40 tiene que quedar afuera.
+    expect(aceptados).toBeLessThanOrEqual(20);
+  });
+
+  it('la contraseña correcta entra aunque otro haya quemado intentos', async () => {
+    // El contador solo cuenta FALLOS: quien sabe su clave nunca lo toca. Sin
+    // esto, el arreglo de arriba sería un candado contra los propios usuarios.
+    for (let i = 0; i < 15; i++) {
+      await app.request('/auth/login', {
+        ...json({ email: 'lxd.ia@enactus.co', password: `mala-${i}` }),
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': `10.1.0.${i}`,
+        },
+      });
+    }
+
+    const res = await app.request(
+      '/auth/login',
+      json({ email: 'lxd.ia@enactus.co', password: 'Lxd123' }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('entrar bien borra el conteo de fallos de esa cuenta', async () => {
+    const fallar = (i: number) =>
+      app.request('/auth/login', {
+        ...json({ email: 'mentor.ia@enactus.co', password: `mala-${i}` }),
+        headers: {
+          'content-type': 'application/json',
+          'x-forwarded-for': `10.2.0.${i}`,
+        },
+      });
+
+    for (let i = 0; i < 19; i++) await fallar(i);
+
+    // Entra bien → contador a cero.
+    expect(
+      (
+        await app.request(
+          '/auth/login',
+          json({ email: 'mentor.ia@enactus.co', password: 'Mentor123' }),
+        )
+      ).status,
+    ).toBe(200);
+
+    // Y por eso el siguiente fallo es 401 (credenciales), no 429 (frenado).
+    expect((await fallar(99)).status).toBe(401);
   });
 
   it('el de login sigue siendo MUCHO más estricto', async () => {

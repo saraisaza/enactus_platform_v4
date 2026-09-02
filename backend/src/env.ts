@@ -30,6 +30,24 @@ const schema = z.object({
 
   CORS_ORIGIN: z.string().default('http://localhost:8080'),
   PORT: z.coerce.number().int().positive().default(3000),
+
+  /**
+   * Cuántos proxies de confianza hay DELANTE de la aplicación.
+   *
+   * De este número depende de qué entrada de `x-forwarded-for` se saca la IP
+   * del cliente, y de esa IP dependen los dos límites de peticiones. Ponerlo
+   * mal no rompe nada visible — simplemente el límite deja de frenar, en
+   * silencio.
+   *
+   * `0` (el default) significa "no hay proxy": se ignora `x-forwarded-for`
+   * por completo y se usa la IP de la conexión, que el cliente no puede
+   * falsificar. Es el único valor seguro cuando no se sabe.
+   *
+   * Con CloudFront → API Gateway → Lambda son 2. Ver "Cómo se cuenta la IP
+   * del cliente" en RUNBOOK.md, que incluye cómo verificarlo contra el
+   * despliegue real en vez de suponerlo.
+   */
+  TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(4).default(0),
 });
 
 const parsed = schema.safeParse(process.env);

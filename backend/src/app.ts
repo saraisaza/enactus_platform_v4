@@ -4,6 +4,7 @@ import { secureHeaders } from 'hono/secure-headers';
 
 import { db as defaultDb, type Database } from './db/client';
 import { env } from './env';
+import { resolveClientIp } from './lib/client-ip';
 import { onError, onNotFound } from './middleware/error';
 import { rateLimit } from './middleware/rate-limit';
 import type { AppEnv } from './middleware/context';
@@ -36,6 +37,15 @@ import { progressRoutes } from './routes/progress';
 import { siteRoutes } from './routes/site';
 import { studentRoutes } from './routes/students';
 import { submissionRoutes } from './routes/submissions';
+
+/**
+ * Techo de peticiones por minuto y por IP para toda la API.
+ *
+ * Se exporta para que la prueba que lo cuida use ESTE número y no una copia:
+ * una constante duplicada en la prueba se desincroniza el día que alguien
+ * cambie el límite, y la prueba pasa a cuidar un valor que ya no existe.
+ */
+export const LIMITE_GENERAL_POR_MINUTO = 1200;
 
 /**
  * Arma la aplicación. Recibe la conexión por parámetro para que las pruebas
@@ -91,12 +101,11 @@ export function createApp(database: Database = defaultDb) {
 
   app.use('*', async (c, next) => {
     c.set('db', database);
-    c.set(
-      'requestIp',
-      c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
-        c.req.header('x-real-ip') ??
-        '0.0.0.0',
-    );
+    // La IP se resuelve en `lib/client-ip.ts`, NO leyendo la primera entrada
+    // de `x-forwarded-for`: esa la escribe el cliente y con ella los dos
+    // límites de peticiones se saltan rotando una cabecera. Ver el comentario
+    // largo de ese archivo — describe el agujero que había acá.
+    c.set('requestIp', resolveClientIp(c));
     await next();
   });
 
@@ -106,16 +115,29 @@ export function createApp(database: Database = defaultDb) {
   // clave sería `api:undefined` para todo el mundo y el cupo pasaría a ser
   // uno solo compartido por todos los clientes, no uno por IP.
   //
-  // Un portal cargando su pestaña más pesada hace del orden de diez
-  // peticiones; 300 por minuto es holgado para una persona y estrecho para
-  // quien quiera recorrer la API entera. Vale la MISMA limitación que el de
-  // login: el contador vive en memoria del proceso, así que en Lambda cada
-  // instancia tiene el suyo y el tope efectivo se multiplica por la cantidad
-  // de instancias vivas. El límite duro va en API Gateway — ver RUNBOOK.md.
+  // El número sale de una medición, no de una intuición. Un proxy contador
+  // delante de la API mientras corría la suite de contrato del cliente dio
+  // **169 peticiones para 9 portales ≈ 19 por carga de portal**.
+  //
+  // Con 300/min eso son ~15 personas por minuto y por IP. Los usuarios de
+  // esta plataforma son estudiantes en universidades: una sala de cómputo
+  // entera sale por una sola IP pública. Una clase de 30 entrando a la vez
+  // agota el cupo del edificio y el 429 les cae **también en el login** —
+  // caída total para gente legítima, provocada por nosotros.
+  //
+  // 1200/min deja ~60 cargas de portal por minuto por IP, que cubre un
+  // campus, y sigue cortando en seco a quien quiera recorrer la API entera
+  // (un raspador hace miles por minuto, no cientos).
+  //
+  // Vale la MISMA limitación que el de login: el contador vive en memoria del
+  // proceso, así que en Lambda cada instancia tiene el suyo y el tope
+  // efectivo se multiplica por la cantidad de instancias vivas. Esto es una
+  // red de seguridad gruesa; el límite duro va en API Gateway (throttling) —
+  // ver RUNBOOK.md.
   app.use(
     '*',
     rateLimit({
-      max: 300,
+      max: LIMITE_GENERAL_POR_MINUTO,
       windowMs: 60_000,
       readsBody: false,
       keyOf: (c) => `api:${c.get('requestIp')}`,

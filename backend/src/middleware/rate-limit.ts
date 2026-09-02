@@ -26,6 +26,40 @@ export function resetRateLimits(): void {
   buckets.clear();
 }
 
+/**
+ * Segundos que faltan para que la clave vuelva a tener cupo, o `null` si
+ * todavía lo tiene. No consume nada: solo consulta.
+ */
+export function esperaPendiente(
+  key: string,
+  max: number,
+  windowMs: number,
+): number | null {
+  const now = Date.now();
+  const bucket = buckets.get(key);
+  if (!bucket) return null;
+
+  bucket.hits = bucket.hits.filter((t) => now - t < windowMs);
+  if (bucket.hits.length < max) return null;
+
+  const oldest = bucket.hits[0] ?? now;
+  return Math.ceil((windowMs - (now - oldest)) / 1000);
+}
+
+/** Anota un intento contra la clave. */
+export function anotarIntento(key: string, windowMs: number): void {
+  const now = Date.now();
+  const bucket = buckets.get(key) ?? { hits: [] };
+  bucket.hits = bucket.hits.filter((t) => now - t < windowMs);
+  bucket.hits.push(now);
+  buckets.set(key, bucket);
+}
+
+/** Borra el conteo de una clave: se usa cuando el intento SÍ salió bien. */
+export function olvidarIntentos(key: string): void {
+  buckets.delete(key);
+}
+
 export function rateLimit(options: {
   max: number;
   windowMs: number;

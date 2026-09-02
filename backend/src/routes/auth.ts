@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { Database } from '../db/client';
 import { refreshTokens, users } from '../db/schema';
 import { publicUser } from '../lib/dto';
-import { badRequest, unauthorized } from '../lib/errors';
+import { badRequest, tooManyRequests, unauthorized } from '../lib/errors';
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -15,7 +15,12 @@ import {
 import { verifyPassword } from '../lib/password';
 import { requireAuth, currentUser } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
-import { rateLimit } from '../middleware/rate-limit';
+import {
+  anotarIntento,
+  esperaPendiente,
+  olvidarIntentos,
+  rateLimit,
+} from '../middleware/rate-limit';
 import { env } from '../env';
 
 const loginSchema = z.object({
@@ -35,6 +40,12 @@ export const authRoutes = new Hono<AppEnv>();
  * Se agrupa por IP **y** correo para que un atacante que prueba contraseñas
  * contra una cuenta conocida se frene, sin bloquear a toda una universidad
  * que sale por la misma IP.
+ *
+ * Este es el PRIMER candado y por sí solo no alcanza: vale lo que valga la
+ * IP, y la IP vale lo que valga la configuración de `TRUSTED_PROXY_HOPS`. Si
+ * ese número queda mal puesto el día del despliegue, este límite se vuelve
+ * decorativo sin que nadie se entere. El segundo candado, abajo, no depende
+ * de la IP.
  */
 authRoutes.use(
   '/login',
@@ -51,9 +62,43 @@ authRoutes.use(
   }),
 );
 
+/**
+ * Segundo candado: intentos FALLIDOS por correo, sin mirar la IP.
+ *
+ * 20 fallos cada 15 minutos. Un atacante que rota IPs —falsificando la
+ * cabecera o alquilando proxies, que es barato— pasa por encima del límite de
+ * arriba sin despeinarse; este lo frena igual, porque la cuenta atacada es la
+ * misma y esa no la puede rotar.
+ *
+ * Dos decisiones que lo hacen usable y no un candado contra los propios
+ * usuarios:
+ *
+ * - **Solo cuenta lo que falla.** Quien sabe su contraseña nunca suma al
+ *   contador, por más gente que haya intentando entrar a esa cuenta.
+ * - **Entrar bien lo borra.** El dueño de la cuenta la reabre para sí mismo.
+ *
+ * Queda un costo que hay que decir en voz alta: alguien puede quemarle los 20
+ * fallos a una cuenta conocida y dejar a esa persona sin entrar por 15
+ * minutos. Es un bloqueo dirigido y molesto, pero acotado en el tiempo y sin
+ * pérdida de datos — al lado de "fuerza bruta ilimitada contra el admin", que
+ * es lo que había, se elige este.
+ */
+const MAX_FALLOS_POR_CORREO = 20;
+const VENTANA_FALLOS_MS = 15 * 60 * 1000;
+const claveFallos = (email: string) => `login-fallos:${email.trim().toLowerCase()}`;
+
 authRoutes.post('/login', async (c) => {
   const { email, password } = loginSchema.parse(await c.req.json());
   const db = c.get('db');
+
+  const clave = claveFallos(email);
+  const espera = esperaPendiente(clave, MAX_FALLOS_POR_CORREO, VENTANA_FALLOS_MS);
+  if (espera !== null) {
+    throw tooManyRequests(
+      'Demasiados intentos fallidos contra esta cuenta. Esperá unos minutos.',
+      { retryAfterSeconds: espera },
+    );
+  }
 
   const [user] = await db
     .select()
@@ -73,9 +118,20 @@ authRoutes.post('/login', async (c) => {
     // Se compara igual contra un hash falso para que el tiempo de respuesta
     // no delate si la cuenta existe.
     await verifyPassword(password, '$2b$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidi');
+    // Se anota aunque la cuenta no exista: si solo contáramos los fallos
+    // contra cuentas reales, la diferencia entre "se frenó" y "no se frenó"
+    // sería un enumerador de usuarios tan bueno como el mensaje distinto que
+    // ya evitamos arriba.
+    anotarIntento(clave, VENTANA_FALLOS_MS);
     throw invalid;
   }
-  if (!(await verifyPassword(password, user.passwordHash))) throw invalid;
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    anotarIntento(clave, VENTANA_FALLOS_MS);
+    throw invalid;
+  }
+
+  // Entró bien: el contador de fallos de esta cuenta se borra.
+  olvidarIntentos(clave);
 
   const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
   // Campos explícitos: `tokens` trae además `refreshTokenId`, que es interno

@@ -19,7 +19,7 @@ Relevado con `aws` CLI el 1 de septiembre de 2026.
 | Bucket S3 `enactus-media-dev` | ✅ privado, cifrado, versionado |
 | Usuario IAM `enactus-s3-dev` | ✅ acotado al bucket |
 | Llave de acceso de root | ✅ **borrada** (`AccountAccessKeysPresent = 0`) |
-| MFA en root | ❌ **sin activar** |
+| MFA en root | ✅ **activado** (`AccountMFAEnabled = 1`, verificado 2-sep) |
 | RDS | ❌ **no existe** — 0 instancias en 6 regiones, 0 snapshots |
 | Secrets Manager | ❌ vacío |
 | Lambda / API Gateway / CloudFront | ❌ no existen |
@@ -200,9 +200,108 @@ orden:
 
 ---
 
-## Pendiente
+## Cómo se cuenta la IP del cliente
 
-- **MFA en root.** Solo lo puede activar una persona.
+De este número dependen los dos límites de peticiones, y ponerlo mal no rompe
+nada visible: **el límite simplemente deja de frenar, en silencio.**
+
+```
+TRUSTED_PROXY_HOPS = cuántos proxies de confianza hay DELANTE de la aplicación
+```
+
+`0` (el default) significa "no hay proxy": se ignora `x-forwarded-for` entera
+y se usa la IP de la conexión, que el cliente no puede falsificar. Es el único
+valor seguro cuando no se sabe.
+
+Con **CloudFront → API Gateway → Lambda son 2.** Cada proxy agrega a la
+derecha, así que la IP real del cliente queda a `hops` posiciones del final;
+todo lo que esté más a la izquierda lo pudo haber escrito el cliente.
+
+Esto existe porque el límite de login era esquivable: la clave salía de
+`x-forwarded-for[0]`, y rotando esa cabecera pasaron 60 de 60 intentos de
+fuerza bruta contra `admin@enactus.co` sin un solo 429. Ver CRÍTICO 1 en
+`REVISION_FINAL.md`.
+
+**Comprobarlo contra el despliegue real, no suponerlo.** Desde una máquina de
+la que se conozca la IP pública:
+
+```bash
+curl -s https://api.eduxaction.com/health -H 'x-forwarded-for: 1.2.3.4'
+# y después, en los logs de la Lambda, mirar qué IP quedó registrada:
+#   la tuya  → bien
+#   1.2.3.4  → TRUSTED_PROXY_HOPS está de más; el freno no sirve
+```
+
+Si el número queda mal, el freno por IP se vuelve decorativo — pero **no queda
+la cuenta desprotegida**: el segundo candado del login (20 fallos por correo
+cada 15 minutos) no mira la IP y sigue funcionando igual.
+
+---
+
+## Preparar una base de producción
+
+`db:seed` siembra datos de DEMOSTRACIÓN y **está bloqueado en producción**
+(igual que `db:reset`). Para una base real:
+
+```bash
+npm run seed:prod -- ./admins.json
+```
+
+con un archivo que **no se versiona** (está en `.gitignore`):
+
+```json
+[{ "name": "Nombre Real", "email": "persona@enactuscolombia.org" }]
+```
+
+Deja exactamente: los 17 ODS, las 12 competencias, los 6 laboratorios con sus
+3 fases vacías y sin plazos, y los super admins. Nada más — ni proyectos, ni
+cursos, ni entregas, ni foro.
+
+Las contraseñas las genera al azar (24 caracteres) y **las imprime una sola
+vez**. Se entregan por un canal seguro. Ojo: hoy la plataforma **no obliga** a
+cambiarlas al primer ingreso — no existe el campo que lo marcaría. Ver casilla
+abierta 2 en `REVISION_FINAL.md`.
+
+Se niega a correr sobre una base que ya tiene usuarios, salvo `--force`.
+
+---
+
+## Respaldo y restauración
+
+```bash
+# Descargar
+curl -H "authorization: Bearer $TOKEN" https://api.eduxaction.com/admin/backup \
+  -o respaldo.json
+
+# Restaurar (solo superadmin, y exige la frase literal)
+jq '{version, data, confirm: "REEMPLAZAR TODOS LOS DATOS"}' respaldo.json \
+  | curl -X POST https://api.eduxaction.com/admin/restore \
+      -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+      --data-binary @-
+```
+
+**El archivo no lleva credenciales**: `password_hash` y los refresh tokens
+quedan fuera a propósito — el respaldo termina en el portátil de alguien y un
+hash bcrypt se rompe sin prisa y sin conexión.
+
+Por eso la restauración **conserva los hashes que ya están en la base de
+destino** y los vuelve a poner por id. Consecuencia práctica que hay que tener
+presente a las 2 de la mañana:
+
+- Restaurar sobre la **misma** base → todo el mundo sigue entrando con su
+  contraseña de siempre.
+- Restaurar sobre una base **nueva o vacía** → las cuentas se restauran pero
+  **nadie puede entrar**: no hay hash de dónde sacarlas. Hay que asignar
+  contraseñas nuevas.
+
+Esto se rompió una vez y no se notó porque nadie había probado el ciclo
+entero: el `insert` de `users` fallaba siempre y, al ser transaccional, no se
+restauraba nada. Cubierto ahora por `tests/backup-restore.test.ts`, que
+incluye *"después de restaurar, la gente puede ENTRAR"*.
+
+---
+
+## Pendiente
 - **Publicar el trabajo.** `origin` ya apunta a
   `saraisaza/enactus_platform_v4` y el HEAD local está **53 commits adelante,
   0 atrás**: sería un fast-forward limpio, sin `--force`.

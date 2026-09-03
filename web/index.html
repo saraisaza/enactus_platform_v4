@@ -93,16 +93,10 @@
     <div class="bar"></div>
   </div>
 
-  <script>
-    // Quita el splash cuando Flutter pinta su primer frame
-    window.addEventListener('flutter-first-frame', function () {
-      var splash = document.getElementById('enactus-splash');
-      if (splash) {
-        splash.style.opacity = '0';
-        setTimeout(function () { splash.remove(); }, 400);
-      }
-    });
-  </script>
+  <!-- En archivo aparte, NO inline: la CSP de producción bloquea los scripts
+       inline y el bloqueo es silencioso — el splash se quedaría para siempre.
+       Ver el comentario de splash.js. -->
+  <script src="splash.js"></script>
 
   <!--
     You can customize the "flutter_bootstrap.js" script.

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/data_provider.dart';
 import 'services/api_service.dart';
+import 'utils/url_strategy.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
 import 'views/auth/change_password_view.dart';
@@ -26,6 +27,12 @@ import 'widgets/async_states.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Rutas de verdad en la barra de direcciones (`/login`, no `/#/login`).
+  // Va ANTES de `runApp`: después ya se leyó la ruta inicial y el cambio no
+  // llega a tiempo. Ver `utils/url_strategy.dart`.
+  configurarRutas();
+
   await initializeDateFormatting('es');
 
   // Ya no hay base local que abrir, ni migraciones, ni seed: los datos viven

@@ -163,3 +163,59 @@ AWS_PROFILE=enactus-dev npm run dev
 Documentado en `backend/README.md`. Y `backend/.env.example` **no** lleva
 campos de credenciales de AWS, a propósito: tenerlos ahí invita a rellenarlos
 por costumbre y a que terminen en un repositorio.
+
+---
+
+## RESUELTO · El frontend se quedaba cargando para siempre
+
+**3 de septiembre de 2026.** El sitio respondía 200 a todo por `curl` y en el
+navegador se quedaba en la pantalla de carga. Cuatro fallos encadenados, todos
+invisibles desde la línea de comandos.
+
+Se encontraron con Chrome headless leyendo la consola, no razonando:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless --disable-gpu --virtual-time-budget=25000 \
+  --enable-logging=stderr --v=0 --screenshot=x.png --dump-dom https://eduxaction.com
+```
+
+| # | Qué pasaba | Por qué no se veía con `curl` |
+|---|---|---|
+| 1 | La CSP bloqueaba el `<script>` **inline** que retira el splash | El HTML llega igual; lo bloquea el navegador al ejecutarlo |
+| 2 | `connect-src` bloqueaba `canvaskit.wasm` desde `gstatic` | Flutter nunca arrancaba; el DOM se queda en el splash |
+| 3 | `connect-src` bloqueaba la fuente Roboto de `fonts.gstatic.com` | ídem |
+| 4 | Sin `usePathUrlStrategy()`, `/login` mostraba la portada | CloudFront devuelve 200 correctamente; la ruta la resuelve Flutter |
+
+**El primero explica el síntoma exacto.** El splash es `position: fixed;
+z-index: 9999`. Flutter cargaba por debajo, pero como el script que lo retira
+estaba bloqueado, la pantalla de carga se quedaba encima para siempre. Ni un
+error visible, ni una pantalla en blanco: cargando, y ya.
+
+Arreglos:
+
+1. El script salió a `web/splash.js`. La alternativa era `'unsafe-inline'` en
+   `script-src`, que abre la puerta a cualquier script inyectado. Además lleva
+   una red de seguridad: si el evento `flutter-first-frame` no llega en 15
+   segundos, el splash se retira igual — **es preferible una pantalla rota y
+   visible a una pantalla de carga infinita**: la primera se reporta, la
+   segunda se abandona.
+2. `flutter build web --no-web-resources-cdn` deja CanvasKit local. Con eso
+   `www.gstatic.com` sale de la CSP entera, en vez de agregarse.
+3. `https://fonts.gstatic.com` va en **`connect-src`**, no solo en `font-src`:
+   Flutter trae la fuente con `fetch()`, y `fetch` lo gobierna `connect-src`.
+   Lo dijo la consola, no la documentación.
+4. `usePathUrlStrategy()` con importación condicional, para no romper la
+   compilación a iOS, Android y macOS.
+
+**Verificado en el navegador**, no por deducción: cero violaciones de CSP,
+cero errores de consola, `/login` muestra el ingreso, y un login real desde el
+origen `https://eduxaction.com` contra la API de producción devuelve 200 ·
+`/auth/me` 200 · `/users` 403 `password_change_required`.
+
+### Lo que esto deja como método
+
+`curl -I` devolviendo 200 en todo no significa que la aplicación funcione.
+Para una SPA hay que abrirla en un navegador de verdad y **leer la consola**.
+Los cuatro fallos eran de CSP o de enrutamiento del cliente: ninguno cambia un
+código HTTP.

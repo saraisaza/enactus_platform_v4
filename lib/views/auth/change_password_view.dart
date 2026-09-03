@@ -120,16 +120,16 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                 children: [
                   const Center(child: AnimatedLogo(height: 72)),
                   const SizedBox(height: 20),
-                  Text('Cambiá tu contraseña'.toUpperCase(),
+                  Text('Cambia tu contraseña'.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: displayHeading(fontSize: 24)),
                   const SizedBox(height: 8),
                   Text(
                     nombre.isEmpty
                         ? 'Estás usando la contraseña que te entregaron. '
-                            'Elegí una propia para continuar.'
+                            'Elige una propia para continuar. La debes recordar'
                         : '$nombre, estás usando la contraseña que te '
-                            'entregaron. Elegí una propia para continuar.',
+                            'entregaron. Elige una propia para continuar.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 13, height: 1.5),

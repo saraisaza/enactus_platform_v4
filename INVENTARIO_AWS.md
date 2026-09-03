@@ -92,7 +92,8 @@ más el maestro que gestiona RDS.
 | Lambda `enactus-api-staging` | Active · 512 MB · 30 s · `staging/runtime.json` |
 | API Gateway `enactus-api-prod` | `qocz5bt4qa` → `api.eduxaction.com` |
 | API Gateway `enactus-api-staging` | `gj8os20pg0` → `staging-api.eduxaction.com` |
-| CloudFront | ❌ no existe |
+| CloudFront `E1KLNF0TNH6TPX` | frontend → `eduxaction.com`, `www.eduxaction.com` |
+| CloudFront `E2OZPA4RJT5DHI` | video → `videos.eduxaction.com`, con grupo de confianza |
 
 Las cuatro Lambdas corren en `nodejs22.x`, dentro de la VPC, en las subredes
 privadas y con `enactus-lambda-sg`.
@@ -109,6 +110,8 @@ de 10 ejecuciones concurrentes. Ver `BLOQUEOS_INFRA.md`.
 | Zona Route 53 | `eduxaction.com.` — `Z0527409CO28GN2VRE99` |
 | `api.eduxaction.com` | A/Alias → API Gateway (producción) |
 | `staging-api.eduxaction.com` | A/Alias → API Gateway (staging) |
+| `eduxaction.com` · `www` | A y AAAA/Alias → CloudFront (frontend) |
+| `videos.eduxaction.com` | A/Alias → CloudFront (video firmado) |
 | Certificado ACM | `eduxaction.com` + `*.eduxaction.com` · `ISSUED` · vence **18-mar-2027** |
 | `InUse` | **3 recursos** |
 | `RenewalEligibility` | **ELIGIBLE** — cambió solo al asociarlo a API Gateway |
@@ -116,7 +119,7 @@ de 10 ejecuciones concurrentes. Ver `BLOQUEOS_INFRA.md`.
 El paso de `INELIGIBLE` a `ELIGIBLE` es la confirmación de aquello: ACM solo
 renueva certificados enganchados a algo.
 
-Falta todavía el `A` del ápice y el de `www`, que llegan con CloudFront.
+Todos los registros puestos. `InUse` pasó de 0 a varios recursos.
 
 ---
 
@@ -126,7 +129,7 @@ Falta todavía el `A` del ápice y el de `www`, que llegan con CloudFront.
 |---|---|
 | `enactus-media-dev` | archivos de la plataforma · privado · SSE-S3 · versionado |
 | `enactus-secretos-158151706149` | configuración de ejecución · SSE-KMS |
-| Bucket del frontend | ❌ no existe |
+| `enactus-web-158151706149` | frontend · privado · solo lo lee CloudFront (OAC) |
 
 ---
 
@@ -170,7 +173,11 @@ código; es que no hay con qué firmar.
 | Zona Route 53 | 0.50 |
 | S3 (medios + secretos) | ~0.10 |
 | Endpoint Gateway de S3 | **0** |
-| **Total** | **~16.80** |
+| Lambda (4 funciones) | 0 — dentro del millón gratuito |
+| API Gateway HTTP (2) | ~0–1 |
+| CloudFront (2 distribuciones) | 0 — 1 TB/mes gratis |
+| S3 del frontend (45 MB) | ~0.01 |
+| **Total** | **~17–18** |
 
 Avisos de presupuesto configurados: gasto real > $20, > $50, > $100, y
 pronóstico > 80% de $100.

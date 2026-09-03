@@ -549,6 +549,8 @@ las mire acá.
 | **antes del 1-oct-2026** | Migrar a IAM Identity Center y borrar las 2 llaves AKIA | `grep -c AKIA ~/.aws/credentials` → 0 |
 | **antes de terminar 5B** | Bajar `enactus-deploy` de `PowerUserAccess` a lo que usa | `aws iam list-attached-user-policies --user-name enactus-deploy` |
 | **por confirmar** | Fin del plan gratuito de AWS → tarifa completa | Billing → Free Tier, en la consola |
+| **sin fecha** | Cuota de concurrencia de Lambda: 10 → 1000 | `aws service-quotas get-service-quota --service-code lambda --quota-code L-B99A9384` |
+| **al aprobarse** | Aplicar `reserved concurrency` 40 (prod) y 5 (staging) | ver `BLOQUEOS_INFRA.md` |
 | sin fecha fija | Vence el *bundle* de CA de RDS empaquetado en las Lambdas | `openssl crl2pkcs7 -nocrl -certfile backend/infra/lambda-admin/rds-ca.pem \| openssl pkcs7 -print_certs -noout -text \| grep 'Not After'` |
 
 ### Dos formas de que el certificado venza sin que nadie se entere

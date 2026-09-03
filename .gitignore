@@ -59,3 +59,8 @@ echo ".dev.vars" >> .gitignore
 # Identidades reales de los super admins para seed:prod. Nunca al repo.
 admins.json
 backend/admins.json
+
+# Artefactos de empaquetado de la Lambda de administración: node_modules
+# copiado y el zip. El código fuente (index.mjs, rds-ca.pem) sí se versiona.
+backend/infra/lambda-admin/node_modules/
+backend/infra/lambda-admin/*.zip

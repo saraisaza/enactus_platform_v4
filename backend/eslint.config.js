@@ -3,7 +3,11 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'dist/**', 'drizzle/**'],
+    ignores: ['node_modules/**', 'dist/**', 'drizzle/**',
+      // Artefacto de despliegue: JS suelto que se empaqueta y se sube a
+      // Lambda, fuera del proyecto TypeScript a propósito.
+      'infra/lambda-admin/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

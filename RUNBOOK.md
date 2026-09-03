@@ -20,15 +20,155 @@ Relevado con `aws` CLI el 1 de septiembre de 2026, revisado el 2.
 | Usuario IAM `enactus-s3-dev` | ✅ acotado al bucket |
 | Llave de acceso de root | ✅ **borrada** (`AccountAccessKeysPresent = 0`) |
 | MFA en root | ✅ **activado** (`AccountMFAEnabled = 1`, verificado 2-sep) |
-| RDS | ❌ **no existe** — 0 instancias en 6 regiones, 0 snapshots |
-| Secrets Manager | ❌ vacío |
-| Lambda / API Gateway / CloudFront | ❌ no existen |
+| VPC `enactus-vpc` | ✅ `10.0.0.0/16`, dos subredes **privadas**, sin internet gateway |
+| RDS `enactus-db` | ✅ PostgreSQL 17.11 · `db.t4g.micro` · privada · cifrada |
+| Secrets Manager | ✅ `enactus/prod/runtime`, `enactus/staging/runtime` + la maestra de RDS |
+| Bucket de secretos | ✅ `enactus-secretos-…` · SSE-KMS · solo lo lee la Lambda |
+| Lambda `enactus-db-admin` | ✅ administración de la base privada |
+| API Gateway / CloudFront | ❌ no existen |
 | Alarmas de AWS Budgets | ✅ 4 avisos — ver abajo |
 | Rol OIDC `enactus-github-deploy` | ✅ existe, sin llave |
-| Rol de ejecución de la Lambda | ❌ no existe (no hay Lambda) |
+| Rol `enactus-backend-lambda` | ✅ creado, con lectura de secretos acotada |
 
-Es decir: **la plataforma todavía no está desplegada en ningún entorno.** Lo
-que existe es el dominio, el certificado y el almacenamiento.
+Es decir: **existe la base de datos y su red, no la aplicación.** Falta la
+Lambda de la API, API Gateway y CloudFront.
+
+---
+
+## Base de datos
+
+```
+enactus-db.cop602mo6lg7.us-east-1.rds.amazonaws.com:5432
+PostgreSQL 17.11 · db.t4g.micro · 20 GB gp3 · cifrada · us-east-1a
+```
+
+Dos bases en una sola instancia, con **un usuario por base**:
+
+| Base | Usuario | Secreto |
+|---|---|---|
+| `enactus_prod` | `enactus_prod_app` (dueño) | `enactus/prod/runtime` |
+| `enactus_staging` | `enactus_staging_app` (dueño) | `enactus/staging/runtime` |
+
+El aislamiento está **comprobado, no supuesto**: `enactus_prod_app` intentando
+conectarse a `enactus_staging` es rechazado, y al revés también.
+
+### Por qué no se llega a ella desde acá
+
+Vive en subredes privadas cuya única ruta no local es el *endpoint* de S3. No
+hay internet gateway ni NAT, así que **no se puede abrir un `psql` desde un
+portátil** — que es exactamente lo que se buscaba. Para operar sobre ella está
+`enactus-db-admin` (más abajo).
+
+### Las cuatro casillas, verificadas contra la instancia
+
+```
+publicamente_accesible  false
+security groups         solo enactus-rds-sg, que acepta ÚNICAMENTE desde
+                        enactus-lambda-sg (referencia al grupo, no un CIDR)
+respaldo                7 días · ventana 06:30-07:00 UTC (01:30 en Colombia)
+cifrada                 true
+rotación del secreto    activa, la gestiona RDS cada 7 días
+```
+
+**`rds.force_ssl` probado de verdad.** Dentro de PostgreSQL ese parámetro no se
+puede consultar, así que se comprobó por el otro lado — intentando conectarse
+sin TLS:
+
+```
+con TLS  → TLSv1.3, TLS_AES_256_GCM_SHA384, con validación de CA completa
+sin TLS  → no pg_hba.conf entry for host "10.0.1.60" … no encryption
+```
+
+La validación de CA no es automática: el *bundle* de RDS viaja dentro de la
+Lambda (`infra/lambda-admin/rds-ca.pem`) y se usa con `rejectUnauthorized`.
+Conectar con `ssl: 'require'` a secas cifra pero acepta cualquier certificado,
+que es no protegerse de lo único de lo que TLS protege.
+
+### La contraseña maestra rota sola cada 7 días
+
+Por eso la aplicación **no la usa**: usa el usuario de su base, cuya contraseña
+controlamos nosotros. Si la aplicación leyera la maestra desde una copia, esa
+copia vencería antes de la semana siguiente y la API dejaría de conectar sola,
+un jueves cualquiera.
+
+La maestra queda para administración, y esas operaciones leen Secrets Manager
+fresco en el momento.
+
+---
+
+## Los secretos van en S3, no en Secrets Manager
+
+**Decisión de costo, con el mismo nivel de protección.** La Lambda vive en una
+VPC sin NAT. Secrets Manager solo ofrece *endpoint* de tipo **Interface**, que
+se cobra por hora: ~US$7 al mes por zona, más de lo que cuesta la propia base.
+S3 tiene *endpoint* de tipo **Gateway**, que es **gratuito** y que la VPC ya
+necesita.
+
+```
+Secrets Manager  (fuente de verdad, la escribe el pipeline)
+      │  el pipeline corre FUERA de la VPC y sí la alcanza
+      ▼
+s3://enactus-secretos-158151706149/{prod,staging}/runtime.json   (SSE-KMS)
+      │  Gateway endpoint · sin costo · sin salir a internet
+      ▼
+Lambda de la API — lee UNA vez por contenedor (src/lib/secretos.ts)
+```
+
+Cómo queda protegido, todo comprobado:
+
+- La política del bucket **niega** `s3:GetObject` a todo el mundo salvo al rol
+  `enactus-backend-lambda`. Comprobado: `enactus-deploy`, que tiene
+  `PowerUserAccess`, recibe **403** al intentar leer.
+- El `Deny` alcanza **solo la lectura de objetos**, nunca las operaciones de
+  bucket. Un `Deny` más ancho dejaría el bucket inadministrable para siempre.
+- `kms:Decrypt` acotado con `kms:ViaService` a S3: la llave no sirve para
+  descifrar nada por fuera de este camino.
+- **No hace falta endpoint de KMS**: con SSE-KMS descifra S3, no el cliente.
+
+Servicios que la API usa en ejecución y por qué ninguno necesita un endpoint
+de pago:
+
+| Servicio | Por qué |
+|---|---|
+| S3 (secretos) | Gateway endpoint, gratuito |
+| S3 (medios) | firmar una URL es cálculo local, sin llamada de red |
+| CloudFront | firmar es cálculo local |
+| CloudWatch Logs | Lambda escribe por el entorno, no por la ENI de la VPC |
+| STS | las credenciales las inyecta el runtime desde el rol |
+| RDS | TCP directo dentro de la VPC |
+
+Si alguna vez hace falta un servicio que solo tenga endpoint Interface,
+**decidilo antes de crearlo**: casi duplicaría el gasto fijo de la plataforma.
+
+---
+
+## `enactus-db-admin` — operar la base privada
+
+La instancia no se alcanza desde afuera, así que crear bases, migrar y sembrar
+pasa por esta función. Está en la VPC, con el mismo *security group* que la
+API.
+
+```bash
+# El secreto se lee FRESCO en el momento; la función no guarda credenciales.
+SEC=$(aws rds describe-db-instances --db-instance-identifier enactus-db \
+        --query 'DBInstances[0].MasterUserSecret.SecretArn' --output text)
+aws secretsmanager get-secret-value --secret-id "$SEC" --query SecretString --output text > /tmp/.sec
+
+# … armar el payload con host, user, password, database y `statements` …
+aws lambda invoke --function-name enactus-db-admin \
+  --payload fileb:///tmp/payload.json /tmp/salida.json
+```
+
+Detalles que importan:
+
+- Las credenciales llegan **en la invocación**. La función no tiene permiso
+  para leer secretos, a propósito: no le hace falta, y así no puede.
+- La respuesta **tapa** cualquier literal de contraseña (`PASSWORD '…'` →
+  `PASSWORD '«oculta»'`) antes de devolver la sentencia o registrarla.
+- `sinTls: true` existe para UNA cosa: comprobar que el servidor rechaza el
+  texto plano. No debilita nada — quien decide es el servidor.
+- Reempaquetar: `cd backend/infra/lambda-admin && zip -qr admin.zip index.mjs
+  rds-ca.pem node_modules && aws lambda update-function-code …`
 
 ---
 

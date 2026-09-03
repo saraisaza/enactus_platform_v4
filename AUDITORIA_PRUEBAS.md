@@ -162,6 +162,9 @@ backend   538 pruebas · typecheck limpio · lint limpio
 Flutter   204 pruebas · flutter analyze sin issues
 ```
 
+Al 3 de septiembre: **555 de backend y 195 de Flutter**, con `typecheck`,
+`lint` y `flutter analyze` limpios.
+
 **Actualización del 2 de septiembre.** Todo lo que se agregó después de esta
 auditoría pasó por el mismo filtro antes de darse por bueno: se rompió a
 propósito y se comprobó que alguna prueba se pusiera roja.
@@ -171,3 +174,32 @@ propósito y se comprobó que alguna prueba se pusiera roja.
 | la restauración deja de reponer los hashes | 1 |
 | `requireAuth` deja de bloquear con la contraseña pendiente | 3 |
 | los guardias de Flutter dejan pasar con la contraseña pendiente | 13 |
+
+**Actualización del 3 de septiembre.** Se agregó la asignación de material a un
+estudiante, con el mismo filtro: desactivar la comprobación de tipo de cuenta
+deja 2 pruebas rojas, y hacer que la asignación de cursos no inserte nada —un
+`200` que no cambia nada— deja 3.
+
+## Un punto ciego que ninguna mutación podía encontrar
+
+Al probar la pantalla nueva en un navegador de verdad apareció un fallo que
+llevaba desde el principio y que **la suite no podía ver por cómo está
+construida**, no por lo que le falte cubrir: `allowMethods` de CORS no incluía
+`PUT`.
+
+Las pruebas de backend usan `app.request()`, que invoca el handler
+directamente y **no hace preflight**. Los catorce endpoints `PUT` de la
+aplicación respondían 200 en verde mientras el navegador los bloqueaba antes
+de enviarlos. Ninguna mutación sobre el código de los handlers lo habría
+detectado: el código de los handlers estaba bien.
+
+La lección no es "faltaba una prueba" sino **dónde mirar**: una suite que
+llama al handler por dentro no ejerce la capa que hay entre el navegador y el
+handler. `tests/cors.test.ts` la cubre ahora comparando la lista declarada
+contra los métodos que el router registra de verdad — quitar `PUT` deja 3 de
+sus 4 pruebas rojas.
+
+Vale como recordatorio general para esta suite: **lo que `app.request()` se
+salta —preflight, redirecciones del borde, caché de CloudFront, cabeceras que
+agrega API Gateway— no lo cubre ninguna prueba de backend, por muchas que
+sean.**

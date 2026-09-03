@@ -59,9 +59,8 @@ FakeApi fakeDe(String role) {
     ...Map<String, Object?>.from(_fixtures['compartidas'] as Map),
     '/auth/me': usuarioDe(role),
     // Cerrar sesión es una ruta que la app llama de verdad (desde el menú de
-    // cuenta y desde la pantalla de cambio obligatorio). Sin ella, cualquier
-    // prueba que toque "Cerrar sesión" falla por falta de fixture y no por lo
-    // que quería medir.
+    // cuenta). Sin ella, cualquier prueba que toque "Cerrar sesión" falla por
+    // falta de fixture y no por lo que quería medir.
     '/auth/logout': const <String, Object?>{},
     '/students/${usuarioDe(role)['id']}/ruta-progress': _fixtures['rutaProgress'],
   };

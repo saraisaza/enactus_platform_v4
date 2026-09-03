@@ -352,6 +352,80 @@ orden:
 
 ---
 
+## CORS: la lista de métodos tiene que seguir a la API
+
+`allowMethods` en `src/app.ts` enumera los métodos que el navegador puede
+usar. Estuvo sin `PUT` desde el principio y **ninguna de las 550 pruebas del
+backend lo tocó.**
+
+El motivo de que se escapara vale más que el fallo en sí: las pruebas de
+servidor usan `app.request()`, que llama al handler directamente y **no hace
+preflight**. Un `PUT` respondía 200 impecable en la suite mientras el navegador
+lo bloqueaba antes de enviarlo. El síntoma en el cliente era `Failed to fetch`
+y en los logs del servidor **nada**, porque la petición nunca llegó — la peor
+combinación posible para diagnosticar.
+
+Alcance real mientras estuvo mal: los catorce endpoints `PUT` que llama la
+aplicación. Entre ellos, asignar estudiantes y mentores a un laboratorio,
+reordenar módulos y lecciones, guardar un quiz o una actividad, editar los
+miembros de un equipo y vincular cursos a la Ruta.
+
+`tests/cors.test.ts` compara ahora la lista declarada contra los métodos que el
+router registra de verdad, así que agregar un endpoint con un método nuevo sin
+permitirlo rompe la suite. Para comprobarlo a mano contra el despliegue real:
+
+```bash
+curl -s -i -X OPTIONS https://api.eduxaction.com/users/x/courses \
+  -H 'Origin: https://eduxaction.com' \
+  -H 'Access-Control-Request-Method: PUT' | grep -i allow-
+```
+
+Tiene que responder `204` y listar `PUT` en `access-control-allow-methods`.
+
+---
+
+## Asignar material a un estudiante
+
+Dos vías, **excluyentes según el tipo de cuenta** — lo decide la vista
+`student_course_access`, no la pantalla:
+
+| Tipo de cuenta | Qué recibe | Endpoint |
+|---|---|---|
+| eduXaction (`enactus`) | Laboratorios; el acceso a sus cursos viene incluido | `PUT /users/{id}/laboratories` |
+| Open Learning | Cursos, uno por uno. Es su **única** vía de acceso | `PUT /users/{id}/courses` |
+
+Pedir la vía que no corresponde responde `409` con el motivo, no un `200` que
+no cambia nada: la vista de acceso ni siquiera mira la otra tabla, así que
+guardarlo dejaría una asignación sin efecto que nadie vuelve a revisar.
+
+En la interfaz: **Portal Admin → Usuarios → botón de asignar en la fila de la
+persona**. Aparece solo en filas de estudiantes y egresados. La otra dirección
+—desde el laboratorio hacia varias personas a la vez— sigue en
+**Laboratorios → editar → Estudiantes**, y sirve para matricular un grupo
+entero de una vez.
+
+`PUT /users/{id}/courses` acepta cursos en borrador o no visibles, para dejar
+la matrícula lista antes de publicar, y devuelve `notReady` con esos cursos.
+La pantalla lo avisa: una asignación que se guarda y no se ve, sin aviso, se da
+por hecha.
+
+Las dos escrituras son **reemplazo de la lista completa**, no alta y baja de a
+uno, y quedan en `audit_log` con el conjunto anterior y el nuevo:
+
+```sql
+select created_at, action, old_value, new_value
+  from audit_log
+ where entity_id = '<id del estudiante>'
+   and action in ('student.laboratories', 'student.courses')
+ order by created_at desc;
+```
+
+Quitar un laboratorio le quita el acceso a sus cursos. **El avance no se
+borra**: las filas de `progress` quedan, y vuelve a verlo tal cual si se le
+reasigna.
+
+---
+
 ## Cómo se cuenta la IP del cliente
 
 De este número dependen los dos límites de peticiones, y ponerlo mal no rompe

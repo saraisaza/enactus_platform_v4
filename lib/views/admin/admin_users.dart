@@ -11,6 +11,7 @@ import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import 'student_assignments_dialog.dart';
 
 /// Gestión de cuentas.
 ///
@@ -306,6 +307,17 @@ class _Acciones extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Solo para estudiantes: es el único rol que recibe material. Para
+        // el resto el botón no tendría a qué apuntar.
+        if (Roles.isStudentLike(user.role))
+          IconButton(
+            icon: const Icon(Icons.assignment_ind_outlined, size: 18),
+            color: AppColors.gold,
+            tooltip: user.studentType == StudentType.openLearning
+                ? 'Asignar cursos'
+                : 'Asignar laboratorios',
+            onPressed: () => showStudentAssignmentsDialog(context, user),
+          ),
         IconButton(
           icon: const Icon(Icons.edit_outlined, size: 18),
           color: AppColors.gold,

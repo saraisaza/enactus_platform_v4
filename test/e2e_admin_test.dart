@@ -460,4 +460,83 @@ void main() {
     expect(despues, isNotNull);
     expect(despues!.laboratories.length, antes.laboratories.length);
   }, timeout: const Timeout(Duration(seconds: 40)));
+
+  // -------------------------------------------------------------------------
+  // Asignar material a un estudiante
+  // -------------------------------------------------------------------------
+
+  test('asignar un curso a Open Learning le da acceso de verdad', () async {
+    if (!up) return;
+    final s = await signInAdmin();
+
+    final estudiantes = await load<List<AppUser>>(
+        () => s.data.users(role: '${Roles.student},${Roles.alumni}'));
+    final ol = estudiantes.firstWhere(
+      (u) => u.studentType == StudentType.openLearning,
+      orElse: () => fail('El sembrado no tiene ninguna cuenta Open Learning.'),
+    );
+
+    final antes = await s.data.studentAssignments(ol.id);
+    expect(antes.studentType, StudentType.openLearning);
+
+    final cursos = await load<List<Course>>(() => s.data.courses);
+    final extra = cursos.firstWhere(
+      (c) => !antes.courseIds.contains(c.id),
+      orElse: () => fail('No hay ningún curso que asignar de más.'),
+    );
+
+    try {
+      await s.data.setStudentCourses(ol.id, [...antes.courseIds, extra.id]);
+      final despues = await s.data.studentAssignments(ol.id);
+      expect(despues.courseIds, contains(extra.id));
+    } finally {
+      // Se devuelve como estaba: esta suite corre contra la base sembrada
+      // compartida, y dejarle un curso de más al estudiante haría fallar a
+      // otra prueba por una razón que no tiene nada que ver.
+      await s.data.setStudentCourses(ol.id, antes.courseIds);
+    }
+  }, timeout: const Timeout(Duration(seconds: 40)));
+
+  test('a un eduXaction no se le asignan cursos sueltos', () async {
+    if (!up) return;
+    final s = await signInAdmin();
+
+    final estudiantes = await load<List<AppUser>>(
+        () => s.data.users(role: '${Roles.student},${Roles.alumni}'));
+    final enactus = estudiantes.firstWhere(
+      (u) => u.studentType == StudentType.enactus,
+      orElse: () => fail('El sembrado no tiene ninguna cuenta eduXaction.'),
+    );
+
+    // El servidor lo rechaza en vez de guardar una fila que su propia vista de
+    // acceso no mira: un 200 que no cambia nada es peor que un error.
+    await expectLater(
+      s.data.setStudentCourses(enactus.id, const []),
+      throwsA(isA<ApiException>()),
+    );
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
+  test('los laboratorios de un estudiante se leen y se reemplazan', () async {
+    if (!up) return;
+    final s = await signInAdmin();
+
+    final estudiantes = await load<List<AppUser>>(
+        () => s.data.users(role: '${Roles.student},${Roles.alumni}'));
+    final enactus = estudiantes.firstWhere(
+      (u) => u.studentType == StudentType.enactus,
+      orElse: () => fail('El sembrado no tiene ninguna cuenta eduXaction.'),
+    );
+
+    final antes = await s.data.studentAssignments(enactus.id);
+    try {
+      await s.data.setStudentLaboratories(enactus.id, const []);
+      expect((await s.data.studentAssignments(enactus.id)).laboratoryIds,
+          isEmpty);
+    } finally {
+      await s.data.setStudentLaboratories(enactus.id, antes.laboratoryIds);
+    }
+
+    expect((await s.data.studentAssignments(enactus.id)).laboratoryIds,
+        antes.laboratoryIds);
+  }, timeout: const Timeout(Duration(seconds: 40)));
 }

@@ -359,6 +359,73 @@ paths:
         '204': { description: Eliminada }
         '409': { description: Es la propia cuenta de quien lo pide }
 
+  /users/{id}/assignments:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [users]
+      summary: Qué tiene asignado un estudiante
+      description: |
+        Sus laboratorios y sus cursos directos. Solo Admin.
+
+        Devuelve las DOS listas aunque el tipo de cuenta use una sola. No es
+        redundante: si una cuenta cambió de tipo después de recibir material,
+        las filas viejas siguen en la base sin surtir efecto, y verlas es la
+        única forma de entender por qué alguien no ve lo que cree tener.
+      responses:
+        '200': { description: Laboratorios y cursos asignados }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /users/{id}/laboratories:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [users]
+      summary: Reemplazar los laboratorios de un estudiante
+      description: |
+        La otra cara de `PUT /laboratories/{id}/students`: aquella matricula a
+        un grupo entero en un laboratorio, esta edita lo de UNA persona.
+
+        Solo para cuentas **Enactus**. Asignar un laboratorio da acceso a
+        TODOS sus cursos sin asignarlos aparte; quitarlo se lo quita — el
+        avance no se borra y vuelve tal cual si se reasigna.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200': { description: Nuevo conjunto }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: La cuenta es Open Learning, o algún laboratorio no existe }
+
+  /users/{id}/courses:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [users]
+      summary: Reemplazar los cursos directos de un estudiante
+      description: |
+        Solo para cuentas **Open Learning**, y es su ÚNICA vía de acceso a
+        material: sin filas acá, la cuenta entra a la plataforma y no tiene
+        nada que hacer. A un Enactus se le responde `409` — sus cursos llegan
+        por el laboratorio, y guardarlos acá sería un `200` sin efecto, porque
+        la vista `student_course_access` no los mira.
+
+        Se permite asignar un curso en borrador o no visible, para dejar la
+        matrícula lista antes de publicar. La respuesta trae `notReady` con
+        esos cursos: la asignación quedó hecha, pero el estudiante no los verá
+        hasta que se publiquen.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IdList' }
+      responses:
+        '200': { description: Nuevo conjunto, con `notReady` }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: La cuenta es Enactus, o algún curso no existe }
+
   /courses:
     get:
       tags: [courses]

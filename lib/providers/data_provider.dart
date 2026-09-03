@@ -702,6 +702,63 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // -------------------------------------------------------------------------
+  // Asignación de material a un estudiante
+  // -------------------------------------------------------------------------
+
+  /// Lo que un estudiante tiene asignado hoy: laboratorios y cursos directos.
+  ///
+  /// No se cachea a propósito. Es una lectura que se hace al abrir el diálogo
+  /// de asignación y que tiene que reflejar lo que otro administrador acabe de
+  /// cambiar; un valor viejo acá hace que al guardar se pisen asignaciones
+  /// ajenas sin que nadie lo note, porque la escritura es un reemplazo de la
+  /// lista completa.
+  Future<StudentAssignments> studentAssignments(String studentId) async {
+    final json = await api.get('/users/$studentId/assignments');
+    return StudentAssignments.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Reemplaza los laboratorios de un estudiante Enactus.
+  ///
+  /// Es también lo que le da acceso a los CURSOS de esos laboratorios: quitar
+  /// uno se lo quita. Su avance no se borra —vuelve tal cual si se reasigna—
+  /// pero deja de verlo.
+  Future<void> setStudentLaboratories(
+    String studentId,
+    List<String> laboratoryIds,
+  ) async {
+    await api.put('/users/$studentId/laboratories', body: {
+      'ids': laboratoryIds,
+    });
+    _usersByQuery.clear();
+    _userById.remove(studentId);
+    await reloadLaboratories();
+    notifyListeners();
+  }
+
+  /// Reemplaza los cursos directos de un estudiante de Open Learning.
+  ///
+  /// Devuelve los cursos que quedaron asignados pero que el estudiante
+  /// TODAVÍA no puede ver, por estar en borrador o marcados como no visibles.
+  /// Se permite asignarlos —sirve para dejar la matrícula lista antes de
+  /// publicar— pero la pantalla tiene que decirlo: una asignación que se
+  /// guarda y no se ve, sin aviso, se da por hecha y nadie la revisa.
+  Future<List<CourseNotReady>> setStudentCourses(
+    String studentId,
+    List<String> courseIds,
+  ) async {
+    final json = await api.put('/users/$studentId/courses', body: {
+      'ids': courseIds,
+    });
+    _usersByQuery.clear();
+    _userById.remove(studentId);
+    notifyListeners();
+    final mapa = Map<String, dynamic>.from(json as Map);
+    return (mapa['notReady'] as List? ?? const [])
+        .map((e) => CourseNotReady.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
   /// Cambia el permiso de calificar de un LXD.
   ///
   /// Son DOS permisos, no uno, y van por su propio endpoint porque cada

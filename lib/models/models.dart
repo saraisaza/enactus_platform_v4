@@ -494,6 +494,58 @@ class ChecklistItem {
 }
 
 // ---------------------------------------------------------------------------
+// Asignación de material a un estudiante
+// ---------------------------------------------------------------------------
+
+/// Lo que un estudiante tiene asignado, tal como lo devuelve el servidor.
+///
+/// Trae las DOS listas aunque su tipo de cuenta solo use una. No es
+/// redundante: si una cuenta cambió de tipo después de recibir material, las
+/// filas viejas siguen en la base sin surtir efecto, y verlas es la única
+/// forma de entender por qué alguien no ve lo que cree tener asignado.
+class StudentAssignments {
+  final String studentId;
+  final String studentName;
+  final String? studentType;
+  final List<String> laboratoryIds;
+  final List<String> courseIds;
+
+  const StudentAssignments({
+    required this.studentId,
+    required this.studentName,
+    required this.studentType,
+    required this.laboratoryIds,
+    required this.courseIds,
+  });
+
+  factory StudentAssignments.fromJson(Map<String, dynamic> j) =>
+      StudentAssignments(
+        studentId: j['studentId'] as String,
+        studentName: (j['studentName'] as String?) ?? '',
+        studentType: j['studentType'] as String?,
+        laboratoryIds: _ids(j['laboratoryIds']),
+        courseIds: _ids(j['courseIds']),
+      );
+
+  static List<String> _ids(dynamic v) =>
+      (v as List? ?? const []).map((e) => e as String).toList();
+}
+
+/// Un curso asignado que el estudiante todavía no puede ver, porque está en
+/// borrador o marcado como no visible.
+class CourseNotReady {
+  final String id;
+  final String name;
+
+  const CourseNotReady({required this.id, required this.name});
+
+  factory CourseNotReady.fromJson(Map<String, dynamic> j) => CourseNotReady(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+      );
+}
+
+// ---------------------------------------------------------------------------
 // Laboratorio y Ruta de Impacto (estructura; el avance está en progress.dart)
 // ---------------------------------------------------------------------------
 

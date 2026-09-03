@@ -18,6 +18,7 @@ import {
   notificationRoutes,
 } from './routes/content';
 import { courseTrackingRoutes } from './routes/course-tracking';
+import { assignmentRoutes } from './routes/assignments';
 import { userRoutes } from './routes/users';
 import { catalogRoutes } from './routes/catalogs';
 import { courseRoutes, moduleRoutes } from './routes/courses';
@@ -63,7 +64,15 @@ export function createApp(database: Database = defaultDb) {
     '*',
     cors({
       origin: env.CORS_ORIGIN.split(',').map((o) => o.trim()),
-      allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+      // PUT estuvo ausente de esta lista y NADIE lo notó, porque no rompe
+      // ninguna prueba de servidor: `app.request()` no hace preflight. En un
+      // navegador de verdad el efecto era que los CATORCE endpoints PUT de la
+      // aplicación —asignar estudiantes a un laboratorio, ordenar módulos,
+      // guardar un quiz, editar los miembros de un equipo— fallaban con
+      // "Failed to fetch", sin llegar nunca al servidor y sin dejar rastro en
+      // sus logs. `tests/cors.test.ts` compara esta lista contra los métodos
+      // realmente registrados para que no pueda volver a desfasarse.
+      allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Authorization', 'Content-Type'],
       maxAge: 600,
       credentials: false,
@@ -153,6 +162,10 @@ export function createApp(database: Database = defaultDb) {
   // Público: la portada se ve sin sesión.
   app.route('/site-content', siteRoutes);
   app.route('/users', userRoutes);
+  // Segundo router en la misma base: asignar laboratorios o cursos a un
+  // estudiante es solo de Admin, mientras que listar personas lo hacen los
+  // ocho portales con alcances distintos.
+  app.route('/users', assignmentRoutes);
   // Competencias y ODS: las dibuja el constructor de cursos y salen de la
   // base, no de una constante copiada en el cliente.
   app.route('/catalogs', catalogRoutes);

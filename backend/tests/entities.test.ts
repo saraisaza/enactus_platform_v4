@@ -193,6 +193,55 @@ describe('/calendar-events', () => {
     expect(mentorOk.status).toBe(201);
   });
 
+  it('un evento de Ruta no lleva curso ni laboratorio', async () => {
+    // El caso que la app manda de verdad, y que ninguna prueba tocaba: las de
+    // arriba pasan SOLO el campo que su tipo usa, así que nunca ejercitaron
+    // la forma real del cuerpo. Un evento de Ruta no se vincula a nada, y
+    // tiene que poder crearse con los dos en null.
+    const res = await req('/calendar-events', T.admin!, {
+      ...json({
+        title: 'Encuentro de Ruta',
+        description: '',
+        startsAt: new Date().toISOString(),
+        type: 'ruta_impacto',
+        meetLink: '',
+        guests: '',
+        courseId: null,
+        laboratoryId: null,
+      }),
+    });
+    expect(res.status).toBe(201);
+  });
+
+  it('la cadena vacía en un id se rechaza, y dice cuál', async () => {
+    // `''` no es un id: solo puede significar "sin vincular", y para eso está
+    // `null`. Se responde 400 nombrando los dos campos en vez de aceptarlo en
+    // silencio, porque un id vacío que se guarda desvincula sin querer.
+    //
+    // Esto era exactamente lo que mandaba la app —un formulario produce `''`,
+    // no `null`— y el diálogo no mostraba el error, así que el botón parecía
+    // no hacer nada. Ver `CalendarEvent.toJson` en el cliente.
+    const res = await req('/calendar-events', T.admin!, {
+      ...json({
+        title: 'Encuentro de Ruta',
+        startsAt: new Date().toISOString(),
+        type: 'ruta_impacto',
+        courseId: '',
+        laboratoryId: '',
+      }),
+    });
+    expect(res.status).toBe(400);
+
+    const error = await body<{
+      error: { code: string; details: { field: string }[] };
+    }>(res);
+    expect(error.error.code).toBe('validation_error');
+    expect(error.error.details.map((d) => d.field).sort()).toEqual([
+      'courseId',
+      'laboratoryId',
+    ]);
+  });
+
   it('Empresa y Donante no tienen calendario', async () => {
     for (const token of [T.company!, T.donor!]) {
       const res = await req('/calendar-events', token);

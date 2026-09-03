@@ -423,9 +423,12 @@ class AdminCalendar extends StatelessWidget {
                 courses.where((c) => c.isOpenLearning).toList();
             final meetLink = data.siteContent.valueOrNull?.meetingLink ?? '';
 
-            Future<void> guardar(List<CalendarEvent> nuevos) async {
+            Future<void> guardar(
+              List<CalendarEvent> nuevos,
+              String? idQueSeEdita,
+            ) async {
               for (final e in nuevos) {
-                await data.saveCalendarEvent(e);
+                await data.saveCalendarEvent(e, id: idQueSeEdita);
               }
             }
 

@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/models.dart';
+import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
+import 'async_states.dart';
 import 'common.dart';
 
 /// Paleta semántica por tipo de evento del calendario. Elegida (y medida)
@@ -452,7 +454,15 @@ Future<void> showCalendarEventDialog(
   required List<Course> courses,
   required List<Laboratory> labs,
   required String defaultMeetLink,
-  required Future<void> Function(List<CalendarEvent> events) onSave,
+  /// [idQueSeEdita] es nulo al crear y el id del evento al editar. Va aparte
+  /// de los eventos porque el llamador necesita ese dato para decidir entre
+  /// crear y actualizar: pasarlo dentro de la lista no servía —al crear, el
+  /// `id` de esos eventos es un marcador de posición, no un id del servidor—
+  /// y por eso editar terminaba **duplicando** el evento en vez de cambiarlo.
+  required Future<void> Function(
+    List<CalendarEvent> events,
+    String? idQueSeEdita,
+  ) onSave,
 }) async {
   final isEditing = existing != null;
   final title = TextEditingController(text: existing?.title ?? '');
@@ -467,6 +477,8 @@ Future<void> showCalendarEventDialog(
   final day = initialDay ?? fallbackDay;
   var start = existing?.startsAt ?? DateTime(day.year, day.month, day.day, 10, 0);
   var repeatCount = 1;
+  ApiException? error;
+  var guardando = false;
 
   await showDialog<void>(
     context: context,
@@ -481,6 +493,7 @@ Future<void> showCalendarEventDialog(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (error != null) ErrorBanner(error!),
                 TextField(
                   controller: title,
                   decoration: const InputDecoration(labelText: 'Título'),
@@ -642,10 +655,11 @@ Future<void> showCalendarEventDialog(
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: guardando ? null : () => Navigator.pop(ctx),
               child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
+              if (guardando) return true;
               final missingTarget = switch (type) {
                 CalendarEventType.openLearningSync => courseId.isEmpty,
                 CalendarEventType.mentoria => labId.isEmpty,
@@ -655,12 +669,17 @@ Future<void> showCalendarEventDialog(
             }()
                 ? null
                 : () async {
+                    // `null`, no `''`. Un evento de Ruta de Impacto no se
+                    // vincula a curso ni a laboratorio, y mandar la cadena
+                    // vacía hacía que el servidor respondiera 400 «Invalid
+                    // UUID» en los dos campos — es decir, el tipo que Admin
+                    // trae por defecto NUNCA se pudo guardar.
                     final eventCourseId =
                         type == CalendarEventType.openLearningSync
                             ? courseId
-                            : '';
+                            : null;
                     final eventLabId =
-                        type == CalendarEventType.mentoria ? labId : '';
+                        type == CalendarEventType.mentoria ? labId : null;
                     final baseId = existing?.id ??
                         'cal_${DateTime.now().millisecondsSinceEpoch}';
                     final events = <CalendarEvent>[
@@ -691,14 +710,30 @@ Future<void> showCalendarEventDialog(
                         ));
                       }
                     }
-                    await onSave(events);
+
+                    setState(() {
+                      guardando = true;
+                      error = null;
+                    });
+                    try {
+                      await onSave(events, existing?.id);
+                    } on ApiException catch (e) {
+                      // Antes esto no se capturaba: la excepción se perdía en
+                      // el `Future` del botón, el diálogo quedaba abierto sin
+                      // decir nada y parecía que el botón no hacía nada.
+                      setState(() {
+                        guardando = false;
+                        error = e;
+                      });
+                      return;
+                    }
                     if (ctx.mounted) Navigator.pop(ctx);
                     if (context.mounted) {
                       showSuccessCheck(context,
                           isEditing ? 'Evento actualizado ✓' : 'Evento agregado ✓');
                     }
                   },
-            child: const Text('Guardar'),
+            child: Text(guardando ? 'Guardando…' : 'Guardar'),
           ),
         ],
       ),

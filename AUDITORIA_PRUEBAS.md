@@ -162,7 +162,7 @@ backend   538 pruebas · typecheck limpio · lint limpio
 Flutter   204 pruebas · flutter analyze sin issues
 ```
 
-Al 3 de septiembre: **555 de backend y 195 de Flutter**, con `typecheck`,
+Al 3 de septiembre: **557 de backend y 200 de Flutter**, con `typecheck`,
 `lint` y `flutter analyze` limpios.
 
 **Actualización del 2 de septiembre.** Todo lo que se agregó después de esta
@@ -203,3 +203,33 @@ Vale como recordatorio general para esta suite: **lo que `app.request()` se
 salta —preflight, redirecciones del borde, caché de CloudFront, cabeceras que
 agrega API Gateway— no lo cubre ninguna prueba de backend, por muchas que
 sean.**
+
+## El segundo punto ciego: la petición correcta con el cuerpo equivocado
+
+El calendario no dejaba guardar ningún evento, y la causa es de la misma
+familia. Las pruebas de backend de `/calendar-events` pasaban **solo el campo
+que su tipo de evento usa** —una sesión Open Learning con su `courseId`, una
+mentoría con su `laboratoryId`— y nunca la forma real del cuerpo que manda la
+aplicación, que envía **los dos siempre**, con `''` en el que no aplica.
+
+El servidor valida ambos como uuid opcional, así que respondía 400 «Invalid
+UUID». Las pruebas escribían un cuerpo *correcto*; el cliente escribía otro. La
+suite del servidor no puede encontrar eso: mide lo que ella misma envía.
+
+Tampoco lo veía nadie desde el cliente, porque el diálogo no capturaba la
+excepción: se perdía en el `Future` del botón y el botón parecía no hacer nada.
+Un tercer fallo se escondía debajo: al editar se llamaba a POST y no a PATCH,
+así que cuando llegara a guardar habría duplicado el evento.
+
+Lo que se agregó para que no vuelva a pasar:
+
+- `FakeApi.cuerpos` guarda el cuerpo de cada petición, no solo método y ruta.
+  Afirmar solo sobre la ruta deja pasar justo esta clase de error.
+- `test/calendario_test.dart` comprueba el cuerpo que sale de verdad, que el
+  error se ve cuando el servidor rechaza, y que editar hace PATCH.
+- En `entities.test.ts`, dos casos con la forma real del cuerpo: un evento de
+  Ruta con los dos ids en `null`, y el rechazo explícito de la cadena vacía.
+
+**La regla que sale de los dos hallazgos: una prueba que construye el cuerpo
+—o la petición— por su cuenta solo prueba el servidor. Que el cliente hable el
+mismo idioma hay que probarlo aparte, con el cuerpo que el cliente arma.**

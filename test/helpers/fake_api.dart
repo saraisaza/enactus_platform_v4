@@ -32,6 +32,14 @@ class FakeApi {
   /// que no le corresponde.
   final List<String> requested = [];
 
+  /// El cuerpo de cada petición, en el MISMO orden que [requested].
+  ///
+  /// Existe porque afirmar solo sobre método y ruta deja pasar la clase de
+  /// error más cara: la petición correcta con el cuerpo equivocado. El
+  /// calendario mandaba `courseId: ''` donde el servidor espera un uuid o
+  /// `null`, y ninguna prueba podía verlo.
+  final List<Map<String, dynamic>> cuerpos = [];
+
   /// Qué responder cuando la ruta no está en [routes].
   ///
   /// Por defecto es `null` y una ruta sin respuesta hace fallar la prueba
@@ -60,6 +68,11 @@ class FakeApi {
     final client = MockClient((request) async {
       final path = request.url.path;
       requested.add('${request.method} $path');
+      cuerpos.add(
+        request.body.isEmpty
+            ? const {}
+            : jsonDecode(request.body) as Map<String, dynamic>,
+      );
       if (delay > Duration.zero) await Future<void>.delayed(delay);
 
       if (notFound.contains(path)) {

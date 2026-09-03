@@ -384,9 +384,12 @@ class _LxdCalendar extends StatelessWidget {
             final openLearning =
                 courses.where((c) => c.isOpenLearning).toList();
 
-            Future<void> save(List<CalendarEvent> list) async {
+            Future<void> save(
+              List<CalendarEvent> list,
+              String? idQueSeEdita,
+            ) async {
               for (final event in list) {
-                await data.saveCalendarEvent(event);
+                await data.saveCalendarEvent(event, id: idQueSeEdita);
               }
             }
 

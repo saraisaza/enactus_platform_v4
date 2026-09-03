@@ -2077,9 +2077,17 @@ class CalendarEvent {
         'type': type.apiValue,
         'meetLink': meetLink,
         'guests': guests,
-        'courseId': courseId,
-        'laboratoryId': laboratoryId,
+        // La cadena vacía se manda como `null`, no tal cual. El servidor
+        // valida estos dos como uuid opcional, así que un `''` —que es lo que
+        // produce naturalmente un formulario cuando no hay vínculo— responde
+        // 400 «Invalid UUID». Y `''` no es ambiguo: no existe ningún id vacío,
+        // solo puede significar "sin vincular", que es exactamente `null`.
+        'courseId': _idONulo(courseId),
+        'laboratoryId': _idONulo(laboratoryId),
       };
+
+  static String? _idONulo(String? id) =>
+      (id == null || id.isEmpty) ? null : id;
 }
 
 /// Laboratorio tal como lo ve la portada pública: nombre y descripción, nada

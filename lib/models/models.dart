@@ -72,6 +72,15 @@ class AppUser {
   final bool canGradeOpenLearning;
   final bool canGradeEnactus;
 
+  /// La persona todavía usa la contraseña que le dieron.
+  ///
+  /// Mientras sea `true`, el servidor responde 403
+  /// `password_change_required` a todo salvo `/auth/me`,
+  /// `/auth/change-password` y `/auth/logout`. La pantalla de cambio no es
+  /// una cortesía: sin ella la persona entra a un portal que no responde
+  /// nada.
+  final bool mustChangePassword;
+
   /// Perfil libre de LXD y Mentor: company, position, specialty, languages,
   /// availability, experience, interests. Texto sin estructura.
   final Map<String, dynamic> profile;
@@ -114,6 +123,7 @@ class AppUser {
     this.avatarS3Key,
     this.canGradeOpenLearning = true,
     this.canGradeEnactus = false,
+    this.mustChangePassword = false,
     this.profile = const {},
     this.joinedAt,
     this.team,
@@ -146,6 +156,9 @@ class AppUser {
         avatarS3Key: j['avatarS3Key'] as String?,
         canGradeOpenLearning: (j['canGradeOpenLearning'] as bool?) ?? true,
         canGradeEnactus: (j['canGradeEnactus'] as bool?) ?? false,
+        // `false` por defecto: un backend viejo que no manda el campo no debe
+        // dejar a nadie encerrado en la pantalla de cambio.
+        mustChangePassword: (j['mustChangePassword'] as bool?) ?? false,
         profile: Map<String, dynamic>.from(j['profile'] as Map? ?? const {}),
         joinedAt: _date(j['joinedAt']),
         team: j['team'] == null

@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import type { Database } from '../db/client';
-import { refreshTokens, users } from '../db/schema';
+import { auditLog, refreshTokens, users } from '../db/schema';
 import { publicUser } from '../lib/dto';
 import { badRequest, tooManyRequests, unauthorized } from '../lib/errors';
 import {
@@ -12,7 +12,7 @@ import {
   signAccessToken,
   ttlToMs,
 } from '../lib/jwt';
-import { verifyPassword } from '../lib/password';
+import { hashPassword, verifyPassword } from '../lib/password';
 import { requireAuth, currentUser } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import {
@@ -30,6 +30,25 @@ const loginSchema = z.object({
 
 const refreshSchema = z.object({
   refreshToken: z.string().min(1, 'Falta el refresh token.'),
+});
+
+/**
+ * Cambio de contraseña por la propia persona.
+ *
+ * Piso de 12 caracteres, el mismo que `seed:prod`: no tendría sentido exigir
+ * 12 para la contraseña que se entrega y aceptar 6 para la que la reemplaza —
+ * la segunda es la definitiva y dura más.
+ */
+const CARACTERES_MINIMOS = 12;
+
+const cambioSchema = z.object({
+  currentPassword: z.string().min(1, 'Falta tu contraseña actual.'),
+  newPassword: z
+    .string()
+    .min(
+      CARACTERES_MINIMOS,
+      `La contraseña nueva necesita al menos ${CARACTERES_MINIMOS} caracteres.`,
+    ),
 });
 
 export const authRoutes = new Hono<AppEnv>();
@@ -315,6 +334,86 @@ const profileSchema = z.object({
  * `canGrade*` ni las relaciones. Esos los cambia un administrador — si
  * estuvieran acá, cualquiera podría ascenderse mandando un campo de más.
  */
+/**
+ * Cambiar la propia contraseña.
+ *
+ * No existía. La plataforma podía restablecer la contraseña de otra persona
+ * (`PATCH /users/:id`, solo administración) pero nadie podía cambiar la suya
+ * — así que "cambiala al entrar" era una instrucción imposible de cumplir.
+ *
+ * Cuatro cosas que hace y conviene que queden dichas:
+ *
+ * 1. **Pide la contraseña actual.** Un token robado no alcanza para
+ *    apropiarse de la cuenta: hace falta saber la contraseña. Sin esto, quien
+ *    consiguiera un token de 12 horas podría cambiarla y dejar afuera a su
+ *    dueño.
+ * 2. **Rechaza repetir la misma.** Si no, "cambiar la contraseña" se cumple
+ *    escribiendo la que ya tenía, y la obligación no sirve de nada.
+ * 3. **Levanta `mustChangePassword`**, que es lo que destraba el resto de la
+ *    API.
+ * 4. **Cierra las demás sesiones** y emite un par nuevo. Cambiar la
+ *    contraseña se hace, entre otras razones, porque alguien más podría
+ *    tenerla; dejar viva su sesión haría el cambio decorativo.
+ */
+authRoutes.post('/change-password', requireAuth, async (c) => {
+  const user = currentUser(c);
+  const { currentPassword, newPassword } = cambioSchema.parse(
+    await c.req.json(),
+  );
+  const db = c.get('db');
+
+  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+    throw unauthorized('Tu contraseña actual no es correcta.');
+  }
+  if (currentPassword === newPassword) {
+    throw badRequest('La contraseña nueva tiene que ser distinta de la actual.');
+  }
+
+  await db
+    .update(users)
+    .set({
+      passwordHash: await hashPassword(newPassword),
+      mustChangePassword: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  // Todas las sesiones anteriores caen, incluida la que se está usando.
+  await db
+    .update(refreshTokens)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(eq(refreshTokens.userId, user.id), isNull(refreshTokens.revokedAt)),
+    );
+
+  // Y se emite una nueva, para que la persona siga adentro sin volver a
+  // escribir lo que acaba de cambiar.
+  const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
+
+  await db.insert(auditLog).values({
+    actorId: user.id,
+    action: 'user.password.change',
+    entityType: 'user',
+    entityId: user.id,
+    // Queda constancia de QUE cambió, nunca de a qué.
+    newValue: { self: true },
+    ip: c.get('requestIp'),
+  });
+
+  const [actualizado] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
+  return c.json({
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    expiresIn: tokens.expiresIn,
+    user: await meResponse(db, actualizado!),
+  });
+});
+
 authRoutes.patch('/me', requireAuth, async (c) => {
   const user = currentUser(c);
   const body = profileSchema.parse(await c.req.json());

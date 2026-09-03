@@ -25,8 +25,10 @@ export const badRequest = (message: string, details?: unknown) =>
 export const unauthorized = (message = 'Necesitás iniciar sesión.') =>
   new AppError(401, 'unauthorized', message);
 
-export const forbidden = (message = 'No tenés permiso para esto.') =>
-  new AppError(403, 'forbidden', message);
+export const forbidden = (
+  message = 'No tenés permiso para esto.',
+  code: 'forbidden' | 'password_change_required' = 'forbidden',
+) => new AppError(403, code, message);
 
 export const notFound = (message = 'No se encontró el recurso.') =>
   new AppError(404, 'not_found', message);

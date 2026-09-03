@@ -45,8 +45,15 @@ void cargarFixtures() {
   _fixtures = jsonDecode(archivo.readAsStringSync()) as Map<String, dynamic>;
 }
 
-Map<String, dynamic> usuarioDe(String role) =>
-    Map<String, dynamic>.from(_fixtures['me'][role] as Map);
+Map<String, dynamic> usuarioDe(String role, {bool pendiente = false}) {
+  final usuario = Map<String, dynamic>.from(_fixtures['me'][role] as Map);
+  // El payload real trae `mustChangePassword`. Ponerlo acá y no en el widget
+  // hace que la prueba recorra el camino de producción entero: el JSON lo
+  // parsea `AppUser.fromJson`, el guardia de rol lo lee del provider, y nadie
+  // toca el estado a mano.
+  if (pendiente) usuario['mustChangePassword'] = true;
+  return usuario;
+}
 
 /// Sesión ya iniciada: `EnactusApp` la restaura desde el token guardado.
 void conSesionGuardada() => SharedPreferences.setMockInitialValues({
@@ -54,10 +61,15 @@ void conSesionGuardada() => SharedPreferences.setMockInitialValues({
       'enactus.refreshToken': 'refresh-de-prueba',
     });
 
-FakeApi fakeDe(String role) {
+FakeApi fakeDe(String role, {bool pendiente = false}) {
   final rutas = <String, Object?>{
     ...Map<String, Object?>.from(_fixtures['compartidas'] as Map),
-    '/auth/me': usuarioDe(role),
+    '/auth/me': usuarioDe(role, pendiente: pendiente),
+    // Cerrar sesión es una ruta que la app llama de verdad (desde el menú de
+    // cuenta y desde la pantalla de cambio obligatorio). Sin ella, cualquier
+    // prueba que toque "Cerrar sesión" falla por falta de fixture y no por lo
+    // que quería medir.
+    '/auth/logout': const <String, Object?>{},
     '/students/${usuarioDe(role)['id']}/ruta-progress': _fixtures['rutaProgress'],
   };
   return FakeApi(
@@ -69,8 +81,11 @@ FakeApi fakeDe(String role) {
   );
 }
 
-Widget appDe(String role) {
-  final api = fakeDe(role).build();
+/// [pendiente] simula una cuenta con la contraseña pendiente de cambio: es lo
+/// que el servidor manda cuando `seed:prod` la creó o cuando administración la
+/// restableció.
+Widget appDe(String role, {bool pendiente = false}) {
+  final api = fakeDe(role, pendiente: pendiente).build();
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);
   return EnactusApp(

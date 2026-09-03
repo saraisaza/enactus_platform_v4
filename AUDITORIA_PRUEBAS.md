@@ -158,6 +158,16 @@ pasa desapercibida más fácil.
 ## Estado al cerrar
 
 ```
-backend   505 pruebas · typecheck limpio · lint limpio
-Flutter   188 pruebas · flutter analyze sin issues
+backend   538 pruebas · typecheck limpio · lint limpio
+Flutter   204 pruebas · flutter analyze sin issues
 ```
+
+**Actualización del 2 de septiembre.** Todo lo que se agregó después de esta
+auditoría pasó por el mismo filtro antes de darse por bueno: se rompió a
+propósito y se comprobó que alguna prueba se pusiera roja.
+
+| Qué se rompió | Pruebas rojas |
+|---|---|
+| la restauración deja de reponer los hashes | 1 |
+| `requireAuth` deja de bloquear con la contraseña pendiente | 3 |
+| los guardias de Flutter dejan pasar con la contraseña pendiente | 13 |

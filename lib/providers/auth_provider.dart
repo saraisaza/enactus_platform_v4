@@ -80,6 +80,34 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// La sesión está viva pero no sirve para nada hasta cambiar la contraseña.
+  ///
+  /// Lo decide el servidor —responde 403 `password_change_required` a casi
+  /// todo—; acá solo se lee para saber qué pantalla mostrar.
+  bool get mustChangePassword => _currentUser?.mustChangePassword ?? false;
+
+  /// Cambia la propia contraseña. Devuelve `null` si salió bien, o el error.
+  ///
+  /// Al terminar, el usuario en memoria ya viene con `mustChangePassword` en
+  /// `false`, así que el guardia de rol deja pasar al portal sin que haya que
+  /// volver a entrar.
+  Future<ApiException?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final json = await api.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      _setUser(AppUser.fromJson(json));
+      notifyListeners();
+      return null;
+    } on ApiException catch (e) {
+      return e;
+    }
+  }
+
   Future<void> logout() async {
     await api.logout();
     _setUser(null);

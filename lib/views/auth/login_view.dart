@@ -36,6 +36,10 @@ class _LoginViewState extends State<LoginView> {
           auth.loginError?.message ?? 'Correo o contraseña incorrectos.');
       return;
     }
+    // Con la contraseña pendiente de cambio no hay portal al que ir: el
+    // servidor responde 403 a todo salvo el cambio. Se navega al portal igual
+    // —el guardia de rol muestra la pantalla de cambio— para no duplicar acá
+    // la decisión de a dónde va cada rol.
     Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.forRole(user.role), (_) => false);
   }

@@ -22,6 +22,13 @@
       "when": 1787953517477,
       "tag": "0002_early_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788400000000,
+      "tag": "0003_cambio_obligatorio",
+      "breakpoints": true
     }
   ]
 }

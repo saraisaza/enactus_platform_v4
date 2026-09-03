@@ -282,9 +282,20 @@ todas a la vez y ninguna puede sostener después que no fue ella.
 contraseñas ya están hasheadas adentro; el archivo solo sigue siendo una copia
 en claro esperando a que alguien la encuentre.
 
-Ojo: hoy la plataforma **no obliga** a cambiar la contraseña al primer ingreso
-— no existe el campo que lo marcaría. Ver casilla abierta 2 en
-`REVISION_FINAL.md`.
+Las cuentas quedan **obligadas a cambiar la contraseña al primer ingreso**:
+`seed:prod` pone `must_change_password`, y mientras esté puesta la API
+responde 403 `password_change_required` a todo salvo `GET /auth/me`,
+`POST /auth/change-password` y `POST /auth/logout`. La persona entra con la que
+se le entregó, elige la suya, y recién ahí la plataforma le responde.
+
+Eso hace que la copia en claro que usaste para entregarla —el mensaje, el
+papel— deje de servir en cuanto la persona entra. Hasta entonces, sirve: por
+eso conviene entregarlas por un canal que se pueda borrar y pedir el cambio el
+mismo día.
+
+Lo mismo vale para un restablecimiento desde administración
+(`PATCH /users/{id}` con `password`): quien lo recibe queda obligado a
+cambiarlo.
 
 ---
 

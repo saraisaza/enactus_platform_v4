@@ -37,9 +37,11 @@ código, pero no es lo mismo), el bloque de infraestructura, y el ensayo de
 go-live completo. No se puede hacer un simulacro de despliegue de algo que
 nunca se desplegó.
 
-**Lo que sí está listo es el código.** 519 pruebas de backend y 188 de Flutter
-en verde, `typecheck`, `lint` y `flutter analyze` limpios, y siete hallazgos
-reales cerrados y verificados. Es una base sólida. Le falta el suelo debajo.
+**Lo que sí está listo es el código.** 538 pruebas de backend y 204 de Flutter
+en verde, `typecheck`, `lint` y `flutter analyze` limpios, seis hallazgos
+reales cerrados y verificados, y la única casilla abierta que estaba en mi
+mano —el cambio obligatorio de contraseña— cerrada también. Es una base
+sólida. Le falta el suelo debajo.
 
 ---
 
@@ -324,13 +326,8 @@ tiene gente. 7 pruebas, casi todas sobre lo que **no** debe quedar.
 **Necesito de vos:** los nombres y correos reales de los super admins. No los
 invento y no los pongo en el repositorio.
 
-**2. No existe el cambio de contraseña obligatorio al primer ingreso.**
-La tabla `users` no tiene ningún campo que lo marque — lo verifiqué. Hoy
-"cambio obligatorio" es un acuerdo con la persona, no algo que el sistema
-garantice. Cerrarlo son: una migración, un chequeo en el login y una pantalla
-en el cliente. **Es una decisión tuya** si entra antes del 1 de octubre o si
-se acepta el riesgo con contraseñas iniciales fuertes y entrega por canal
-seguro.
+**2. ~~No existe el cambio de contraseña obligatorio al primer ingreso.~~**
+**CERRADA el 2 de septiembre.** Ver "Cambio obligatorio de contraseña" abajo.
 
 **3. `TRUSTED_PROXY_HOPS` hay que fijarlo el día del despliegue.**
 Con CloudFront → API Gateway → Lambda son 2. Si queda mal puesto, el primer
@@ -382,9 +379,52 @@ máquina.
 ## Estado al cerrar
 
 ```
-backend   519 pruebas · typecheck limpio · lint limpio
-Flutter   188 pruebas · flutter analyze sin issues
+backend   538 pruebas · typecheck limpio · lint limpio
+Flutter   204 pruebas · flutter analyze sin issues
 ```
 
 Hallazgos: **3 críticos, 1 alto, 1 medio, 1 bajo — los seis cerrados y
 verificados con la prueba que los detectó.**
+
+---
+
+## Cambio obligatorio de contraseña
+
+Era la casilla abierta 2 y quedó cerrada. Vale la pena decir qué faltaba,
+porque era más que un campo: **la plataforma no tenía forma de que alguien
+cambiara su propia contraseña.** Sabía restablecer la de otro
+(`PATCH /users/{id}`, solo administración) y nada más — así que "cambiala al
+entrar" era una instrucción imposible de cumplir.
+
+Lo que hay ahora:
+
+- **`users.must_change_password`** (migración `0003`), con `default false`:
+  aplicarla no echa de la plataforma a quien ya eligió su contraseña.
+- **`POST /auth/change-password`**, que pide la contraseña actual —un access
+  token robado dura 12 horas y no puede alcanzar para apropiarse de una
+  cuenta—, rechaza repetir la misma, cierra todas las sesiones anteriores y
+  emite un par nuevo.
+- **El bloqueo vive en `requireAuth`**, no en la pantalla. Mientras la bandera
+  esté puesta, toda la API responde **403 `password_change_required`** salvo
+  `GET /auth/me`, `POST /auth/change-password` y `POST /auth/logout`. Si
+  viviera en el cliente sería un cartel que se cierra con la X: la API
+  seguiría aceptando todo con la contraseña entregada, y la copia que se usó
+  para entregarla —un mensaje, un papel, un historial de chat— seguiría
+  sirviendo.
+- **La bandera se pone sola** en los dos únicos casos en que alguien recibe una
+  contraseña que no eligió: las cuentas que crea `seed:prod` y los
+  restablecimientos de administración.
+- **Una pantalla en Flutter** que aparece desde los tres guardias de sesión.
+  Sin botón de "más tarde" —no hay más tarde— pero con salida para cerrar
+  sesión, para que nadie quede encerrado.
+
+Verificado de punta a punta contra la API real, con una cuenta desechable:
+entra con la entregada → la plataforma le responde 403 → no puede repetir la
+misma ni inventar la actual → cambia → la plataforma le responde → la sesión
+anterior queda cerrada → la contraseña entregada ya no sirve. Y el detalle que
+más dice que el bloqueo es real: **ni el superadmin puede crear una cuenta
+antes de cambiar la suya.**
+
+21 pruebas nuevas (13 de backend, 16 de Flutter, con solapamiento de nombre).
+Comprobado por mutación que las detectan: quitando el bloqueo del servidor
+caen 3 pruebas de backend, y quitándolo de los guardias caen 13 de Flutter.

@@ -321,10 +321,21 @@ En su lugar, dos medidas que se complementan:
    un pool grande por proceso no aporta nada y sí multiplica las conexiones.
 2. **`reserved concurrency` de la Lambda fijada en 40.** Es la válvula. Sin
    ese tope, un pico crea contenedores sin límite y **cada uno abre su
-   conexión**; una `db.t4g.micro` aguanta ~100 y se agota — y cuando se agota
+   conexión**; una `db.t4g.micro` aguanta **79** —medido, no estimado— y se
+   agota — y cuando se agota
    no falla solo el pico, falla todo, incluido el login de quien ya estaba
    adentro. Con el tope, es imposible por construcción: 40 contenedores × 1
-   conexión = 40, menos de la mitad del techo.
+   conexión = 40, algo más de la mitad del techo.
+
+   **Hoy el tope no se puede aplicar**: la cuenta tiene un límite total de 10
+   ejecuciones concurrentes y AWS exige dejar 10 sin reservar. Ver
+   `BLOQUEOS_INFRA.md`. Mientras tanto ese mismo límite de 10 protege la base
+   mejor que el tope de 40 — pero deja producción y staging compitiendo por
+   las mismas 10, que es un riesgo distinto.
+
+   El reparto cuando se apruebe la cuota: **40 producción + 5 staging**.
+   Staging no necesita capacidad de producción, y 40 + 40 no cabrían: 80
+   conexiones contra ~70 útiles.
 
 Los prepared statements se apagan aunque con conexión directa no molesten:
 si algún día hay que meter un pooler en modo transacción, se rompen ahí. Vale

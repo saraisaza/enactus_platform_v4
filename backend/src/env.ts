@@ -28,6 +28,18 @@ const schema = z.object({
   CLOUDFRONT_KEY_PAIR_ID: z.string().default(''),
   CLOUDFRONT_PRIVATE_KEY: z.string().default(''),
 
+  /**
+   * Ruta al *bundle* de CA de RDS, para validar el certificado del servidor.
+   *
+   * Obligatoria en producción (ver `tlsDeRds()` en `db/connection.ts`). En
+   * local queda vacía: PostgreSQL de desarrollo no exige TLS.
+   */
+  RDS_CA_PATH: z.string().default(''),
+
+  /** Bucket y objeto con la configuración cifrada. Ver `lib/secretos.ts`. */
+  SECRETS_BUCKET: z.string().default(''),
+  SECRETS_KEY: z.string().default(''),
+
   CORS_ORIGIN: z.string().default('http://localhost:8080'),
   PORT: z.coerce.number().int().positive().default(3000),
 

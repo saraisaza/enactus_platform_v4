@@ -31,11 +31,44 @@ riesgo del que quita. Queda en tres pasos, con fecha:
 
 | Cuándo | Qué |
 |---|---|
-| **Antes de terminar 5B** | Bajar `enactus-deploy` de `PowerUserAccess` a una política acotada a lo que de verdad usó |
+| **Ahora** | Bajar `enactus-deploy` de `PowerUserAccess` a estos 15 servicios (lista abajo) |
 | **Antes del go-live (1-oct-2026)** | Migrar a **IAM Identity Center**: credenciales temporales por `aws sso login`, y borrar las dos llaves AKIA |
 
 Identity Center además es **menos** fricción que una llave con MFA
 condicionada: una sesión al día en vez de manejar tokens a mano.
+
+### Los 15 servicios que `enactus-deploy` usó de verdad
+
+Sacados de lo que se ejecutó desplegando la plataforma entera, no de una
+estimación:
+
+```
+ec2              VPC, subredes, security groups, tablas de ruta, VPC endpoints, ENIs de Lambda
+rds              instancias, subnet groups, parameter groups
+iam              crear rol, adjuntar/poner política de rol, pasar rol (ya acotado a enactus-*)
+kms              crear llave, crear alias
+s3               buckets, objetos, políticas, cifrado, versionado, bloqueo público
+secretsmanager   crear secreto, leer, poner versión nueva
+lambda           crear/actualizar/invocar función, concurrencia, permisos de invocación
+logs             leer grupos de log (CloudWatch Logs)
+apigateway       HTTP APIs, integraciones, rutas, dominios personalizados, mapeos
+cloudfront       distribuciones, OAC, llaves públicas, key groups, políticas de cabeceras, invalidaciones
+acm              listar y describir certificados
+route53          zonas y registros
+budgets          leer avisos
+servicequotas    consultar y pedir aumento
+sts              identificar quién soy
+freetier         consultar uso del nivel gratuito
+```
+
+`PowerUserAccess` da acceso a los ~400 servicios de AWS. La política acotada
+sería `Allow` sobre estos 15 y nada más — con el `iam:*` que ya está limitado
+al prefijo `enactus-*` por `enactus-roles-de-servicio`.
+
+**Falta que lo aprobés antes de aplicarlo.** Recortar permisos sobre la marcha
+puede romper el pipeline en el peor momento, y estos 15 salen de un despliegue
+completo pero no cubren lo que todavía no existe: CI/CD, alarmas de CloudWatch
+y WAF, por ejemplo, van a necesitar `cloudwatch`, `events` y `wafv2`.
 
 ### Cómo se comprueba que se cerró
 

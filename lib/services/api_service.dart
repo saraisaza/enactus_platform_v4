@@ -98,28 +98,6 @@ class ApiService {
     return Map<String, dynamic>.from(json['user'] as Map);
   }
 
-  /// Cambia la propia contraseña y guarda el par de tokens nuevo.
-  ///
-  /// El servidor cierra todas las sesiones anteriores y emite una nueva, así
-  /// que hay que guardar la que vuelve: quedarse con la vieja dejaría a la
-  /// persona con un refresh token ya revocado y la sacaría de la aplicación
-  /// en la siguiente renovación.
-  Future<Map<String, dynamic>> changePassword({
-    required String currentPassword,
-    required String newPassword,
-  }) async {
-    final data = await post('/auth/change-password', body: {
-      'currentPassword': currentPassword,
-      'newPassword': newPassword,
-    });
-    final json = Map<String, dynamic>.from(data as Map);
-    await tokens.save(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String,
-    );
-    return Map<String, dynamic>.from(json['user'] as Map);
-  }
-
   /// Usuario de la sesión guardada, o `null` si no hay o ya no vale.
   Future<Map<String, dynamic>?> restoreSession() async {
     if (await tokens.readAccess() == null) return null;

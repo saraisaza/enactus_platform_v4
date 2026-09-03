@@ -65,22 +65,6 @@ export const users = pgTable(
     canGradeOpenLearning: boolean().notNull().default(true),
     canGradeEnactus: boolean().notNull().default(false),
 
-    /**
-     * La persona todavía usa la contraseña que le dieron y tiene que
-     * cambiarla antes de hacer nada más.
-     *
-     * Se pone en `true` en los dos únicos momentos en que alguien recibe una
-     * contraseña que no eligió: cuando `seed:prod` crea las cuentas de
-     * arranque, y cuando administración restablece la de otra persona
-     * (`PATCH /users/:id` con `password`).
-     *
-     * No es una sugerencia de la interfaz: mientras esté en `true`,
-     * `requireAuth` bloquea toda la API salvo lo indispensable para
-     * cambiarla. Sin ese bloqueo, "cambio obligatorio" sería un cartel que se
-     * cierra con la X — y estas son las cuentas que administran datos de
-     * estudiantes reales.
-     */
-    mustChangePassword: boolean().notNull().default(false),
 
     /** Empresa aliada a la que pertenece (estudiante patrocinado, LXD, mentor). */
     companyId: uuid().references((): AnyPgColumn => users.id, {

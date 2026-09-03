@@ -29,14 +29,6 @@ export function publicUser(user: UserRow) {
     avatarS3Key: user.avatarS3Key,
     canGradeOpenLearning: user.canGradeOpenLearning,
     canGradeEnactus: user.canGradeEnactus,
-    /**
-     * Que la persona sepa que le falta cambiarla. No es un secreto —es un
-     * dato sobre uno mismo— y el cliente lo necesita para llevarla a la
-     * pantalla correcta. La obligación NO depende de este campo: la impone
-     * `requireAuth`, así que un cliente que lo ignore igual choca contra la
-     * API.
-     */
-    mustChangePassword: user.mustChangePassword,
     profile: user.profile,
     joinedAt: user.joinedAt,
   };

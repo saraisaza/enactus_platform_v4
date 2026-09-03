@@ -45,15 +45,8 @@ void cargarFixtures() {
   _fixtures = jsonDecode(archivo.readAsStringSync()) as Map<String, dynamic>;
 }
 
-Map<String, dynamic> usuarioDe(String role, {bool pendiente = false}) {
-  final usuario = Map<String, dynamic>.from(_fixtures['me'][role] as Map);
-  // El payload real trae `mustChangePassword`. Ponerlo acá y no en el widget
-  // hace que la prueba recorra el camino de producción entero: el JSON lo
-  // parsea `AppUser.fromJson`, el guardia de rol lo lee del provider, y nadie
-  // toca el estado a mano.
-  if (pendiente) usuario['mustChangePassword'] = true;
-  return usuario;
-}
+Map<String, dynamic> usuarioDe(String role) =>
+    Map<String, dynamic>.from(_fixtures['me'][role] as Map);
 
 /// Sesión ya iniciada: `EnactusApp` la restaura desde el token guardado.
 void conSesionGuardada() => SharedPreferences.setMockInitialValues({
@@ -61,10 +54,10 @@ void conSesionGuardada() => SharedPreferences.setMockInitialValues({
       'enactus.refreshToken': 'refresh-de-prueba',
     });
 
-FakeApi fakeDe(String role, {bool pendiente = false}) {
+FakeApi fakeDe(String role) {
   final rutas = <String, Object?>{
     ...Map<String, Object?>.from(_fixtures['compartidas'] as Map),
-    '/auth/me': usuarioDe(role, pendiente: pendiente),
+    '/auth/me': usuarioDe(role),
     // Cerrar sesión es una ruta que la app llama de verdad (desde el menú de
     // cuenta y desde la pantalla de cambio obligatorio). Sin ella, cualquier
     // prueba que toque "Cerrar sesión" falla por falta de fixture y no por lo
@@ -81,11 +74,8 @@ FakeApi fakeDe(String role, {bool pendiente = false}) {
   );
 }
 
-/// [pendiente] simula una cuenta con la contraseña pendiente de cambio: es lo
-/// que el servidor manda cuando `seed:prod` la creó o cuando administración la
-/// restableció.
-Widget appDe(String role, {bool pendiente = false}) {
-  final api = fakeDe(role, pendiente: pendiente).build();
+Widget appDe(String role) {
+  final api = fakeDe(role).build();
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);
   return EnactusApp(

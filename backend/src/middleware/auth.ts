@@ -30,41 +30,9 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
 
   if (!user) throw unauthorized('La cuenta ya no existe o fue desactivada.');
 
-  // Contraseña pendiente de cambio: la sesión vale para cambiarla y para nada
-  // más.
-  //
-  // El bloqueo va acá y no en la pantalla a propósito. Si viviera en el
-  // cliente, sería un cartel que se cierra con la X: la API seguiría
-  // aceptando todo con esa contraseña, y quien tuviera la copia que se usó
-  // para entregarla —un mensaje, un papel, el historial de un chat— entraría
-  // igual. Acá no hay nada que cerrar.
-  if (user.mustChangePassword && !esRutaDeCambio(c.req.method, c.req.path)) {
-    throw forbidden(
-      'Tiene que cambiar su contraseña antes de usar la plataforma.',
-      'password_change_required',
-    );
-  }
-
   c.set('user', user);
   await next();
 });
-
-/**
- * Lo único que se puede hacer con la contraseña pendiente de cambio.
- *
- * `/auth/me` entra en la lista porque el cliente necesita saber QUIÉN es para
- * dibujar la pantalla de cambio; negárselo dejaría a la aplicación sin poder
- * mostrar ni el nombre de quien está obligado a cambiarla. No expone nada que
- * la persona no sepa ya de sí misma.
- *
- * `/auth/logout` también: alguien que no quiere cambiarla ahora tiene que
- * poder salir, en vez de quedar encerrado en una pantalla sin salida.
- */
-function esRutaDeCambio(metodo: string, ruta: string): boolean {
-  if (ruta === '/auth/change-password') return metodo === 'POST';
-  if (ruta === '/auth/logout') return metodo === 'POST';
-  return ruta === '/auth/me' && metodo === 'GET';
-}
 
 /** El usuario autenticado. Solo se llama detrás de `requireAuth`. */
 export function currentUser(c: { get: (k: 'user') => AuthUser | undefined }): AuthUser {

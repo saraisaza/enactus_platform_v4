@@ -5,6 +5,13 @@
 Cada afirmación de este documento se sostiene con un comando ejecutado y su
 salida. Donde no pude ejecutar, lo digo — no lo doy por bueno.
 
+> **Nota del 3 de septiembre de 2026.** El cambio obligatorio de contraseña
+> al primer ingreso, cerrado en este informe como la casilla abierta 2, se
+> **quitó** después por decisión de producto: la cuenta se crea con una
+> contraseña y esa es la que se usa. Lo que sigue documenta el estado del
+> 2 de septiembre, cuando esa pieza existía — se deja tal cual como registro
+> de auditoría, no se reescribe. El estado actual está en `RUNBOOK.md`.
+
 ---
 
 ## Veredicto

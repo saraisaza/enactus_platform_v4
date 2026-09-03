@@ -159,54 +159,6 @@ paths:
       responses:
         '204': { description: Sesión cerrada (siempre, exista o no el token) }
 
-  /auth/change-password:
-    post:
-      tags: [auth]
-      summary: Cambiar la propia contraseña
-      description: |
-        El único camino para que una persona cambie SU contraseña.
-        `PATCH /users/{id}` restablece la de otra y es solo de administración.
-
-        Se pide la contraseña actual a propósito: un access token robado —que
-        dura 12 horas— no puede alcanzar para apropiarse de una cuenta.
-
-        Cierra todas las sesiones anteriores y devuelve un par nuevo, así que
-        la persona sigue adentro sin volver a escribir lo que acaba de cambiar.
-
-        Cuando la cuenta tiene `mustChangePassword`, este endpoint (junto con
-        `GET /auth/me` y `POST /auth/logout`) es lo ÚNICO que responde: el
-        resto de la API devuelve 403 con código `password_change_required`.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [currentPassword, newPassword]
-              properties:
-                currentPassword: { type: string }
-                newPassword:
-                  type: string
-                  minLength: 12
-                  description: |
-                    Mínimo 12 caracteres — el mismo piso que `seed:prod`. No
-                    tendría sentido exigir 12 para la contraseña que se
-                    entrega y aceptar 6 para la definitiva.
-      responses:
-        '200':
-          description: Contraseña cambiada; par de tokens nuevo
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessToken: { type: string }
-                  refreshToken: { type: string }
-                  expiresIn: { type: integer }
-                  user: { $ref: '#/components/schemas/User' }
-        '400': { description: La nueva es igual a la actual, o tiene menos de 12 caracteres }
-        '401': { description: Sin sesión, o la contraseña actual no es correcta }
-
   /auth/me:
     get:
       tags: [auth]

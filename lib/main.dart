@@ -8,7 +8,6 @@ import 'services/api_service.dart';
 import 'utils/url_strategy.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
-import 'views/auth/change_password_view.dart';
 import 'views/auth/login_view.dart';
 import 'views/admin/admin_portal.dart';
 import 'views/advisor/advisor_portal.dart';
@@ -209,11 +208,6 @@ class _BootstrapState extends State<_Bootstrap> {
     final user = auth.currentUser;
     if (user == null) return const LandingView();
 
-    // Contraseña pendiente de cambio: no hay portal al que ir. El servidor
-    // responde 403 a todo lo demás, así que mandarla al portal sería
-    // mostrarle una pantalla que no puede cargar nada.
-    if (auth.mustChangePassword) return const ChangePasswordView();
-
     // Con sesión activa, directo a su portal.
     return Navigator(
       onGenerateRoute: (settings) => _generateRoute(
@@ -245,9 +239,6 @@ class _RoleGuard extends StatelessWidget {
     }
     final user = auth.currentUser;
     if (user == null || user.role != role) return const LoginView();
-    // Ver la nota de `_Bootstrap`: con el cambio pendiente el portal no puede
-    // cargar nada.
-    if (auth.mustChangePassword) return const ChangePasswordView();
     return child;
   }
 }
@@ -268,7 +259,6 @@ class _AuthGuard extends StatelessWidget {
       );
     }
     if (!auth.isLoggedIn) return const LoginView();
-    if (auth.mustChangePassword) return const ChangePasswordView();
     return child;
   }
 }

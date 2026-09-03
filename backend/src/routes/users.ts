@@ -478,14 +478,7 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     .set({
       ...campos,
       studentType,
-      ...(password
-        ? {
-            passwordHash: await hashPassword(password),
-            // Se la eligió administración, no la persona: tiene que
-            // cambiarla antes de volver a usar la plataforma.
-            mustChangePassword: true,
-          }
-        : {}),
+      ...(password ? { passwordHash: await hashPassword(password) } : {}),
       updatedAt: new Date(),
     })
     .where(eq(users.id, id))

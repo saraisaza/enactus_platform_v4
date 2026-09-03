@@ -107,7 +107,9 @@ class AppRoutes {
 class SocialLinks {
   static const facebook = 'https://www.facebook.com/enactuscolombia/';
   static const instagram = 'https://www.instagram.com/enactuscolombia/';
-  static const linkedin = 'http://linkedin.com/company/enactuscolombia/';
+  // https y con www: la página se sirve por HTTPS y un enlace en claro
+  // provoca un salto extra y una advertencia en algunos navegadores.
+  static const linkedin = 'https://www.linkedin.com/company/enactuscolombia/';
 }
 
 class InstitutionalInfo {

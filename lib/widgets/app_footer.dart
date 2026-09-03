@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import 'animated_logo.dart';
 import 'common.dart';
+import 'social_button.dart';
+import 'social_icons.dart';
 
 /// Footer institucional presente en todas las pantallas.
 /// Borde tricolor superior (bandera de Colombia), logo animado, tagline y
@@ -16,21 +17,21 @@ class AppFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final socialButtons = Row(
       mainAxisSize: MainAxisSize.min,
-      children: const [
-        _SocialButton(
-          icon: Icons.facebook,
+      children: [
+        construirBotonSocial(
+          icono: _iconoFacebook,
           label: 'Facebook',
           url: SocialLinks.facebook,
         ),
-        SizedBox(width: 10),
-        _SocialButton(
-          icon: Icons.camera_alt_outlined,
+        const SizedBox(width: 10),
+        construirBotonSocial(
+          icono: _iconoInstagram,
           label: 'Instagram',
           url: SocialLinks.instagram,
         ),
-        SizedBox(width: 10),
-        _SocialButton(
-          icon: Icons.business_center_outlined,
+        const SizedBox(width: 10),
+        construirBotonSocial(
+          icono: _iconoLinkedIn,
           label: 'LinkedIn',
           url: SocialLinks.linkedin,
         ),
@@ -182,75 +183,9 @@ class AppFooter extends StatelessWidget {
 }
 
 /// Botón de red social: al pasar el cursor se vuelve dorado, escala y brilla.
-class _SocialButton extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final String url;
-  const _SocialButton({
-    required this.icon,
-    required this.label,
-    required this.url,
-  });
-
-  @override
-  State<_SocialButton> createState() => _SocialButtonState();
-}
-
-class _SocialButtonState extends State<_SocialButton> {
-  bool _hover = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: Tooltip(
-        message: widget.label,
-        child: GestureDetector(
-          onTap: () => launchUrl(Uri.parse(widget.url)),
-          // El círculo visible mide 36×36 (9px de padding + ícono de 18) —
-          // por debajo del mínimo de 48×48dp. En vez de agrandar el círculo
-          // (cambiaría el diseño), se centra dentro de un área táctil
-          // invisible de 48×48.
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Center(
-              child: AnimatedScale(
-                scale: _hover ? 1.15 : 1.0,
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutBack,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    color: _hover ? AppColors.gold : AppColors.slateLight,
-                    shape: BoxShape.circle,
-                    boxShadow: _hover
-                        ? [
-                            BoxShadow(
-                              color: AppColors.gold.withValues(alpha: 0.45),
-                              blurRadius: 16,
-                              spreadRadius: 1,
-                            ),
-                          ]
-                        : const [],
-                  ),
-                  child: Icon(
-                    widget.icon,
-                    size: 18,
-                    color: _hover ? AppColors.ink : Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+Widget _iconoFacebook(Color c) => Icon(Icons.facebook, size: 18, color: c);
+Widget _iconoInstagram(Color c) => InstagramIcon(color: c);
+Widget _iconoLinkedIn(Color c) => LinkedInIcon(color: c);
 
 /// ¿Hay que apilar el pie en vez de ponerlo en una fila?
 ///

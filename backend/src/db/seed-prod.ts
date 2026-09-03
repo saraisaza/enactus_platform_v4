@@ -159,10 +159,6 @@ export async function seedProduccion(
       email: cuenta.email,
       passwordHash: await hashPassword(password),
       role: cuenta.role,
-      // La contraseña la eligió o la generó quien sembró, y para entregarla
-      // tuvo que escribirla en algún lado. Esa copia deja de servir en cuanto
-      // la persona entra y la cambia — que es el punto.
-      mustChangePassword: true,
       joinedAt: new Date(),
     });
   }

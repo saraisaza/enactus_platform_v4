@@ -40,7 +40,7 @@ URL firmada. API Gateway corta el payload en 10 MB y un video lo revienta.
 - **`s3:ListBucket`** — nada lista el bucket, pero conviene tenerlo igual: sin
   este permiso, un `GET` sobre una key que no existe devuelve **403
   AccessDenied** en vez de **404 NoSuchKey**. Con las URLs firmadas que se le
-  entregan al navegador, eso convierte "esa imagen no está" en "no tenés
+  entregan al navegador, eso convierte "esa imagen no está" en "no tiene
   permiso", que es una pista falsa cada vez que haya que depurar algo.
 
 - **`s3:DeleteObject`** — hoy no se usa, y eso es un hueco de la aplicación, no

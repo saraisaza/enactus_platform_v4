@@ -522,7 +522,7 @@ final gradableCourseIds = myCourses
     .map((c) => c.id).toSet();
 
 // lxd_portal.dart:909 — esconde el FORMULARIO de certificados
-if (!lxd.canGradeEnactus) StatusChip(label: 'Tu Admin no te ha dado permiso…')
+if (!lxd.canGradeEnactus) StatusChip(label: 'Su Admin no te ha dado permiso…')
 ```
 
 Es **filtrado de interfaz**: se decide qué se muestra. `saveSubmission` e
@@ -656,7 +656,7 @@ un estudiante "con Ruta incompleta" y su certificado emitido.
   `laboratories.content_version` que sube con cada cambio estructural. Así el
   certificado es auditable, se sabe contra qué versión se emitió, y se puede
   mostrar "emitido sobre la versión 3 del laboratorio" sin invalidarlo.
-- **Y avisar.** Notificación al estudiante ("se agregó contenido nuevo a tu
+- **Y avisar.** Notificación al estudiante ("se agregó contenido nuevo a su
   Ruta") y al LXD ("N estudiantes que ya habían completado este módulo vuelven
   a tener trabajo pendiente") **antes** de guardar el cambio, no después.
 
@@ -853,7 +853,7 @@ necesito que lo confirmes.
 
 Leyenda: ✅ permitido · **propio** = solo sus propios registros ·
 **ámbito** = solo los de su universidad / empresa / laboratorio / grupo, según el
-rol · ❌ negado · ⚠️ requiere tu decisión.
+rol · ❌ negado · ⚠️ requiere su decisión.
 
 ### Usuarios
 
@@ -896,7 +896,7 @@ Empresa solicita y el Admin aprueba?
 | superadmin, admin | ✅ (coincide con el prompt) |
 | todos los demás | ❌ |
 
-Pendiente de tu decisión: **hoy son dos permisos** (`canGradeOpenLearning`,
+Pendiente de su decisión: **hoy son dos permisos** (`canGradeOpenLearning`,
 default `true`; `canGradeEnactus`, default `false`), no uno. El prompt pide un
 solo `can_grade BOOLEAN`. **Recomiendo conservar los dos** — la distinción es
 real y ya está en uso: en Open Learning el LXD es el docente y califica por

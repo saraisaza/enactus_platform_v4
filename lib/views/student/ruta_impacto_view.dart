@@ -74,14 +74,14 @@ class LabsView extends StatelessWidget {
           subtitle:
               'Un laboratorio es un área de trabajo de eduXaction Colombia: '
               'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
-              'acompaña. Entra al tuyo para ver qué sigue.',
+              'acompaña. Entre al suyo para ver qué sigue.',
           bodyBuilder: (context, colors, isDark) {
             if (myLabs.isEmpty) {
               return EmptyState(
                 icon: Icons.science_outlined,
                 title: 'Sin laboratorios asignados',
-                message: 'Tu administrador todavía no te ha asignado un '
-                    'laboratorio. Sin uno no tienes Ruta de Impacto ni cursos '
+                message: 'Su administrador todavía no le ha asignado un '
+                    'laboratorio. Sin uno no tiene Ruta de Impacto ni cursos '
                     'de área.',
                 primaryLabel: 'Actualizar',
                 onPrimary: data.reloadLaboratories,
@@ -105,7 +105,7 @@ class LabsView extends StatelessWidget {
                           color: colors.text)),
                   const SizedBox(height: 6),
                   Text(
-                      'Pídele a tu administrador que te asigne uno si tu proyecto lo necesita.',
+                      'Solicite a su administrador que le asigne uno si su proyecto lo necesita.',
                       style: TextStyle(fontSize: 13.5, color: colors.text3)),
                   const SizedBox(height: 16),
                   _OtherLabsGrid(labs: otherLabs, colors: colors),
@@ -651,7 +651,7 @@ class _LabDetailBodyState extends State<LabDetailBody> {
                         color: colors.text)),
                 const SizedBox(height: 4),
                 Text(
-                    'Las fases se abren en orden. Tu LXD publica el contenido de cada una.',
+                    'Las fases se abren en orden. Su LXD publica el contenido de cada una.',
                     style: TextStyle(fontSize: 13.5, color: colors.text3)),
                 const SizedBox(height: 18),
                 _PhaseCardsGrid(
@@ -838,7 +838,7 @@ class _LabIdentityBand extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Tu avance',
+                              Text('Su avance',
                                   style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
                               const SizedBox(height: 4),
                               Text('Fase $currentPhaseDisplay de $totalPhases',
@@ -1032,7 +1032,7 @@ class _PhaseDetailCard extends StatelessWidget {
 
     String lockedReason() => !phase.isUnlocked
         ? 'Se abre cuando completes la Fase $index'
-        : 'Tu LXD publicará el contenido de esta fase.';
+        : 'Su LXD publicará el contenido de esta fase.';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
@@ -1082,7 +1082,7 @@ class _PhaseDetailCard extends StatelessWidget {
             Text(
                 phase.description.isNotEmpty
                     ? phase.description
-                    : 'Tu LXD aún no ha publicado el contenido de esta fase.',
+                    : 'Su LXD aún no ha publicado el contenido de esta fase.',
                 style: TextStyle(fontSize: 13.5, height: 1.5, color: colors.text2)),
           ],
           const SizedBox(height: 14),
@@ -1247,7 +1247,7 @@ class _LabCoursesCard extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                         'Este laboratorio todavía no tiene cursos publicados. '
-                        'Tu LXD los abrirá junto con la Fase 1.',
+                        'Su LXD los abrirá junto con la Fase 1.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: colors.text2)),
                   ],
@@ -1337,7 +1337,7 @@ class _LabCourseRow extends StatelessWidget {
   }
 }
 
-/// Tarjeta "Tu LXD" — datos reales del laboratorio (`DataProvider.lxdForLab`,
+/// Tarjeta "Su LXD" — datos reales del laboratorio (`DataProvider.lxdForLab`,
 /// `AppUser.email`, `extra['availability']`). El botón "Agendar mentoría"
 /// no fabrica una integración de calendario que el estudiante no tiene
 /// permiso de usar (crear eventos es exclusivo de Admin/LXD/Mentor): si el
@@ -1356,7 +1356,7 @@ class _LabLxdCard extends StatelessWidget {
     final lxd = this.lxd;
     return _DetailCard(
       icon: Icons.diversity_3,
-      title: 'Tu LXD',
+      title: 'Su LXD',
       colors: colors,
       child: lxd == null
           ? Text('Este laboratorio todavía no tiene un LXD asignado.',
@@ -1461,7 +1461,7 @@ class _ScheduleMentoriaButton extends StatelessWidget {
         if (!enabled)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text('Tu LXD todavía no publicó su disponibilidad.',
+            child: Text('Su LXD todavía no publicó su disponibilidad.',
                 style: TextStyle(fontSize: 12, color: colors.text3)),
           ),
       ],
@@ -1541,7 +1541,7 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
           : '${team.groupName}'
               '${student.university.isEmpty ? '' : ' · ${student.university}'}',
       title: 'Ruta de Impacto',
-      subtitle: 'Las fases de tu laboratorio, sus objetivos y lo que falta '
+      subtitle: 'Las fases de su laboratorio, sus objetivos y lo que falta '
           'para llegar a National Expo.',
       searchHint: 'Buscar en el portal',
       bodyBuilder: (context, colors, isDark) => data.rutaProgress.when(
@@ -1557,7 +1557,7 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
               icon: Icons.route_outlined,
               title: 'Sin laboratorio asignado',
               message:
-                  'Tu administrador aún no te asignó a ningún laboratorio.',
+                  'Su administrador aún no le ha asignado ningún laboratorio.',
               colors: colors,
             );
           }
@@ -1592,7 +1592,7 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
                   title: 'Laboratorio sin fases',
                   message:
                       'El ${selected.laboratoryName} todavía no ha publicado '
-                      'sus fases. Tu LXD las abrirá cuando el contenido esté '
+                      'sus fases. Su LXD las abrirá cuando el contenido esté '
                       'listo.',
                   primaryLabel: labs.length > 1 ? 'Ver otro laboratorio' : null,
                   onPrimary: labs.length > 1
@@ -1928,7 +1928,7 @@ class _ModuleSummaryRow extends StatelessWidget {
                         phaseIndex: phaseIndex,
                         moduleIndex: moduleIndex)))
             : showAppSnack(
-                context, 'Completa el módulo anterior para desbloquear "$title".'),
+                context, 'Complete el módulo anterior para desbloquear "$title".'),
         child: MouseRegion(
           cursor: unlocked ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
           child: Container(
@@ -2234,7 +2234,7 @@ class _ModuleBody extends StatelessWidget {
                           const EmptyState(
                               icon: Icons.inbox_outlined,
                               message:
-                                  'Tu administrador aún no agregó contenido a este módulo.'),
+                                  'Su administrador aún no agregó contenido a este módulo.'),
                       ],
                     ),
                   ),
@@ -2280,7 +2280,7 @@ class _MeetingCard extends StatelessWidget {
                       style:
                           TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 4),
-                  Text('Reúnete con tu Mentor para cerrar $title.',
+                  Text('Reúnete con su Mentor para cerrar $title.',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
                   // Sin enlace configurado el botón queda apagado y se dice
@@ -2289,7 +2289,7 @@ class _MeetingCard extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
-                          'Tu administrador todavía no configuró el enlace de la reunión.',
+                          'Su administrador todavía no configuró el enlace de la reunión.',
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 12)),
                     ),

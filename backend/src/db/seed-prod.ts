@@ -225,7 +225,7 @@ async function main() {
     if (total > 0 && !force) {
       throw new Error(
         `La base ya tiene ${total} usuarios: ${redactUrl(databaseUrl)}\n` +
-          'seed:prod es para una base recién creada. Si de verdad querés ' +
+          'seed:prod es para una base recién creada. Si de verdad quiere ' +
           'escribir encima, pasá --force.',
       );
     }

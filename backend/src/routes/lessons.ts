@@ -416,7 +416,7 @@ lessonRoutes.put('/:id/quiz', requireRole(...CONTENT_ROLES), async (c) => {
 
   if (lesson.type !== 'quiz' && lesson.type !== 'survey') {
     throw conflict(
-      'Solo una lección de tipo quiz o encuesta tiene preguntas. Cambiá el tipo de la lección primero.',
+      'Solo una lección de tipo quiz o encuesta tiene preguntas. Cambie el tipo de la lección primero.',
       { type: lesson.type },
     );
   }
@@ -511,7 +511,7 @@ function quizProblems(
         break;
       case 'truefalse':
         if (q.answerIndex !== 0 && q.answerIndex !== 1) {
-          add(at, 'Elegí si la respuesta correcta es Verdadero o Falso.');
+          add(at, 'Elija si la respuesta correcta es Verdadero o Falso.');
         }
         break;
       case 'short':
@@ -602,7 +602,7 @@ lessonRoutes.put('/:id/activity', requireRole(...CONTENT_ROLES), async (c) => {
 
   if (lesson.type !== 'activity') {
     throw conflict(
-      'Solo una lección de tipo actividad tiene entregable. Cambiá el tipo de la lección primero.',
+      'Solo una lección de tipo actividad tiene entregable. Cambie el tipo de la lección primero.',
       { type: lesson.type },
     );
   }

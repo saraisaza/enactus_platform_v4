@@ -24,7 +24,7 @@ Cambios de infraestructura compartida (usados por Estudiante ahora; el resto de 
 - **`lib/utils/constants.dart` + `lib/main.dart`**: 2 rutas nuevas con nombre — `/usuarios/:id` → `UserDetailView` (nuevo, `lib/views/shared/user_detail_view.dart`) y `/laboratorios/:id` → `LabDetailView` (nuevo, `lib/views/shared/lab_detail_view.dart`). Cierran el hallazgo 1.5.
 - **`UserDetailView`**: delega a `StudentDetailView` para roles tipo-estudiante; arma un resumen propio (cursos creados, laboratorios asignados, estudiantes a cargo, etc.) para LXD/Mentor/Asesor/Empresa/Donante usando los métodos que ya existían en `DataProvider`.
 - **`LabDetailView`**: si quien mira es un estudiante con ese laboratorio asignado, muestra su propio avance por fase (igual que `LabDetailBody`); si no, muestra el avance agregado del grupo (`X/Y estudiantes completaron cada fase`) — cumple "progreso del estudiante o del grupo según el rol".
-- **`lib/views/student/ruta_impacto_view.dart`**: `_OtherLabCard` ahora navega a `/laboratorios/:id` (antes MUERTA); `_LabLxdCard` ("Tu LXD") ahora navega a `/usuarios/:id` (antes MUERTA); ambas migradas a `KeyboardHoverBuilder`.
+- **`lib/views/student/ruta_impacto_view.dart`**: `_OtherLabCard` ahora navega a `/laboratorios/:id` (antes MUERTA); `_LabLxdCard` ("Su LXD") ahora navega a `/usuarios/:id` (antes MUERTA); ambas migradas a `KeyboardHoverBuilder`.
 - **`lib/views/shared/projects_directory_view.dart`**: `_MemberRow` (fila de integrante en `/proyectos/:id`) ahora navega a `/usuarios/:id` al hacer clic en el nombre/avatar (antes solo navegaba el chip de laboratorio).
 - **`lib/views/shared/student_detail_view.dart`**: el push a `CourseDetailView` ahora pasa `studentId` (fix del bug 1.2 en su único punto de reproducción confirmado).
 - Cards con `MouseRegion`+`GestureDetector` suelto (sin `HoverCard`) migradas a `KeyboardHoverBuilder` en `student_dashboard_view.dart` (`_CourseProgressCard`, `_PendingCard`, `_RecentActivityCard`, `_ProjectCard`), `student_portal.dart` (`_ProjectCard` de Mi Perfil) y `student_courses_view.dart` (`_CourseCard`).
@@ -257,7 +257,7 @@ Casi todas estas cifras tienen un destino obvio y ya construido en la app (Estud
 
 ### 1.4 — Patrón repetido: tarjetas de "equipo/roster" que muestran a una persona real pero no enlazan a su perfil
 Mismo patrón, confirmado por lectura completa en 4 lugares distintos (no es un caso aislado):
-- `student/ruta_impacto_view.dart` `_LabLxdCard` (tarjeta "Tu LXD" en el detalle de laboratorio del estudiante) — nombre, avatar, disponibilidad, correo — sin `onTap`.
+- `student/ruta_impacto_view.dart` `_LabLxdCard` (tarjeta "Su LXD" en el detalle de laboratorio del estudiante) — nombre, avatar, disponibilidad, correo — sin `onTap`.
 - `company/company_portal.dart` `_CompanyLabSection`, fila de cada mentor bajo "Mentores y su labor" (línea 549) — sin `onTap`.
 - `company/company_portal.dart` `_CompanyLxdTeam` (pestaña completa "Mi Equipo LXD") — cada fila sin `onTap`.
 - `company/company_portal.dart` `_CompanyMentorTeam` (pestaña completa "Mi Equipo Mentor") — cada fila sin `onTap`.
@@ -341,7 +341,7 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 | Dashboard | `_PendingCard`, ítem "Continuar curso" | Sí | `/cursos/:id` | Sí | OK |
 | Dashboard | `_PendingCard`, ítem checklist Expo | Sí | Diálogo (no ruta) | Sí, de solo lectura — **intencional**, documentado en código: no existe pantalla de edición del checklist en toda la app | PARCIAL (a propósito) |
 | Dashboard | `_RecentActivityCard` (última entrega calificada) | Sí | `/cursos/:id` | Sí | OK |
-| Dashboard | `_ProjectCard` ("Tu proyecto") | Sí | `/proyectos/:id` | Sí | OK |
+| Dashboard | `_ProjectCard` ("Su proyecto") | Sí | `/proyectos/:id` | Sí | OK |
 | Mis Cursos | Cada `_CourseCard` (grilla completa) | Sí | `/cursos/:id` | Sí | OK |
 | Mi Perfil | `_ProjectCard` (perfil) | Sí | `/proyectos/:id` | Sí | OK |
 | Mi Perfil | `_ProfileStatCard` ×4 (cursos/lecciones/labs/certificados) | No | — | — | MUERTA (informativas por diseño — no son entidades con detalle propio, salvo que se decida enlazar "Certificados" a Mis Certificados) |
@@ -350,7 +350,7 @@ Leyenda: **OK** = navega y el destino muestra datos reales · **MUERTA** = sin a
 | Laboratorios | `_LabCard` (grilla principal) | Sí | `/{rol}/lab/:id` | Sí | OK |
 | Laboratorios | `_OtherLabCard` ("Otros laboratorios de la red") | Sí ✅ *(corregido)* | `/laboratorios/:id` (nuevo) | Sí, avance agregado del grupo | **OK** — verificado en vivo, 3 breakpoints |
 | Detalle de laboratorio | Fila de cada curso del módulo | Sí | `/cursos/:id` | Sí | OK |
-| Detalle de laboratorio | `_LabLxdCard` ("Tu LXD") | Sí ✅ *(corregido)* | `/usuarios/:id` (nuevo) | Sí, perfil real del LXD | **OK** — verificado en vivo |
+| Detalle de laboratorio | `_LabLxdCard` ("Su LXD") | Sí ✅ *(corregido)* | `/usuarios/:id` (nuevo) | Sí, perfil real del LXD | **OK** — verificado en vivo |
 | Detalle de laboratorio | Botón "Unirse a la reunión" (módulo de mentoría) | Acción (abre link externo) | — | Sí | OK |
 | Ruta de Impacto (shortcut) | Selector de laboratorio (chips) | Sí (cambia estado local) | — | Sí | OK |
 | Ruta de Impacto | Fila de módulo (`_ModuleSummaryRow`) | Sí (si desbloqueado) | `ModuleDetailScreen` | Sí | OK |
@@ -546,7 +546,7 @@ Ver `BLOQUEOS.md` para el detalle completo. Resumen:
    `onTap`** — decisión de alcance, no un olvido: no representan una
    entidad con un solo ID, y hacerlos navegables exigiría que
    `PortalShell` soportara cambiar de pestaña desde un widget hijo (cambio
-   de arquitectura compartida, no una corrección puntual). Pendiente de tu
+   de arquitectura compartida, no una corrección puntual). Pendiente de su
    decisión.
 2. **2 brechas de modelo de datos sin resolver**: `Group` no guarda el rol
    de cada integrante en el proyecto; `Evidence` no tiene `projectId`.

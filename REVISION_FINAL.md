@@ -317,13 +317,13 @@ HSTS, CSP, nosniff, X-Frame DENY   ✅ verificados en modo producción
 ### Abiertas con trabajo pendiente
 
 **1. `seed:prod` existe ahora, pero le faltan las identidades reales.**
-No existía; lo escribí (`npm run seed:prod -- ./admins.json`). Deja
+No existía; lo escriba (`npm run seed:prod -- ./admins.json`). Deja
 exactamente los catálogos, los 6 laboratorios con fases vacías y sin plazos, y
 los super admins — nada más. Las contraseñas las genera al azar (24
 caracteres) y las imprime una sola vez. Se niega a correr sobre una base que ya
 tiene gente. 7 pruebas, casi todas sobre lo que **no** debe quedar.
 
-**Necesito de vos:** los nombres y correos reales de los super admins. No los
+**Necesito de usted:** los nombres y correos reales de los super admins. No los
 invento y no los pongo en el repositorio.
 
 **2. ~~No existe el cambio de contraseña obligatorio al primer ingreso.~~**
@@ -363,7 +363,7 @@ Antes del 1 de octubre, en este orden:
    RDS con las cuatro casillas de seguridad puestas al crearla (subred
    privada, SG solo desde el de Lambda, rotación del secreto, `force_ssl`) —
    ponerlas después es otro trabajo distinto y peor.
-2. **Staging antes que producción**, que es tu propia regla.
+2. **Staging antes que producción**, que es su propia regla.
 3. **`seed:prod` con los admins reales**, y la decisión sobre el cambio
    obligatorio de contraseña.
 4. **Ensayo de go-live** siguiendo el RUNBOOK tal como está escrito, con

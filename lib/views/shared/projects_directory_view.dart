@@ -174,7 +174,7 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
       title: 'Aún no hay proyectos aquí',
       message: noProjectsAtAll
           ? 'Todavía no se ha publicado ningún proyecto en la comunidad. '
-              'Cuando tu equipo registre el suyo, aparecerá aquí para toda la red.'
+              'Cuando su equipo registre el suyo, aparecerá aquí para toda la red.'
           : 'Ningún proyecto coincide con este filtro. Prueba con otra '
               'etapa o limpia la búsqueda.',
       primaryLabel: 'Ver todas las etapas',
@@ -591,7 +591,7 @@ class ProjectSummaryCard extends StatelessWidget {
                 if (relevantStudentCount != null) ...[
                   const SizedBox(height: 6),
                   Text(
-                      '$relevantStudentCount estudiante${relevantStudentCount == 1 ? '' : 's'} en tu alcance',
+                      '$relevantStudentCount estudiante${relevantStudentCount == 1 ? '' : 's'} en su alcance',
                       style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                 ],
               ],

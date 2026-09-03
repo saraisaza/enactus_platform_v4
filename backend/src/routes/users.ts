@@ -526,7 +526,7 @@ userRoutes.delete('/:id', requireRole(...ADMIN_ROLES), async (c) => {
   // Nadie se borra a sí mismo: dejaría la plataforma sin quien la administre
   // si fuera la última cuenta con ese rol, y es casi siempre un accidente.
   if (id === admin.id) {
-    throw conflict('No podés eliminar tu propia cuenta.');
+    throw conflict('No puede eliminar su propia cuenta.');
   }
 
   const db = c.get('db');

@@ -77,8 +77,8 @@ class _CompanyDashboard extends StatelessWidget {
     final empresa = context.watch<AuthProvider>().currentUser;
 
     return TabBody(
-      title: 'Impacto de tu aporte',
-      subtitle: 'Qué hizo posible tu organización',
+      title: 'Impacto de su aporte',
+      subtitle: 'Qué hizo posible su organización',
       children: [
         combine3(
           data.users(include: 'progress'),
@@ -118,7 +118,7 @@ class _CompanyDashboard extends StatelessWidget {
                       icon: Icons.science_outlined),
                   StatTile(
                       value: '${equipo.length}',
-                      label: 'Tu equipo formador',
+                      label: 'Su equipo formador',
                       icon: Icons.badge_outlined),
                   StatTile(
                       value: horas.round().toString(),
@@ -177,7 +177,7 @@ class _CompanyLabs extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Laboratorios',
-      subtitle: 'Los que patrocinás y aquellos donde trabaja tu equipo',
+      subtitle: 'Los que patrocinás y aquellos donde trabaja su equipo',
       children: [
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 3, height: 100),
@@ -185,7 +185,7 @@ class _CompanyLabs extends StatelessWidget {
           data: (labs) => labs.isEmpty
               ? const EmptyState(
                   icon: Icons.science_outlined,
-                  message: 'Todavía no hay laboratorios asociados a tu '
+                  message: 'Todavía no hay laboratorios asociados a su '
                       'organización.')
               : Column(
                   children: [
@@ -254,7 +254,7 @@ class _CompanyStudents extends StatelessWidget {
 
     return TabBody(
       title: 'Estudiantes Patrocinados',
-      subtitle: 'A quiénes alcanza tu aporte y cómo van',
+      subtitle: 'A quiénes alcanza su aporte y cómo van',
       children: [
         data
             .users(
@@ -266,7 +266,7 @@ class _CompanyStudents extends StatelessWidget {
               data: (estudiantes) => estudiantes.isEmpty
                   ? const EmptyState(
                       icon: Icons.people_outline,
-                      message: 'Todavía no hay estudiantes vinculados a tu '
+                      message: 'Todavía no hay estudiantes vinculados a su '
                           'organización.')
                   : Column(
                       children: [
@@ -296,7 +296,7 @@ class _CompanyTeam extends StatelessWidget {
 
     return TabBody(
       title: 'Mi Equipo',
-      subtitle: 'Los LXD y mentores de tu organización',
+      subtitle: 'Los LXD y mentores de su organización',
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.person_add, size: 18),
@@ -315,7 +315,7 @@ class _CompanyTeam extends StatelessWidget {
               data: (equipo) => equipo.isEmpty
                   ? const EmptyState(
                       icon: Icons.badge_outlined,
-                      message: 'Todavía no diste de alta a nadie.')
+                      message: 'Todavía no ha dado de alta a nadie.')
                   : Column(
                       children: [
                         for (final p in equipo)
@@ -350,8 +350,8 @@ class _TeamNotice extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Las cuentas que crees quedan atadas a tu organización. Solo '
-              'podés dar de alta LXD y mentores: los estudiantes los asigna '
+              'Las cuentas que crees quedan atadas a su organización. Solo '
+              'puede dar de alta LXD y mentores: los estudiantes los asigna '
               'el equipo de administración.',
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
@@ -503,7 +503,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Nueva cuenta de tu equipo',
+      title: 'Nueva cuenta de su equipo',
       maxWidth: 460,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -552,7 +552,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
             obscureText: true,
             decoration: const InputDecoration(
               labelText: 'Contraseña',
-              helperText: 'Mínimo 6 caracteres. Se la compartís vos.',
+              helperText: 'Mínimo 6 caracteres. Se la compartís usted.',
             ),
           ),
           const SizedBox(height: 12),

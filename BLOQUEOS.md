@@ -26,10 +26,10 @@ pestaña está activa) sin agregar un callback que atraviese varias capas de
 widgets — es un cambio de arquitectura del shell compartido por los 8
 portales, no una corrección de navegación puntual.
 
-**Qué necesito de vos para desbloquear esto:** confirmar si querés que
+**Qué necesito de usted para desbloquear esto:** confirmar si quiere que
 `StatTile` acepte un `onTap` opcional y que cada dashboard lo use para
 cambiar de pestaña (yo propondría el mecanismo concreto una vez que
-confirmes que sí lo querés), o si preferís dejarlo así (son contadores
+confirmes que sí lo quiere), o si preferís dejarlo así (son contadores
 informativos, no tarjetas de exploración).
 
 ## 2. Dos brechas de modelo de datos, no de pantalla
@@ -46,7 +46,7 @@ informativos, no tarjetas de exploración).
   solo se relaciona con `donorId`, no hay forma de saber qué evidencias
   pertenecen a qué proyecto sin adivinar.
 
-**Qué necesito de vos:** confirmar si querés que amplíe estos dos modelos
+**Qué necesito de usted:** confirmar si quiere que amplíe estos dos modelos
 en un commit aparte (frontend puro, no toca `DbService` ni el contrato
 `DataStore`) antes de que empiece el backend, o si se deja para más
 adelante.
@@ -66,7 +66,7 @@ adelante.
 **Por qué:** son constructores/editores, no pantallas de exploración por
 tarjetas (el foco explícito de este pedido). No encontré nada roto en
 ellos durante la Fase 0, pero tampoco los certifico como "verificados en
-vivo" — si querés que se recorran igual, decímelo y los agrego a un ciclo
+vivo" — si quiere que se recorran igual, decímelo y los agrego a un ciclo
 propio.
 
 ## 4. Detalles menores encontrados y reportados, no corregidos (fuera del alcance reportado)

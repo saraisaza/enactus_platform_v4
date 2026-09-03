@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 /// "Quiero unirme").
 ///
 /// Todavía no hay una API de correo conectada. Para activarla:
-/// 1. Pon la URL de tu API (Cloud Function, Resend, SendGrid, Formspree,
+/// 1. Pon la URL de su API (Cloud Function, Resend, SendGrid, Formspree,
 ///    un backend propio, etc.) en [_apiEndpoint].
 /// 2. Si esa API necesita autenticación, agrega el header en el
 ///    `http.post` de abajo (p. ej. `'Authorization': 'Bearer ...'`).

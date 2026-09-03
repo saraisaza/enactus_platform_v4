@@ -52,13 +52,13 @@ export function onError(error: Error, c: Context): Response {
   //
   // Se responde 404 y no 400 por coherencia con el resto de la API: un id
   // fuera de alcance también da 404, así que un 400 acá permitiría distinguir
-  // "ese id no existe" de "ese id existe pero no es tuyo" solo por la forma.
+  // "ese id no existe" de "ese id existe pero no es suyo" solo por la forma.
   if (isInvalidTextRepresentation(error)) {
     return c.json(
       {
         error: {
           code: 'not_found',
-          message: 'No encontramos lo que buscabas: el identificador no es válido.',
+          message: 'No encontramos lo que busca: el identificador no es válido.',
         },
       },
       404,

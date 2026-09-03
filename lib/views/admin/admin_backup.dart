@@ -227,7 +227,7 @@ class _BackupCardState extends State<_BackupCard> {
 
   Future<void> _import() async {
     final result = await FilePicker.pickFiles(
-      dialogTitle: 'Selecciona el archivo de respaldo',
+      dialogTitle: 'Seleccione el archivo de respaldo',
       type: FileType.custom,
       allowedExtensions: ['json'],
       withData: true,

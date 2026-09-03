@@ -382,7 +382,7 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
       body: _query.isEmpty
           ? const Center(
               child: Text(
-                'Escribe para buscar',
+                'Escriba para buscar',
                 style: TextStyle(color: AppColors.textMuted),
               ),
             )

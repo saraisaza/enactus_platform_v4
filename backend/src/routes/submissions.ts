@@ -218,7 +218,7 @@ submissionRoutes.post('/', async (c) => {
       select course_id from student_course_access
        where student_id = ${user.id} and course_id = ${parsed.courseId}
     `);
-    if (!access) throw forbidden('No tenés acceso a ese curso.');
+    if (!access) throw forbidden('No tiene acceso a ese curso.');
   } else {
     const [lab] = await db.execute<{ laboratory_id: string }>(sql`
       select p.laboratory_id
@@ -228,7 +228,7 @@ submissionRoutes.post('/', async (c) => {
           on sl.laboratory_id = p.laboratory_id and sl.student_id = ${user.id}
        where rm.id = ${parsed.rutaModuleId}
     `);
-    if (!lab) throw forbidden('No estás asignado a ese laboratorio.');
+    if (!lab) throw forbidden('No está asignado a ese laboratorio.');
   }
 
   const [created] = await db
@@ -273,7 +273,7 @@ submissionRoutes.post('/:id/grade', requireCanGrade, async (c) => {
   // El contexto sale del curso, no del cuerpo de la petición.
   assertCanGrade(user, course?.isOpenLearning ?? false);
   if (user.role === 'lxd' && course && course.creatorId !== user.id) {
-    throw forbidden('Solo podés calificar entregas de los cursos que creaste.');
+    throw forbidden('Solo puede calificar entregas de los cursos que usted creó.');
   }
 
   assertGradeInRange(parsed.gradingMode, parsed.grade);
@@ -354,7 +354,7 @@ submissionRoutes.post('/:id/review', async (c) => {
     await db.insert(notifications).values({
       userId: submission.studentId,
       title: 'Entrega revisada',
-      body: `"${submission.taskName}" tiene un comentario nuevo de tu Mentor.`,
+      body: `"${submission.taskName}" tiene un comentario nuevo de su Mentor.`,
     });
   }
 
@@ -373,11 +373,11 @@ submissionRoutes.delete('/:id', async (c) => {
   const esAdmin = user.role === 'admin' || user.role === 'superadmin';
   if (!esAdmin) {
     if (submission.studentId !== user.id) {
-      throw forbidden('Solo podés borrar tus propias entregas.');
+      throw forbidden('Solo puede borrar sus propias entregas.');
     }
     if (submission.gradedAt || submission.feedback.length > 0) {
       throw conflict(
-        'No podés borrar una entrega que ya fue calificada o comentada.',
+        'No puede borrar una entrega que ya fue calificada o comentada.',
       );
     }
   }

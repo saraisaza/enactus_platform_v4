@@ -183,12 +183,12 @@ class ApiService {
         throw ServerError(
           status,
           'No se pudo subir el archivo ($status). '
-          'Si el problema persiste, avisale al equipo técnico.',
+          'Si el problema persiste, avise al equipo técnico.',
         );
       }
     } on UploadTimeoutException {
       throw const NetworkError(
-        'La subida tardó demasiado. Probá con una conexión más estable.',
+        'La subida tardó demasiado. Intente con una conexión más estable.',
       );
     } on UploadTransportException catch (e) {
       throw NetworkError(e.message);
@@ -319,11 +319,11 @@ class ApiService {
           code: code.isEmpty ? 'bad_request' : code,
         );
       case 401:
-        throw AuthError(message ?? 'Tu sesión expiró. Iniciá sesión de nuevo.');
+        throw AuthError(message ?? 'Su sesión expiró. Inicie sesión de nuevo.');
       case 403:
-        throw ForbiddenError(message ?? 'No tenés permiso para ver esto.');
+        throw ForbiddenError(message ?? 'No tiene permiso para ver esto.');
       case 404:
-        throw NotFoundError(message ?? 'No encontramos lo que buscabas.');
+        throw NotFoundError(message ?? 'No encontramos lo que busca.');
       case 409:
         throw ConflictError(
           message ?? 'La operación no se puede hacer en este momento.',
@@ -334,7 +334,7 @@ class ApiService {
             code: 'payload_too_large');
       case 429:
         throw ValidationError(
-          message ?? 'Demasiados intentos. Esperá un momento.',
+          message ?? 'Demasiados intentos. Espere un momento.',
           code: 'too_many_requests',
         );
       default:
@@ -344,7 +344,7 @@ class ApiService {
         if (response.statusCode >= 500) {
           throw ServerError(
             response.statusCode,
-            message ?? 'El servidor tuvo un problema. Probá de nuevo.',
+            message ?? 'El servidor tuvo un problema. Intente de nuevo.',
             code.isEmpty ? 'internal_error' : code,
           );
         }

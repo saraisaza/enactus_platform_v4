@@ -97,7 +97,7 @@ export function rateLimit(options: {
       );
       buckets.set(key, bucket);
       throw tooManyRequests(
-        'Demasiados intentos. Esperá un momento antes de reintentar.',
+        'Demasiados intentos. Espere un momento antes de reintentar.',
         { retryAfterSeconds: retryAfter },
       );
     }

@@ -403,7 +403,7 @@ describe('PUT /lessons/:id/quiz — tipo de lección y permisos', () => {
 
 describe('PUT /lessons/:id/activity', () => {
   const base = {
-    description: 'Entregá una propuesta de IA para tu comunidad.',
+    description: 'Entregá una propuesta de IA para su comunidad.',
     deadline: '2026-11-30',
     requiresFile: true,
     requiresText: true,

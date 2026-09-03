@@ -259,7 +259,7 @@ class LandingView extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Text('¿Listo para sumarte? 💛'.toUpperCase(),
+                        Text('¿Listo para sumarse? 💛'.toUpperCase(),
                             textAlign: TextAlign.center,
                             style: displayHeading(
                                 fontSize: 24,
@@ -269,8 +269,8 @@ class LandingView extends StatelessWidget {
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 480),
                           child: const Text(
-                            'Sin importar si eres estudiante, mentor, empresa o donante: '
-                            'hay un lugar para ti en eduXaction Colombia.',
+                            'Sin importar si es estudiante, mentor, empresa o donante: '
+                            'hay un lugar para usted en eduXaction Colombia.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: AppColors.textSecondary,

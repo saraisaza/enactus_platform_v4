@@ -64,7 +64,7 @@ export async function verifyAccessToken(
     return { sub, role };
   } catch (error) {
     if (error instanceof Error && error.name === 'JWTExpired') {
-      throw unauthorized('La sesión expiró. Iniciá sesión de nuevo.');
+      throw unauthorized('La sesión expiró. Inicie sesión de nuevo.');
     }
     throw unauthorized('Token inválido.');
   }

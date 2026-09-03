@@ -47,7 +47,7 @@ class NotFoundView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'La página que buscas no existe o fue movida.',
+                      'La página que busca no existe o fue movida.',
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 14),
                     ),

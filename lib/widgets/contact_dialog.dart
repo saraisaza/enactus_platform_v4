@@ -50,7 +50,7 @@ class _ContactDialogState extends State<_ContactDialog> {
       showSuccessCheck(context, '¡Mensaje enviado! Te contactaremos pronto.');
     } else {
       showAppSnack(context,
-          'No pudimos enviar tu mensaje. Intenta de nuevo en un momento.',
+          'No pudimos enviar su mensaje. Intente de nuevo en un momento.',
           error: true);
     }
   }
@@ -68,7 +68,7 @@ class _ContactDialogState extends State<_ContactDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Cuéntanos quién eres y qué te gustaría hacer con nosotros.',
+                'Cuéntenos quién es y qué le gustaría hacer con nosotros.',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),
               const SizedBox(height: 16),
@@ -99,7 +99,7 @@ class _ContactDialogState extends State<_ContactDialog> {
                 decoration: const InputDecoration(
                     labelText: 'Mensaje',
                     hintText:
-                        '¿Cómo quieres sumarte? (estudiante, mentor, empresa, donante...)'),
+                        '¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)'),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Requerido' : null,
               ),

@@ -85,7 +85,7 @@ describe('la obligación es del servidor, no de la pantalla', () => {
   });
 
   it('el código lo distingue de un 403 cualquiera', async () => {
-    // Sin un código propio, el cliente mandaría a la persona a "no tenés
+    // Sin un código propio, el cliente mandaría a la persona a "no tiene
     // permiso" en vez de a la pantalla de cambio.
     const { accessToken } = await login(app, CUENTA, ACTUAL);
     await marcarPendiente();

@@ -502,7 +502,7 @@ Future<void> showCalendarEventDialog(
                 if (type == CalendarEventType.openLearningSync)
                   courses.isEmpty
                       ? const Text(
-                          'Todavía no tienes cursos de Open Learning '
+                          'Todavía no tiene cursos de Open Learning '
                           'propios. Crea uno en "Mis Cursos" antes de '
                           'agendar una sesión.',
                           style: TextStyle(
@@ -522,7 +522,7 @@ Future<void> showCalendarEventDialog(
                 else if (type == CalendarEventType.mentoria)
                   labs.isEmpty
                       ? const Text(
-                          'Todavía no tienes laboratorios asignados, así '
+                          'Todavía no tiene laboratorios asignados, así '
                           'que no hay a quién agendarle una mentoría.',
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))

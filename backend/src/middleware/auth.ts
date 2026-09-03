@@ -40,7 +40,7 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
   // igual. Acá no hay nada que cerrar.
   if (user.mustChangePassword && !esRutaDeCambio(c.req.method, c.req.path)) {
     throw forbidden(
-      'Tenés que cambiar tu contraseña antes de usar la plataforma.',
+      'Tiene que cambiar su contraseña antes de usar la plataforma.',
       'password_change_required',
     );
   }
@@ -82,7 +82,7 @@ export const requireRole = (...roles: AuthUser['role'][]) =>
     const user = currentUser(c);
     if (!roles.includes(user.role)) {
       throw forbidden(
-        `Esta acción es para: ${roles.join(', ')}. Tu rol es ${user.role}.`,
+        `Esta acción es para: ${roles.join(', ')}. Su rol es ${user.role}.`,
       );
     }
     await next();
@@ -126,8 +126,8 @@ export function assertCanGrade(user: AuthUser, isOpenLearning: boolean): void {
   if (!allowed) {
     throw forbidden(
       isOpenLearning
-        ? 'Tu Admin no te dio permiso de calificar en Open Learning.'
-        : 'Tu Admin no te dio permiso de calificar en eduXaction.',
+        ? 'Su Admin no le dio permiso de calificar en Open Learning.'
+        : 'Su Admin no le dio permiso de calificar en eduXaction.',
     );
   }
 }
@@ -151,7 +151,7 @@ export const requireCanGrade = createMiddleware<AppEnv>(async (c, next) => {
     !user.canGradeOpenLearning &&
     !user.canGradeEnactus
   ) {
-    throw forbidden('Tu Admin no te dio permiso de calificar.');
+    throw forbidden('Su Admin no le dio permiso de calificar.');
   }
   await next();
 });
@@ -170,7 +170,7 @@ export function assertSelfOr(
 ): void {
   if (user.id === targetUserId) return;
   if (allowedRoles.includes(user.role)) return;
-  throw forbidden('Solo podés ver o modificar tus propios datos.');
+  throw forbidden('Solo puede ver o modificar sus propios datos.');
 }
 
 /**
@@ -187,7 +187,7 @@ export const requireEnactus = createMiddleware<AppEnv>(async (c, next) => {
   const user = currentUser(c);
   if (isStudentLike(user.role) && user.studentType === 'open_learning') {
     throw forbidden(
-      'Tu cuenta es de Open Learning: no incluye laboratorios ni Ruta de Impacto.',
+      'Su cuenta es de Open Learning: no incluye laboratorios ni Ruta de Impacto.',
     );
   }
   await next();

@@ -909,7 +909,7 @@ Future<bool> confirmDoubleDialog(
                 controller: ctrl,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  labelText: 'Escribe $keyword para confirmar',
+                  labelText: 'Escriba $keyword para confirmar',
                   hintText: keyword,
                 ),
                 onChanged: (_) => setState(() {}),

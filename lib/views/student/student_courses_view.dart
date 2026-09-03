@@ -46,13 +46,13 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
       loading: () => const ContentScreenShell(
         eyebrow: 'Cursos asignados',
         title: 'Mis Cursos',
-        subtitle: 'Cargando tus cursos…',
+        subtitle: 'Cargando sus cursos…',
         bodyBuilder: _loadingBody,
       ),
       error: (e) => ContentScreenShell(
         eyebrow: 'Cursos asignados',
         title: 'Mis Cursos',
-        subtitle: 'No pudimos traer tus cursos.',
+        subtitle: 'No pudimos traer sus cursos.',
         bodyBuilder: (context, colors, isDark) =>
             ErrorState(e, onRetry: data.reloadCourses),
       ),
@@ -88,8 +88,8 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
     return ContentScreenShell(
       eyebrow: labNames.isEmpty ? 'Cursos asignados' : labNames.join(' · '),
       title: 'Mis Cursos',
-      subtitle: 'Cursos de laboratorio asignados por tu administrador, más la '
-          'ruta de preparación de tu equipo para National Expo.',
+      subtitle: 'Cursos de laboratorio asignados por su administrador, más la '
+          'ruta de preparación de su equipo para National Expo.',
       searchHint: 'Buscar curso o laboratorio',
       onSearchChanged: (v) => setState(() => _query = v),
       bodyBuilder: (context, colors, isDark) {
@@ -98,8 +98,8 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
             icon: Icons.school_outlined,
             title: 'Sin cursos asignados',
             message: allCourses.isEmpty
-                ? 'Aún no tienes cursos asignados por tu administrador.'
-                : 'Ningún curso coincide con tu búsqueda. Prueba con otro término.',
+                ? 'Aún no tiene cursos asignados por su administrador.'
+                : 'Ningún curso coincide con su búsqueda. Prueba con otro término.',
             primaryLabel: allCourses.isEmpty ? null : 'Limpiar búsqueda',
             onPrimary:
                 allCourses.isEmpty ? null : () => setState(() => _query = ''),

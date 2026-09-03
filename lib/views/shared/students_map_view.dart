@@ -151,7 +151,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                                 Text(
                                     (_scope == 'all'
                                             ? 'Red nacional · actualizado hoy'
-                                            : 'Estudiantes que patrocina tu organización')
+                                            : 'Estudiantes que patrocina su organización')
                                         .toUpperCase(),
                                     style: TextStyle(
                                         fontSize: 12,
@@ -228,7 +228,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                       maxValue: maxValue,
                       hint: _scope == 'all'
                           ? 'Ordenadas por número de estudiantes'
-                          : 'Solo los estudiantes vinculados a tu aporte',
+                          : 'Solo los estudiantes vinculados a su aporte',
                       hoveredCity: _hoveredCity,
                       onHoverCity: (v) => setState(() => _hoveredCity = v),
                       colors: colors,
@@ -504,7 +504,7 @@ class _MineEmptyState extends StatelessWidget {
         child: EmptyState(
           icon: Icons.public_off,
           title: 'Aún no hay estudiantes vinculados',
-          message: 'Todavía no hay estudiantes vinculados a tu aporte. En cuanto tu administrador '
+          message: 'Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador '
               'asigne alguno, aparecerá aquí en el mapa.',
           secondaryLabel: 'Escribir a mi administrador',
           secondaryIcon: Icons.mail_outline,
@@ -528,7 +528,7 @@ class _MineEmptyState extends StatelessWidget {
         body: 'Un aliado pidió que le asignen estudiantes a su aporte.',
       );
       if (context.mounted) {
-        showAppSnack(context, 'Le avisamos a tu administrador.');
+        showAppSnack(context, 'Le avisamos a su administrador.');
       }
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message, error: true);

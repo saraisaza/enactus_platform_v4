@@ -47,7 +47,7 @@ class StudentDashboardView extends StatelessWidget {
       subtitle: team != null
           ? 'Proyecto ${team.projectName}'
               '${student.university.isEmpty ? '' : ' · ${student.university}'}'
-          : 'Aún no tienes proyecto asignado',
+          : 'Aún no tiene proyecto asignado',
       searchHint: 'Buscar en el portal',
       trailingBuilder: (context, colors, isDark) =>
           _OverallProgress(student: student, colors: colors),
@@ -59,8 +59,8 @@ class StudentDashboardView extends StatelessWidget {
             return EmptyState(
               icon: Icons.school_outlined,
               title: 'Todo por empezar',
-              message: 'Aún no tienes cursos asignados. Cuando tu administrador '
-                  'te asigne uno, tu progreso aparecerá aquí.',
+              message: 'Aún no tiene cursos asignados. Cuando su administrador '
+                  'le asigne uno, su progreso aparecerá aquí.',
               primaryLabel: 'Actualizar',
               onPrimary: data.reloadCourses,
               colors: colors,
@@ -237,7 +237,7 @@ class _ContinueCard extends StatelessWidget {
             Icon(Icons.check_circle_outline, color: colors.goldInk, size: 28),
             const SizedBox(width: 14),
             Expanded(
-              child: Text('Ya completaste todos tus cursos asignados.',
+              child: Text('Ya completó todos sus cursos asignados.',
                   style: TextStyle(fontSize: 14, color: colors.text2)),
             ),
           ],
@@ -523,7 +523,7 @@ class _PendingCard extends StatelessWidget {
                   color: colors.text)),
           const SizedBox(height: 14),
           if (items.isEmpty)
-            Text('¡Estás al día! No tienes pendientes.',
+            Text('¡Está al día! No tiene pendientes.',
                 style: TextStyle(fontSize: 13.5, color: colors.text3))
           else
             for (final item in items)
@@ -663,7 +663,7 @@ class _RecentActivityCard extends StatelessWidget {
       ..sort((a, b) => b.gradedAt!.compareTo(a.gradedAt!));
 
     if (graded.isEmpty) {
-      return Text('Aún no tienes entregas calificadas.',
+      return Text('Aún no tiene entregas calificadas.',
           style: TextStyle(fontSize: 13.5, color: colors.text3));
     }
 
@@ -771,7 +771,7 @@ class _ProjectCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Tu proyecto'.toUpperCase(),
+            Text('Su proyecto'.toUpperCase(),
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

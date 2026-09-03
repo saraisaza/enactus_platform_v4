@@ -56,7 +56,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
       return ContentScreenShell(
         eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
         title: 'Calendario',
-        subtitle: 'No pudimos traer tus eventos.',
+        subtitle: 'No pudimos traer sus eventos.',
         bodyBuilder: (context, colors, isDark) =>
             ErrorState(error, onRetry: data.reloadCalendarEvents),
       );
@@ -67,7 +67,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
       return ContentScreenShell(
         eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
         title: 'Calendario',
-        subtitle: 'Cargando tus eventos…',
+        subtitle: 'Cargando sus eventos…',
         bodyBuilder: (context, colors, isDark) =>
             const CardListSkeleton(count: 3, height: 96),
       );
@@ -87,7 +87,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
     return ContentScreenShell(
       eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
       title: 'Calendario',
-      subtitle: 'Sesiones sincrónicas de tus cursos y eventos de tu Ruta de Impacto.',
+      subtitle: 'Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.',
       searchHint: 'Buscar en el portal',
       trailingBuilder: (context, colors, isDark) => Wrap(
         spacing: 18,
@@ -161,7 +161,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                       fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
               const SizedBox(height: 14),
               if (upcoming.isEmpty)
-                Text('No tienes próximos eventos.',
+                Text('No tiene próximos eventos.',
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
               else
                 for (final e in upcoming) _UpcomingRow(event: e, colors: colors),
@@ -173,7 +173,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
           return EmptyState(
             icon: Icons.event_busy_outlined,
             title: 'Agenda despejada',
-            message: 'No tienes sesiones ni entregas programadas este mes.',
+            message: 'No tiene sesiones ni entregas programadas este mes.',
             primaryLabel: 'Actualizar',
             onPrimary: () => showAppSnack(context, 'Actualizado'),
             colors: colors,

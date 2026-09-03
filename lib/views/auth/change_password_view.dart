@@ -49,7 +49,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
 
   /// El motivo por el que todavía no se puede enviar, o `null` si se puede.
   String? get _problema {
-    if (_actual.text.isEmpty) return 'Escribí tu contraseña actual.';
+    if (_actual.text.isEmpty) return 'Escriba su contraseña actual.';
     if (_nueva.text.length < minimo) {
       return 'La contraseña nueva necesita al menos $minimo caracteres.';
     }
@@ -81,7 +81,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
 
     setState(() => _enviando = false);
     if (fallo != null) {
-      // El mensaje sale del servidor: distingue "tu contraseña actual no es
+      // El mensaje sale del servidor: distingue "su contraseña actual no es
       // correcta" de un problema de red, que son dos cosas distintas con dos
       // soluciones distintas.
       setState(() => _error = fallo.message);
@@ -120,16 +120,16 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                 children: [
                   const Center(child: AnimatedLogo(height: 72)),
                   const SizedBox(height: 20),
-                  Text('Cambia tu contraseña'.toUpperCase(),
+                  Text('Cambia su contraseña'.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: displayHeading(fontSize: 24)),
                   const SizedBox(height: 8),
                   Text(
                     nombre.isEmpty
-                        ? 'Estás usando la contraseña que te entregaron. '
-                            'Elige una propia para continuar. La debes recordar'
-                        : '$nombre, estás usando la contraseña que te '
-                            'entregaron. Elige una propia para continuar.',
+                        ? 'Está usando la contraseña que le entregaron. '
+                            'Elija una propia para continuar. La debe recordar'
+                        : '$nombre, está usando la contraseña que le '
+                            'entregaron. Elija una propia para continuar.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 13, height: 1.5),
@@ -169,7 +169,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
                     controller: _repetida,
                     obscureText: _obscure,
                     decoration: const InputDecoration(
-                      labelText: 'Repetí la contraseña nueva',
+                      labelText: 'Repita la contraseña nueva',
                       prefixIcon: Icon(Icons.check_circle_outline, size: 20),
                     ),
                     onChanged: (_) => setState(() {}),

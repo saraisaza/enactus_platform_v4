@@ -260,7 +260,7 @@ courseRoutes.get('/:id', async (c) => {
     .limit(1);
 
   // 404 y no 403 a propósito: si un curso existe pero no está en el alcance
-  // de quien pregunta, decir "no tenés permiso" ya confirma que existe.
+  // de quien pregunta, decir "no tiene permiso" ya confirma que existe.
   if (!course) throw notFound('No se encontró el curso.');
 
   const include = parseInclude(c.req.query('include'));

@@ -113,8 +113,8 @@ class _DonorDashboard extends StatelessWidget {
                 if (estudiantes.isEmpty)
                   const EmptyState(
                     icon: Icons.people_outline,
-                    message: 'Todavía no hay estudiantes vinculados a tu '
-                        'aporte. En cuanto tu administrador asigne alguno, '
+                    message: 'Todavía no hay estudiantes vinculados a su '
+                        'aporte. En cuanto su administrador asigne alguno, '
                         'aparecerá acá.',
                   )
                 else
@@ -185,7 +185,7 @@ class _DonorEvidences extends StatelessWidget {
 
     return TabBody(
       title: 'Evidencias de Impacto',
-      subtitle: 'Fotos, historias y reportes de lo que tu aporte hizo posible',
+      subtitle: 'Fotos, historias y reportes de lo que su aporte hizo posible',
       children: [
         data.evidences.when(
           loading: () => const CardListSkeleton(count: 3, height: 120),
@@ -193,7 +193,7 @@ class _DonorEvidences extends StatelessWidget {
           data: (evidencias) => evidencias.isEmpty
               ? const EmptyState(
                   icon: Icons.photo_library_outlined,
-                  message: 'Todavía no hay evidencias para tu aporte.')
+                  message: 'Todavía no hay evidencias para su aporte.')
               : Column(
                   children: [
                     for (final ev in evidencias)

@@ -3,7 +3,7 @@
 /// Contra Hive una lectura no podía fallar: era un mapa en memoria. Contra una
 /// API sí, y de varias formas distintas que la interfaz tiene que poder
 /// distinguir — no es lo mismo "no hay internet" (reintentar sirve) que "no
-/// tenés permiso" (reintentar no sirve nunca).
+/// tiene permiso" (reintentar no sirve nunca).
 library;
 
 /// Base de todos los errores de la capa de datos.
@@ -25,7 +25,7 @@ sealed class ApiException implements Exception {
 /// Es el único caso donde reintentar la misma petición tiene sentido por sí solo.
 class NetworkError extends ApiException {
   const NetworkError([
-    super.message = 'No pudimos conectar con el servidor. Revisá tu conexión.',
+    super.message = 'No pudimos conectar con el servidor. Revise su conexión.',
   ]);
 }
 
@@ -33,21 +33,21 @@ class NetworkError extends ApiException {
 /// La interfaz debe mandar a la pantalla de ingreso.
 class AuthError extends ApiException {
   const AuthError([
-    super.message = 'Tu sesión expiró. Iniciá sesión de nuevo.',
+    super.message = 'Su sesión expiró. Inicie sesión de nuevo.',
   ]) : super(code: 'unauthorized');
 }
 
 /// Hay sesión, pero el rol no puede hacer eso. Reintentar nunca ayuda.
 class ForbiddenError extends ApiException {
   const ForbiddenError([
-    super.message = 'No tenés permiso para ver esto.',
+    super.message = 'No tiene permiso para ver esto.',
   ]) : super(code: 'forbidden');
 }
 
 /// El recurso no existe — o está fuera del alcance de este rol, que el
 /// servidor deliberadamente no distingue del caso anterior.
 class NotFoundError extends ApiException {
-  const NotFoundError([super.message = 'No encontramos lo que buscabas.'])
+  const NotFoundError([super.message = 'No encontramos lo que busca.'])
       : super(code: 'not_found');
 }
 
@@ -87,7 +87,7 @@ class ServerError extends ApiException {
 
   const ServerError(
     this.status, [
-    super.message = 'El servidor tuvo un problema. Probá de nuevo en un momento.',
+    super.message = 'El servidor tuvo un problema. Intente de nuevo en un momento.',
     String code = 'internal_error',
   ]) : super(code: code);
 }

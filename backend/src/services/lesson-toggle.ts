@@ -89,7 +89,7 @@ async function toggleCourseLesson(
      where a.student_id = ${studentId} and cm.id = ${courseModuleId}
   `);
   if (!access) {
-    throw forbidden('No tenés acceso a este curso.');
+    throw forbidden('No tiene acceso a este curso.');
   }
 
   const [row] = await db
@@ -145,7 +145,7 @@ async function toggleOwnLesson(
      where rm.id = ${rutaModuleId}
   `);
   if (!lab) {
-    throw forbidden('No estás asignado a este laboratorio.');
+    throw forbidden('No está asignado a este laboratorio.');
   }
 
   const [row] = await db

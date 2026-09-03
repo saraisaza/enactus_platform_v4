@@ -28,7 +28,7 @@ class AppImage extends StatelessWidget {
   final Widget Function(BuildContext context)? loadingBuilder;
 
   /// Qué dibujar si la imagen no se pudo traer. Recibe el error para poder
-  /// distinguir "no tenés permiso" de "no hay conexión".
+  /// distinguir "no tiene permiso" de "no hay conexión".
   final Widget Function(BuildContext context, ApiException error)?
       errorWidgetBuilder;
 

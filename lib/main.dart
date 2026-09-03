@@ -202,7 +202,7 @@ class _BootstrapState extends State<_Bootstrap> {
     if (auth.isRestoring) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(child: BrandLoader(message: 'Abriendo tu sesión…')),
+        body: Center(child: BrandLoader(message: 'Abriendo su sesión…')),
       );
     }
 

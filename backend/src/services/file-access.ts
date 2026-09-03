@@ -200,7 +200,7 @@ export async function authorizeFileRead(
     // Misma regla que `GET /evidences`: el donante ve las suyas, el admin
     // todas, nadie más tiene evidencias en su portal.
     if (!isAdmin && !(user.role === 'donor' && user.id === evidence.donorId)) {
-      throw forbidden('Esta evidencia no es de tu portal.');
+      throw forbidden('Esta evidencia no es de su portal.');
     }
     return {
       key,
@@ -384,7 +384,7 @@ async function assertCourseVisible(
   }
 
   // Asesor, Empresa y Donante no abren material de curso.
-  throw forbidden('Tu rol no tiene acceso al material de este curso.');
+  throw forbidden('Su rol no tiene acceso al material de este curso.');
 }
 
 /**
@@ -429,7 +429,7 @@ async function assertLabVisible(
 
   // Empresa y Donante no abren material formativo.
   if (!clause) {
-    throw forbidden('Tu rol no tiene acceso al material de este laboratorio.');
+    throw forbidden('Su rol no tiene acceso al material de este laboratorio.');
   }
 
   const [ok] = await db.execute<{ ok: number }>(
@@ -512,5 +512,5 @@ async function assertSubmissionVisible(
   }
 
   // Empresa y Donante no ven entregas.
-  throw forbidden('Tu rol no tiene acceso a las entregas.');
+  throw forbidden('Su rol no tiene acceso a las entregas.');
 }

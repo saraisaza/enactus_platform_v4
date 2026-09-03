@@ -221,7 +221,7 @@ tiene su reverso escrito a mano** en `drizzle/down/<tag>.down.sql`, y
 `db:rollback` lo aplica dentro de una transacción — si el reverso falla, no se
 marca nada como revertido.
 
-### Lo que quedó pendiente o requiere tu decisión
+### Lo que quedó pendiente o requiere su decisión
 
 1. **Node 22, no 20.** La máquina tiene Node 22.23 (LTS actual). El paquete
    declara `engines: >=20` y funciona en ambos. Si el runtime de Lambda tiene

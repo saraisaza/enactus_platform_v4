@@ -83,7 +83,7 @@ class _MentorLabs extends StatelessWidget {
           data: (labs) => labs.isEmpty
               ? const EmptyState(
                   icon: Icons.science_outlined,
-                  message: 'Todavía no te asignaron ningún laboratorio.')
+                  message: 'Todavía no le han asignado ningún laboratorio.')
               : Column(
                   children: [
                     for (final lab in labs)
@@ -234,7 +234,7 @@ class _MentorCalendar extends StatelessWidget {
 
     return TabBody(
       title: 'Calendario',
-      subtitle: 'Mentorías de tus laboratorios y eventos de la Ruta',
+      subtitle: 'Mentorías de sus laboratorios y eventos de la Ruta',
       children: [
         combine2(data.calendarEvents, data.laboratories).when(
           loading: () => const CardListSkeleton(count: 1, height: 320),
@@ -294,7 +294,7 @@ class _MentorSubmissions extends StatelessWidget {
 
     return TabBody(
       title: 'Entregas',
-      subtitle: 'Revisá y comentá el trabajo de tus estudiantes',
+      subtitle: 'Revise y comente el trabajo de sus estudiantes',
       children: [
         const _ReviewNotice(),
         const SizedBox(height: 12),
@@ -333,8 +333,8 @@ class _ReviewNotice extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Como mentor revisás y comentás, pero no ponés nota: la '
-              'calificación tiene su propio autor y su propia escala. Tu '
+              'Como mentor revisa y comenta, pero no pone nota: la '
+              'calificación tiene su propio autor y su propia escala. Su '
               'comentario llega igual al estudiante.',
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
@@ -411,7 +411,7 @@ class _SubmissionCard extends StatelessWidget {
                 color: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Tu comentario: ${submission.feedback}',
+              child: Text('Su comentario: ${submission.feedback}',
                   style: const TextStyle(fontSize: 12.5)),
             ),
           ],
@@ -462,7 +462,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
   Future<void> _save() async {
     if (_feedback.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('Escribí tu comentario antes de guardar.'));
+          const ValidationError('Escriba su comentario antes de guardar.'));
       return;
     }
     setState(() {
@@ -481,7 +481,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
         await data.notify(
           [studentId],
           title: 'Entrega revisada',
-          body: 'Tu mentor comentó "${widget.submission.taskName}".',
+          body: 'Su mentor comentó "${widget.submission.taskName}".',
         );
       }
       if (!mounted) return;
@@ -517,7 +517,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           const Text(
-            'Revisás y comentás; la nota la pone quien califica el curso.',
+            'Revise y comente; la nota la pone quien califica el curso.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
@@ -526,7 +526,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
             enabled: !_saving,
             maxLines: 5,
             decoration:
-                const InputDecoration(labelText: 'Tu retroalimentación'),
+                const InputDecoration(labelText: 'Su retroalimentación'),
           ),
         ],
       ),
@@ -548,7 +548,7 @@ class _MentorProfile extends StatelessWidget {
 
     return TabBody(
       title: 'Mi Perfil',
-      subtitle: 'Tus datos y el material que compartís con los estudiantes',
+      subtitle: 'Sus datos y el material que compartís con los estudiantes',
       children: [
         HoverCard(
           padding: const EdgeInsets.all(20),

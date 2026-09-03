@@ -70526,7 +70526,7 @@ var init_errors9 = __esm({
     };
     badRequest = (message2, details) => new AppError(400, "bad_request", message2, details);
     unauthorized = (message2 = "Necesit\xE1s iniciar sesi\xF3n.") => new AppError(401, "unauthorized", message2);
-    forbidden = (message2 = "No ten\xE9s permiso para esto.", code = "forbidden") => new AppError(403, code, message2);
+    forbidden = (message2 = "No tiene permiso para esto.", code = "forbidden") => new AppError(403, code, message2);
     notFound = (message2 = "No se encontr\xF3 el recurso.") => new AppError(404, "not_found", message2);
     conflict = (message2, details) => new AppError(409, "conflict", message2, details);
     payloadTooLarge = (message2, details) => new AppError(413, "payload_too_large", message2, details);
@@ -70568,7 +70568,7 @@ function onError(error62, c5) {
       {
         error: {
           code: "not_found",
-          message: "No encontramos lo que buscabas: el identificador no es v\xE1lido."
+          message: "No encontramos lo que busca: el identificador no es v\xE1lido."
         }
       },
       404
@@ -70686,7 +70686,7 @@ function rateLimit(options) {
       );
       buckets.set(key, bucket);
       throw tooManyRequests(
-        "Demasiados intentos. Esper\xE1 un momento antes de reintentar.",
+        "Demasiados intentos. Espere un momento antes de reintentar.",
         { retryAfterSeconds: retryAfter }
       );
     }
@@ -71856,7 +71856,7 @@ async function verifyAccessToken(token) {
     return { sub, role };
   } catch (error62) {
     if (error62 instanceof Error && error62.name === "JWTExpired") {
-      throw unauthorized("La sesi\xF3n expir\xF3. Inici\xE1 sesi\xF3n de nuevo.");
+      throw unauthorized("La sesi\xF3n expir\xF3. Inicie sesi\xF3n de nuevo.");
     }
     throw unauthorized("Token inv\xE1lido.");
   }
@@ -73653,14 +73653,14 @@ function assertCanGrade(user, isOpenLearning) {
   const allowed = isOpenLearning ? user.canGradeOpenLearning : user.canGradeEnactus;
   if (!allowed) {
     throw forbidden(
-      isOpenLearning ? "Tu Admin no te dio permiso de calificar en Open Learning." : "Tu Admin no te dio permiso de calificar en eduXaction."
+      isOpenLearning ? "Su Admin no le dio permiso de calificar en Open Learning." : "Su Admin no le dio permiso de calificar en eduXaction."
     );
   }
 }
 function assertSelfOr(user, targetUserId, allowedRoles) {
   if (user.id === targetUserId) return;
   if (allowedRoles.includes(user.role)) return;
-  throw forbidden("Solo pod\xE9s ver o modificar tus propios datos.");
+  throw forbidden("Solo puede ver o modificar sus propios datos.");
 }
 var requireAuth, requireRole, CONTENT_ROLES, ADMIN_ROLES, isStudentLike, requireCanGrade, requireEnactus;
 var init_auth = __esm({
@@ -73681,7 +73681,7 @@ var init_auth = __esm({
       if (!user) throw unauthorized("La cuenta ya no existe o fue desactivada.");
       if (user.mustChangePassword && !esRutaDeCambio(c5.req.method, c5.req.path)) {
         throw forbidden(
-          "Ten\xE9s que cambiar tu contrase\xF1a antes de usar la plataforma.",
+          "Tiene que cambiar su contrase\xF1a antes de usar la plataforma.",
           "password_change_required"
         );
       }
@@ -73692,7 +73692,7 @@ var init_auth = __esm({
       const user = currentUser(c5);
       if (!roles.includes(user.role)) {
         throw forbidden(
-          `Esta acci\xF3n es para: ${roles.join(", ")}. Tu rol es ${user.role}.`
+          `Esta acci\xF3n es para: ${roles.join(", ")}. Su rol es ${user.role}.`
         );
       }
       await next();
@@ -73706,7 +73706,7 @@ var init_auth = __esm({
         throw forbidden("Solo un LXD (o un administrador) puede calificar.");
       }
       if (user.role === "lxd" && !user.canGradeOpenLearning && !user.canGradeEnactus) {
-        throw forbidden("Tu Admin no te dio permiso de calificar.");
+        throw forbidden("Su Admin no le dio permiso de calificar.");
       }
       await next();
     });
@@ -73714,7 +73714,7 @@ var init_auth = __esm({
       const user = currentUser(c5);
       if (isStudentLike(user.role) && user.studentType === "open_learning") {
         throw forbidden(
-          "Tu cuenta es de Open Learning: no incluye laboratorios ni Ruta de Impacto."
+          "Su cuenta es de Open Learning: no incluye laboratorios ni Ruta de Impacto."
         );
       }
       await next();
@@ -73779,7 +73779,7 @@ var init_auth2 = __esm({
     });
     CARACTERES_MINIMOS = 12;
     cambioSchema = external_exports.object({
-      currentPassword: external_exports.string().min(1, "Falta tu contrase\xF1a actual."),
+      currentPassword: external_exports.string().min(1, "Falta su contrase\xF1a actual."),
       newPassword: external_exports.string().min(
         CARACTERES_MINIMOS,
         `La contrase\xF1a nueva necesita al menos ${CARACTERES_MINIMOS} caracteres.`
@@ -73807,7 +73807,7 @@ var init_auth2 = __esm({
       const espera = esperaPendiente(clave, MAX_FALLOS_POR_CORREO, VENTANA_FALLOS_MS);
       if (espera !== null) {
         throw tooManyRequests(
-          "Demasiados intentos fallidos contra esta cuenta. Esper\xE1 unos minutos.",
+          "Demasiados intentos fallidos contra esta cuenta. Espere unos minutos.",
           { retryAfterSeconds: espera }
         );
       }
@@ -73854,7 +73854,7 @@ var init_auth2 = __esm({
         );
       }
       if (stored.expiresAt.getTime() <= Date.now()) {
-        throw unauthorized("El refresh token expir\xF3. Inici\xE1 sesi\xF3n de nuevo.");
+        throw unauthorized("El refresh token expir\xF3. Inicie sesi\xF3n de nuevo.");
       }
       const [user] = await db2.select().from(users).where(and(eq(users.id, stored.userId), isNull(users.deletedAt))).limit(1);
       if (!user) throw unauthorized("La cuenta ya no existe.");
@@ -73905,7 +73905,7 @@ var init_auth2 = __esm({
       );
       const db2 = c5.get("db");
       if (!await verifyPassword(currentPassword, user.passwordHash)) {
-        throw unauthorized("Tu contrase\xF1a actual no es correcta.");
+        throw unauthorized("Su contrase\xF1a actual no es correcta.");
       }
       if (currentPassword === newPassword) {
         throw badRequest("La contrase\xF1a nueva tiene que ser distinta de la actual.");
@@ -74509,12 +74509,12 @@ function assertCanCreateEvent(role, type) {
   if (role === "admin" || role === "superadmin") return;
   if (role === "lxd" && type === "open_learning_sync") return;
   if (role === "mentor" && (type === "ruta_impacto" || type === "mentoria")) return;
-  throw forbidden(`Tu rol no puede crear eventos de tipo ${type}.`);
+  throw forbidden(`Su rol no puede crear eventos de tipo ${type}.`);
 }
 function assertOwnsEvent(role, userId, createdBy) {
   if (role === "admin" || role === "superadmin") return;
   if (createdBy === userId) return;
-  throw forbidden("Solo pod\xE9s editar los eventos que creaste.");
+  throw forbidden("Solo puede editar los eventos que usted cre\xF3.");
 }
 async function loadEvent(db2, id) {
   const [row] = await db2.select().from(calendarEvents).where(and(eq(calendarEvents.id, id), isNull(calendarEvents.deletedAt))).limit(1);
@@ -74782,7 +74782,7 @@ var init_content2 = __esm({
       const permitidos = await notifiableUserIds(db2, user, destinatarios);
       if (permitidos.length !== destinatarios.length) {
         throw forbidden(
-          "Hay destinatarios a los que tu rol no puede escribirles."
+          "Hay destinatarios a los que su rol no puede escribirles."
         );
       }
       const created = await db2.insert(notifications).values(
@@ -75323,7 +75323,7 @@ var init_users2 = __esm({
       const admin = currentUser(c5);
       const id = c5.req.param("id");
       if (id === admin.id) {
-        throw conflict("No pod\xE9s eliminar tu propia cuenta.");
+        throw conflict("No puede eliminar su propia cuenta.");
       }
       const db2 = c5.get("db");
       const [deleted] = await db2.update(users).set({ deletedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(and(eq(users.id, id), isNull(users.deletedAt))).returning({ id: users.id, role: users.role });
@@ -75532,7 +75532,7 @@ async function authorizeFileRead(db2, user, key) {
   `);
   if (evidence) {
     if (!isAdmin && !(user.role === "donor" && user.id === evidence.donorId)) {
-      throw forbidden("Esta evidencia no es de tu portal.");
+      throw forbidden("Esta evidencia no es de su portal.");
     }
     return {
       key,
@@ -75640,7 +75640,7 @@ async function assertCourseVisible(db2, user, courseId) {
     if (!row) throw notFound("No encontramos ese archivo.");
     return;
   }
-  throw forbidden("Tu rol no tiene acceso al material de este curso.");
+  throw forbidden("Su rol no tiene acceso al material de este curso.");
 }
 async function assertLabVisible(db2, user, laboratoryId) {
   if (user.role === "admin" || user.role === "superadmin") return;
@@ -75670,7 +75670,7 @@ async function assertLabVisible(db2, user, laboratoryId) {
     return null;
   })();
   if (!clause) {
-    throw forbidden("Tu rol no tiene acceso al material de este laboratorio.");
+    throw forbidden("Su rol no tiene acceso al material de este laboratorio.");
   }
   const [ok] = await db2.execute(
     sql`select 1 as ok where ${clause}`
@@ -75729,7 +75729,7 @@ async function assertSubmissionVisible(db2, user, submissionId) {
     if (!ok) throw notFound("No encontramos ese archivo.");
     return;
   }
-  throw forbidden("Tu rol no tiene acceso a las entregas.");
+  throw forbidden("Su rol no tiene acceso a las entregas.");
 }
 var init_file_access = __esm({
   "src/services/file-access.ts"() {
@@ -76791,13 +76791,13 @@ function assertForumAccess(user) {
   if (isStudentLike(user.role)) {
     if (user.studentType === "enactus") return;
     throw forbidden(
-      "El foro es de la comunidad Enactus: tu cuenta es de Open Learning."
+      "El foro es de la comunidad Enactus: su cuenta es de Open Learning."
     );
   }
   if (user.role === "admin" || user.role === "superadmin" || user.role === "advisor") {
     return;
   }
-  throw forbidden("Tu rol no tiene acceso al foro.");
+  throw forbidden("Su rol no tiene acceso al foro.");
 }
 async function loadPost(db2, id) {
   const [row] = await db2.select().from(forumPosts).where(and(eq(forumPosts.id, id), isNull(forumPosts.deletedAt))).limit(1);
@@ -76936,7 +76936,7 @@ var init_forum = __esm({
       const db2 = c5.get("db");
       const post = await loadPost(db2, c5.req.param("id"));
       if (post.authorId !== user.id && !isModerator(user.role)) {
-        throw forbidden("Solo pod\xE9s borrar tus propias publicaciones.");
+        throw forbidden("Solo puede borrar sus propias publicaciones.");
       }
       await db2.update(forumPosts).set({ deletedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }).where(eq(forumPosts.id, post.id));
       return c5.body(null, 204);
@@ -77751,7 +77751,7 @@ function quizProblems(questions, isSurvey) {
         break;
       case "truefalse":
         if (q3.answerIndex !== 0 && q3.answerIndex !== 1) {
-          add(at, "Eleg\xED si la respuesta correcta es Verdadero o Falso.");
+          add(at, "Elija si la respuesta correcta es Verdadero o Falso.");
         }
         break;
       case "short":
@@ -78129,7 +78129,7 @@ var init_lessons = __esm({
       const lesson = await loadEditableLesson(db2, c5.req.param("id"), user);
       if (lesson.type !== "quiz" && lesson.type !== "survey") {
         throw conflict(
-          "Solo una lecci\xF3n de tipo quiz o encuesta tiene preguntas. Cambi\xE1 el tipo de la lecci\xF3n primero.",
+          "Solo una lecci\xF3n de tipo quiz o encuesta tiene preguntas. Cambie el tipo de la lecci\xF3n primero.",
           { type: lesson.type }
         );
       }
@@ -78187,7 +78187,7 @@ var init_lessons = __esm({
       const lesson = await loadEditableLesson(db2, c5.req.param("id"), user);
       if (lesson.type !== "activity") {
         throw conflict(
-          "Solo una lecci\xF3n de tipo actividad tiene entregable. Cambi\xE1 el tipo de la lecci\xF3n primero.",
+          "Solo una lecci\xF3n de tipo actividad tiene entregable. Cambie el tipo de la lecci\xF3n primero.",
           { type: lesson.type }
         );
       }
@@ -78538,7 +78538,7 @@ async function toggleCourseLesson(db2, studentId, courseModuleId, lessonId) {
      where a.student_id = ${studentId} and cm.id = ${courseModuleId}
   `);
   if (!access) {
-    throw forbidden("No ten\xE9s acceso a este curso.");
+    throw forbidden("No tiene acceso a este curso.");
   }
   const [row] = await db2.insert(progress).values({ studentId, courseId: access.course_id }).onConflictDoUpdate({
     target: [progress.studentId, progress.courseId],
@@ -78573,7 +78573,7 @@ async function toggleOwnLesson(db2, studentId, rutaModuleId, lessonId) {
      where rm.id = ${rutaModuleId}
   `);
   if (!lab) {
-    throw forbidden("No est\xE1s asignado a este laboratorio.");
+    throw forbidden("No est\xE1 asignado a este laboratorio.");
   }
   const [row] = await db2.insert(rutaProgress).values({ studentId, laboratoryId: lab.laboratory_id }).onConflictDoUpdate({
     target: [rutaProgress.studentId, rutaProgress.laboratoryId],
@@ -79235,7 +79235,7 @@ var init_submissions2 = __esm({
       select course_id from student_course_access
        where student_id = ${user.id} and course_id = ${parsed2.courseId}
     `);
-        if (!access) throw forbidden("No ten\xE9s acceso a ese curso.");
+        if (!access) throw forbidden("No tiene acceso a ese curso.");
       } else {
         const [lab] = await db2.execute(sql`
       select p.laboratory_id
@@ -79245,7 +79245,7 @@ var init_submissions2 = __esm({
           on sl.laboratory_id = p.laboratory_id and sl.student_id = ${user.id}
        where rm.id = ${parsed2.rutaModuleId}
     `);
-        if (!lab) throw forbidden("No est\xE1s asignado a ese laboratorio.");
+        if (!lab) throw forbidden("No est\xE1 asignado a ese laboratorio.");
       }
       const [created] = await db2.insert(submissions).values({
         courseId: parsed2.courseId ?? null,
@@ -79268,7 +79268,7 @@ var init_submissions2 = __esm({
       const course = submission.courseId ? await loadCourse(db2, submission.courseId) : null;
       assertCanGrade(user, course?.isOpenLearning ?? false);
       if (user.role === "lxd" && course && course.creatorId !== user.id) {
-        throw forbidden("Solo pod\xE9s calificar entregas de los cursos que creaste.");
+        throw forbidden("Solo puede calificar entregas de los cursos que usted cre\xF3.");
       }
       assertGradeInRange(parsed2.gradingMode, parsed2.grade);
       const grade = parsed2.gradingMode === "review" ? null : parsed2.grade;
@@ -79324,7 +79324,7 @@ var init_submissions2 = __esm({
         await db2.insert(notifications).values({
           userId: submission.studentId,
           title: "Entrega revisada",
-          body: `"${submission.taskName}" tiene un comentario nuevo de tu Mentor.`
+          body: `"${submission.taskName}" tiene un comentario nuevo de su Mentor.`
         });
       }
       return c5.json(updated);
@@ -79336,11 +79336,11 @@ var init_submissions2 = __esm({
       const esAdmin = user.role === "admin" || user.role === "superadmin";
       if (!esAdmin) {
         if (submission.studentId !== user.id) {
-          throw forbidden("Solo pod\xE9s borrar tus propias entregas.");
+          throw forbidden("Solo puede borrar sus propias entregas.");
         }
         if (submission.gradedAt || submission.feedback.length > 0) {
           throw conflict(
-            "No pod\xE9s borrar una entrega que ya fue calificada o comentada."
+            "No puede borrar una entrega que ya fue calificada o comentada."
           );
         }
       }

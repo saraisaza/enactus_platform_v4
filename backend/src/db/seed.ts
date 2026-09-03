@@ -465,7 +465,7 @@ async function seedLaboratories(db: Db) {
       title: 'Confirmar asistencia a la reunión',
       type: 'activity',
       description:
-        'Después de tu reunión con el Mentor, confirma aquí que asististe.',
+        'Después de su reunión con el Mentor, confirme aquí su asistencia.',
     },
   ]);
 }
@@ -756,7 +756,7 @@ async function seedCourses(db: Db) {
       id: seedId('lia5'),
       courseModuleId: seedId('mia2'),
       orderIndex: 2,
-      title: 'Proyecto: IA para tu comunidad',
+      title: 'Proyecto: IA para su comunidad',
       type: 'activity',
     },
     {
@@ -825,7 +825,7 @@ async function seedCourses(db: Db) {
       lessonId: seedId('lia6'),
       orderIndex: 0,
       kind: 'short',
-      question: '¿Qué fue lo que más te gustó del curso?',
+      question: '¿Qué fue lo que más le gustó del curso?',
     },
     {
       id: seedId('q_lia6_2'),
@@ -850,7 +850,7 @@ async function seedCourses(db: Db) {
   await db.insert(s.lessonActivities).values({
     lessonId: seedId('lia5'),
     description:
-      'Propón una solución de IA para un problema real de tu comunidad. Incluye el problema, los datos necesarios y el impacto esperado.',
+      'Proponga una solución de IA para un problema real de su comunidad. Incluya el problema, los datos necesarios y el impacto esperado.',
     requiresFile: true,
     requiresText: true,
     maxFiles: 2,
@@ -875,7 +875,7 @@ async function seedCourses(db: Db) {
   await db.insert(s.lessonActivities).values({
     lessonId: seedId('lab_ia_fase1_mod2_asistencia'),
     description:
-      'Después de tu reunión con el Mentor, confirma aquí que asististe.',
+      'Después de su reunión con el Mentor, confirme aquí su asistencia.',
     requiresFile: false,
     requiresText: true,
     maxFiles: 1,
@@ -1023,7 +1023,7 @@ async function seedDemoActivity(db: Db) {
       type: 'story',
       title: 'La historia de Sara',
       description:
-        'Gracias a tu aporte, Sara lidera el proyecto AquaVida que hoy lleva agua potable a 320 familias en La Guajira.',
+        'Gracias a su aporte, Sara lidera el proyecto AquaVida que hoy lleva agua potable a 320 familias en La Guajira.',
       evidenceDate: at('2026-05-15'),
     },
     {
@@ -1052,7 +1052,7 @@ async function seedDemoActivity(db: Db) {
       id: seedId('not1'),
       userId: seedId('est1'),
       title: 'Entrega calificada',
-      body: 'Tu ensayo de IA fue calificado con 4.5. ¡Revisa la retroalimentación!',
+      body: 'Su ensayo de IA fue calificado con 4.5. Revise la retroalimentación.',
       createdAt: at('2026-06-21'),
     },
     {
@@ -1068,7 +1068,7 @@ async function seedDemoActivity(db: Db) {
     {
       id: seedId('post1'),
       authorId: seedId('adm1'),
-      body: '¡Bienvenidos al foro de la comunidad eduXaction Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar tu universidad o laboratorio.',
+      body: '¡Bienvenidos al foro de la comunidad eduXaction Colombia! 💛 Este es el espacio para compartir avances, hacer preguntas entre laboratorios y celebrar los logros de todos los equipos, sin importar su universidad o laboratorio.',
       category: 'announcement',
       pinned: true,
       createdAt: at('2026-06-02T09:00:00Z'),

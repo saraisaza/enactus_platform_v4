@@ -83,7 +83,7 @@ class _ForumViewState extends State<ForumView> {
       await data.createForumPost(text, _categoryDraft);
       _composerCtrl.clear();
     } on ApiException catch (e) {
-      // Se muestra el motivo REAL: "sin conexión" y "tu cuenta es de Open
+      // Se muestra el motivo REAL: "sin conexión" y "su cuenta es de Open
       // Learning" piden cosas distintas de quien lo lee.
       if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
@@ -149,7 +149,7 @@ class _ForumViewState extends State<ForumView> {
           'activa${activeCount == 1 ? '' : 's'} esta semana',
       title: 'Foro de la Comunidad',
       subtitle: 'Pregunta, comparte avances y encuentra a quién ya resolvió lo '
-          'que tú estás resolviendo. Escriben estudiantes, mentores y LXD de '
+          'que tú está resolviendo. Escriben estudiantes, mentores y LXD de '
           'toda la red.',
       searchHint: 'Buscar autor, organización o contenido',
       onSearchChanged: (v) => setState(() => _query = v),
@@ -314,7 +314,7 @@ class _Composer extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: colors.surface2,
-                    hintText: '¿Qué quieres compartir con la comunidad?',
+                    hintText: '¿Qué quiere compartir con la comunidad?',
                     hintStyle: TextStyle(color: colors.text3),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
                     border: OutlineInputBorder(
@@ -942,11 +942,11 @@ class _RulesCard extends StatelessWidget {
   static const _rules = [
     (
       Icons.handshake_outlined,
-      'Respeta a los demás equipos y comparte con la misma apertura con la que te gustaría recibir ayuda.'
+      'Respeta a los demás equipos y comparte con la misma apertura con la que le gustaría recibir ayuda.'
     ),
     (
       Icons.verified_outlined,
-      'Publica contenido real de tu proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'
+      'Publica contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'
     ),
     (
       Icons.groups_outlined,

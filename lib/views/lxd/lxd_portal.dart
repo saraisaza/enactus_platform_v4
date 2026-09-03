@@ -91,7 +91,7 @@ class _LxdStudentsState extends State<_LxdStudents> {
 
     return TabBody(
       title: 'Mis Estudiantes',
-      subtitle: 'Estudiantes inscritos en cursos que creaste',
+      subtitle: 'Estudiantes inscritos en cursos que usted creó',
       children: [
         ConstrainedBox(
           // Un máximo, no un ancho fijo: en un teléfono tiene que poder
@@ -134,7 +134,7 @@ class _LxdStudentsState extends State<_LxdStudents> {
     if (students.isEmpty) {
       return const EmptyState(
           icon: Icons.groups_outlined,
-          message: 'No hay estudiantes inscritos en tus cursos.');
+          message: 'No hay estudiantes inscritos en sus cursos.');
     }
 
     // Ocho columnas no caben en un teléfono: se apilan en tarjetas.
@@ -285,7 +285,7 @@ class _LxdProjects extends StatelessWidget {
 
     return TabBody(
       title: 'Proyectos',
-      subtitle: 'Equipos y avance en la Ruta de Impacto de tus estudiantes',
+      subtitle: 'Equipos y avance en la Ruta de Impacto de sus estudiantes',
       children: [
         data.users(role: 'student,alumni', include: 'team,progress').when(
               loading: () => const CardListSkeleton(count: 3),
@@ -305,7 +305,7 @@ class _LxdProjects extends StatelessWidget {
                   return const EmptyState(
                       icon: Icons.lightbulb_outline,
                       message:
-                          'Ninguno de tus estudiantes tiene proyecto asignado todavía.');
+                          'Ninguno de sus estudiantes tiene proyecto asignado todavía.');
                 }
 
                 return Column(
@@ -345,7 +345,7 @@ class _ProjectRow extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.w700)),
                 Text(
                     '${team.groupName} · $students '
-                    '${students == 1 ? 'estudiante tuyo' : 'estudiantes tuyos'}',
+                    '${students == 1 ? 'estudiante suyo' : 'estudiantes suyos'}',
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12.5)),
               ],
@@ -374,7 +374,7 @@ class _LxdCalendar extends StatelessWidget {
 
     return TabBody(
       title: 'Calendario',
-      subtitle: 'Agenda las sesiones sincrónicas de tus cursos Open Learning',
+      subtitle: 'Agenda las sesiones sincrónicas de sus cursos Open Learning',
       children: [
         combine2(data.calendarEvents, data.coursesWithStats).when(
           loading: () => const CardSkeleton(height: 320),
@@ -438,7 +438,7 @@ class _LxdCourses extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Cursos',
-      subtitle: 'Cursos que creaste — eduXaction (asignados o no a un '
+      subtitle: 'Cursos que usted creó — eduXaction (asignados o no a un '
           'laboratorio) y Open Learning',
       actions: [
         ElevatedButton.icon(
@@ -578,7 +578,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                 data.laboratories.when(
                   loading: () => const Skeleton(height: 48),
                   error: (_) => const Text(
-                      'No se pudieron cargar los laboratorios. Podés '
+                      'No se pudieron cargar los laboratorios. Puede '
                       'asignarlo después desde el constructor.',
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12.5)),
@@ -815,7 +815,7 @@ class _LxdGrading extends StatelessWidget {
 
     return TabBody(
       title: 'Calificaciones',
-      subtitle: 'Entregas de estudiantes en tus cursos',
+      subtitle: 'Entregas de estudiantes en sus cursos',
       children: [
         // El permiso lo decide el Admin y lo verifica el servidor. Acá solo
         // se explica por qué no hay nada que hacer.
@@ -823,7 +823,7 @@ class _LxdGrading extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: StatusChip(
-                label: 'Tu Admin no te ha dado permiso de calificar todavía',
+                label: 'Su Admin no le ha dado permiso de calificar todavía',
                 color: AppColors.statusWarning,
                 icon: Icons.lock_outline),
           ),
@@ -962,7 +962,7 @@ class _GradeDialogState extends State<_GradeDialog> {
   (double?, String?) _resolveGrade() {
     switch (_mode) {
       case GradingMode.passfail:
-        if (_passed == null) return (null, 'Elegí aprobado o reprobado.');
+        if (_passed == null) return (null, 'Elija aprobado o reprobado.');
         return (_passed! ? 100 : 0, null);
       case GradingMode.review:
         return (null, null);
@@ -1075,7 +1075,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                     ],
                   ),
                 GradingMode.review => const Text(
-                    'Esta actividad es de solo revisión: deja tu '
+                    'Esta actividad es de solo revisión: deja su '
                     'retroalimentación sin nota.',
                     style:
                         TextStyle(color: AppColors.textMuted, fontSize: 13)),
@@ -1225,8 +1225,8 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
       children: [
         if (!canIssue)
           const StatusChip(
-              label: 'Tu Admin no te ha dado permiso de calificar en '
-                  'eduXaction: no puedes emitir certificados todavía',
+              label: 'Su Admin no le ha dado permiso de calificar en '
+                  'eduXaction: no puede emitir certificados todavía',
               color: AppColors.statusWarning,
               icon: Icons.lock_outline)
         else

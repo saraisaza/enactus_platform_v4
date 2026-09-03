@@ -26,7 +26,7 @@ export const unauthorized = (message = 'Necesitás iniciar sesión.') =>
   new AppError(401, 'unauthorized', message);
 
 export const forbidden = (
-  message = 'No tenés permiso para esto.',
+  message = 'No tiene permiso para esto.',
   code: 'forbidden' | 'password_change_required' = 'forbidden',
 ) => new AppError(403, code, message);
 

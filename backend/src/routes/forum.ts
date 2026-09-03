@@ -23,13 +23,13 @@ function assertForumAccess(user: AuthUser): void {
   if (isStudentLike(user.role)) {
     if (user.studentType === 'enactus') return;
     throw forbidden(
-      'El foro es de la comunidad Enactus: tu cuenta es de Open Learning.',
+      'El foro es de la comunidad Enactus: su cuenta es de Open Learning.',
     );
   }
   if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'advisor') {
     return;
   }
-  throw forbidden('Tu rol no tiene acceso al foro.');
+  throw forbidden('Su rol no tiene acceso al foro.');
 }
 
 forumRoutes.use('*', async (c, next) => {
@@ -256,7 +256,7 @@ forumRoutes.delete('/:id', async (c) => {
   const db = c.get('db');
   const post = await loadPost(db, c.req.param('id'));
   if (post.authorId !== user.id && !isModerator(user.role)) {
-    throw forbidden('Solo podés borrar tus propias publicaciones.');
+    throw forbidden('Solo puede borrar sus propias publicaciones.');
   }
   await db
     .update(forumPosts)

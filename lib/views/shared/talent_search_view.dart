@@ -207,7 +207,7 @@ class _ContactDialog extends StatefulWidget {
 }
 
 class _ContactDialogState extends State<_ContactDialog> {
-  final _title = TextEditingController(text: 'Una oportunidad para vos');
+  final _title = TextEditingController(text: 'Una oportunidad para usted');
   final _body = TextEditingController();
   bool _saving = false;
   ApiException? _error;

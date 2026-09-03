@@ -198,7 +198,7 @@ class _CourseBody extends StatelessWidget {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                                'Estás viendo el progreso de otro estudiante — '
+                                'Está viendo el progreso de otro estudiante — '
                                 'modo de solo lectura.',
                                 style: TextStyle(
                                     fontSize: 12.5,
@@ -362,7 +362,7 @@ class _LessonTile extends StatelessWidget {
             lesson.type == LessonType.survey ||
             lesson.type == LessonType.activity)) {
       showAppSnack(context,
-          'Estás viendo el progreso de otro estudiante — no puedes responder en su nombre.');
+          'Está viendo el progreso de otro estudiante — no puede responder en su nombre.');
       return;
     }
 
@@ -611,7 +611,7 @@ class _QuizDialogState extends State<_QuizDialog> {
             enabled: !locked,
             decoration: InputDecoration(
               hintText: question.kind == 'fill'
-                  ? 'Completa la frase…'
+                  ? 'Complete la frase…'
                   : 'Tu respuesta…',
               isDense: true,
             ),
@@ -1069,7 +1069,7 @@ class _SubmissionsSection extends StatelessWidget {
         if (submissions.isEmpty)
           const Padding(
             padding: EdgeInsets.only(bottom: 8),
-            child: Text('Todavía no hiciste ninguna entrega en este curso.',
+            child: Text('Todavía no ha realizado ninguna entrega en este curso.',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
           ),
         for (final submission in submissions)

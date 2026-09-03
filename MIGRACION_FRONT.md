@@ -98,7 +98,7 @@ Hive escondía porque el navegador tenía todos los datos de todo el mundo.
    aceptara, cualquiera se ascendería mandando un campo de más.
 
 5. **Un `catch` del foro** mostraba *"No se pudo publicar"* para cualquier
-   fallo. Ahora muestra el motivo: "sin conexión" y "tu cuenta es de Open
+   fallo. Ahora muestra el motivo: "sin conexión" y "su cuenta es de Open
    Learning" piden cosas distintas de quien lo lee.
 
 ---
@@ -245,7 +245,7 @@ alguien da play.
 `ServerError` fijaba `code: 'internal_error'` y **descartaba el código del
 servidor**. El backend distingue a propósito sus 503 —`cdn_not_configured`,
 `storage_not_configured`, `storage_unavailable`— y dice *qué* falta; el cliente
-lo aplastaba todo en "El servidor tuvo un problema. Probá de nuevo".
+lo aplastaba todo en "El servidor tuvo un problema. Intente de nuevo".
 
 La pantalla no podía diferenciar "esto no está configurado en este entorno"
 (reintentar no sirve nunca) de "se cayó un momento" (reintentar sí sirve), que

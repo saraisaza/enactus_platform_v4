@@ -42,7 +42,7 @@ const refreshSchema = z.object({
 const CARACTERES_MINIMOS = 12;
 
 const cambioSchema = z.object({
-  currentPassword: z.string().min(1, 'Falta tu contraseña actual.'),
+  currentPassword: z.string().min(1, 'Falta su contraseña actual.'),
   newPassword: z
     .string()
     .min(
@@ -114,7 +114,7 @@ authRoutes.post('/login', async (c) => {
   const espera = esperaPendiente(clave, MAX_FALLOS_POR_CORREO, VENTANA_FALLOS_MS);
   if (espera !== null) {
     throw tooManyRequests(
-      'Demasiados intentos fallidos contra esta cuenta. Esperá unos minutos.',
+      'Demasiados intentos fallidos contra esta cuenta. Espere unos minutos.',
       { retryAfterSeconds: espera },
     );
   }
@@ -203,7 +203,7 @@ authRoutes.post('/refresh', async (c) => {
   }
 
   if (stored.expiresAt.getTime() <= Date.now()) {
-    throw unauthorized('El refresh token expiró. Iniciá sesión de nuevo.');
+    throw unauthorized('El refresh token expiró. Inicie sesión de nuevo.');
   }
 
   const [user] = await db
@@ -363,7 +363,7 @@ authRoutes.post('/change-password', requireAuth, async (c) => {
   const db = c.get('db');
 
   if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-    throw unauthorized('Tu contraseña actual no es correcta.');
+    throw unauthorized('Su contraseña actual no es correcta.');
   }
   if (currentPassword === newPassword) {
     throw badRequest('La contraseña nueva tiene que ser distinta de la actual.');

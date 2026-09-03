@@ -116,7 +116,7 @@ class _StudentCertificates extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Certificados',
-      subtitle: 'Certificados emitidos por tus LXD al completar una Ruta de Impacto',
+      subtitle: 'Certificados emitidos por sus LXD al completar una Ruta de Impacto',
       children: [
         // `/certificates` ya devuelve solo los propios cuando quien pregunta es
         // un estudiante: el alcance lo decide el servidor, no un filtro acá.
@@ -134,7 +134,7 @@ class _StudentCertificates extends StatelessWidget {
       return const EmptyState(
           icon: Icons.workspace_premium_outlined,
           message:
-              'Aún no tienes certificados.\nCompleta tus cursos para obtenerlos.');
+              'Aún no tiene certificados.\nComplete sus cursos para obtenerlos.');
     }
     return Column(
       children: [
@@ -718,7 +718,7 @@ class _ProjectCard extends StatelessWidget {
           border: Border.all(color: colors.border),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: Text('Aún no tienes proyecto asignado.',
+        child: Text('Aún no tiene proyecto asignado.',
             style: TextStyle(fontSize: 13.5, color: colors.text3)),
       );
     }
@@ -941,8 +941,8 @@ class _NoCertificatesYet extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 300),
               child: Text(
                   closest == null
-                      ? 'Aún no tienes certificados. Completa una Ruta de Impacto para obtener el primero.'
-                      : 'Te falta poco para tu primer certificado: '
+                      ? 'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.'
+                      : 'Te falta poco para su primer certificado: '
                           '"${closest.name}".',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13.5, color: colors.text2)),
@@ -1062,7 +1062,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
 
   Future<void> _pickAvatar() async {
     final result = await FilePicker.pickFiles(
-      dialogTitle: 'Selecciona una foto',
+      dialogTitle: 'Seleccione una foto',
       type: FileType.image,
       withData: true,
     );
@@ -1112,7 +1112,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.length < 7) {
       setState(() => _error = const ValidationError(
-          'Ingresa un teléfono válido (mínimo 7 dígitos).'));
+          'Ingrese un teléfono válido (mínimo 7 dígitos).'));
       return;
     }
 
@@ -1218,7 +1218,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               const SizedBox(height: 6),
               const Text(
                   'Cédula, universidad, equipo, proyecto y empresa patrocinadora '
-                  'los asigna tu administrador.',
+                  'los asigna su administrador.',
                   style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
               if (_error != null) ...[
                 const SizedBox(height: 12),

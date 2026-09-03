@@ -81,7 +81,7 @@ class _LoginViewState extends State<LoginView> {
                             style: displayHeading(fontSize: 26)),
                         const SizedBox(height: 6),
                         const Text(
-                          'Ingresa con la cuenta creada por tu administrador',
+                          'Ingrese con la cuenta creada por su administrador',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 13),

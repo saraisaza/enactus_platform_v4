@@ -78,7 +78,7 @@ class _AdvisorDashboard extends StatelessWidget {
         context.watch<AuthProvider>().currentUser?.university ?? '';
 
     return TabBody(
-      title: universidad.isEmpty ? 'Tu universidad' : universidad,
+      title: universidad.isEmpty ? 'Su universidad' : universidad,
       subtitle: 'Los equipos y estudiantes que acompañás',
       children: [
         combine2(
@@ -138,7 +138,7 @@ class _AdvisorCalendar extends StatelessWidget {
 
     return TabBody(
       title: 'Calendario',
-      subtitle: 'Eventos de la Ruta de Impacto y de los laboratorios de tus '
+      subtitle: 'Eventos de la Ruta de Impacto y de los laboratorios de sus '
           'estudiantes',
       children: [
         data.calendarEvents.when(
@@ -180,7 +180,7 @@ class _AdvisorStudentsState extends State<_AdvisorStudents> {
 
     return TabBody(
       title: 'Seguimiento de Estudiantes',
-      subtitle: 'Cómo van los estudiantes de tu universidad',
+      subtitle: 'Cómo van los estudiantes de su universidad',
       children: [
         // `Wrap` y no `Row`: el buscador con ancho fijo más tres fichas
         // desbordaba siempre en pantallas angostas.

@@ -252,13 +252,13 @@ function assertCanCreateEvent(role: string, type: string): void {
   if (role === 'admin' || role === 'superadmin') return;
   if (role === 'lxd' && type === 'open_learning_sync') return;
   if (role === 'mentor' && (type === 'ruta_impacto' || type === 'mentoria')) return;
-  throw forbidden(`Tu rol no puede crear eventos de tipo ${type}.`);
+  throw forbidden(`Su rol no puede crear eventos de tipo ${type}.`);
 }
 
 function assertOwnsEvent(role: string, userId: string, createdBy: string | null): void {
   if (role === 'admin' || role === 'superadmin') return;
   if (createdBy === userId) return;
-  throw forbidden('Solo podés editar los eventos que creaste.');
+  throw forbidden('Solo puede editar los eventos que usted creó.');
 }
 
 async function loadEvent(db: AppEnv['Variables']['db'], id: string) {
@@ -417,7 +417,7 @@ notificationRoutes.post('/', async (c) => {
 
   if (permitidos.length !== destinatarios.length) {
     throw forbidden(
-      'Hay destinatarios a los que tu rol no puede escribirles.',
+      'Hay destinatarios a los que su rol no puede escribirles.',
     );
   }
 

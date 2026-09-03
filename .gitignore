@@ -64,3 +64,6 @@ backend/admins.json
 # copiado y el zip. El código fuente (index.mjs, rds-ca.pem) sí se versiona.
 backend/infra/lambda-admin/node_modules/
 backend/infra/lambda-admin/*.zip
+backend/dist-lambda/
+backend/dist-tareas/
+backend/infra/*.zip

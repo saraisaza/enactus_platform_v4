@@ -86,10 +86,19 @@ más el maestro que gestiona RDS.
 
 | Recurso | Estado |
 |---|---|
-| Lambda `enactus-db-admin` | Active · `nodejs22.x` · en la VPC · `enactus-lambda-sg` |
-| Lambda de la API | ❌ no existe todavía |
-| API Gateway | ❌ no existe |
+| Lambda `enactus-db-admin` | Active · SQL suelto contra la base privada |
+| Lambda `enactus-db-tareas` | Active · migrar y sembrar, con el código real de la app |
+| Lambda `enactus-api-prod` | Active · 512 MB · 30 s · `prod/runtime.json` |
+| Lambda `enactus-api-staging` | Active · 512 MB · 30 s · `staging/runtime.json` |
+| API Gateway `enactus-api-prod` | `qocz5bt4qa` → `api.eduxaction.com` |
+| API Gateway `enactus-api-staging` | `gj8os20pg0` → `staging-api.eduxaction.com` |
 | CloudFront | ❌ no existe |
+
+Las cuatro Lambdas corren en `nodejs22.x`, dentro de la VPC, en las subredes
+privadas y con `enactus-lambda-sg`.
+
+**`reserved concurrency` sigue sin aplicarse**: la cuenta tiene un tope total
+de 10 ejecuciones concurrentes. Ver `BLOQUEOS_INFRA.md`.
 
 ---
 
@@ -97,13 +106,17 @@ más el maestro que gestiona RDS.
 
 | | |
 |---|---|
-| Zona Route 53 | `eduxaction.com.` — `Z0527409CO28GN2VRE99` · **3 registros** (NS, SOA y el CNAME de validación) |
+| Zona Route 53 | `eduxaction.com.` — `Z0527409CO28GN2VRE99` |
+| `api.eduxaction.com` | A/Alias → API Gateway (producción) |
+| `staging-api.eduxaction.com` | A/Alias → API Gateway (staging) |
 | Certificado ACM | `eduxaction.com` + `*.eduxaction.com` · `ISSUED` · vence **18-mar-2027** |
-| `InUse` | **false** — nada lo usa todavía |
-| `RenewalEligibility` | **INELIGIBLE** — ACM solo renueva certificados asociados a un recurso |
+| `InUse` | **3 recursos** |
+| `RenewalEligibility` | **ELIGIBLE** — cambió solo al asociarlo a API Gateway |
 
-Los 3 registros confirman que **nada apunta a ningún sitio**: no hay `A` para
-el ápice, ni para `www`, ni para `api`.
+El paso de `INELIGIBLE` a `ELIGIBLE` es la confirmación de aquello: ACM solo
+renueva certificados enganchados a algo.
+
+Falta todavía el `A` del ápice y el de `www`, que llegan con CloudFront.
 
 ---
 

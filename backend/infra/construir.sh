@@ -29,3 +29,22 @@ cp infra/rds-ca.pem dist-lambda/rds-ca.pem
 
 cd dist-lambda && zip -qr ../infra/api.zip . && cd ..
 echo "infra/api.zip  $(du -h infra/api.zip | cut -f1)"
+
+# --- Lambda de tareas de base de datos ---------------------------------------
+# Lleva el codigo real de la aplicacion: el migrador de Drizzle y los dos
+# seeds. Asi lo que corre en produccion es lo mismo que se probo en local.
+rm -rf dist-tareas && mkdir -p dist-tareas
+
+npx esbuild src/lambda-tareas.ts \
+  --bundle --platform=node --target=node22 --format=esm --packages=bundle \
+  --outfile=dist-tareas/index.mjs \
+  --banner:js="import{createRequire}from'node:module';const require=createRequire(import.meta.url);" \
+  --log-level=warning
+
+cp infra/rds-ca.pem dist-tareas/rds-ca.pem
+# El migrador lee los .sql en tiempo de ejecucion desde ./drizzle, relativo al
+# directorio de trabajo — que en Lambda es /var/task.
+cp -R drizzle dist-tareas/drizzle
+
+cd dist-tareas && zip -qr ../infra/tareas.zip . && cd ..
+echo "infra/tareas.zip  $(du -h infra/tareas.zip | cut -f1)"

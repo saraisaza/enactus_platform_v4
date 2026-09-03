@@ -7,6 +7,9 @@ export default tseslint.config(
       // Artefacto de despliegue: JS suelto que se empaqueta y se sube a
       // Lambda, fuera del proyecto TypeScript a propósito.
       'infra/lambda-admin/**',
+      // Salida de esbuild: código generado, no fuente.
+      'dist-lambda/**',
+      'dist-tareas/**',
     ],
   },
   js.configs.recommended,

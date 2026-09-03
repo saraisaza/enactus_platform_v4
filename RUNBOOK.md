@@ -334,6 +334,58 @@ incluye *"después de restaurar, la gente puede ENTRAR"*.
 
 ---
 
+## Rollback de migraciones
+
+`npm run db:rollback` revierte **una** migración: la última aplicada. Ejecuta
+`drizzle/down/<tag>.down.sql` dentro de una transacción y recién entonces
+borra la fila del registro. Si el reverso falla, no se marca como revertida
+nada — comprobado.
+
+Probado de verdad el 2 de septiembre sobre `enactus_test`, no leído:
+
+```
+0003 revertida      → la columna desaparece
+0003 re-aplicada    → vuelve, con su default
+suite completa      → 538 pruebas en verde sobre esa base
+```
+
+### Un reverso que falla a propósito, y cómo salir
+
+Intentar bajar más allá de `0002_early_stellaris` da:
+
+```
+Falló el rollback: check constraint "lessons_video_type_requires_source"
+  of relation "lessons" is violated by some row
+```
+
+**No es un bug.** `0002` quitó ese CHECK justamente porque hacía imposible
+subir un video propio (hay que crear la lección para poder pedir la URL
+firmada, y el CHECK exigía el video ya puesto). Al revertir, el CHECK vuelve —
+y si mientras tanto se creó alguna lección de video sin origen, el `ALTER`
+falla. Es lo correcto: revertir no puede fingir que esos datos son válidos.
+
+Para salir, a las 2 de la mañana:
+
+```sql
+-- 1. Ver cuáles molestan.
+select id, title from lessons where type = 'video' and video_type is null;
+
+-- 2. Decidir qué hacer con cada una: completarles el origen, o borrarlas si
+--    son borradores a medio construir. NO hay una respuesta única — depende
+--    de si alguien estaba subiendo un video cuando se decidió revertir.
+```
+
+Y recién entonces volver a correr `db:rollback`. La transacción no deja nada a
+medias, así que se puede intentar cuantas veces haga falta.
+
+**Lo que este rollback NO es.** Revierte el ESQUEMA, no el despliegue. El
+rollback de la aplicación —volver a la versión anterior de la Lambda— no
+existe todavía porque no hay Lambda; queda pendiente junto con el resto de la
+infraestructura. Para recuperar DATOS, el camino es el respaldo de arriba, no
+esto.
+
+---
+
 ## Pendiente
 - **Publicar el trabajo.** `origin` ya apunta a
   `saraisaza/enactus_platform_v4` y el HEAD local está **53 commits adelante,

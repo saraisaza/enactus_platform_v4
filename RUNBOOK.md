@@ -526,6 +526,50 @@ esto.
 
 ---
 
+## Fechas — cosas que funcionan hoy y fallan solas más adelante
+
+Ninguna avisa antes. Todas se descubren el día que rompen, salvo que alguien
+las mire acá.
+
+| Cuándo | Qué pasa | Cómo comprobar que sigue bien |
+|---|---|---|
+| **10-sep-2026**, y cada 7 días | RDS rota la contraseña maestra | `aws secretsmanager describe-secret --secret-id <arn maestro> --query NextRotationDate` |
+| **18-mar-2027** | Vence el certificado de ACM | `aws acm describe-certificate … --query 'Certificate.{s:Status,r:RenewalEligibility,u:InUseBy}'` |
+| **antes del 1-oct-2026** | Migrar a IAM Identity Center y borrar las 2 llaves AKIA | `grep -c AKIA ~/.aws/credentials` → 0 |
+| **antes de terminar 5B** | Bajar `enactus-deploy` de `PowerUserAccess` a lo que usa | `aws iam list-attached-user-policies --user-name enactus-deploy` |
+| **por confirmar** | Fin del plan gratuito de AWS → tarifa completa | Billing → Free Tier, en la consola |
+| sin fecha fija | Vence el *bundle* de CA de RDS empaquetado en las Lambdas | `openssl crl2pkcs7 -nocrl -certfile backend/infra/lambda-admin/rds-ca.pem \| openssl pkcs7 -print_certs -noout -text \| grep 'Not After'` |
+
+### Dos formas de que el certificado venza sin que nadie se entere
+
+**1. No se renueva si no está asociado a nada.** `RenewalEligibility` está en
+`INELIGIBLE` mientras `InUseBy` esté vacío: ACM solo renueva certificados
+enganchados a un recurso. Al asociarlo a API Gateway o CloudFront pasa a
+`ELIGIBLE` solo.
+
+**2. La renovación depende de un registro que parece basura.** La validación
+por DNS no es de una sola vez: ACM vuelve a consultar el CNAME en **cada**
+renovación automática.
+
+```
+_26dd12426e9217874e7c9a208e5fd299.eduxaction.com.  CNAME
+  _80a2aa923ee91c65d19d847a739bdbfc.jkddzztszm.acm-validations.aws.
+```
+
+Ese registro parece temporal y no lo es. Si alguien «limpia» la zona y lo
+borra —es exactamente lo que parece que sobra—, la renovación falla **en
+silencio** y se descubre el día que el certificado expira, con el sitio caído.
+
+```bash
+aws route53 list-resource-record-sets --hosted-zone-id Z0527409CO28GN2VRE99 \
+  --query "ResourceRecordSets[?Type=='CNAME' && contains(Name,'_')]"
+```
+
+Si eso devuelve vacío, la renovación automática ya está rota aunque el
+certificado siga vigente.
+
+---
+
 ## Pendiente
 - **Publicar el trabajo.** `origin` ya apunta a
   `saraisaza/enactus_platform_v4` y el HEAD local está **53 commits adelante,

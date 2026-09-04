@@ -162,7 +162,7 @@ backend   538 pruebas · typecheck limpio · lint limpio
 Flutter   204 pruebas · flutter analyze sin issues
 ```
 
-Al 3 de septiembre: **557 de backend y 200 de Flutter**, con `typecheck`,
+Al 3 de septiembre: **557 de backend y 203 de Flutter**, con `typecheck`,
 `lint` y `flutter analyze` limpios.
 
 **Actualización del 2 de septiembre.** Todo lo que se agregó después de esta
@@ -233,3 +233,27 @@ Lo que se agregó para que no vuelva a pasar:
 **La regla que sale de los dos hallazgos: una prueba que construye el cuerpo
 —o la petición— por su cuenta solo prueba el servidor. Que el cliente hable el
 mismo idioma hay que probarlo aparte, con el cuerpo que el cliente arma.**
+
+## Tercer punto ciego: los fixtures son el caso feliz
+
+En la portada aparecía una tarjeta vacía suelta entre los contadores y los
+laboratorios. Era el bloque "Sobre nosotros": la `Column` de la portada centra
+y ese contenedor no fijaba ancho, así que sin texto no desaparecía — se
+encogía a su propio relleno y quedaba una caja con fondo y nada dentro.
+
+El banner de arriba, en el mismo archivo, sí tenía su `if (isNotEmpty)`. Al
+bloque de "Sobre nosotros" simplemente le faltaba.
+
+Por qué no lo vio ninguna prueba: `test/fixtures/api_payloads.json` es una
+captura del sembrado, con **todos** los campos de `/site-content` llenos. Las
+pruebas de la portada montaban siempre esa versión, que es justo la que no
+tiene el problema. Una instalación recién montada tiene esos textos en blanco
+hasta que alguien los escriba, y ese estado no lo recorría nadie.
+
+`appPublica` acepta ahora reemplazar `/site-content`, y
+`test/portada_vacia_test.dart` monta la portada con los textos vacíos.
+
+**Los fixtures capturados son datos realistas, no datos completos: describen
+una instalación con contenido, nunca una recién montada, ni una a la que le
+falte un campo. Lo que el sembrado siempre llena, la suite nunca lo prueba
+vacío.**

@@ -120,23 +120,30 @@ class LandingView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Sobre nosotros
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 40),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.slate,
-                      borderRadius: BorderRadius.circular(14),
+                  // Sobre nosotros. Solo si hay texto, igual que el banner de
+                  // arriba: esta `Column` centra y el contenedor no fija ancho,
+                  // así que sin texto no quedaba invisible — se encogía a su
+                  // propio relleno y dejaba una tarjeta vacía suelta entre los
+                  // contadores y los laboratorios.
+                  if (content.aboutText.isNotEmpty)
+                    Container(
+                      key: const Key('landing-sobre-nosotros'),
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.slate,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        content.aboutText,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            height: 1.6),
+                      ),
                     ),
-                    child: Text(
-                      content.aboutText,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 15,
-                          height: 1.6),
-                    ),
-                  ),
                   // Laboratorios
                   Padding(
                     padding: const EdgeInsets.only(top: 40, bottom: 6),
@@ -578,16 +585,21 @@ class _HeroContent extends StatelessWidget {
                     color: AppColors.gold,
                     height: 0.98,
                     letterSpacing: 54 * 0.002)),
-            const SizedBox(height: 18),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: Text(subtitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 17,
-                      color: AppColors.textSecondary,
-                      height: 1.6)),
-            ),
+            // El espacio va CON el subtítulo, no antes y después: sin esto,
+            // una portada sin subtítulo separaba el título del botón con 46 px
+            // de aire y una línea de texto vacía.
+            if (subtitle.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 640),
+                child: Text(subtitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 17,
+                        color: AppColors.textSecondary,
+                        height: 1.6)),
+              ),
+            ],
             const SizedBox(height: 28),
             ElevatedButton.icon(
               icon: const Icon(Icons.arrow_forward, size: 18),

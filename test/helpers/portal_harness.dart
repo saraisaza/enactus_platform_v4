@@ -93,10 +93,21 @@ void sinSesionGuardada() => SharedPreferences.setMockInitialValues({});
 /// Usa los mismos payloads reales — la portada pide `/site-content` — y borra
 /// el token: con uno sembrado, `restoreSession()` pediría `/auth/me`, que en
 /// una pantalla pública no corresponde.
-Widget appPublica(String ruta) {
+Widget appPublica(String ruta, {Map<String, Object?>? contenidoDelSitio}) {
   sinSesionGuardada();
+  final rutas = Map<String, Object?>.from(_fixtures['compartidas'] as Map);
+  // [contenidoDelSitio] reemplaza `/site-content`. Los fixtures traen todos
+  // los campos llenos —son una captura del sembrado— así que sin esto no hay
+  // forma de probar una portada con textos vacíos, que es como está una
+  // instalación recién montada.
+  if (contenidoDelSitio != null) {
+    rutas['/site-content'] = {
+      ...Map<String, Object?>.from(rutas['/site-content'] as Map),
+      ...contenidoDelSitio,
+    };
+  }
   final api = FakeApi(
-    routes: Map<String, Object?>.from(_fixtures['compartidas'] as Map),
+    routes: rutas,
     statuses: Map<String, int>.from(
         (_fixtures['estados'] as Map?)?.cast<String, int>() ?? const {}),
   ).build();

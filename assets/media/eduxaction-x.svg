@@ -5,6 +5,6 @@
       <feGaussianBlur stdDeviation="5"></feGaussianBlur>
     </filter>
   </defs>
-  <g filter="url(#exaGlow)" opacity="0.8"><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(24 64 64)" fill="#FA6A1E"></rect><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(-24 64 64)" fill="#FA6A1E"></rect></g>
-  <rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(24 64 64)" fill="#FA6A1E"></rect><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(-24 64 64)" fill="#FA6A1E"></rect>
+  <g filter="url(#exaGlow)" opacity="0.8"><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(24 64 64)" fill="#FFFFFF"></rect><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(-24 64 64)" fill="#FFFFFF"></rect></g>
+  <rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(24 64 64)" fill="#FFFFFF"></rect><rect x="56.5" y="22" width="15" height="84" rx="4" transform="rotate(-24 64 64)" fill="#FFFFFF"></rect>
 </svg>

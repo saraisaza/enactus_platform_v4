@@ -4,6 +4,8 @@ import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
+import '../utils/app_theme.dart';
+
 /// Botón de red social en la **web**: un `<a>` HTML real, no un
 /// `GestureDetector` de Flutter.
 ///
@@ -48,11 +50,27 @@ Widget construirBotonSocial({
 
 bool _estilosListos = false;
 
+/// Un color de Flutter como lo escribe CSS.
+///
+/// Existe para que esta hoja de estilos NO tenga hexadecimales propios. Los
+/// tenía —el naranja y el marrón de la paleta anterior— y sobrevivieron
+/// intactos al rebranding: al ser texto dentro de una cadena, ni el
+/// compilador ni una búsqueda de `AppColors` los alcanzaban, así que el pie
+/// quedaba con los colores viejos mientras el resto de la app cambiaba.
+String _css(Color color, {double? alpha}) {
+  final r = (color.r * 255).round();
+  final g = (color.g * 255).round();
+  final b = (color.b * 255).round();
+  return alpha == null
+      ? 'rgb($r, $g, $b)'
+      : 'rgba($r, $g, $b, $alpha)';
+}
+
 /// Una sola hoja de estilos para los tres botones, inyectada una vez.
 ///
-/// Los colores son los mismos `AppColors.slateLight`/`gold`/`ink` que usa el
-/// resto del pie — repetidos acá en hexadecimal porque este archivo no
-/// importa el tema (es DOM puro, sin `BuildContext`).
+/// Este archivo es DOM puro (sin `BuildContext`), pero sí puede leer las
+/// constantes de [AppColors]: los colores se interpolan desde ahí en vez de
+/// repetirse a mano.
 void _asegurarEstilos() {
   if (_estilosListos) return;
   _estilosListos = true;
@@ -66,18 +84,18 @@ void _asegurarEstilos() {
         height: 36px;
         margin: 6px;
         border-radius: 50%;
-        background: #573D31;
-        color: #ffffff;
+        background: ${_css(AppColors.slateLight)};
+        color: ${_css(Colors.white)};
         text-decoration: none;
         cursor: pointer;
         transition: transform 180ms ease-out, background-color 180ms,
           box-shadow 180ms;
       }
       .enactus-boton-social:hover, .enactus-boton-social:focus-visible {
-        background: #FA6A1E;
-        color: #21120A;
+        background: ${_css(AppColors.gold)};
+        color: ${_css(AppColors.ink)};
         transform: scale(1.15);
-        box-shadow: 0 0 16px 1px rgba(250, 106, 30, 0.45);
+        box-shadow: 0 0 16px 1px ${_css(AppColors.gold, alpha: 0.45)};
       }
       .enactus-boton-social svg { width: 18px; height: 18px; display: block; }
     ''';

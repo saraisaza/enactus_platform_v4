@@ -3,15 +3,25 @@ import 'package:flutter/material.dart';
 import '../utils/app_theme.dart';
 
 /// Logo institucional animado: wordmark tipográfico "eduXaction" en Manrope
-/// 700 ("edu" y "action" en blanco, la "X" siempre en [AppColors.gold] — la
-/// X nunca cambia de tono, ni siquiera en hover, por regla de marca). La X
-/// lleva el barrido de luz continuo del paquete de marca (ver
-/// `assets/media/eduxaction-logo.css` § `.exa-x::after` / `--exa-sweep`),
-/// no solo un efecto de hover. En espacios angostos ([compact]) se reduce a
-/// la X sola en Manrope 800 sobre el cuadrado oscuro `.exa-mark` (fondo
-/// `#0B0B0D`, radio 25%). Además, al pasar el cursor todo el logo hace un
-/// zoom sutil, se inclina apenas y emite un resplandor — eso es interacción
-/// propia de este widget (no del paquete CSS) y se conserva tal cual.
+/// 700, con "edu" y "action" en blanco.
+///
+/// **La X va blanca, y el destello que la recorre va en ámbar**
+/// ([AppColors.gold]). Es la regla de marca vigente, y reemplaza a la
+/// anterior —"la X siempre en el acento, nunca cambia de tono"— que valía
+/// cuando el acento era naranja. El motivo del cambio no es estético sino
+/// mecánico: con la X ya en color, el barrido claro apenas se notaba; con la
+/// X en blanco y el barrido en ámbar aparece el efecto de diamante que el
+/// logo buscaba desde el principio. Por lo mismo, una X blanca con destello
+/// blanco no se ve — los dos tonos tienen que seguir siendo distintos.
+///
+/// El barrido es continuo (3.6 s, ver `--exa-sweep` en el paquete de marca
+/// `assets/media/eduxaction-logo.css` § `.exa-x::after`), no un efecto de
+/// hover. En espacios angostos ([compact]) se reduce a la X sola en Manrope
+/// 800 sobre el cuadrado oscuro `.exa-mark` (fondo `#0B0B0D`, radio 25%).
+/// Además, al pasar el cursor todo el logo hace un zoom sutil, se inclina
+/// apenas y emite un resplandor — eso es interacción propia de este widget
+/// (no del paquete CSS) y se conserva tal cual, solo que el resplandor pasó
+/// de ámbar a blanco para acompañar a la X.
 ///
 /// No hay DOM/CSS real dentro del canvas de Flutter, así que este widget es
 /// la traducción 1:1 de esas reglas de marca; ese CSS solo aplica tal cual
@@ -66,7 +76,7 @@ class _AnimatedLogoState extends State<AnimatedLogo> {
             boxShadow: _hover
                 ? [
                     BoxShadow(
-                      color: AppColors.gold.withValues(alpha: 0.35),
+                      color: Colors.white.withValues(alpha: 0.28),
                       blurRadius: 28,
                       spreadRadius: 2,
                     ),
@@ -143,7 +153,7 @@ class _Wordmark extends StatelessWidget {
 }
 
 /// Variante compacta: `.exa-mark` del CSS — cuadrado oscuro (`#0B0B0D`,
-/// mismo tono que [AppColors.surface]) con radio 25%, y adentro la X sola
+/// hoy [AppColors.backgroundDeep]) con radio 25%, y adentro la X sola
 /// en Manrope 800 con su barrido ([_SweepingX]) — para sidebar colapsado,
 /// header en compact, etc. Nunca se instancia por debajo de 32px (ver el
 /// assert en [AnimatedLogo]).
@@ -160,7 +170,10 @@ class _CompactMark extends StatelessWidget {
       height: side,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        // El cuadrado se queda en el negro del paquete de marca aunque
+        // `surface` se haya aclarado a #17171A: la X blanca necesita el
+        // fondo más oscuro para separarse.
+        color: AppColors.backgroundDeep,
         borderRadius: BorderRadius.circular(side * 0.25),
       ),
       child: _SweepingX(
@@ -193,7 +206,7 @@ class _SweepingX extends StatefulWidget {
 class _SweepingXState extends State<_SweepingX>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 2900));
+      vsync: this, duration: const Duration(milliseconds: 3600));
 
   @override
   void didChangeDependencies() {
@@ -227,10 +240,10 @@ class _SweepingXState extends State<_SweepingX>
       fontWeight: widget.fontWeight,
       letterSpacing: widget.letterSpacing,
       height: 1,
-      color: AppColors.gold,
+      color: Colors.white,
       shadows: [
         Shadow(
-            color: AppColors.gold.withValues(alpha: 0.75),
+            color: Colors.white.withValues(alpha: 0.75),
             blurRadius: widget.fontSize * 0.22),
       ],
     );
@@ -252,10 +265,11 @@ class _SweepingXState extends State<_SweepingX>
                   begin: Alignment(dx - 1, 0),
                   end: Alignment(dx + 1, 0),
                   stops: const [0.38, 0.5, 0.62],
-                  colors: const [
-                    Color(0x00FFF4EA),
-                    Color(0xF2FFF4EA), // rgba(255,244,234,.95)
-                    Color(0x00FFF4EA),
+                  // `--exa-shine`: el destello es lo único ámbar de la X.
+                  colors: [
+                    AppColors.gold.withValues(alpha: 0),
+                    AppColors.gold.withValues(alpha: 0.95),
+                    AppColors.gold.withValues(alpha: 0),
                   ],
                 ).createShader(bounds),
                 child: Text('X', style: baseStyle.copyWith(shadows: const [])),

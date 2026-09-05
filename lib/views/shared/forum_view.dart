@@ -12,10 +12,11 @@ import '../../utils/constants.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 
-// Antes "recurso" usaba un naranja (#FD6925) casi idéntico al nuevo
-// naranja de marca (#FF6D29) — se reasigna a un tono de la paleta
-// categórica de gráficos para que las 4 categorías se distingan entre sí
-// y de "anuncio" (que sí usa el acento de marca a propósito).
+// "Recurso" usaba un naranja (#FD6925) casi idéntico al acento de marca de
+// entonces — se reasignó a un tono de la paleta categórica de gráficos para
+// que las 4 categorías se distingan entre sí y de "anuncio" (que sí usa el
+// acento de marca a propósito). La razón sigue valiendo con el ámbar: el
+// color de la categoría nunca debe poder confundirse con el acento.
 Color forumCategoryColor(String category) => switch (category) {
       ForumCategory.progress => AppColors.statusGood,
       ForumCategory.resource => AppColors.chartSeries[3],

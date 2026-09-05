@@ -1,0 +1,46 @@
+/* eduXaction — tokens de marca (tema oscuro gris + acento ámbar)
+   Fuente de verdad para la web/splash. El equivalente Flutter está en
+   app_colors.dart.patch.md. Reemplaza la paleta anterior negro + naranja. */
+:root {
+  /* Superficies */
+  --exa-bg:            #35343A;  /* página (antes #08080A) */
+  --exa-bg-deep:       #0B0B0D;  /* destino de los degradados: negro */
+  --exa-surface:       #17171A;  /* tarjetas sólidas (= rgba(11,11,13,.72) sobre --exa-bg) */
+  --exa-surface-veil:  rgba(11,11,13,.72);   /* tarjeta translúcida sobre la página */
+  --exa-surface-alt:   #26262A;  /* campos, chips, diálogos (antes #121214) */
+  --exa-surface-hair:  rgba(255,255,255,.045); /* tarjetas dentro de banda oscura */
+  --exa-border:        rgba(255,255,255,.08);
+
+  /* Texto */
+  --exa-text:          #F2F2F5;
+  --exa-text-2:        #AEABB0;
+  --exa-text-3:        #8F8C92;
+
+  /* Acento */
+  --exa-accent:        #FFC107;  /* ámbar — cifras, botones, eyebrows (antes #FA6A1E) */
+  --exa-accent-bright: #FFCF3D;  /* hover */
+  --exa-accent-ink:    #21120A;  /* texto/ícono sobre el acento */
+  --exa-accent-soft:   rgba(255,193,7,.16);
+  --exa-accent-on-light: #8A6A00; /* texto ámbar sobre fondo claro (AA) */
+
+  /* Logo */
+  --exa-logo-x:        #FFFFFF;  /* la X va blanca */
+  --exa-logo-shine:    #FFC107;  /* el barrido de luz va en ámbar */
+  --exa-logo-sweep:    3.6s;
+
+  /* Degradados */
+  --exa-hero:  linear-gradient(135deg, var(--exa-bg), var(--exa-bg-deep));
+  --exa-band:  linear-gradient(180deg, #2C2B30, var(--exa-bg-deep));
+  --exa-card:  radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,.05), rgba(11,11,13,.72));
+
+  /* Tipografía */
+  --exa-font-display: 'Oswald', system-ui, sans-serif;  /* 700, MAYÚSCULAS, tracking .014em */
+  --exa-font-ui:      'DM Sans', Helvetica, Arial, sans-serif;
+  --exa-font-logo:    'Manrope', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Radios y sombra */
+  --exa-radius-card: 16px;
+  --exa-radius-panel: 12px;
+  --exa-radius-btn: 8px;
+  --exa-shadow: 0 18px 40px rgba(0,0,0,.5);
+}

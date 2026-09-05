@@ -132,7 +132,7 @@ class LandingView extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 40),
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: AppColors.slate,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(
@@ -144,73 +144,109 @@ class LandingView extends StatelessWidget {
                             height: 1.6),
                       ),
                     ),
-                  // Laboratorios
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40, bottom: 6),
-                    child: Text('Nuestros Laboratorios'.toUpperCase(),
-                        style: displayHeading(
-                            fontSize: 30,
-                            fontWeight: AppWeights.display,
-                            color: AppColors.gold)),
-                  ),
-                  const Text('Áreas de conocimiento donde formamos a nuestros equipos',
-                      style: TextStyle(color: AppColors.textMuted)),
-                  Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: LayoutBuilder(builder: (context, c) {
-                      final perRow =
-                          c.maxWidth > 1000 ? 3 : (c.maxWidth > 640 ? 2 : 1);
-                      final width =
-                          (c.maxWidth - (perRow - 1) * 16) / perRow;
-                      return Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: [
-                          // Los laboratorios aparecen uno tras otro (stagger)
-                          for (var i = 0; i < labs.length; i++)
-                            SizedBox(
-                              width: width,
-                              child: Entrance(
-                                delayMs: 90 * i,
-                                child: HoverCard(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Icon(_labIcon(labs[i].id),
-                                          color: AppColors.gold, size: 30),
-                                      const SizedBox(height: 12),
-                                      Text(labs[i].name.toUpperCase(),
-                                          style: displayHeading(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700)),
-                                      const SizedBox(height: 6),
-                                      Text(labs[i].description,
-                                          style: const TextStyle(
-                                              color:
-                                                  AppColors.textSecondary,
-                                              fontSize: 13,
-                                              height: 1.5)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                  // Laboratorios. La sección va sobre su propia banda: el
+                  // degradado a negro es lo que la separa del resto de la
+                  // página, que es gris plano.
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.slateLight,
+                          AppColors.backgroundDeep,
                         ],
-                      );
-                    }),
+                      ),
+                      border: Border(top: BorderSide(color: AppColors.border)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 40),
+                          child: _Eyebrow('Áreas de conocimiento'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6, bottom: 6),
+                          child: Text('Nuestros Laboratorios'.toUpperCase(),
+                              style: displayHeading(
+                                  fontSize: 30,
+                                  fontWeight: AppWeights.display,
+                                  color: AppColors.textPrimary)),
+                        ),
+                        const Text(
+                            'Áreas de conocimiento donde formamos a nuestros equipos',
+                            style: TextStyle(color: AppColors.textMuted)),
+                        Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: LayoutBuilder(builder: (context, c) {
+                            final perRow =
+                                c.maxWidth > 1000 ? 3 : (c.maxWidth > 640 ? 2 : 1);
+                            final width =
+                                (c.maxWidth - (perRow - 1) * 16) / perRow;
+                            return Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              children: [
+                                // Los laboratorios aparecen uno tras otro (stagger)
+                                for (var i = 0; i < labs.length; i++)
+                                  SizedBox(
+                                    width: width,
+                                    child: Entrance(
+                                      delayMs: 90 * i,
+                                      child: HoverCard(
+                                        padding: const EdgeInsets.all(20),
+                                        // Sobre la banda oscura, `surface` se
+                                        // pierde: la tarjeta se aclara con un
+                                        // velo blanco en vez de pintarse.
+                                        bg: Colors.white
+                                            .withValues(alpha: 0.045),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(_labIcon(labs[i].id),
+                                                color: AppColors.gold,
+                                                size: 30),
+                                            const SizedBox(height: 12),
+                                            Text(labs[i].name.toUpperCase(),
+                                                style: displayHeading(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.w700)),
+                                            const SizedBox(height: 6),
+                                            Text(labs[i].description,
+                                                style: const TextStyle(
+                                                    color: AppColors
+                                                        .textSecondary,
+                                                    fontSize: 13,
+                                                    height: 1.5)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
                   ),
                   // Galería: fotos que el Admin sube desde "Contenido
                   // página". Se oculta por completo si no hay ninguna.
                   if (content.galleryImages.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: _Eyebrow('Galería'),
+                    ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 6),
+                      padding: const EdgeInsets.only(top: 6, bottom: 6),
                       child: Text('Nuestro trabajo en imágenes'.toUpperCase(),
                           style: displayHeading(
                               fontSize: 30,
                               fontWeight: AppWeights.display,
-                              color: AppColors.gold)),
+                              color: AppColors.textPrimary)),
                     ),
                     const Text('Momentos de la comunidad eduXaction Colombia',
                         style: TextStyle(color: AppColors.textMuted)),
@@ -252,17 +288,19 @@ class LandingView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 36),
                     decoration: BoxDecoration(
+                      // El ámbar al 14 % sobre marrón teñía toda la banda:
+                      // era el bloque más cálido de la página. Ahora el color
+                      // lo pone solo el botón.
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AppColors.gold.withValues(alpha: 0.14),
-                          AppColors.slate,
+                          Colors.white.withValues(alpha: 0.04),
+                          AppColors.backgroundDeep,
                         ],
                       ),
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                          color: AppColors.gold.withValues(alpha: 0.25)),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Column(
                       children: [
@@ -315,6 +353,34 @@ class LandingView extends StatelessWidget {
       };
 }
 
+/// Línea corta en ámbar sobre un título de sección.
+///
+/// Es lo que sostiene la jerarquía después del rebranding: los títulos de
+/// sección pasaron de ámbar a blanco, y sin este renglón el acento
+/// desaparecía por completo de esa zona de la página. El ámbar se conserva,
+/// pero en el elemento pequeño en vez del grande.
+class _Eyebrow extends StatelessWidget {
+  final String texto;
+
+  const _Eyebrow(this.texto);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      texto.toUpperCase(),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 11.5,
+        fontWeight: AppWeights.uiSemibold,
+        // .14em a 11.5 px. El tracking abierto es lo que distingue un
+        // eyebrow de un subtítulo chico.
+        letterSpacing: 11.5 * 0.14,
+        color: AppColors.gold,
+      ),
+    );
+  }
+}
+
 /// Fotos reales de los campeones de la National Expo 2026 (Santa Marta):
 /// la foto grupal (horizontal) junto a los dos equipos ganadores por
 /// categoría (verticales). Alturas iguales, ancho según su proporción
@@ -329,10 +395,14 @@ class _ExpoShowcase extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(40, 44, 40, 8),
       child: Column(
         children: [
+          const _Eyebrow('Santa Marta · julio 2026'),
+          const SizedBox(height: 6),
           Text('Campeones National Expo 2026'.toUpperCase(),
               textAlign: TextAlign.center,
               style: displayHeading(
-                  fontSize: 30, fontWeight: AppWeights.display, color: AppColors.gold)),
+                  fontSize: 30,
+                  fontWeight: AppWeights.display,
+                  color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           const Text(
               'Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo',
@@ -504,7 +574,7 @@ class _HeroState extends State<_Hero>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.background, AppColors.slate],
+          colors: [AppColors.background, AppColors.backgroundDeep],
         ),
       ),
       child: Stack(
@@ -582,7 +652,7 @@ class _HeroContent extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: displayHeading(
                     fontSize: 54,
-                    color: AppColors.gold,
+                    color: AppColors.textPrimary,
                     height: 0.98,
                     letterSpacing: 54 * 0.002)),
             // El espacio va CON el subtítulo, no antes y después: sin esto,
@@ -629,9 +699,19 @@ class _AnimatedCounter extends StatelessWidget {
       height: 160,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.slate.withValues(alpha: 0.4),
+        // "Negro difuminado": el radial aclara el borde superior y se hunde
+        // hacia el negro abajo. Plano —como era, un slate al 40 %— la
+        // tarjeta se leía como un rectángulo pegado sobre el fondo.
+        gradient: RadialGradient(
+          center: Alignment.topCenter,
+          radius: 1.2,
+          colors: [
+            Colors.white.withValues(alpha: 0.05),
+            AppColors.backgroundDeep.withValues(alpha: 0.72),
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

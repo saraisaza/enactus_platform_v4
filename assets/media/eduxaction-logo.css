@@ -7,6 +7,7 @@
   --exa-glow: 1;           /* intensidad del brillo (0 = apagado) */
   --exa-size: 64px;        /* tamano del logo / lado del icono */
   --exa-sweep: 2.9s;       /* duracion del barrido */
+  --exa-shine: #FFF4EA;    /* color del destello que recorre la X */
   font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
   line-height: 1;
@@ -52,7 +53,7 @@
 }
 .exa-x::after {             /* destello que recorre la X */
   color: transparent;
-  background-image: linear-gradient(102deg, rgba(255,255,255,0) 38%, #FFF4EA 50%, rgba(255,255,255,0) 62%);
+  background-image: linear-gradient(102deg, rgba(255,255,255,0) 38%, var(--exa-shine) 50%, rgba(255,255,255,0) 62%);
   background-size: 240% 100%;
   -webkit-background-clip: text;
   background-clip: text;

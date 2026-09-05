@@ -28,9 +28,13 @@ El CSS importa Manrope desde Google Fonts. Si ya cargas Manrope (700 y 800), bor
 Todo se controla con variables CSS, en el elemento o en `:root`:
 
 - `--exa-size`: tamano del texto / lado del icono. Por defecto 64px.
-- `--exa-accent`: color del neon. Por defecto #FA6A1E.
+- `--exa-accent`: color de la X. Por defecto #FA6A1E (el acento anterior), pero
+  la marca vigente la pide en **#FFFFFF**: la app y el splash lo pasan explicito.
 - `--exa-glow`: intensidad del brillo, 0 a 2. Por defecto 1. Sobre fondo claro usa 0.4 o menos.
-- `--exa-sweep`: duracion del destello. Por defecto 2.9s.
+- `--exa-shine`: color del destello que recorre la X. Por defecto #FFF4EA; la
+  marca vigente usa el ambar **#FFC107**, que es lo que da el efecto diamante
+  sobre la X blanca.
+- `--exa-sweep`: duracion del destello. Por defecto 2.9s; la marca vigente usa 3.6s.
 
 Ejemplo: `<span class="exa-logo" style="--exa-size:40px; --exa-glow:.7">...</span>`
 
@@ -38,5 +42,6 @@ Ejemplo: `<span class="exa-logo" style="--exa-size:40px; --exa-glow:.7">...</spa
 
 - La animacion se desactiva sola si el usuario tiene "reducir movimiento" activado en su sistema.
 - El logo es texto real: se selecciona, se busca y escala sin perder nitidez. El `aria-label` mantiene la lectura correcta en lectores de pantalla.
-- Fondo recomendado: #08080A a #121214. Sobre blanco usa la clase `exa-logo--on-light`.
+- Fondo recomendado: #35343A (pagina) a #0B0B0D (negro de los degradados).
+  Sobre blanco usa la clase `exa-logo--on-light`.
 - Espacio libre alrededor del logo: como minimo el alto de la X.

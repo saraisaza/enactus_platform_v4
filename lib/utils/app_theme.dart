@@ -2,27 +2,36 @@ import 'package:flutter/material.dart';
 
 /// Sistema de color de la plataforma.
 ///
-/// UI: tema oscuro neutro con acento naranja de marca.
+/// UI: tema oscuro gris con un único acento ámbar de marca.
 /// Gráficos: paleta categórica validada (contraste >= 3:1 sobre la superficie
-/// oscura, separación CVD adyacente ΔE 61.6) — NO usar el naranja de marca
-/// (#FA6A1E) como color de serie: se confunde con el acento de UI; usar
+/// oscura, separación CVD adyacente ΔE 61.6) — NO usar el ámbar de marca
+/// (#FFC107) como color de serie: se confunde con el acento de UI; usar
 /// [AppColors.chartSeries] en orden fijo.
 class AppColors {
   // Marca / UI
-  /// Acento de marca eduXaction (identidad `assets/media/eduxaction-logo.css`).
+  /// Acento de marca eduXaction: ámbar (identidad
+  /// `assets/design_handoff_branding_eduxaction/brand-tokens.css`, token
+  /// `--exa-accent`).
+  ///
   /// Único sitio donde vive este valor — todo lo demás lo referencia por acá
   /// en vez de repetir el hex (certificados PDF y `ContentColors.dark` son
   /// las dos excepciones documentadas, por no poder referenciar esta
   /// constante desde su contexto).
-  static const gold = Color(0xFFFA6A1E);
-  static const goldBright = Color(0xFFFF8647);
-  static const slate = Color(0xFF453027); // barras laterales, tarjetas secundarias
-  static const slateLight = Color(0xFF573D31);
+  static const gold = Color(0xFFFFC107);
 
-  /// Variante oscurecida de [slate] (~82%) para el segundo punto del
-  /// degradado del footer — antes #243342, derivado del mismo modo del
-  /// slate anterior.
-  static const slateDark = Color(0xFF392720);
+  /// Hover del acento (`--exa-accent-bright`).
+  static const goldBright = Color(0xFFFFCF3D);
+
+  /// Grises neutros. Reemplazan la rampa cálida marrón anterior
+  /// (#453027 / #573D31 / #392720), que era el otro origen del aire de
+  /// Halloween junto con el naranja: el acento cálido se conserva, el
+  /// entorno pasa a gris.
+  static const slate = Color(0xFF26262A); // barras laterales, tarjetas secundarias
+  static const slateLight = Color(0xFF2C2B30);
+
+  /// Variante oscurecida de [slate] para el segundo punto del degradado del
+  /// footer.
+  static const slateDark = Color(0xFF17171A);
 
   /// "Tinta sobre acento": texto/íconos oscuros sobre fondos [gold]/
   /// [goldBright] (iniciales de avatar, banner, contador de notificaciones,
@@ -31,38 +40,53 @@ class AppColors {
   static const ink = Color(0xFF21120A);
 
   // Superficies (tema oscuro) — página / tarjetas / paneles, identidad
-  // eduXaction (ver assets/media/eduxaction-logo.css § "Fondo recomendado").
-  static const background = Color(0xFF08080A); // página
-  static const surface = Color(0xFF0B0B0D); // tarjetas y gráficos
-  static const surfaceAlt = Color(0xFF121214); // paneles (campos, chips, diálogos)
-  static const border = Color(0x12FFFFFF); // rgba(255,255,255,.07)
+  // eduXaction (ver `brand-tokens.css` del handoff de branding).
+  static const background = Color(0xFF35343A); // página
+
+  /// Negro al que van a parar los degradados (`--exa-bg-deep`).
+  ///
+  /// No es una superficie: nada se pinta plano con este tono. Es el segundo
+  /// punto del hero, de la banda de laboratorios y de la de invitación — el
+  /// "negro difuminado" que da profundidad sin volver la página negra.
+  static const backgroundDeep = Color(0xFF0B0B0D);
+
+  static const surface = Color(0xFF17171A); // tarjetas y gráficos
+  static const surfaceAlt = Color(0xFF26262A); // paneles (campos, chips, diálogos)
+  static const border = Color(0x14FFFFFF); // rgba(255,255,255,.08)
 
   // Texto
-  static const textPrimary = Color(0xFFE9E9EE);
-  static const textSecondary = Color(0xFF8A8A93);
+  static const textPrimary = Color(0xFFF2F2F5);
+  static const textSecondary = Color(0xFFAEABB0);
 
-  /// No forma parte de la identidad eduXaction nueva (que solo define un
-  /// tono "secundario") — se dejó en su valor anterior en vez de fusionarlo
-  /// a ciegas con [textSecondary]; tiene 175 usos en la app y un tono
-  /// distinto (cálido) al nuevo gris neutro. Ver reporte de la tarea de
-  /// identidad visual.
-  static const textMuted = Color(0xFF8C817C);
+  /// Tercer tono de texto. Antes era #8C817C, un gris CÁLIDO heredado de la
+  /// paleta marrón: sobre el gris neutro nuevo se veía sucio. Ahora es el
+  /// `--exa-text-3` del handoff, neutro como los otros dos.
+  static const textMuted = Color(0xFF8F8C92);
 
-  /// Partículas del hero de la landing (antes: tricolor de la bandera de
-  /// Colombia — chocaba con la paleta cálida). Tonos de marca + neutros.
-  /// Solo el primer tono es el acento de marca en sí — el segundo es un
-  /// tinte decorativo derivado, no un token de marca, y quedó sin retocar.
+  /// Partículas del hero de la landing. Ámbar, ámbar claro y dos neutros:
+  /// sin el naranja saturado que las hacía leer como chispas.
   static const heroParticleColors = [
-    Color(0xFFFA6A1E),
-    Color(0xFFFF9A5A),
+    Color(0xFFFFC107),
+    Color(0xFFFFD98A),
     Color(0xFFFFFFFF),
     Color(0xFFBABABA),
   ];
 
   /// Paleta categórica para gráficos, en orden FIJO (nunca ciclar ni
-  /// reordenar): amarillo, azul, rojo, violeta, verde agua.
+  /// reordenar): malva, azul, rojo, violeta, verde agua.
+  ///
+  /// La primera serie era el amarillo #C98500. Con el acento de marca en
+  /// naranja se distinguía; con el ámbar #FFC107 pasó a ser el mismo color
+  /// a ojo, y una serie que se confunde con el acento de UI hace leer un
+  /// dato como si fuera un elemento de interfaz. Se reemplaza por el malva
+  /// #B07AA1 que propone el handoff.
+  ///
+  /// Se mantiene el criterio del archivo: contraste >= 3:1 sobre [surface]
+  /// —el malva da 5.2:1— y separación entre series adyacentes. El violeta
+  /// de la posición 4 es el más cercano en tono, y por eso están separados:
+  /// nunca quedan uno al lado del otro.
   static const chartSeries = [
-    Color(0xFFC98500),
+    Color(0xFFB07AA1),
     Color(0xFF3987E5),
     Color(0xFFE66767),
     Color(0xFF9085E9),
@@ -100,19 +124,22 @@ class AppColors {
     17: Color(0xFF19486A),
   };
 
-  /// Color por laboratorio (handoff `design_handoff_portal_estudiante`):
-  /// rampa cálida de seis tonos, legibles sobre [background], que distingue
-  /// cada laboratorio en Dashboard, Mis Cursos y Ruta de Impacto — el color
-  /// viene del dato (el laboratorio del curso/fase), no de un acento fijo.
-  /// Ya no deriva de la paleta ODS (chocaba con azules/verdes/magentas
-  /// contra la paleta naranja/marrón).
+  /// Color por laboratorio: seis tonos distinguibles y legibles sobre
+  /// [background], que separan cada laboratorio en Dashboard, Mis Cursos y
+  /// Ruta de Impacto — el color viene del dato (el laboratorio del
+  /// curso/fase), no de un acento fijo.
+  ///
+  /// Era una rampa cálida derivada del naranja anterior, y sobre el gris
+  /// nuevo los seis tonos se veían como variaciones del mismo naranja. La
+  /// rampa del handoff de branding abre el abanico: solo el laboratorio de
+  /// IA conserva el ámbar de marca, el resto son tonos propios.
   static const labColors = {
-    'lab_ia': Color(0xFFFF6D29),
-    'lab_agua': Color(0xFFE0522B),
-    'lab_energia': Color(0xFFD8A24A),
-    'lab_impacto': Color(0xFFF0964A),
-    'lab_emprendimiento': Color(0xFFC4573A),
-    'lab_agricultura': Color(0xFFC9762F),
+    'lab_ia': Color(0xFFFFC107),
+    'lab_agua': Color(0xFF4FB3C4),
+    'lab_energia': Color(0xFFE8A93D),
+    'lab_impacto': Color(0xFF9085E9),
+    'lab_emprendimiento': Color(0xFFE07A5F),
+    'lab_agricultura': Color(0xFF7FA34A),
   };
 
   /// El número de ODS detrás de cada [labColors] — para la marca de agua
@@ -136,7 +163,7 @@ int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 /// Color de un laboratorio para acentos por dato (cabeceras de curso,
 /// barras de progreso, riel de fases). Sin match — incluye la Ruta National
 /// Expo, cuyos cursos no tienen laboratorio (`Course.labId` vacío) — cae al
-/// naranja de marca, tal como pide el README para "Ruta National Expo".
+/// ámbar de marca, tal como pide el README para "Ruta National Expo".
 Color labColorFor(String labId) => AppColors.labColors[labId] ?? AppColors.gold;
 
 /// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
@@ -200,15 +227,15 @@ class ContentColors {
   });
 
   static const dark = ContentColors(
-    bg: Color(0xFF08080A),
-    surface: Color(0xFF0B0B0D),
-    surface2: Color(0xFF121214),
-    border: Color(0x12FFFFFF), // rgba(255,255,255,.07)
-    text: Color(0xFFE9E9EE),
-    text2: Color(0xFF8A8A93),
-    text3: Color(0xFF8C817C),
+    bg: Color(0xFF35343A),
+    surface: Color(0xFF17171A),
+    surface2: Color(0xFF26262A),
+    border: Color(0x14FFFFFF), // rgba(255,255,255,.08)
+    text: Color(0xFFF2F2F5),
+    text2: Color(0xFFAEABB0),
+    text3: Color(0xFF8F8C92),
     goldInk: AppColors.gold,
-    goldSoft: Color(0x29FA6A1E), // rgba(250,106,30,.16)
+    goldSoft: Color(0x29FFC107), // rgba(255,193,7,.16)
     alertInk: Color(0xFFFF8A9B),
     shadow: [
       BoxShadow(
@@ -217,18 +244,24 @@ class ContentColors {
     veil: Color(0x47000000), // rgba(0,0,0,.28)
   );
 
-  /// El naranja de marca (#FF6D29) no alcanza AA sobre blanco (~2.9:1), así
-  /// que en tema claro el texto/ink se oscurece a #B03D06.
+  /// El ámbar de marca (#FFC107) sobre blanco da ~1.7:1 — peor todavía que
+  /// el naranja anterior, que ya no pasaba. En tema claro el texto/ink se
+  /// oscurece a #8A6A00: **nunca usar [AppColors.gold] como color de texto
+  /// sobre fondo claro.**
+  ///
+  /// Los neutros también dejan de ser cálidos: el fondo era #F7F1EC, un
+  /// crema rosado que acompañaba a la paleta marrón y desentona con el gris
+  /// nuevo.
   static const light = ContentColors(
-    bg: Color(0xFFF7F1EC),
+    bg: Color(0xFFF4F2EF),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFF0E7E0),
-    border: Color(0xFFE2D5CB),
-    text: Color(0xFF1B1614),
-    text2: Color(0xFF5B4E48),
+    surface2: Color(0xFFE9E7E3),
+    border: Color(0xFFD8D4CE),
+    text: Color(0xFF1B1A1E),
+    text2: Color(0xFF55535A),
     text3: Color(0xFF8C817C),
-    goldInk: Color(0xFFB03D06),
-    goldSoft: Color(0x3DFA6A1E), // rgba(250,106,30,.24)
+    goldInk: Color(0xFF8A6A00),
+    goldSoft: Color(0x3DFFC107), // rgba(255,193,7,.24)
     alertInk: Color(0xFFA8101C),
     shadow: [
       BoxShadow(

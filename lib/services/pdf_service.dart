@@ -7,9 +7,15 @@ import '../models/models.dart';
 
 /// Genera certificados en PDF con el logo institucional.
 class PdfService {
-  static const _gold = PdfColor.fromInt(0xFFFA6A1E);
-  static const _dark = PdfColor.fromInt(0xFF08080A);
-  static const _slate = PdfColor.fromInt(0xFF453027);
+  // Los tres valores de `AppColors` repetidos a mano: `PdfColor` no acepta
+  // un `Color` de Flutter, así que no hay forma de referenciar el token
+  // desde acá. Es una de las dos excepciones documentadas en
+  // `app_theme.dart` — y por serlo, hay que acordarse de moverlos cuando la
+  // paleta cambia: en el rebranding se quedaron con el naranja y el negro
+  // viejos, imprimiendo certificados con la identidad anterior.
+  static const _gold = PdfColor.fromInt(0xFFFFC107); // AppColors.gold
+  static const _dark = PdfColor.fromInt(0xFF17171A); // AppColors.surface
+  static const _slate = PdfColor.fromInt(0xFF26262A); // AppColors.slate
 
   /// Construye el documento del certificado.
   static Future<pw.Document> buildCertificate(Certificate cert) async {

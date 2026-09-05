@@ -45,7 +45,9 @@
     #enactus-splash {
       position: fixed;
       inset: 0;
-      background: #08080A;
+      /* --exa-bg del paquete de marca. Antes era #08080A, el negro anterior:
+         al montar Flutter la pantalla saltaba de negro a gris. */
+      background: #35343A;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -89,7 +91,7 @@
 </head>
 <body>
   <div id="enactus-splash">
-    <span class="exa-logo" role="img" aria-label="eduXaction" style="--exa-size:110px">edu<span class="exa-x">X</span>action</span>
+    <span class="exa-logo" role="img" aria-label="eduXaction" style="--exa-size:110px; --exa-accent:#FFFFFF; --exa-shine:#FFC107; --exa-sweep:3.6s">edu<span class="exa-x">X</span>action</span>
     <div class="bar"></div>
   </div>
 

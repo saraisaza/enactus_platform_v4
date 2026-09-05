@@ -9,6 +9,7 @@ import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -977,7 +978,13 @@ class _StatsRow extends StatelessWidget {
       // Sin ancho mínimo: el bloque tiene que poder encogerse. Con un
       // `minWidth` de 440 los cuatro `Expanded` internos no podían achicarlo
       // por debajo de ese piso y desbordaba en cualquier teléfono.
-      final perRow = c.maxWidth > 420 ? 4 : 2;
+      //
+      // El corte se calcula por ancho de tarjeta y no con un número suelto:
+      // el `> 420` anterior metía las cuatro en una ventana de 500 px, con
+      // 108 px cada una, y "Universidades" se partía a la mitad. Con 150 px
+      // de mínimo la etiqueta más larga entra en una línea.
+      final perRow =
+          responsiveColumns(c.maxWidth, minCardWidth: 150).clamp(1, 4);
       final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
       return Wrap(
         spacing: 12,

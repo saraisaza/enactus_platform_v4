@@ -14,6 +14,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -195,7 +196,11 @@ class _LabCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final accent = labColorFor(lab.id);
+    // El encabezado se pinta con el color del laboratorio, que puede ser
+    // claro u oscuro: la tinta se elige por contraste, no fija en blanco.
+    final tinta = inkSobre(accent);
     final odsNum = labOdsNumberFor(lab.id);
+    final compacto = context.isCompact;
 
     final phases = progress?.phases ?? const <PhaseProgress>[];
     final modules = progress?.moduleProgress ?? (done: 0, total: 0);
@@ -235,7 +240,10 @@ class _LabCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 136,
+                // 120 y no 108: un nombre de dos líneas —"Laboratorio IA
+                // y Tecnología"— dejaba el título pegado a la píldora de
+                // estado.
+                height: compacto ? 120 : 136,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -253,12 +261,12 @@ class _LabCard extends StatelessWidget {
                     ),
                     Positioned(
                       right: 16,
-                      bottom: -24,
+                      bottom: compacto ? -18 : -24,
                       child: Text('$odsNum',
                           style: displayHeading(
-                              fontSize: 104,
+                              fontSize: compacto ? 76 : 104,
                               fontWeight: AppWeights.display,
-                              color: Colors.white.withValues(alpha: 0.28),
+                              color: tinta.withValues(alpha: 0.28),
                               height: 1.0)),
                     ),
                     Positioned(
@@ -271,9 +279,10 @@ class _LabCard extends StatelessWidget {
                             height: 38,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                                color: AppColors.background.withValues(alpha: 0.42),
+                                color: tinta.withValues(alpha: 0.16),
                                 borderRadius: BorderRadius.circular(11)),
-                            child: const Icon(Icons.science_outlined, size: 21, color: Colors.white),
+                            child: Icon(Icons.science_outlined,
+                                size: 21, color: tinta),
                           ),
                           const SizedBox(width: 10),
                           ClipRRect(
@@ -283,14 +292,14 @@ class _LabCard extends StatelessWidget {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                    color: AppColors.background.withValues(alpha: 0.50),
+                                    color: tinta.withValues(alpha: 0.16),
                                     borderRadius: BorderRadius.circular(999)),
                                 child: Text(overdue ? 'ENTREGA VENCIDA' : 'EN CURSO',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 11.5 * 0.1,
-                                        color: Colors.white)),
+                                        color: tinta)),
                               ),
                             ),
                           ),
@@ -299,13 +308,19 @@ class _LabCard extends StatelessWidget {
                     ),
                     Positioned(
                       left: 20,
-                      right: 100,
+                      // En teléfono la marca de agua es más chica, así que el
+                      // título necesita menos reserva a la derecha; a 32 px
+                      // ocupaba las dos líneas y llenaba la banda entera.
+                      right: compacto ? 72 : 100,
                       bottom: 16,
                       child: Text(lab.name.toUpperCase(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: displayHeading(
-                              fontSize: 32, fontWeight: AppWeights.display, color: Colors.white, height: 1.0)),
+                              fontSize: compacto ? 22 : 32,
+                              fontWeight: AppWeights.display,
+                              color: tinta,
+                              height: 1.0)),
                     ),
                   ],
                 ),
@@ -2013,6 +2028,9 @@ class _ExpoCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
+            // Mismo caso que la tarjeta del Dashboard: sin ancho la banda se
+            // encoge al texto y no llega al borde de la tarjeta.
+            width: double.infinity,
             padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
             color: AppColors.gold,
             child: Stack(

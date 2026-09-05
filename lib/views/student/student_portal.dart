@@ -11,6 +11,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../models/progress.dart';
 import '../../widgets/app_image.dart';
 import '../../widgets/async_states.dart';
@@ -436,6 +437,100 @@ class _IdentityBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // En teléfono el avatar (110), el botón (~140) y sus separaciones suman
+    // casi todo el ancho disponible, y a la columna del nombre le quedaban
+    // unos 40 px: el resultado era el avatar encima de los chips y el botón
+    // encima del equipo. En compacto los tres bloques se apilan.
+    final compacto = context.isCompact;
+    final avatarSize = compacto ? 84.0 : 110.0;
+
+    final avatar = Container(
+      width: avatarSize,
+      height: avatarSize,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.gold,
+        border: Border.all(color: colors.surface, width: 5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: AppImage(
+        s3Key: student.avatarS3Key,
+        fit: BoxFit.cover,
+        // Sin foto —o mientras se resuelve su URL firmada— la
+        // inicial. Nunca un hueco ni un ícono de imagen rota.
+        placeholderBuilder: (_) => Text(
+            student.name.isEmpty ? '?' : student.name[0].toUpperCase(),
+            style: displayHeading(
+                fontSize: compacto ? 40 : 52,
+                fontWeight: AppWeights.display,
+                color: AppColors.ink)),
+      ),
+    );
+
+    final identidad = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(student.name.toUpperCase(),
+            style: displayHeading(
+                fontSize: compacto ? 30 : 44,
+                fontWeight: AppWeights.display,
+                color: colors.text)),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Icon(Icons.mail_outline, size: 17, color: colors.text3),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(student.email,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: colors.text2)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _CredentialChip(
+                icon: Icons.school_outlined,
+                label: Roles.label(student.role),
+                gold: true,
+                colors: colors),
+            if (student.university.isNotEmpty)
+              _CredentialChip(
+                  icon: Icons.apartment_outlined,
+                  label: student.university,
+                  gold: false,
+                  colors: colors),
+            if (student.career.isNotEmpty)
+              _CredentialChip(
+                  icon: Icons.engineering_outlined,
+                  label: student.career,
+                  gold: false,
+                  colors: colors),
+            if (team != null)
+              _CredentialChip(
+                  icon: Icons.groups_outlined,
+                  label: team!.groupName,
+                  gold: false,
+                  colors: colors),
+          ],
+        ),
+      ],
+    );
+
+    final botonEditar = OutlinedButton.icon(
+      onPressed: () => showEditProfileDialog(context, student, colors),
+      icon: const Icon(Icons.edit_outlined, size: 19),
+      label: const Text('Editar perfil'),
+      style: OutlinedButton.styleFrom(
+          foregroundColor: colors.goldInk,
+          side: BorderSide(color: colors.goldInk)),
+    );
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -447,7 +542,7 @@ class _IdentityBand extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            height: 112,
+            height: compacto ? 88 : 112,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -455,11 +550,11 @@ class _IdentityBand extends StatelessWidget {
                 const CustomPaint(painter: StripePainter()),
                 if (team != null)
                   Positioned(
-                    right: 26,
-                    bottom: -22,
+                    right: compacto ? 14 : 26,
+                    bottom: compacto ? -14 : -22,
                     child: Text(team!.projectName.toUpperCase(),
                         style: displayHeading(
-                            fontSize: 104,
+                            fontSize: compacto ? 64 : 104,
                             fontWeight: AppWeights.display,
                             color: AppColors.gold.withValues(alpha: 0.16),
                             height: 1.0)),
@@ -468,98 +563,32 @@ class _IdentityBand extends StatelessWidget {
             ),
           ),
           Transform.translate(
-            offset: const Offset(0, -44),
+            offset: Offset(0, compacto ? -34 : -44),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(30, 0, 30, 28),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 110,
-                    height: 110,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.gold,
-                      border: Border.all(color: colors.surface, width: 5),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: AppImage(
-                      s3Key: student.avatarS3Key,
-                      fit: BoxFit.cover,
-                      // Sin foto —o mientras se resuelve su URL firmada— la
-                      // inicial. Nunca un hueco ni un ícono de imagen rota.
-                      placeholderBuilder: (_) => Text(
-                          student.name.isEmpty
-                              ? '?'
-                              : student.name[0].toUpperCase(),
-                          style: displayHeading(
-                              fontSize: 52,
-                              fontWeight: AppWeights.display,
-                              color: AppColors.ink)),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
+              padding: EdgeInsets.fromLTRB(
+                  compacto ? 20 : 30, 0, compacto ? 20 : 30, 28),
+              child: compacto
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(student.name.toUpperCase(),
-                            style: displayHeading(
-                                fontSize: 44, fontWeight: AppWeights.display, color: colors.text)),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.mail_outline, size: 17, color: colors.text3),
-                            const SizedBox(width: 8),
-                            Text(student.email,
-                                style: TextStyle(fontSize: 14, color: colors.text2)),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _CredentialChip(
-                                icon: Icons.school_outlined,
-                                label: Roles.label(student.role),
-                                gold: true,
-                                colors: colors),
-                            if (student.university.isNotEmpty)
-                              _CredentialChip(
-                                  icon: Icons.apartment_outlined,
-                                  label: student.university,
-                                  gold: false,
-                                  colors: colors),
-                            if (student.career.isNotEmpty)
-                              _CredentialChip(
-                                  icon: Icons.engineering_outlined,
-                                  label: student.career,
-                                  gold: false,
-                                  colors: colors),
-                            if (team != null)
-                              _CredentialChip(
-                                  icon: Icons.groups_outlined,
-                                  label: team!.groupName,
-                                  gold: false,
-                                  colors: colors),
-                          ],
-                        ),
+                        avatar,
+                        const SizedBox(height: 14),
+                        identidad,
+                        const SizedBox(height: 16),
+                        SizedBox(width: double.infinity, child: botonEditar),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        avatar,
+                        const SizedBox(width: 24),
+                        Expanded(child: identidad),
+                        const SizedBox(width: 16),
+                        botonEditar,
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  OutlinedButton.icon(
-                    onPressed: () => showEditProfileDialog(context, student, colors),
-                    icon: const Icon(Icons.edit_outlined, size: 19),
-                    label: const Text('Editar perfil'),
-                    style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.goldInk, side: BorderSide(color: colors.goldInk)),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

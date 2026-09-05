@@ -94,11 +94,16 @@ class LandingView extends StatelessWidget {
                   const _ExpoShowcase(),
                   // Contadores de impacto
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 30),
+                    // Con 40 de padding y 40 de separación, dos tarjetas de
+                    // 150 necesitan 380 px y en un teléfono hay 310: los
+                    // cuatro contadores caían uno debajo de otro, 640 px de
+                    // scroll para cuatro números. Con los valores compactos
+                    // entran de a dos.
+                    padding: EdgeInsets.symmetric(
+                        horizontal: isCompact ? 16 : 40, vertical: 30),
                     child: Wrap(
-                      spacing: 40,
-                      runSpacing: 20,
+                      spacing: isCompact ? 12 : 40,
+                      runSpacing: isCompact ? 12 : 20,
                       alignment: WrapAlignment.center,
                       children: [
                         _AnimatedCounter(
@@ -174,9 +179,14 @@ class LandingView extends StatelessWidget {
                                   fontWeight: AppWeights.display,
                                   color: AppColors.textPrimary)),
                         ),
-                        const Text(
-                            'Áreas de conocimiento donde formamos a nuestros equipos',
-                            style: TextStyle(color: AppColors.textMuted)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isCompact ? 24 : 0),
+                          child: const Text(
+                              'Áreas de conocimiento donde formamos a nuestros equipos',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: AppColors.textMuted)),
+                        ),
                         Padding(
                           padding: const EdgeInsets.all(32),
                           child: LayoutBuilder(builder: (context, c) {
@@ -248,8 +258,14 @@ class LandingView extends StatelessWidget {
                               fontWeight: AppWeights.display,
                               color: AppColors.textPrimary)),
                     ),
-                    const Text('Momentos de la comunidad eduXaction Colombia',
-                        style: TextStyle(color: AppColors.textMuted)),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: isCompact ? 24 : 0),
+                      child: const Text(
+                          'Momentos de la comunidad eduXaction Colombia',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textMuted)),
+                    ),
                     Padding(
                       padding: const EdgeInsets.all(32),
                       child: Wrap(

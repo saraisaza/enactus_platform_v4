@@ -8,6 +8,7 @@ import '../../models/progress.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
@@ -169,6 +170,8 @@ class _CourseCard extends StatelessWidget {
     final totalLessons =
         progressInfo.totalLessons > 0 ? progressInfo.totalLessons : course.lessonCount;
     final accent = labColorFor(course.laboratoryId ?? '');
+    final tinta = inkSobre(accent);
+    final compacto = context.isCompact;
     final labLabel =
         course.isRutaExpo ? 'Ruta National Expo' : (course.laboratoryName ?? '');
 
@@ -207,12 +210,12 @@ class _CourseCard extends StatelessWidget {
                           height: 40,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                              color: AppColors.background.withValues(alpha: 0.42),
+                              color: tinta.withValues(alpha: 0.16),
                               borderRadius: BorderRadius.circular(11)),
                           child: Icon(
                               course.isRutaExpo ? Icons.emoji_events : Icons.play_circle_outline,
                               size: 22,
-                              color: Colors.white),
+                              color: tinta),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -224,14 +227,15 @@ class _CourseCard extends StatelessWidget {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: displayHeading(
-                                      fontSize: 27,
+                                      fontSize: compacto ? 20 : 27,
                                       fontWeight: AppWeights.display,
-                                      color: Colors.white,
+                                      color: tinta,
                                       height: 1.02)),
                               if (labLabel.isNotEmpty)
                                 Text(labLabel,
                                     style: TextStyle(
-                                        fontSize: 12.5, color: Colors.white.withValues(alpha: 0.88))),
+                                        fontSize: 12.5,
+                                        color: tinta.withValues(alpha: 0.88))),
                             ],
                           ),
                         ),

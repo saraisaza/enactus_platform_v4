@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/charts.dart';
 import '../../widgets/common.dart';
@@ -246,6 +247,8 @@ class _ContinueCard extends StatelessWidget {
     }
 
     final accent = labColorFor(course.laboratoryId ?? '');
+    final tinta = inkSobre(accent);
+    final compacto = context.isCompact;
     final courseId = course.id;
 
     return Container(
@@ -260,6 +263,11 @@ class _ContinueCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
+            // Sin ancho, el `Container` se ajusta al `Stack`, y el `Stack` al
+            // texto más largo: la banda de color terminaba antes del borde de
+            // la tarjeta. No se veía mientras el título iba a 38 px porque
+            // llenaba la fila igual; al bajarlo en teléfono quedó a la vista.
+            width: double.infinity,
             padding: const EdgeInsets.fromLTRB(28, 26, 28, 26),
             decoration: BoxDecoration(color: accent),
             child: Stack(
@@ -275,13 +283,13 @@ class _ContinueCard extends StatelessWidget {
                             fontSize: 12,
                             letterSpacing: 12 * 0.16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withValues(alpha: 0.85))),
+                            color: tinta.withValues(alpha: 0.85))),
                     const SizedBox(height: 8),
                     Text(course.name.toUpperCase(),
                         style: displayHeading(
-                            fontSize: 38,
+                            fontSize: compacto ? 24 : 38,
                             fontWeight: AppWeights.display,
-                            color: Colors.white)),
+                            color: tinta)),
                     // El nombre del laboratorio viene con el curso: no hace
                     // falta pedirlo aparte por cada tarjeta.
                     if (course.laboratoryName != null) ...[
@@ -289,7 +297,7 @@ class _ContinueCard extends StatelessWidget {
                       Text(course.laboratoryName!,
                           style: TextStyle(
                               fontSize: 13.5,
-                              color: Colors.white.withValues(alpha: 0.88))),
+                              color: tinta.withValues(alpha: 0.88))),
                     ],
                   ],
                 ),

@@ -124,23 +124,29 @@ class AppColors {
     17: Color(0xFF19486A),
   };
 
-  /// Color por laboratorio: seis tonos distinguibles y legibles sobre
-  /// [background], que separan cada laboratorio en Dashboard, Mis Cursos y
-  /// Ruta de Impacto — el color viene del dato (el laboratorio del
-  /// curso/fase), no de un acento fijo.
+  /// Rampa de color por laboratorio: seis tonos distinguibles y legibles
+  /// sobre [background], que separan cada laboratorio en Dashboard, Mis
+  /// Cursos y Ruta de Impacto — el color viene del dato (el laboratorio del
+  /// curso/fase), no de un acento fijo. Ver [labColorFor].
   ///
-  /// Era una rampa cálida derivada del naranja anterior, y sobre el gris
-  /// nuevo los seis tonos se veían como variaciones del mismo naranja. La
-  /// rampa del handoff de branding abre el abanico: solo el laboratorio de
-  /// IA conserva el ámbar de marca, el resto son tonos propios.
-  static const labColors = {
-    'lab_ia': Color(0xFFFFC107),
-    'lab_agua': Color(0xFF4FB3C4),
-    'lab_energia': Color(0xFFE8A93D),
-    'lab_impacto': Color(0xFF9085E9),
-    'lab_emprendimiento': Color(0xFFE07A5F),
-    'lab_agricultura': Color(0xFF7FA34A),
-  };
+  /// **Es una lista, no un mapa por identificador, y eso importa.** Era un
+  /// mapa con claves tipo `lab_ia`, pero los laboratorios reales llegan de
+  /// la API con UUID: ninguna clave coincidía nunca y `labColorFor` caía
+  /// siempre al acento de marca. En pantalla eso se veía como que todos los
+  /// laboratorios eran del mismo amarillo. Y no era arreglable poniendo los
+  /// UUID del sembrado: un laboratorio que cree un administrador mañana
+  /// tampoco estaría en el mapa.
+  ///
+  /// Los tonos vienen del handoff de branding. Con el ámbar de marca en la
+  /// rampa, [inkSobre] es lo que mantiene legible el texto encima.
+  static const labPalette = [
+    Color(0xFFFFC107),
+    Color(0xFF4FB3C4),
+    Color(0xFFE8A93D),
+    Color(0xFF9085E9),
+    Color(0xFFE07A5F),
+    Color(0xFF7FA34A),
+  ];
 
   /// El número de ODS detrás de cada [labColors] — para la marca de agua
   /// de las tarjetas de laboratorio (Pantallas 8 y 9). Mismo criterio: sin
@@ -161,10 +167,56 @@ class AppColors {
 int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 
 /// Color de un laboratorio para acentos por dato (cabeceras de curso,
-/// barras de progreso, riel de fases). Sin match — incluye la Ruta National
-/// Expo, cuyos cursos no tienen laboratorio (`Course.labId` vacío) — cae al
-/// ámbar de marca, tal como pide el README para "Ruta National Expo".
-Color labColorFor(String labId) => AppColors.labColors[labId] ?? AppColors.gold;
+/// barras de progreso, riel de fases).
+///
+/// Sin laboratorio —la Ruta National Expo, cuyos cursos tienen
+/// `laboratoryId` vacío— cae al ámbar de marca, tal como pide el README.
+///
+/// Con laboratorio, el tono sale de una huella del identificador sobre
+/// [AppColors.labPalette]: siempre el mismo color para el mismo laboratorio,
+/// y funciona igual para los que cree un administrador después. La huella se
+/// calcula acá en vez de usar `String.hashCode` porque este último no está
+/// garantizado estable entre plataformas, y el mismo laboratorio saldría de
+/// otro color en web que en móvil.
+///
+/// **Dos laboratorios pueden coincidir en tono.** Repartir N identificadores
+/// entre 6 tonos por huella no garantiza que no se repitan — con los 6
+/// laboratorios sembrados salen 4 tonos distintos. Es una mejora clara sobre
+/// el mapa anterior, que daba el mismo amarillo a todos, pero no es lo mismo
+/// que "un tono por laboratorio". Para garantizarlo haría falta un orden
+/// compartido —el índice del laboratorio dentro de la lista de la red, o un
+/// color asignado por el servidor— y eso obliga a que el color dependa de
+/// una lista que puede no haber cargado todavía.
+Color labColorFor(String labId) {
+  if (labId.isEmpty) return AppColors.gold;
+  var huella = 0;
+  for (final unidad in labId.codeUnits) {
+    huella = (huella * 31 + unidad) & 0x1FFFFFFF;
+  }
+  return AppColors.labPalette[huella % AppColors.labPalette.length];
+}
+
+/// Tinta legible sobre un fondo de color: [AppColors.ink] o blanco, el que
+/// contraste más.
+///
+/// Existe porque el rebranding a ámbar dejó ilegible todo lo que ponía texto
+/// blanco sobre el acento. Los números: blanco sobre el naranja anterior daba
+/// 2.94:1 —malo pero legible—; sobre el ámbar #FFC107 da **1.63:1**, y la
+/// tinta oscura sobre ese mismo ámbar da 11.15:1. El encabezado de una
+/// tarjeta de laboratorio o de curso se pinta con el color del dato, que
+/// puede ser claro (ámbar, amarillo de un ODS) u oscuro (violeta, verde), así
+/// que el color del texto no puede ser una constante.
+///
+/// Se compara el contraste real contra las dos tintas en vez de usar un
+/// umbral de luminancia: el ámbar cae muy cerca del límite y cualquier umbral
+/// elegido a ojo lo manda al lado equivocado.
+Color inkSobre(Color fondo) {
+  final l = fondo.computeLuminance();
+  final contrasteConBlanco = 1.05 / (l + 0.05);
+  final contrasteConInk =
+      (l + 0.05) / (AppColors.ink.computeLuminance() + 0.05);
+  return contrasteConInk >= contrasteConBlanco ? AppColors.ink : Colors.white;
+}
 
 /// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
 /// Número de un ODS a partir de su código.

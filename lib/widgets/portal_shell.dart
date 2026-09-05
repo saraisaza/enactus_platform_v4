@@ -578,15 +578,22 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                 ],
               ),
               const SizedBox(height: 10),
-              Text(
-                widget.title.toUpperCase(),
-                style: displayHeading(
-                  fontSize: 58,
-                  color: colors.goldInk,
-                  height: 1.00,
-                  letterSpacing: 58 * 0.004,
-                ),
-              ),
+              Builder(builder: (context) {
+                // 58 px es un título de escritorio. A 390 px "LABORATORIOS"
+                // —una sola palabra de 12 letras— no entra y se parte en
+                // "LABORATORIO / S", que es peor que cualquier salto de
+                // línea: rompe la palabra.
+                final size = context.isCompact ? 38.0 : 58.0;
+                return Text(
+                  widget.title.toUpperCase(),
+                  style: displayHeading(
+                    fontSize: size,
+                    color: colors.goldInk,
+                    height: 1.00,
+                    letterSpacing: size * 0.004,
+                  ),
+                );
+              }),
               if (widget.subtitle != null) ...[
                 const SizedBox(height: 12),
                 Text(

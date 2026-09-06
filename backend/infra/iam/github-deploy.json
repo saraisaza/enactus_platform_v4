@@ -1,0 +1,69 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicarCodigoDeLaApi",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:UpdateFunctionCode",
+        "lambda:PublishVersion",
+        "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration",
+        "lambda:ListVersionsByFunction",
+        "lambda:GetAlias",
+        "lambda:UpdateAlias"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-prod",
+        "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-prod:*",
+        "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-staging",
+        "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-staging:*"
+      ]
+    },
+    {
+      "Sid": "CorrerMigraciones",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:InvokeFunction",
+        "lambda:UpdateFunctionCode",
+        "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration"
+      ],
+      "Resource": "arn:aws:lambda:us-east-1:158151706149:function:enactus-db-tareas"
+    },
+    {
+      "Sid": "SubirElFrontend",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::enactus-web-158151706149",
+        "arn:aws:s3:::enactus-web-158151706149/*",
+        "arn:aws:s3:::enactus-web-staging-158151706149",
+        "arn:aws:s3:::enactus-web-staging-158151706149/*"
+      ]
+    },
+    {
+      "Sid": "InvalidarCache",
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:CreateInvalidation",
+        "cloudfront:GetInvalidation"
+      ],
+      "Resource": [
+        "arn:aws:cloudfront::158151706149:distribution/E1KLNF0TNH6TPX",
+        "arn:aws:cloudfront::158151706149:distribution/EEVHZXN8CN0MA"
+      ]
+    },
+    {
+      "Sid": "SaberQuienSoy",
+      "Effect": "Allow",
+      "Action": "sts:GetCallerIdentity",
+      "Resource": "*"
+    }
+  ]
+}

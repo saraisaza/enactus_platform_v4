@@ -37,4 +37,28 @@ export default tseslint.config(
       eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
+  // `scripts/*.mjs` son JavaScript suelto que se ejecuta con `node` contra un
+  // entorno YA desplegado: no entran en el bundle ni en el tsconfig.
+  //
+  // Se podrían ignorar, pero de `smoke.mjs` depende el rollback automático —
+  // es justo el archivo que no conviene dejar sin revisar. Lo que se apaga son
+  // las reglas que necesitan tipos, que sobre JS sin anotar solo producen
+  // ruido; las que encuentran errores de verdad (variables sin declarar, sin
+  // usar, `==`) siguen puestas.
+  {
+    files: ['scripts/**/*.mjs'],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      parserOptions: { projectService: false, project: false },
+      globals: {
+        console: 'readonly',
+        fetch: 'readonly',
+        process: 'readonly',
+        URL: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+  },
 );

@@ -1,0 +1,86 @@
+# Integración continua: corre en TODA rama y en todo PR.
+#
+# No despliega nada. Su único trabajo es decir si el código está sano, y es la
+# condición que branch protection exige antes de permitir una fusión.
+name: CI
+
+on:
+  push:
+    branches-ignore: [gh-pages]
+  pull_request:
+  workflow_dispatch:
+
+# Un push nuevo sobre la misma rama cancela el anterior: nadie necesita el
+# resultado de un commit que ya quedó atrás.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend — typecheck, lint y pruebas
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # La suite migra y siembra una base de verdad; no hay dobles. Se levanta
+    # una PostgreSQL de la misma versión mayor que RDS (17) porque una
+    # diferencia de versión se descubriría recién en producción.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: enactus
+          POSTGRES_PASSWORD: enactus
+          POSTGRES_DB: enactus_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://enactus:enactus@localhost:5432/enactus_test
+      TEST_DATABASE_URL: postgres://enactus:enactus@localhost:5432/enactus_test
+      JWT_SECRET: solo-para-ci-no-es-un-secreto-de-verdad-1234567890
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  frontend:
+    name: Frontend — analyze, pruebas y compilación
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      # Compilar acá no es redundante con el despliegue: un fallo de
+      # compilación en una rama de trabajo se ve ahora y no cuando alguien
+      # intenta fusionar.
+      - name: Compilar (verificación, no se publica)
+        run: flutter build web --release --no-web-resources-cdn --dart-define=API_BASE_URL=https://staging-api.eduxaction.com

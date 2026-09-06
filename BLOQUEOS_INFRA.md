@@ -83,6 +83,86 @@ de larga vida en ninguna parte» **sigue abierta**.
 
 ---
 
+## ABIERTO · Producción no tiene el rollback conectado
+
+**6 de septiembre de 2026.** El mecanismo de rollback quedó armado y probado
+en staging (1.5 s medidos), y en producción está **a medias a propósito**:
+
+```
+alias `vivo`                     creado, en la versión 1     ✅
+permiso de invocación a API GW   puesto                      ✅
+integración de API Gateway       sigue en la función sin cualificar  ❌
+```
+
+Mientras la integración no apunte a `:vivo`, el paso de rollback automático
+del pipeline **se ejecuta sin efecto**: mueve el alias, pero el tráfico sigue
+entrando por `$LATEST`. Peor que no tenerlo, porque el *workflow* reporta que
+hizo rollback.
+
+Falta un comando:
+
+```bash
+aws apigatewayv2 update-integration --api-id qocz5bt4qa \
+  --integration-id "$(aws apigatewayv2 get-integrations --api-id qocz5bt4qa \
+      --query 'Items[0].IntegrationId' --output text)" \
+  --integration-uri arn:aws:lambda:us-east-1:158151706149:function:enactus-api-prod:vivo
+
+# Y comprobar en el acto que produccion sigue respondiendo:
+for i in $(seq 1 6); do curl -s -o /dev/null -w '%{http_code} ' https://api.eduxaction.com/health; done
+```
+
+**Por qué no se ejecutó:** el entorno de trabajo bloqueó la modificación del
+API Gateway de producción. Es una decisión razonable —cambia el camino de una
+petición en vivo— y el riesgo real es bajo: el alias apunta a la versión 1,
+que es byte por byte el mismo código que corre hoy. El cambio es reversible
+volviendo a poner el ARN sin cualificar.
+
+Hasta que se aplique, **el rollback de producción es manual**: hay que
+redesplegar el `api.zip` anterior, que tarda minutos en vez de segundos.
+
+---
+
+## ABIERTO · La mitad de GitHub del CI/CD
+
+**6 de septiembre de 2026.** En AWS está todo: proveedor OIDC, rol
+`enactus-github-deploy` con su política acotada, y los dos *workflows*
+escritos. En GitHub falta lo que no se puede hacer por CLI desde acá — no hay
+`gh` instalado ni token disponible.
+
+| Falta | Consecuencia si no se hace |
+|---|---|
+| Crear la rama `develop` | El *workflow* de staging nunca se dispara |
+| Environment `produccion` con **required reviewers** | **Producción se despliega sin aprobación**: el `environment:` del job no detiene nada por sí solo |
+| Environment `staging` | Menor: el job corre igual, sin la etiqueta de entorno |
+| Branch protection en `main` y `develop` | Se puede empujar directo y fusionar con CI en rojo |
+
+El pasos están en `RUNBOOK.md`, sección «CI/CD — lo que falta hacer en
+GitHub», con las cuatro comprobaciones para saber que quedó.
+
+**El más peligroso es el segundo.** Un `environment: produccion` sin revisores
+configurados no espera a nadie: el *workflow* parece tener una compuerta y no
+la tiene.
+
+---
+
+## ABIERTO · Las alarmas no le avisan a nadie
+
+**6 de septiembre de 2026.** Las cuatro alarmas están creadas y en `OK`, con
+datos reales. El tema SNS `enactus-alarmas` existe. **Cero suscriptores.**
+
+```bash
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:158151706149:enactus-alarmas \
+  --protocol email --notification-endpoint sistemas@enactuscolombia.org
+```
+
+No se ejecutó porque envía un correo de confirmación a un buzón compartido de
+la organización, y esa es una acción hacia afuera que corresponde autorizar.
+La suscripción no queda activa hasta que alguien haga clic en ese correo.
+
+Mientras tanto, las alarmas cambian de color en una consola que nadie mira.
+
+---
+
 ## ABIERTO · No se puede fijar `reserved concurrency = 40`
 
 **Encontrado el 2 de septiembre de 2026**, al aplicarlo.
@@ -124,11 +204,11 @@ Cuando AWS la apruebe, aplicar el tope es un comando por entorno:
 
 ```bash
 aws lambda put-function-concurrency --function-name enactus-api-prod    --reserved-concurrent-executions 40
-aws lambda put-function-concurrency --function-name enactus-api-staging --reserved-concurrent-executions 5
+aws lambda put-function-concurrency --function-name enactus-api-staging --reserved-concurrent-executions 10
 aws service-quotas get-service-quota --service-code lambda --quota-code L-B99A9384 --query 'Quota.Value'
 ```
 
-**No se cierra esta entrada hasta que esos tres comandos den 40, 5 y 1000.**
+**No se cierra esta entrada hasta que esos tres comandos den 40, 10 y 1000.**
 
 ### De paso: la base aguanta 79 conexiones, no ~100
 

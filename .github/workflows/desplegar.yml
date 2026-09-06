@@ -1,0 +1,277 @@
+# Despliegue.
+#
+#   develop  →  staging, y ahí termina.
+#   main     →  staging, APROBACIÓN MANUAL, producción.
+#
+# Producción nunca recibe nada que no haya pasado por staging primero en esta
+# misma corrida, con el mismo artefacto.
+#
+# Sin llaves de acceso: la autenticación es OIDC contra el rol
+# `enactus-github-deploy`, que solo confía en este repositorio y en estas dos
+# ramas (ver la condición de confianza del rol).
+name: Desplegar
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# Dos despliegues a la vez sobre el mismo entorno dejan un estado que nadie
+# puede razonar. Se encolan, y NO se cancelan a mitad: cancelar entre la
+# migración y el código deja el esquema adelantado y la aplicación vieja.
+concurrency:
+  group: desplegar-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+  ROL: arn:aws:iam::158151706149:role/enactus-github-deploy
+
+jobs:
+  # ---------------------------------------------------------------------------
+  verificar:
+    name: Verificar antes de tocar nada
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: enactus
+          POSTGRES_PASSWORD: enactus
+          POSTGRES_DB: enactus_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://enactus:enactus@localhost:5432/enactus_test
+      TEST_DATABASE_URL: postgres://enactus:enactus@localhost:5432/enactus_test
+      JWT_SECRET: solo-para-ci-no-es-un-secreto-de-verdad-1234567890
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  # ---------------------------------------------------------------------------
+  construir:
+    name: Construir los artefactos
+    needs: verificar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: bash infra/construir.sh
+        working-directory: backend
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      # Se compilan DOS frontends, uno por entorno, porque la URL de la API
+      # entra en tiempo de compilación (`--dart-define`). Un solo artefacto no
+      # puede servir a los dos: apuntaría siempre a la misma API.
+      - name: Compilar frontend de staging
+        run: flutter build web --release --no-web-resources-cdn --dart-define=API_BASE_URL=https://staging-api.eduxaction.com
+      - run: mv build/web build/web-staging
+
+      - name: Compilar frontend de producción
+        run: flutter build web --release --no-web-resources-cdn --dart-define=API_BASE_URL=https://api.eduxaction.com
+      - run: mv build/web build/web-prod
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artefactos
+          retention-days: 5
+          path: |
+            backend/infra/api.zip
+            backend/infra/tareas.zip
+            build/web-staging
+            build/web-prod
+
+  # ---------------------------------------------------------------------------
+  staging:
+    name: Desplegar a staging
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.eduxaction.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: artefactos }
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROL }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 1. Migraciones ANTES del código nuevo.
+      #
+      #    Este orden obliga a que toda migración sea compatible hacia atrás:
+      #    entre este paso y el siguiente, el código VIEJO corre contra el
+      #    esquema NUEVO. Agregar columnas y tablas es seguro; renombrar o
+      #    borrar rompe ahí. Ver "Migraciones compatibles" en RUNBOOK.md.
+      - name: Migraciones sobre enactus_staging
+        run: |
+          aws lambda update-function-code --function-name enactus-db-tareas \
+            --zip-file fileb://backend/infra/tareas.zip --output text > /dev/null
+          aws lambda wait function-updated --function-name enactus-db-tareas
+          aws lambda invoke --function-name enactus-db-tareas \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"entorno":"staging","tarea":"migrar"}' salida.json > /dev/null
+          cat salida.json
+          grep -q '"ok":true' salida.json
+
+      - name: Publicar la API
+        run: |
+          aws lambda update-function-code --function-name enactus-api-staging \
+            --zip-file fileb://backend/infra/api.zip --output text > /dev/null
+          aws lambda wait function-updated --function-name enactus-api-staging
+          V=$(aws lambda publish-version --function-name enactus-api-staging \
+                --description "${{ github.sha }}" --query Version --output text)
+          aws lambda update-alias --function-name enactus-api-staging --name vivo \
+            --function-version "$V" --output text > /dev/null
+          echo "staging quedó en la versión $V"
+
+      - name: Publicar el frontend
+        run: |
+          aws s3 sync build/web-staging s3://enactus-web-staging-158151706149 --delete \
+            --only-show-errors --cache-control "public, max-age=604800" \
+            --exclude "*" --include "assets/*" --include "icons/*" --include "canvaskit/*"
+          aws s3 sync build/web-staging s3://enactus-web-staging-158151706149 --delete \
+            --only-show-errors --cache-control "no-cache" \
+            --exclude "assets/*" --exclude "icons/*" --exclude "canvaskit/*"
+          aws s3 cp build/web-staging/index.html s3://enactus-web-staging-158151706149/index.html \
+            --cache-control "no-cache" --content-type "text/html; charset=utf-8" --only-show-errors
+          aws cloudfront create-invalidation --distribution-id EEVHZXN8CN0MA --paths '/*' \
+            --query 'Invalidation.Id' --output text
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Pruebas de humo en staging
+        run: |
+          node backend/scripts/smoke.mjs \
+            --api https://staging-api.eduxaction.com \
+            --web https://staging.eduxaction.com --demo si \
+            --otra-api https://api.eduxaction.com
+
+  # ---------------------------------------------------------------------------
+  produccion:
+    name: Desplegar a producción
+    # Solo desde main, y solo después de que staging haya quedado en verde.
+    if: github.ref == 'refs/heads/main'
+    needs: staging
+    runs-on: ubuntu-latest
+    # La aprobación manual la impone este environment: en GitHub →
+    # Settings → Environments → produccion → Required reviewers.
+    # Sin ese ajuste el pipeline NO se detiene acá.
+    environment:
+      name: produccion
+      url: https://eduxaction.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: artefactos }
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROL }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Se anota a dónde volver ANTES de cambiar nada. Buscarlo después, con
+      # producción caída, es exactamente cuando no se quiere estar buscando.
+      - name: Anotar la versión actual, para poder volver
+        id: anterior
+        run: |
+          V=$(aws lambda get-alias --function-name enactus-api-prod --name vivo \
+                --query FunctionVersion --output text)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "si esto sale mal, se vuelve a la versión $V"
+
+      - name: Migraciones sobre enactus_prod
+        run: |
+          aws lambda update-function-code --function-name enactus-db-tareas \
+            --zip-file fileb://backend/infra/tareas.zip --output text > /dev/null
+          aws lambda wait function-updated --function-name enactus-db-tareas
+          aws lambda invoke --function-name enactus-db-tareas \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"entorno":"prod","tarea":"migrar"}' salida.json > /dev/null
+          cat salida.json
+          grep -q '"ok":true' salida.json
+
+      - name: Publicar la API
+        run: |
+          aws lambda update-function-code --function-name enactus-api-prod \
+            --zip-file fileb://backend/infra/api.zip --output text > /dev/null
+          aws lambda wait function-updated --function-name enactus-api-prod
+          V=$(aws lambda publish-version --function-name enactus-api-prod \
+                --description "${{ github.sha }}" --query Version --output text)
+          aws lambda update-alias --function-name enactus-api-prod --name vivo \
+            --function-version "$V" --output text > /dev/null
+          echo "producción quedó en la versión $V"
+
+      - name: Publicar el frontend
+        run: |
+          aws s3 sync build/web-prod s3://enactus-web-158151706149 --delete \
+            --only-show-errors --cache-control "public, max-age=604800" \
+            --exclude "*" --include "assets/*" --include "icons/*" --include "canvaskit/*"
+          aws s3 sync build/web-prod s3://enactus-web-158151706149 --delete \
+            --only-show-errors --cache-control "no-cache" \
+            --exclude "assets/*" --exclude "icons/*" --exclude "canvaskit/*"
+          aws s3 cp build/web-prod/index.html s3://enactus-web-158151706149/index.html \
+            --cache-control "no-cache" --content-type "text/html; charset=utf-8" --only-show-errors
+          aws cloudfront create-invalidation --distribution-id E1KLNF0TNH6TPX --paths '/*' \
+            --query 'Invalidation.Id' --output text
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Pruebas de humo en producción
+        id: humo
+        run: |
+          node backend/scripts/smoke.mjs \
+            --api https://api.eduxaction.com --web https://eduxaction.com \
+            --otra-api https://staging-api.eduxaction.com
+
+      # Rollback automático. Mueve el alias, que tarda un segundo y medio
+      # medido. NO revierte la migración —eso no siempre se puede— ni el
+      # frontend; ambos casos están escritos en RUNBOOK.md.
+      - name: Rollback si el humo falló
+        if: failure() && steps.humo.outcome == 'failure'
+        run: |
+          echo "las pruebas de humo fallaron en producción: volviendo a la versión ${{ steps.anterior.outputs.version }}"
+          aws lambda update-alias --function-name enactus-api-prod --name vivo \
+            --function-version "${{ steps.anterior.outputs.version }}" --output text > /dev/null
+          for i in $(seq 1 20); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' https://api.eduxaction.com/health)" = "200" ] && break
+            sleep 2
+          done
+          curl -s https://api.eduxaction.com/health
+          echo
+          echo "IMPORTANTE: el CÓDIGO volvió atrás. La migración y el frontend NO."
+          echo "Ver 'Rollback' en RUNBOOK.md antes de dar el incidente por cerrado."
+          exit 1

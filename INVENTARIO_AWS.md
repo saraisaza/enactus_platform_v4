@@ -1,7 +1,8 @@
 # Inventario AWS — Enactus Platform
 
-**Levantado con `aws` CLI el 2 de septiembre de 2026.** Cada fila se verificó
-ejecutando el comando que la acompaña, no leyendo la consola.
+**Levantado con `aws` CLI el 2 de septiembre de 2026 y actualizado el 6 de
+septiembre de 2026.** Cada fila se verificó ejecutando el comando que la
+acompaña, no leyendo la consola.
 
 Cuenta `158151706149` · Región principal `us-east-1` · Perfil `enactus-deploy`
 
@@ -94,6 +95,21 @@ más el maestro que gestiona RDS.
 | API Gateway `enactus-api-staging` | `gj8os20pg0` → `staging-api.eduxaction.com` |
 | CloudFront `E1KLNF0TNH6TPX` | frontend → `eduxaction.com`, `www.eduxaction.com` |
 | CloudFront `E2OZPA4RJT5DHI` | video → `videos.eduxaction.com`, con grupo de confianza |
+| CloudFront `EEVHZXN8CN0MA` | frontend de staging → `staging.eduxaction.com` (6-sep) |
+
+**API Gateway apunta al alias `vivo`, no a la función.** Es lo que hace posible
+el rollback: desplegar publica una versión y mueve el alias; volver atrás es
+moverlo de vuelta, medido en 1.5 s.
+
+| Función | Alias `vivo` | ¿API Gateway usa el alias? |
+|---|---|---|
+| `enactus-api-staging` | sí | **sí** — integración `umae6fq` → `:vivo` |
+| `enactus-api-prod` | sí, en la versión 1 | **todavía no** — sigue apuntando a la función sin cualificar |
+
+Producción tiene el alias creado y el permiso de invocación puesto, pero la
+integración de API Gateway **no** se repuntó. Hasta que se haga, el rollback
+automático del pipeline no tiene efecto en producción: mover el alias no cambia
+a dónde llega el tráfico. Un solo comando, en `RUNBOOK.md`.
 
 Las cuatro Lambdas corren en `nodejs22.x`, dentro de la VPC, en las subredes
 privadas y con `enactus-lambda-sg`.
@@ -130,6 +146,7 @@ Todos los registros puestos. `InUse` pasó de 0 a varios recursos.
 | `enactus-media-dev` | archivos de la plataforma · privado · SSE-S3 · versionado |
 | `enactus-secretos-158151706149` | configuración de ejecución · SSE-KMS |
 | `enactus-web-158151706149` | frontend · privado · solo lo lee CloudFront (OAC) |
+| `enactus-web-staging-158151706149` | frontend de staging · privado · OAC · SSE-S3 (6-sep) |
 
 ---
 
@@ -177,7 +194,16 @@ código; es que no hay con qué firmar.
 | API Gateway HTTP (2) | ~0–1 |
 | CloudFront (2 distribuciones) | 0 — 1 TB/mes gratis |
 | S3 del frontend (45 MB) | ~0.01 |
-| **Total** | **~17–18** |
+| S3 del frontend de staging (45 MB) | ~0.01 |
+| CloudFront de staging | 0 — dentro del mismo TB gratuito |
+| 4 alarmas de CloudWatch | 0.40 |
+| Tema SNS | 0 — sin volumen |
+| Retención de logs a 7 días | **ahorra**: antes crecían sin techo |
+| **Total** | **~18–19** |
+
+La cuenta está en **Paid Plan** con **US$157.67 de crédito** restante
+(`aws freetier get-account-plan-state`, 6-sep-2026). A este ritmo alcanza
+para unos 8–9 meses.
 
 Avisos de presupuesto configurados: gasto real > $20, > $50, > $100, y
 pronóstico > 80% de $100.

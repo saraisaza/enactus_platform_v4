@@ -120,6 +120,39 @@ volviendo a poner el ARN sin cualificar.
 Hasta que se aplique, **el rollback de producción es manual**: hay que
 redesplegar el `api.zip` anterior, que tarda minutos en vez de segundos.
 
+### Ya no puede pasar desapercibido
+
+El peligro no era que faltara el repunte: era que el pipeline **corriera el
+rollback, no hiciera nada y diera éxito**. Eso quedó cerrado el 6 de
+septiembre de 2026 con `backend/scripts/verificar-rollback.mjs`, en tres
+sitios y contra la misma función:
+
+- **paso del pipeline, antes de migrar y de publicar** — corta el despliegue;
+- **dentro de las pruebas de humo** — las pone en rojo;
+- **a mano** — imprime el comando del arreglo.
+
+```
+$ node backend/scripts/verificar-rollback.mjs --api-id qocz5bt4qa --funcion enactus-api-prod
+
+  EL ROLLBACK DE ENACTUS-API-PROD NO ESTÁ CONECTADO
+  API Gateway qocz5bt4qa no entra por el alias.
+  Apunta a  arn:aws:lambda:…:function:enactus-api-prod
+  y debería terminar en  :vivo
+$ echo $?
+1
+```
+
+Es decir: **producción no se puede desplegar mientras esto siga abierto.** Es
+deliberado. Un despliegue sin vuelta atrás no es un despliegue con un detalle
+pendiente.
+
+Un detalle que costó encontrar: la comprobación de «¿me están ejecutando como
+programa?» se hacía comparando `import.meta.url` con `file://` + la ruta. El
+proyecto vive en `…/ENACTUS V4/…`, con un espacio, que `import.meta.url`
+codifica como `%20`: la comparación fallaba, el bloque no corría y el script
+**salía 0 sin comprobar nada**. Exactamente el fallo que existe para evitar.
+Va por `pathToFileURL`.
+
 ---
 
 ## ABIERTO · La mitad de GitHub del CI/CD
@@ -193,6 +226,24 @@ contenedores y por lo tanto de ~10 conexiones. El techo real de la base es 79
 Lo que sí introduce es **otro** riesgo, distinto: producción y staging comparten
 esas 10. Una prueba de carga contra staging puede dejar producción sin
 capacidad. Con concurrencia reservada eso sería imposible; hoy no.
+
+### El pipeline ya no se cae por esto
+
+`backend/scripts/fijar-concurrencia.mjs` pide el objetivo (40 producción, 10
+staging) y aplica **lo que la cuenta permita**, calculándolo en cada
+despliegue:
+
+```
+alcanzable = UnreservedConcurrentExecutions + lo_ya_reservado - 10
+```
+
+Hoy eso da **0** —comprobado intentando reservar 3 y también 1; las dos
+rechazadas— así que no aplica nada, lo deja dicho en el log y **sale 0**. Un
+despliegue no debe caerse por una cuota pendiente de AWS, pero tampoco pasar
+en silencio, que es lo que haría un `|| true`.
+
+El día que aprueben la cuota, `alcanzable` pasa a 990 y el siguiente
+despliegue aplica 40 y 10 solo, sin tocar nada.
 
 ### Estado
 

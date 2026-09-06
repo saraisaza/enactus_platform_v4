@@ -17,6 +17,8 @@
  * Sale con código 1 si algo falla. Ese código es el que dispara el rollback.
  */
 
+import { RollbackDesconectado, verificarRollback } from './verificar-rollback.mjs';
+
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((pares, actual, i, todos) => {
     if (actual.startsWith('--')) pares.push([actual.slice(2), todos[i + 1]]);
@@ -162,6 +164,46 @@ await prueba('el origen propio sí recibe permiso de CORS, con PUT entre los mé
     throw new Error(`PUT no está en allow-methods (${metodos}) — el navegador bloqueará toda escritura`);
   }
 });
+
+// --- El rollback existe? ----------------------------------------------------
+//
+// No se comprueba por HTTP porque por HTTP no se ve: un entorno con el
+// rollback conectado y otro sin conectar responden exactamente igual. Se
+// pregunta a AWS.
+//
+// Si falla, falla la prueba de humo entera, y eso es deliberado: en el
+// pipeline el codigo de salida de este script es lo que dispara el rollback,
+// asi que un despliegue no puede quedar en verde sabiendo que no hay a donde
+// volver.
+
+const API_ID = args['api-id'] ?? process.env.SMOKE_API_ID ?? '';
+const FUNCION = args.funcion ?? process.env.SMOKE_FUNCION ?? '';
+
+if (!API_ID || !FUNCION) {
+  saltar(
+    'el rollback de este entorno esta conectado',
+    'no se pasaron --api-id y --funcion (en el pipeline SIEMPRE se pasan)',
+  );
+} else {
+  await prueba('el rollback de este entorno esta conectado', async () => {
+    try {
+      const r = await verificarRollback({ apiId: API_ID, funcion: FUNCION });
+      if (!r.hayADondeVolver) {
+        console.log(
+          `        aviso: ${r.versionesPublicadas} version publicada; hasta el ` +
+            'proximo despliegue no hay ninguna anterior a la que volver',
+        );
+      }
+    } catch (error) {
+      if (error instanceof RollbackDesconectado) {
+        console.log(error.informe());
+        throw new Error(`${error.titulo} ${error.detalle.replace(/\n/g, ' ')}`);
+      }
+      // No poder comprobarlo NO es lo mismo que estar bien.
+      throw new Error(`no se pudo comprobar el rollback: ${error.message}`);
+    }
+  });
+}
 
 // --- Con credenciales -------------------------------------------------------
 

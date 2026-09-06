@@ -392,6 +392,67 @@ En su lugar, dos medidas que se complementan:
    número 15 en concreto — la aplicación del límite es uniforme, no depende
    del valor.
 
+### Cuánta carga aguanta hoy, con 10 de concurrencia en toda la cuenta
+
+Medido sobre `enactus-api-prod`, 7 días de tráfico real
+(`aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name Duration`):
+
+| | Duración |
+|---|---|
+| p50 | **21 ms** — lecturas con caché tibia |
+| media | **144 ms** |
+| p90 | **546 ms** — el ingreso; `bcrypt` es CPU pura y a 512 MB no hay más |
+| p99 | **775 ms** |
+| máximo | **1 069 ms** — arranque en frío |
+
+La capacidad sale de la ley de Little: `peticiones/s = concurrencia ÷ duración`.
+Con la repartición prevista de **7 para producción y 3 para staging**:
+
+| Mezcla de tráfico | Duración | Producción (7) | Staging (3) |
+|---|---|---|---|
+| Navegación normal | 144 ms | **~48 pet/s** | ~20 pet/s |
+| Todo ingresos | 546 ms | **~13 pet/s** | ~5 pet/s |
+| Peor caso sostenido | 775 ms | **~9 pet/s** | ~4 pet/s |
+
+**Dónde empieza a limitar.** Cuando las peticiones en vuelo a la vez superan la
+concurrencia disponible, Lambda responde `429` y esa petición **la persona la
+ve fallar** — no se encola. Con 7, eso pasa a partir de ~48 pet/s de navegación
+normal, o de **~13 pet/s si son ingresos**, que es el número que importa: una
+jornada de inscripción concentra ingresos, no navegación.
+
+Para dimensionar: 13 ingresos por segundo son ~780 por minuto. Una cohorte de
+300 estudiantes entrando en cinco minutos son ~1 por segundo. Hay margen
+holgado; el riesgo no es el uso normal sino un pico simultáneo o un bucle.
+
+**El aviso importante: hoy ese 7 + 3 no está repartido.** No se puede reservar
+concurrencia —ver abajo—, así que las 10 son un bolsillo común: staging puede
+tomarlas todas y dejar producción en `429`. Las cifras de arriba describen
+la capacidad **cuando el reparto exista**; hoy describen el caso bueno.
+
+Lo que sí está cerrado por debajo, y funciona ya, son las conexiones a la base
+(`CONNECTION LIMIT` por rol): staging no puede dejar sin conexiones a
+producción haga lo que haga. Son dos recursos distintos y solo uno está
+protegido.
+
+**La alarma que avisa de esto** es `enactus-prod-throttles`, con umbral **1**:
+cualquier `429` en producción es una persona que vio un error, así que no hay
+un número «tolerable» que justifique esperar. En staging el umbral es 5,
+porque ahí un poco de limitación durante una prueba de carga es lo esperado.
+
+### Si hace falta más capacidad, en este orden
+
+1. **Que aprueben la cuota** (solicitud `e13d20d68bef41fa…`, `CASE_OPENED`).
+   Es gratis y sube el tope de 10 a 1000. El pipeline aplica 40 y 10 solo,
+   sin tocar nada: `fijar-concurrencia.mjs` calcula lo alcanzable en cada
+   despliegue.
+2. **Subir la memoria de la Lambda de 512 MB a 1024.** `bcrypt` es CPU y en
+   Lambda la CPU va atada a la memoria: duplicarla ~duplica el rendimiento del
+   ingreso, y como se cobra por GB-segundo, si la duración cae a la mitad el
+   costo queda casi igual. Es la palanca más barata para el p90.
+3. **Bajar el factor de coste de `bcrypt`** — solo con medición delante, y
+   sabiendo que se cambia seguridad por velocidad.
+4. Recién entonces, `db.t4g.small` y RDS Proxy.
+
 Los prepared statements se apagan aunque con conexión directa no molesten:
 si algún día hay que meter un pooler en modo transacción, se rompen ahí. Vale
 más que ese cambio sea de configuración y no de código.
@@ -618,7 +679,7 @@ Esto **recupera la instancia entera** (las dos bases, el esquema, los datos y
 la instancia se perdió o se corrompió. Para recuperar solo datos de la
 aplicación, sigue estando el respaldo de más arriba.
 
-### RTO medido: 10 minutos y 8 segundos
+### RTO: **20–25 minutos**. La restauración son 10; el resto también cuenta
 
 Medido de punta a punta el **6 de septiembre de 2026**, no estimado:
 
@@ -632,12 +693,23 @@ Medido de punta a punta el **6 de septiembre de 2026**, no estimado:
 Ese último número es el RTO: no sirve que la consola diga `available` si
 todavía no se pueden leer datos.
 
-**Lo que el RTO no incluye** y hay que sumarle en un incidente real: apuntar la
-aplicación a la instancia nueva (cambiar `DATABASE_URL` en
-`s3://enactus-secretos-158151706149/<entorno>/runtime.json` y esperar a que los
-contenedores tibios de Lambda se renueven), más el tiempo humano de decidir
-que hay que restaurar. **Cuente 20–25 minutos hasta volver a estar en el aire**,
-no 10.
+### El número que hay que usar es 20–25 minutos
+
+Los 10 minutos son **solo la restauración**. Si alguien lee esta página a las 2
+de la mañana y promete «en diez minutos estamos», va a quedar corto por más del
+doble. Lo que falta después:
+
+| Después de que la instancia responde | Cuánto |
+|---|---|
+| Cambiar `DATABASE_URL` en `s3://enactus-secretos-158151706149/<entorno>/runtime.json` | 1–2 min |
+| Que los contenedores tibios de Lambda se renueven y tomen la conexión nueva | 2–5 min |
+| Comprobar con las pruebas de humo que de verdad quedó bien | 1 min |
+
+Y antes de todo eso está el tiempo humano de darse cuenta y decidir restaurar,
+que no se puede medir acá pero nunca es cero.
+
+**Diga 20–25 minutos.** Es la cifra con la que se responde a quien pregunta
+cuándo vuelve el servicio.
 
 ### El procedimiento, para las 2 de la mañana
 
@@ -768,6 +840,41 @@ curl -s https://api.eduxaction.com/health
 Ensayado de verdad en staging el 6 de septiembre de 2026: se desplegó una
 versión con `/health` devolviendo 500 a propósito, las pruebas de humo la
 detectaron, y el rollback la deshizo.
+
+### El rollback tiene que estar CONECTADO, y eso se comprueba
+
+Mover el alias solo cambia algo si **API Gateway entra por el alias**. Si la
+integración apunta a la función sin cualificar, el tráfico va por `$LATEST`,
+mover el alias no hace nada — y el paso de rollback del pipeline se ejecuta,
+no surte efecto y **reporta éxito**.
+
+Un mecanismo de seguridad que corre, no hace nada y da verde es peor que no
+tenerlo: se descubre que no existía durante el incidente, cuando ya no hay
+margen. Producción estuvo así hasta el 6 de septiembre de 2026.
+
+```bash
+node backend/scripts/verificar-rollback.mjs --api-id qocz5bt4qa --funcion enactus-api-prod
+node backend/scripts/verificar-rollback.mjs --api-id gj8os20pg0 --funcion enactus-api-staging
+```
+
+Comprueba tres cosas y **falla ruidosamente** en cualquiera: que el alias
+exista, que no apunte a `$LATEST` —que cambia con cada despliegue, así que no
+es un sitio al que volver—, y que la integración de API Gateway termine en
+`:vivo`. Cuando falla, imprime el comando exacto del arreglo.
+
+**No poder comprobarlo cuenta como fallo.** Si el `aws` no responde, sale 1: no
+saber si hay red de seguridad no es lo mismo que tenerla.
+
+Está en tres sitios, contra la misma función para que no puedan divergir:
+
+| Dónde | Qué hace si falla |
+|---|---|
+| Paso del pipeline, **antes** de migrar y de publicar | Corta el despliegue. No se despliega sin vuelta atrás |
+| Dentro de las pruebas de humo (`--api-id` y `--funcion`) | Pone la prueba en rojo, y ese código de salida es el que dispara el rollback |
+| A mano, con el comando de arriba | Imprime el arreglo |
+
+En las pruebas de humo, si no se pasan `--api-id` y `--funcion` la
+comprobación se **salta anunciándolo**. El pipeline siempre los pasa.
 
 ### Lo que el rollback NO deshace
 
@@ -986,6 +1093,8 @@ Notifican al tema SNS `enactus-alarmas`.
 | `enactus-prod-latencia-p99` | `Latency` (p99) | > 3 s, 2 periodos | Se mira p99 y no el promedio: **el promedio esconde justo a quien lo está pasando mal** |
 | `enactus-rds-cpu` | `CPUUtilization` | > 80%, 15 min | Sostenido, no un pico de vacuum |
 | `enactus-rds-conexiones` | `DatabaseConnections` (Max) | > 55 en 5 min | **La más importante.** 55 de 79; deja 24 de margen para reaccionar |
+| `enactus-prod-throttles` | `AWS/Lambda` `Throttles` (Sum) | **≥ 1** en 5 min | Con el tope de 10 de la cuenta, el síntoma más probable de saturación. Umbral 1 porque un `429` **no se encola**: es una persona que vio fallar la petición |
+| `enactus-staging-throttles` | ídem, staging | ≥ 5 en 5 min | Más alto a propósito: en staging algo de limitación durante una prueba de carga es lo esperado |
 
 La de conexiones importa más que las otras porque staging y producción
 comparten la instancia. Los `CONNECTION LIMIT` por rol hacen imposible que
@@ -997,27 +1106,34 @@ aws cloudwatch describe-alarms \
   --query 'MetricAlarms[].{N:AlarmName,E:StateValue}' --output table
 ```
 
-### Falta: nadie está suscrito al tema
+### Suscriptores: dos, y hay que confirmarlos desde el correo
 
-**Las cuatro alarmas están armadas y no le avisan a nadie todavía.** Una
-alarma sin suscriptor cambia de color en una consola que nadie mira.
+| Dirección | Para qué |
+|---|---|
+| `sistemas@enactuscolombia.org` | Continuidad: sigue funcionando cuando cambie quien opera |
+| `saris20038@gmail.com` | Aviso directo durante el lanzamiento |
 
-```bash
-aws sns subscribe --topic-arn arn:aws:sns:us-east-1:158151706149:enactus-alarmas \
-  --protocol email --notification-endpoint sistemas@enactuscolombia.org
-```
-
-Ese comando **envía un correo de confirmación** a esa dirección, y la
-suscripción no queda activa hasta que alguien haga clic. Se dejó sin ejecutar
-a propósito: es un buzón compartido de la organización. Comprobar después:
+**Suscribirse no es estar suscrito.** AWS manda un correo de confirmación y la
+suscripción no entrega nada hasta que alguien hace clic. Mientras tanto la
+alarma cambia de color en una consola que nadie mira, que es igual a no
+tenerla.
 
 ```bash
 aws sns list-subscriptions-by-topic \
   --topic-arn arn:aws:sns:us-east-1:158151706149:enactus-alarmas \
-  --query 'Subscriptions[].{P:Protocol,E:Endpoint,A:SubscriptionArn}' --output table
+  --query 'Subscriptions[].{E:Endpoint,A:SubscriptionArn}' --output table
 ```
 
-Si `SubscriptionArn` dice `PendingConfirmation`, el clic no se dio.
+`PendingConfirmation` en la columna `A` significa que ese clic no se dio. Solo
+cuando las dos filas muestren un ARN que termina en un identificador —no la
+palabra `PendingConfirmation`— las alarmas le avisan a alguien.
+
+Para agregar otra dirección más adelante:
+
+```bash
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:158151706149:enactus-alarmas \
+  --protocol email --notification-endpoint <correo>
+```
 
 ---
 

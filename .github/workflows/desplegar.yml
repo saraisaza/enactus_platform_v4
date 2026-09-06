@@ -130,6 +130,14 @@ jobs:
           role-to-assume: ${{ env.ROL }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: El rollback tiene que estar conectado
+        run: |
+          node backend/scripts/verificar-rollback.mjs \
+            --api-id gj8os20pg0 --funcion enactus-api-staging
+
       # 1. Migraciones ANTES del código nuevo.
       #
       #    Este orden obliga a que toda migración sea compatible hacia atrás:
@@ -146,6 +154,15 @@ jobs:
             --payload '{"entorno":"staging","tarea":"migrar"}' salida.json > /dev/null
           cat salida.json
           grep -q '"ok":true' salida.json
+
+      # Se pide el objetivo y se aplica lo que la cuenta permita. NO falla si
+      # no alcanza: hoy el tope de 10 de la cuenta impide reservar nada, y eso
+      # es una cuota pendiente, no un fallo del despliegue. El script lo deja
+      # dicho en el log — que es lo que un `|| true` no haría.
+      - name: Concurrencia reservada (objetivo 10)
+        run: |
+          node backend/scripts/fijar-concurrencia.mjs \
+            --funcion enactus-api-staging --objetivo 10
 
       - name: Publicar la API
         run: |
@@ -171,14 +188,13 @@ jobs:
           aws cloudfront create-invalidation --distribution-id EEVHZXN8CN0MA --paths '/*' \
             --query 'Invalidation.Id' --output text
 
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
       - name: Pruebas de humo en staging
         run: |
           node backend/scripts/smoke.mjs \
             --api https://staging-api.eduxaction.com \
             --web https://staging.eduxaction.com --demo si \
-            --otra-api https://api.eduxaction.com
+            --otra-api https://api.eduxaction.com \
+            --api-id gj8os20pg0 --funcion enactus-api-staging
 
   # ---------------------------------------------------------------------------
   produccion:
@@ -203,6 +219,20 @@ jobs:
           role-to-assume: ${{ env.ROL }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      # PORTÓN. Va antes de migrar y antes de publicar: si el rollback no está
+      # conectado, no se despliega. Un despliegue sin vuelta atrás no es un
+      # despliegue con un detalle pendiente, es un despliegue sin red.
+      #
+      # Falla ruidosamente y nunca continúa. Antes esto no se comprobaba y el
+      # paso de rollback del final se ejecutaba, no surtía efecto y daba éxito.
+      - name: El rollback tiene que estar conectado
+        run: |
+          node backend/scripts/verificar-rollback.mjs \
+            --api-id qocz5bt4qa --funcion enactus-api-prod
+
       # Se anota a dónde volver ANTES de cambiar nada. Buscarlo después, con
       # producción caída, es exactamente cuando no se quiere estar buscando.
       - name: Anotar la versión actual, para poder volver
@@ -223,6 +253,15 @@ jobs:
             --payload '{"entorno":"prod","tarea":"migrar"}' salida.json > /dev/null
           cat salida.json
           grep -q '"ok":true' salida.json
+
+      # Se pide el objetivo y se aplica lo que la cuenta permita. NO falla si
+      # no alcanza: hoy el tope de 10 de la cuenta impide reservar nada, y eso
+      # es una cuota pendiente, no un fallo del despliegue. El script lo deja
+      # dicho en el log — que es lo que un `|| true` no haría.
+      - name: Concurrencia reservada (objetivo 40)
+        run: |
+          node backend/scripts/fijar-concurrencia.mjs \
+            --funcion enactus-api-prod --objetivo 40
 
       - name: Publicar la API
         run: |
@@ -248,14 +287,13 @@ jobs:
           aws cloudfront create-invalidation --distribution-id E1KLNF0TNH6TPX --paths '/*' \
             --query 'Invalidation.Id' --output text
 
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
       - name: Pruebas de humo en producción
         id: humo
         run: |
           node backend/scripts/smoke.mjs \
             --api https://api.eduxaction.com --web https://eduxaction.com \
-            --otra-api https://staging-api.eduxaction.com
+            --otra-api https://staging-api.eduxaction.com \
+            --api-id qocz5bt4qa --funcion enactus-api-prod
 
       # Rollback automático. Mueve el alias, que tarda un segundo y medio
       # medido. NO revierte la migración —eso no siempre se puede— ni el

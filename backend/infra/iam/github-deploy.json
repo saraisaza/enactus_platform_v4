@@ -11,13 +11,29 @@
         "lambda:GetFunctionConfiguration",
         "lambda:ListVersionsByFunction",
         "lambda:GetAlias",
-        "lambda:UpdateAlias"
+        "lambda:UpdateAlias",
+        "lambda:PutFunctionConcurrency",
+        "lambda:GetFunctionConcurrency",
+        "lambda:DeleteFunctionConcurrency"
       ],
       "Resource": [
         "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-prod",
         "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-prod:*",
         "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-staging",
         "arn:aws:lambda:us-east-1:158151706149:function:enactus-api-staging:*"
+      ]
+    },
+    {
+      "Sid": "ComprobarQueElRollbackEstaConectado",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:GET"
+      ],
+      "Resource": [
+        "arn:aws:apigateway:us-east-1::/apis/qocz5bt4qa/integrations",
+        "arn:aws:apigateway:us-east-1::/apis/qocz5bt4qa/integrations/*",
+        "arn:aws:apigateway:us-east-1::/apis/gj8os20pg0/integrations",
+        "arn:aws:apigateway:us-east-1::/apis/gj8os20pg0/integrations/*"
       ]
     },
     {
@@ -60,9 +76,12 @@
       ]
     },
     {
-      "Sid": "SaberQuienSoy",
+      "Sid": "ConsultarLimitesDeLaCuenta",
       "Effect": "Allow",
-      "Action": "sts:GetCallerIdentity",
+      "Action": [
+        "sts:GetCallerIdentity",
+        "lambda:GetAccountSettings"
+      ],
       "Resource": "*"
     }
   ]

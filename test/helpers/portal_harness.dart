@@ -93,7 +93,14 @@ void sinSesionGuardada() => SharedPreferences.setMockInitialValues({});
 /// Usa los mismos payloads reales — la portada pide `/site-content` — y borra
 /// el token: con uno sembrado, `restoreSession()` pediría `/auth/me`, que en
 /// una pantalla pública no corresponde.
-Widget appPublica(String ruta, {Map<String, Object?>? contenidoDelSitio}) {
+Widget appPublica(
+  String ruta, {
+  Map<String, Object?>? contenidoDelSitio,
+  // Entrega el doble de la API a quien monta la pantalla. Hace falta para
+  // afirmar sobre lo que la pantalla ENVÍA —no solo sobre lo que dibuja—, que
+  // es la diferencia entre probar el continente y probar el contenido.
+  void Function(FakeApi api)? conApi,
+}) {
   sinSesionGuardada();
   final rutas = Map<String, Object?>.from(_fixtures['compartidas'] as Map);
   // [contenidoDelSitio] reemplaza `/site-content`. Los fixtures traen todos
@@ -106,11 +113,13 @@ Widget appPublica(String ruta, {Map<String, Object?>? contenidoDelSitio}) {
       ...contenidoDelSitio,
     };
   }
-  final api = FakeApi(
+  final falsa = FakeApi(
     routes: rutas,
     statuses: Map<String, int>.from(
         (_fixtures['estados'] as Map?)?.cast<String, int>() ?? const {}),
-  ).build();
+  );
+  conApi?.call(falsa);
+  final api = falsa.build();
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);
   return EnactusApp(api: api, data: data, auth: auth, initialRoute: ruta);

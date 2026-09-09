@@ -1,6 +1,56 @@
 # Auditoría de pruebas — ¿cuáles son reales?
 
-**Cerrada el 2 de septiembre de 2026.**
+## Estado
+
+| | |
+|---|---|
+| **Estado** | **ABIERTA** |
+| Última actualización | **9 de septiembre de 2026** |
+| Cifras al día | backend **571** · Flutter **218** · `typecheck`, `lint` y `flutter analyze` limpios |
+
+Esta página dijo «Cerrada el 2 de septiembre de 2026» durante una semana, y en
+esa semana se reabrió **tres veces**. Un documento que anuncia un cierre que no
+es cierto es peor que no tenerlo: alguien lo abre, ve la fecha y confía.
+
+La ironía no se nos escapa — **es un caso más del patrón que este mismo
+documento nombra**: el continente decía «cerrada», el contenido decía otra
+cosa. Por eso ahora hay un criterio escrito, y no una fecha.
+
+### Criterio para cerrarla
+
+Se cierra cuando **las cuatro** se cumplen a la vez. Sin criterio explícito una
+auditoría se cierra por cansancio, que es como se cerró la anterior.
+
+| | Condición | Hoy |
+|---|---|---|
+| 1 | Cero mutaciones falsas | ✅ las 3 cerradas y re-verificadas |
+| 2 | Las débiles críticas, con segunda red independiente | ✅ las 5, el 9-sep |
+| 3 | Los cinco puntos ciegos, cada uno con su prueba | ⬜ falta el de contrato cliente↔servidor |
+| 4 | Las cifras de arriba coinciden con correr las suites | ✅ comprobado el 9-sep |
+
+Mientras falte cualquiera, el encabezado dice **ABIERTA**.
+
+---
+
+## Registro cronológico
+
+| Fecha | Qué apareció |
+|---|---|
+| **2-sep-2026** | 17 mutaciones. 14 reales, **3 falsas** (M8, F2, F3), las tres cerradas |
+| 2-sep-2026 | Restauración, contraseña pendiente y guardias de Flutter, con el mismo filtro |
+| 3-sep-2026 | Asignación de material a un estudiante, con el mismo filtro |
+| 3-sep-2026 | **Punto ciego 1**: CORS sin `PUT`. `app.request()` no hace preflight |
+| 3-sep-2026 | **Punto ciego 2**: la petición correcta con el cuerpo equivocado (calendario) |
+| 3-sep-2026 | **Punto ciego 3**: los fixtures son el caso feliz (portada vacía) |
+| **9-sep-2026** | **Punto ciego 4**: un verificador que salía 0 sin comprobar nada |
+| 9-sep-2026 | **Punto ciego 5**: el rollback corría, no hacía nada y reportaba éxito |
+| 9-sep-2026 | Las 5 débiles, reforzadas por otro camino. M5 resultó tener un hueco |
+
+**Ninguno de los cinco puntos ciegos lo podía encontrar una mutación**, y no
+por falta de cobertura: en los cinco, el código sobre el que se muta estaba
+bien. Ver la sección propia más abajo.
+
+---
 
 Una suite verde no es evidencia de nada por sí sola. Una prueba puede pasar
 porque el código está bien, o porque nunca miró lo que dice mirar. La única
@@ -133,10 +183,46 @@ M12 (acceso a archivos, 23 rojas), M2 (completitud, 14) y M6 (Open Learning,
 miran la misma regla desde ángulos distintos, que es exactamente lo que se
 quiere en las reglas que más caro salen si fallan.
 
-Las que rompieron **una sola** prueba —M4, M5, M9, M10— son reglas que penden
-de un hilo: son correctas y están cubiertas, pero por un único caso. Si alguien
-borra esa prueba, la regla queda sin red y nada avisa. No es un defecto, es
-información para saber dónde una sola edición descuidada sale cara.
+Las que rompieron **una sola** prueba son reglas que penden de un hilo: son
+correctas y están cubiertas, pero por un único caso. Si alguien borra esa
+prueba, la regla queda sin red y nada avisa. No es un defecto, es información
+para saber dónde una sola edición descuidada sale cara.
+
+Son **cinco**: M4, M5, M9, M10 y **F5**. La primera versión de esta lista decía
+cuatro y dejaba fuera a F5, que también rompió una sola. El descuido importaba:
+quien usara esa lista para decidir dónde reforzar se habría saltado la pantalla
+de ingreso, que no es un sitio menor — es la puerta.
+
+**Las cinco quedaron reforzadas el 9 de septiembre de 2026**, cada una por un
+camino distinto del que ya existía. Copiar la aserción habría dado dos pruebas
+que fallan por lo mismo, y eso no es una segunda red: es la misma red dibujada
+dos veces.
+
+| Regla | Lo que ya existía | Por dónde entra la segunda | Dónde |
+|---|---|---|---|
+| M4/M5 `can_grade` | el middleware sobre una ruta **sintética** | el endpoint **real**, y que no quede nota escrita | `backend/tests/reglas-criticas.test.ts` |
+| M9 no cambiarse el rol | la respuesta de `PATCH /auth/me` | la **fila en la base** y la autoridad efectiva | ídem |
+| M10 empresa solo lxd/mentor | el código de estado | que **no quede cuenta creada** | ídem |
+| F5 la pantalla de ingreso | `find.byType(LoginView)` | lo que **sale hacia la API**, y qué pasa al ser rechazada | `test/ingreso_test.dart` |
+
+### M5 no era solo débil: tenía un hueco
+
+Al escribir su segunda red apareció algo que la clasificación no decía. La
+prueba de M5 monta una ruta de mentira —`test.post('/calificar', requireAuth,
+requireCanGrade, …)`— para ejercitar el middleware aislado. Eso demuestra que
+el middleware funciona; **no** que esté enganchado a
+`POST /submissions/:id/grade`.
+
+Comprobado quitando `requireCanGrade` de la ruta real:
+
+```
+prueba nueva (endpoint real)    ROJA
+tests/auth.test.ts              39 verdes
+```
+
+Es decir: cualquiera podía desenganchar el guardia del endpoint de calificar y
+la suite entera seguía en verde. Es el patrón del continente otra vez, en su
+forma más cara — una prueba de autorización que no toca la ruta que autoriza.
 
 Y el patrón de los tres huecos es el mismo en los tres: **la prueba afirmaba
 sobre el continente y no sobre el contenido.** "El armazón está montado", "no
@@ -155,15 +241,16 @@ Conviene repetir la auditoría cuando se toque autorización, completitud o el
 armazón de los portales — que son las tres áreas donde una mutación silenciosa
 pasa desapercibida más fácil.
 
-## Estado al cerrar
+## Estado al cerrar la primera ronda (2-sep), conservado como registro
 
 ```
 backend   538 pruebas · typecheck limpio · lint limpio
 Flutter   204 pruebas · flutter analyze sin issues
 ```
 
-Al 3 de septiembre: **557 de backend y 203 de Flutter**, con `typecheck`,
-`lint` y `flutter analyze` limpios.
+Al 3 de septiembre: **557 de backend y 203 de Flutter**. Las cifras vigentes
+están al final, en «Cifras, y cómo comprobarlas» — estas quedan como registro
+de aquel día, no como el estado de hoy.
 
 **Actualización del 2 de septiembre.** Todo lo que se agregó después de esta
 auditoría pasó por el mismo filtro antes de darse por bueno: se rompió a
@@ -180,7 +267,32 @@ estudiante, con el mismo filtro: desactivar la comprobación de tipo de cuenta
 deja 2 pruebas rojas, y hacer que la asignación de cursos no inserte nada —un
 `200` que no cambia nada— deja 3.
 
-## Un punto ciego que ninguna mutación podía encontrar
+## Los cinco puntos ciegos: afirmar sobre el continente, no sobre el contenido
+
+Los cinco son la misma familia y se leen juntos. En ninguno faltaba cobertura:
+**el código sobre el que una mutación habría mutado estaba bien.** Lo que
+fallaba estaba en otro sitio — entre capas, en el cliente, en los datos de
+prueba, o en el propio verificador.
+
+| # | Qué pasaba | La prueba que lo atrapa |
+|---|---|---|
+| 1 | CORS sin `PUT`: `app.request()` no hace preflight | `backend/tests/cors.test.ts` ✅ |
+| 2 | La petición correcta con el cuerpo equivocado | `test/calendario_test.dart` + `FakeApi.cuerpos` — **parcial** ⬜ |
+| 3 | Los fixtures son el caso feliz | `test/portada_vacia_test.dart` — **parcial** ⬜ |
+| 4 | Un verificador que salía 0 sin comprobar nada | `backend/tests/verificadores.test.ts` ✅ |
+| 5 | El rollback corría, no hacía nada y daba éxito | ídem, + paso del pipeline ✅ |
+
+Los dos marcados **parcial** tienen prueba para el caso concreto que apareció,
+no para la clase entera. Falta:
+
+- **(2)** una prueba de contrato que compare los campos que el **cliente
+  Flutter envía** contra los que el servidor acepta, en vez de un caso por
+  incidente. Hoy la suite del servidor mide lo que ella misma manda, que es
+  circular.
+- **(3)** casos con los opcionales vacíos y nulos de forma sistemática, no solo
+  en la portada.
+
+### Punto ciego 1 — CORS
 
 Al probar la pantalla nueva en un navegador de verdad apareció un fallo que
 llevaba desde el principio y que **la suite no podía ver por cómo está
@@ -204,7 +316,7 @@ salta —preflight, redirecciones del borde, caché de CloudFront, cabeceras que
 agrega API Gateway— no lo cubre ninguna prueba de backend, por muchas que
 sean.**
 
-## El segundo punto ciego: la petición correcta con el cuerpo equivocado
+### Punto ciego 2 — la petición correcta con el cuerpo equivocado
 
 El calendario no dejaba guardar ningún evento, y la causa es de la misma
 familia. Las pruebas de backend de `/calendar-events` pasaban **solo el campo
@@ -234,7 +346,7 @@ Lo que se agregó para que no vuelva a pasar:
 —o la petición— por su cuenta solo prueba el servidor. Que el cliente hable el
 mismo idioma hay que probarlo aparte, con el cuerpo que el cliente arma.**
 
-## Tercer punto ciego: los fixtures son el caso feliz
+### Punto ciego 3 — los fixtures son el caso feliz
 
 En la portada aparecía una tarjeta vacía suelta entre los contadores y los
 laboratorios. Era el bloque "Sobre nosotros": la `Column` de la portada centra
@@ -257,3 +369,86 @@ hasta que alguien los escriba, y ese estado no lo recorría nadie.
 una instalación con contenido, nunca una recién montada, ni una a la que le
 falte un campo. Lo que el sembrado siempre llena, la suite nunca lo prueba
 vacío.**
+
+---
+
+### Punto ciego 4 — un verificador que salía 0 sin comprobar nada
+
+**9 de septiembre de 2026.** `backend/scripts/verificar-rollback.mjs` decidía
+si lo estaban ejecutando como programa comparando `import.meta.url` contra
+`` `file://${process.argv[1]}` ``. Este proyecto vive en `…/ENACTUS V4/…`, con
+un espacio, que `import.meta.url` codifica como `%20`. La comparación fallaba
+siempre, el bloque principal no corría, y el script **salía 0 sin comprobar
+nada**.
+
+Se descubrió por casualidad: al probarlo contra los dos entornos, uno sano y
+otro roto, **los dos dieron 0**. Un solo entorno no lo habría revelado.
+
+Lo grave no es el `%20`. Es que un verificador roto **se ve idéntico a un
+sistema sano**: los dos salen 0 y no dicen nada. Es el único tipo de código
+donde un fallo silencioso no tiene ningún síntoma hasta el incidente.
+
+### Punto ciego 5 — el rollback corría, no hacía nada y reportaba éxito
+
+**9 de septiembre de 2026.** El rollback consiste en mover el alias `vivo` a la
+versión anterior. Eso solo cambia algo si API Gateway está integrado **contra
+el alias**. En producción apuntaba a la función sin cualificar, así que el
+tráfico entraba por `$LATEST`: mover el alias no cambiaba nada, y el paso de
+rollback del pipeline habría corrido, no habría surtido efecto y habría
+terminado en verde.
+
+Un mecanismo de seguridad que se ejecuta, no hace nada y da éxito es peor que
+no tenerlo: se descubre que no existía **durante** el incidente.
+
+---
+
+## REGLA PERMANENTE · Ningún verificador sin su meta-prueba
+
+De los puntos ciegos 4 y 5 sale la única regla de este documento que es
+generalizable, y por eso va aparte:
+
+> **Un script que verifica cosas tiene que estar verificado.** Ningún script de
+> verificación se acepta sin una meta-prueba que rompa a propósito lo que
+> comprueba y confirme que **sale distinto de 0**.
+
+No basta con probar el camino feliz. Lo que hay que probar es que el script
+**falla cuando debe**, incluyendo el caso de **no poder comprobar**: si el
+`aws` no responde y el script sale 0, no saber si hay red de seguridad se
+confunde con tenerla.
+
+Implementado en `backend/tests/verificadores.test.ts`: 10 casos que anteponen
+al `PATH` un `aws` de mentira para montar cada escenario sin tocar AWS.
+
+| Cubre | Sale |
+|---|---|
+| todo conectado | 0 |
+| API Gateway no entra por el alias (**el fallo real**) | 1 |
+| no existe el alias | 1 |
+| el alias apunta a `$LATEST` | 1 |
+| **no se puede consultar a AWS** | 1 |
+| solo hay una versión publicada | 0, con aviso |
+
+La regresión del `%20` queda cubierta sin hacer nada especial: las pruebas
+invocan los scripts **por su ruta real**, que ya tiene el espacio. Comprobado
+reintroduciendo el fallo a propósito — pone rojas las 6 de rollback.
+
+**Al agregar un verificador nuevo, se agrega su bloque acá.** Un verificador
+sin meta-prueba no está terminado, está escrito.
+
+---
+
+## Cifras, y cómo comprobarlas
+
+```
+backend   571 pruebas · 27 archivos · typecheck limpio · lint limpio
+Flutter   218 pruebas · flutter analyze sin issues
+```
+
+```bash
+cd backend && npm test && npm run typecheck && npm run lint
+cd .. && flutter test && flutter analyze
+```
+
+Si estos números no coinciden con lo que sale de esos comandos, **la
+discrepancia es el hallazgo**: significa que alguien agregó o quitó pruebas sin
+pasar por acá, y la condición 4 del criterio de cierre deja de cumplirse.

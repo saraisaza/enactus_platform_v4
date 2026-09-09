@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SoloDesdeLasRamasDeDespliegue",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::158151706149:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": [
+            "repo:saraisaza@125602485/enactus_platform_v4@1319800559:ref:refs/heads/main",
+            "repo:saraisaza@125602485/enactus_platform_v4@1319800559:ref:refs/heads/develop",
+            "repo:saraisaza@125602485/enactus_platform_v4@1319800559:environment:staging",
+            "repo:saraisaza@125602485/enactus_platform_v4@1319800559:environment:produccion",
+
+            "repo:saraisaza/enactus_platform_v4:ref:refs/heads/main",
+            "repo:saraisaza/enactus_platform_v4:ref:refs/heads/develop",
+            "repo:saraisaza/enactus_platform_v4:environment:staging",
+            "repo:saraisaza/enactus_platform_v4:environment:produccion"
+          ]
+        }
+      }
+    }
+  ]
+}

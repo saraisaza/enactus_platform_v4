@@ -6,7 +6,7 @@
 |---|---|
 | **Estado** | **ABIERTA** |
 | Última actualización | **9 de septiembre de 2026** |
-| Cifras al día | backend **571** · Flutter **218** · `typecheck`, `lint` y `flutter analyze` limpios |
+| Cifras al día | backend **575** · Flutter **218** · `typecheck`, `lint` y `flutter analyze` limpios |
 
 Esta página dijo «Cerrada el 2 de septiembre de 2026» durante una semana, y en
 esa semana se reabrió **tres veces**. Un documento que anuncia un cierre que no
@@ -25,6 +25,7 @@ auditoría se cierra por cansancio, que es como se cerró la anterior.
 |---|---|---|
 | 1 | Cero mutaciones falsas | ✅ las 3 cerradas y re-verificadas |
 | 2 | Las débiles críticas, con segunda red independiente | ✅ las 5, el 9-sep |
+| 2b | Todo guardia de autorización, probado sobre su endpoint **real** | ✅ barrido del 9-sep: 79 aplicaciones |
 | 3 | Los cinco puntos ciegos, cada uno con su prueba | ⬜ falta el de contrato cliente↔servidor |
 | 4 | Las cifras de arriba coinciden con correr las suites | ✅ comprobado el 9-sep |
 
@@ -45,6 +46,7 @@ Mientras falte cualquiera, el encabezado dice **ABIERTA**.
 | **9-sep-2026** | **Punto ciego 4**: un verificador que salía 0 sin comprobar nada |
 | 9-sep-2026 | **Punto ciego 5**: el rollback corría, no hacía nada y reportaba éxito |
 | 9-sep-2026 | Las 5 débiles, reforzadas por otro camino. M5 resultó tener un hueco |
+| 9-sep-2026 | **Barrido de guardias**: 36 de 79 aplicaciones podían quitarse sin que nada se pusiera rojo |
 
 **Ninguno de los cinco puntos ciegos lo podía encontrar una mutación**, y no
 por falta de cobertura: en los cinco, el código sobre el que se muta estaba
@@ -440,7 +442,7 @@ sin meta-prueba no está terminado, está escrito.
 ## Cifras, y cómo comprobarlas
 
 ```
-backend   571 pruebas · 27 archivos · typecheck limpio · lint limpio
+backend   575 pruebas · 28 archivos · typecheck limpio · lint limpio
 Flutter   218 pruebas · flutter analyze sin issues
 ```
 
@@ -452,3 +454,98 @@ cd .. && flutter test && flutter analyze
 Si estos números no coinciden con lo que sale de esos comandos, **la
 discrepancia es el hallazgo**: significa que alguien agregó o quitó pruebas sin
 pasar por acá, y la condición 4 del criterio de cierre deja de cumplirse.
+
+---
+
+## El barrido de guardias — 9 de septiembre de 2026
+
+M5 no era un caso aislado. Su forma —una prueba que monta el middleware sobre
+una ruta de mentira— es un patrón, así que se barrió entero: **cada aplicación
+de un guardia de autorización se quitó de su ruta, una por una, corriendo la
+suite completa entre cada mutación.**
+
+79 aplicaciones reales (las líneas de `import` no cuentan: quitarlas solo rompe
+la compilación, y un error del compilador no dice nada sobre la suite).
+
+### El resultado
+
+```
+79 aplicaciones de guardia
+36 podían quitarse sin que NINGUNA prueba se pusiera roja
+```
+
+| Guardia | Total | Cubiertas | Sin cubrir |
+|---|---|---|---|
+| `requireRole` | 42 | 12 | **30** |
+| `requireAuth` | 31 | 26 | 5 |
+| `requireCanGrade` | 2 | 1 | 1 |
+| `requireEnactus` | 4 | 4 | 0 |
+
+Entre los descubiertos: `DELETE /users/:id`, `PATCH /users/:id`,
+`DELETE /courses/:id`, `POST /courses/:id/publish` y **toda la autoría de
+lecciones** —vídeo, quiz, recursos, actividad—. Cualquiera podía quitarles el
+guardia de rol y la suite entera seguía en verde.
+
+`requireEnactus` fue el único con cobertura completa: sus 4 aplicaciones están
+probadas contra el endpoint real, porque `isolation.test.ts` se escribió así
+desde el principio.
+
+### Cómo se cerró: un barrido, no 36 pruebas
+
+`backend/tests/guardias-en-rutas-reales.test.ts` recorre `app.routes` y exige,
+para cada endpoint:
+
+1. **sin token** → nada responde 2xx, salvo una lista explícita de públicas;
+2. **como estudiante** → todo lo que no esté en `ESTUDIANTE_PUEDE` responde
+   **exactamente 401 o 403**.
+
+Escribir 36 pruebas a mano habría cubierto lo de hoy y nada más. Un barrido
+sobre las rutas registradas cubre también **lo que se agregue mañana**: un
+endpoint nuevo entra cubierto sin que nadie se acuerde de cubrirlo, que es la
+única forma de que no se olvide.
+
+`ESTUDIANTE_PUEDE` es, de paso, la definición operativa de qué alcanza un
+estudiante. Si esa lista crece sin que nadie lo discuta, el alcance creció sin
+que nadie lo discuta.
+
+### El detalle que casi lo deja a medias
+
+La primera versión aceptaba **cualquier 4xx** como «el guardia corrió y la
+validación se quejó después». Al re-verificar contra los 36 huecos, solo cerró
+19. El motivo: al quitar el guardia, el cuerpo `{}` falla la validación y
+devuelve **400**, indistinguible de lo anterior.
+
+Se apretó a **exactamente 401 o 403**, y ahí el orden lo vuelve tajante: el
+guardia es middleware, así que corre **antes** de validar. Con guardia → 403.
+Sin guardia → 400 o 404. Cerró 31.
+
+También apareció que el comodín `GET /lessons/…` de la lista de permitidos
+dejaba pasar `GET /lessons/:id/quiz`, que devuelve el cuestionario **con las
+respuestas** y por eso es de `CONTENT_ROLES`. Un comodín ancho en una lista de
+permitidos es justo el error que la prueba busca en el código.
+
+### Los 5 que siguen «sin detectar», y por qué no son huecos
+
+| Aplicación | Por qué la mutación no rompe nada |
+|---|---|
+| 4 × `requireAuth` en `.use('*', …)` | `currentUser()` lanza si no hay sesión, así que la ruta **falla cerrada** igual. Se pierde el 401 limpio: pasa a ser un **500**, que ensucia la tasa de 5xx sobre la que van las alarmas |
+| `requireCanGrade` en `POST /certificates/ruta` | El handler llama `assertCanGrade(user, false)` en su **primera línea**. El guardia de ruta es redundante |
+
+**No son cobertura que falte: son defensa repetida.** Se comprobó uno por uno,
+no se dedujo. Se dejan como están —redundar en autorización es barato— pero
+queda escrito que si alguien «limpia» el `requireAuth` de esas cuatro líneas, lo
+que aparece no es un agujero sino un 500 en vez de un 401.
+
+---
+
+## REGLA PERMANENTE · Ninguna prueba de middleware sobre una ruta sintética
+
+Junto a la del verificador, la segunda regla que sale de todo esto:
+
+> **Una prueba de middleware no cuenta si corre sobre una ruta de mentira.**
+> Montar `test.post('/calificar', requireAuth, requireCanGrade, …)` demuestra
+> que el middleware **funciona**; no demuestra que esté **puesto** donde hace
+> falta. Toda prueba de autorización tiene que ejercitar el **endpoint real**.
+
+Es la regla más cara del documento: ignorarla dejó 36 guardias sin red durante
+todo el proyecto, y ninguna de las 557 pruebas de entonces lo notó.

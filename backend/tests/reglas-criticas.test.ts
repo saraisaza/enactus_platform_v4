@@ -83,6 +83,48 @@ describe('M4/M5 · calificar sin permiso, contra el endpoint de verdad', () => {
   });
 });
 
+describe('M4/M5 · emitir certificado de Ruta sin permiso', () => {
+  /**
+   * El barrido de guardias encontró que `requireCanGrade` se podía quitar de
+   * `POST /certificates/ruta` sin que ninguna prueba se pusiera roja — el
+   * mismo hueco que en `/submissions/:id/grade`, en el otro endpoint que
+   * protege.
+   *
+   * No lo cubre el barrido general de `guardias-en-rutas-reales.test.ts`
+   * porque el riesgo aquí no es un estudiante —a ese lo frena igual— sino un
+   * **LXD al que le quitaron el permiso**. Eso hay que probarlo con un LXD.
+   */
+  it('un LXD sin can_grade no puede emitir un certificado de Ruta', async () => {
+    const [correo, clave] = CLAVES.lxd;
+    const lxd = await login(app, correo, clave);
+
+    const antes = await sql<{ n: number }[]>`select count(*)::int as n from certificates`;
+
+    await sql`update users set can_grade_enactus = false,
+                               can_grade_open_learning = false
+               where email = ${correo}`;
+    try {
+      const res = await app.request('/certificates/ruta', {
+        ...json({ studentId: '00000000-0000-4000-8000-000000000000' }),
+        headers: {
+          ...(json({}).headers as Record<string, string>),
+          ...auth(lxd.accessToken),
+        },
+      });
+      expect(res.status).toBe(403);
+
+      // Y no se emitió nada. Un certificado es un documento que sale de la
+      // plataforma: si se emite mal, el 403 llega tarde.
+      const despues = await sql<{ n: number }[]>`select count(*)::int as n from certificates`;
+      expect(despues[0]!.n).toBe(antes[0]!.n);
+    } finally {
+      await sql`update users set can_grade_enactus = true,
+                                 can_grade_open_learning = true
+                 where email = ${correo}`;
+    }
+  });
+});
+
 describe('M9 · nadie se sube el rol a sí mismo', () => {
   /**
    * `profileSchema` no declara `role`, y zod **descarta** las claves que no
@@ -154,24 +196,36 @@ describe('M10 · una empresa solo crea lxd y mentor', () => {
 
     for (const rol of ['admin', 'superadmin', 'student', 'company', 'advisor', 'donor']) {
       const email = `intento-${rol}@ejemplo.test`;
+      // `studentType` va SOLO en los roles de estudiante, y es obligatorio ahí.
+      //
+      // No es un detalle: `assertStudentType` corre ANTES del guardia de
+      // empresa y responde 409 si falta. Sin esto, el caso `student` daba 409
+      // y la prueba lo daba por bueno **sin haber llegado nunca al guardia que
+      // dice probar**. Es el mismo error que esta suite existe para encontrar,
+      // cometido dentro de la propia prueba.
+      const cuerpo: Record<string, unknown> = {
+        name: `Intento ${rol}`,
+        email,
+        password: 'unaClaveLarga1',
+        role: rol,
+      };
+      if (rol === 'student' || rol === 'alumni') cuerpo.studentType = 'enactus';
+
       const res = await app.request('/users', {
-        ...json({ name: `Intento ${rol}`, email, password: 'unaClaveLarga1', role: rol }),
+        ...json(cuerpo),
         headers: {
           ...(json({}).headers as Record<string, string>),
           ...auth(empresa.accessToken),
         },
       });
-      // Hoy salen DOS códigos distintos según el rol, porque hay dos guardas:
+      // 403 para TODOS. El guardia de empresa es `forbidden()`, y el de
+      // «solo un superadmin crea administración» también.
       //
-      //   admin, superadmin  -> 403  (solo un superadmin crea administración)
-      //   el resto           -> 409  (la regla propia de las cuentas empresa)
-      //
-      // Los dos son negativas de autorización, así que el 409 es discutible.
-      // La prueba fija el contrato de hoy en vez de elegir uno: si alguien los
-      // unifica, que sea una decisión y no un descuido. Lo que NO admite
-      // matices es la línea de abajo — no puede quedar la cuenta creada.
-      expect([403, 409], `crear ${rol} desde una empresa (dio ${res.status})`)
-        .toContain(res.status);
+      // El 409 que aparecía antes no era ninguno de los dos: era
+      // `assertStudentType` rechazando un `student` sin tipo, mucho antes de
+      // llegar a la autorización. Dos reglas distintas que se veían iguales
+      // desde fuera.
+      expect(res.status, `crear ${rol} desde una empresa`).toBe(403);
 
       const filas = await sql<{ id: string }[]>`
         select id from users where email = ${email}`;

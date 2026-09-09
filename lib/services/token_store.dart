@@ -10,9 +10,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Ojo con lo que esto NO es: `localStorage` es legible por cualquier script
 /// que corra en la página, así que no protege contra XSS. La defensa real es
 /// que el access token dura 12 h y el refresh se rota en cada uso — un token
-/// robado tiene ventana, no vida eterna. Guardar el refresh en una cookie
-/// `HttpOnly` sería mejor, pero exige que la API y el frontend compartan
-/// dominio, cosa que hoy no pasa (GitHub Pages + API Gateway).
+/// robado tiene ventana, no vida eterna.
+///
+/// **Por qué no una cookie `HttpOnly`, hoy.** La razón que decía este
+/// comentario —«la API y el frontend no comparten dominio (GitHub Pages +
+/// API Gateway)»— **caducó** con la migración a AWS: hoy son
+/// `eduxaction.com` y `api.eduxaction.com`, que comparten dominio padre, así
+/// que una cookie sobre `.eduxaction.com` sería perfectamente viable.
+///
+/// Se mantiene en `localStorage` por otro motivo: cambiar el mecanismo de
+/// autenticación entrando al lanzamiento es riesgo innecesario. El control
+/// compensatorio es una CSP estricta —`script-src 'self' 'wasm-unsafe-eval'
+/// blob:`, **sin `unsafe-inline`**, comprobado sobre lo que sirve CloudFront—
+/// que es justo lo que impide el script inyectado que leería el token.
+///
+/// **Revisar después del lanzamiento.** Si se hace el cambio, ese endpoint
+/// necesita además `SameSite=Strict` y token anti-CSRF: hoy CSRF no aplica
+/// —el refresh viaja en el cuerpo JSON y CORS va con `credentials: false`—
+/// pero con cookie sí aplicaría.
 /// Guardar la sesión NUNCA puede tumbar la app.
 ///
 /// El almacenamiento del navegador no siempre está: una ventana privada, un

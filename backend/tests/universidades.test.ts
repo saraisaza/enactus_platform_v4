@@ -19,6 +19,7 @@ import { makeTestClient, resetTestDatabase } from './helpers/db';
  */
 
 const MIGRACION = resolve(__dirname, '../drizzle/0005_universidades.sql');
+const REPORTE = resolve(__dirname, '../scripts/reporte-universidades.sql');
 
 let sql: Sql;
 
@@ -80,6 +81,9 @@ beforeEach(async () => {
   // En orden de dependencia: `users.university_id` es `restrict`, así que las
   // universidades no se pueden borrar antes que sus usuarios.
   await sql`delete from university_advisors`;
+  await sql`delete from group_members`;
+  await sql`delete from groups`;
+  await sql`delete from projects`;
   await sql`delete from users`;
   await sql`delete from universities`;
 });
@@ -121,6 +125,35 @@ describe('el relleno fusiona las variantes de un mismo nombre', () => {
         from users
        where university in ('Universidad de los Andes', 'universidad de los andes ')`;
     expect(conteo!.n).toBe(1);
+  });
+
+  it('las apariciones se SUMAN entre users y groups, no se comparan por fuente', async () => {
+    // El caso que descubre el fallo: «Nombre Uno» aparece 2 veces en users y 2
+    // en groups —4 en total— y «nombre uno» 3 veces, solo en users.
+    //
+    // Sumando, gana «Nombre Uno» (4 > 3). Comparando el máximo por fuente,
+    // como hacía la primera versión, gana «nombre uno» con sus 3 contra los 2
+    // de cada fuente por separado. El nombre canónico salía mal sin que nada
+    // fallara: la fusión ocurría igual, solo que la lista mostraba la variante
+    // equivocada.
+    await crearUsuario('A Uno', 'student', 'Universidad Ejemplo', 'enactus');
+    await crearUsuario('B Dos', 'student', 'Universidad Ejemplo', 'enactus');
+    await crearUsuario('C Tres', 'student', 'universidad ejemplo', 'enactus');
+    await crearUsuario('D Cuatro', 'student', 'universidad ejemplo', 'enactus');
+    await crearUsuario('E Cinco', 'student', 'universidad ejemplo', 'enactus');
+
+    // Dos equipos con la variante en mayúsculas. `groups` exige proyecto.
+    const [proyecto] = await sql<{ id: string }[]>`
+      insert into projects (name) values ('Proyecto de prueba') returning id`;
+    await sql`insert into groups (name, project_id, university)
+              values ('Equipo Uno', ${proyecto!.id}, 'Universidad Ejemplo'),
+                     ('Equipo Dos', ${proyecto!.id}, 'Universidad Ejemplo')`;
+
+    await correrRelleno();
+
+    const [uni] = await sql<{ name: string }[]>`
+      select name from universities where slug = 'universidad ejemplo'`;
+    expect(uni!.name).toBe('Universidad Ejemplo');
   });
 
   it('correrlo dos veces no duplica nada', async () => {
@@ -192,5 +225,78 @@ describe('los asesores quedan en la tabla puente', () => {
     const [u] = await sql<{ university_id: string | null }[]>`
       select university_id from users where id = ${id}`;
     expect(u!.university_id).toBeNull();
+  });
+});
+
+describe('el reporte del relleno es accionable', () => {
+  /**
+   * El reporte es un insumo de R2 y R3, no un adorno: hasta que «Sin asignar»
+   * esté vacío y los pares candidatos estén resueltos, R3 no se puede
+   * desplegar — ahí las lecturas pasan a id y un estudiante mal mapeado
+   * DESAPARECE del portal de su asesor.
+   *
+   * Se ejercita el `.sql` que se corre de verdad. Un reporte que no se
+   * ejecuta nunca es un reporte que dejó de compilar hace tres migraciones y
+   * nadie lo sabe.
+   */
+  it('corre entero y encuentra el par que NO se fusionó', async () => {
+    await crearUsuario('Ana Uno', 'student', 'Universidad de los Andes', 'enactus');
+    await crearUsuario('Beto Dos', 'student', 'universidad de los andes ', 'enactus');
+    // Abreviatura: mismo sitio en la realidad, slug distinto. El relleno NO la
+    // fusiona —adivinar mal junta dos universidades de verdad— así que tiene
+    // que salir en el reporte para que una persona decida.
+    await crearUsuario('Caro Tres', 'student', 'U. de los Andes', 'enactus');
+    await crearUsuario('Eva Cinco', 'student', '', 'enactus');
+    await crearUsuario('Suelto Asesor', 'advisor', '');
+    await correrRelleno();
+
+    const bloques = readFileSync(REPORTE, 'utf8')
+      .split(/\n(?=-- \d\.)/)
+      .filter((b) => /\b(SELECT|WITH)\b/.test(b));
+    expect(bloques.length, 'el reporte perdió bloques').toBeGreaterThanOrEqual(6);
+
+    const salidas: Record<string, unknown[]> = {};
+    for (const bloque of bloques) {
+      // El número del bloque. Si un bloque perdiera su encabezado `-- N.` no
+      // se podría afirmar sobre él, así que se falla acá y no más adelante
+      // con un `undefined` que parecería otra cosa.
+      const encabezado = bloque.match(/^-- (\d)\./m);
+      if (!encabezado) throw new Error(`Un bloque del reporte no tiene «-- N.»: ${bloque.slice(0, 60)}`);
+      const titulo = encabezado[1]!;
+      const consulta = bloque
+        .split('\n')
+        .filter((l) => !l.startsWith('--'))
+        .join('\n')
+        .trim();
+      if (!consulta) continue;
+      // Que cada bloque EJECUTE ya es la mitad de la prueba: un `.sql` suelto
+      // se rompe en silencio cuando cambia una columna.
+      salidas[titulo] = await sql.unsafe(consulta);
+    }
+
+    // 3 · el par candidato, con su camino de fusión escrito.
+    const pares = salidas['3'] as { candidata_a: string; candidata_b: string; como_fusionar: string }[];
+    expect(pares.length, 'no detectó «U. de los Andes» junto a «Universidad de los Andes»')
+      .toBeGreaterThan(0);
+    const nombres = pares.flatMap((p) => [p.candidata_a, p.candidata_b]);
+    expect(nombres).toContain('U. de los Andes');
+    expect(nombres).toContain('Universidad de los Andes');
+    // Y el camino no es un consejo: es SQL que se puede pegar.
+    expect(pares[0]!.como_fusionar).toMatch(/UPDATE users SET university_id/);
+    expect(pares[0]!.como_fusionar).toMatch(/UPDATE projects SET university_id/);
+    expect(pares[0]!.como_fusionar).toMatch(/deleted_at = now\(\)/);
+
+    // 4 · quién quedó en «Sin asignar», con nombre y correo para ir a
+    //     preguntarle. Un conteo no dice a quién escribirle.
+    const sinAsignar = salidas['4'] as { name: string; email: string }[];
+    expect(sinAsignar.map((f) => f.name)).toContain('Eva Cinco');
+    expect(sinAsignar[0]!.email).toBeTruthy();
+
+    // 5 · los asesores que en R3 no verían a NADIE.
+    const asesores = salidas['5'] as { name: string }[];
+    expect(asesores.map((f) => f.name)).toContain('Suelto Asesor');
+
+    // 6 · texto contra id. Tiene que dar cero: es la condición de R3.
+    expect(salidas['6'], 'texto e id no coinciden tras el relleno').toEqual([]);
   });
 });

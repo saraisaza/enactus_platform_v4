@@ -57,6 +57,43 @@ CREATE INDEX "projects_university_id_idx" ON "projects" USING btree ("university
 -- marcadora «Sin asignar» y sale en el reporte de integridad.
 -- ===========================================================================
 
+-- ---------------------------------------------------------------------------
+-- ADVERTENCIA sobre `on delete restrict` en las FK hacia `universities`
+--
+-- **No protege nada en este esquema, y parece que sí.** Acá no se borra
+-- físicamente: `DELETE /users/:id` es un `UPDATE` que pone `deleted_at`, y hay
+-- borrado lógico en users, projects, groups, laboratories y courses. Una FK
+-- `restrict` solo se dispara ante un `DELETE` de SQL, que nunca va a ocurrir.
+--
+-- Se deja porque no estorba y porque cubre el borrado físico accidental —una
+-- limpieza a mano, un script—. Pero la regla de verdad, «no se puede dar de
+-- baja una universidad con miembros vivos», vive en el servicio de asignación
+-- y NO en la base.
+--
+-- El fallo concreto que esto habilita, escrito entero porque es difícil de ver
+-- y fácil de escribir sin querer:
+--
+--   1. alguien implementa `DELETE /universities/:id` como borrado lógico,
+--      igual que los otros nueve endpoints de borrado; la FK no dice nada;
+--   2. `users.university_id` queda apuntando a una universidad muerta;
+--   3. toda consulta que filtre `deleted_at is null` al unir con
+--      `universities` trata a esos estudiantes como si NO tuvieran
+--      universidad — desaparecen del portal de su asesor sin que nadie
+--      borre nada;
+--   4. y como el índice único es PARCIAL (`where deleted_at is null`), dar de
+--      baja la universidad **libera su slug**: se puede crear otra con el
+--      mismo nombre. Quedan dos filas, los estudiantes apuntan a la muerta, y
+--      los reportes —que solo miran las vivas— se ven sanos.
+--
+-- El paso 4 es el que hace esto peligroso: no hay ningún síntoma. Una
+-- universidad con cero estudiantes y una lista de estudiantes sin universidad
+-- son, por separado, estados perfectamente normales.
+--
+-- La prueba de esto se agrega cuando exista el endpoint. Anotarlo sin
+-- prueba es la mitad del trabajo, pero la otra mitad no se puede escribir
+-- todavía: no hay qué ejercitar.
+-- ---------------------------------------------------------------------------
+
 -- La normalización, escrita a mano y no con `unaccent`.
 --
 -- `unaccent` es una EXTENSIÓN de Postgres y no está instalada en esta RDS.
@@ -87,29 +124,50 @@ $$;
 
 -- 1. Una universidad por variante normalizada.
 --
--- El nombre canónico es la variante MÁS FRECUENTE; si empatan, la más larga
--- —«Universidad de los Andes» le gana a «U. de los Andes», que es lo que
--- alguien querría ver en una lista.
+-- El nombre canónico se elige por TRES criterios, en orden, y los tres tienen
+-- que ser deterministas: si staging y producción canonicalizaran distinto
+-- sobre los mismos datos, «idempotente» dejaría de ser cierto entre entornos
+-- y el reporte de integridad de uno no serviría para el otro.
+--
+--   1. la variante más frecuente;
+--   2. si empatan, la más larga — «Universidad de los Andes» le gana a
+--      «U. de los Andes», que es lo que alguien querría ver en una lista;
+--   3. si vuelven a empatar, alfabético con `COLLATE "C"`.
+--
+-- El `COLLATE "C"` no es adorno: `ORDER BY nombre` a secas usa la colación de
+-- la base, que puede diferir entre entornos (es_CO.UTF-8 frente a en_US.UTF-8
+-- ordenan distinto los acentos). Ordenar por bytes es la única forma de que
+-- los dos entornos elijan la misma fila.
+--
+-- Las apariciones se SUMAN entre las dos fuentes (`GROUP BY` de afuera). Sin
+-- esa suma, el `UNION ALL` deja dos filas por variante —una de `users` y otra
+-- de `groups`— y `veces DESC` compara el MÁXIMO de una fuente contra el de la
+-- otra, no los totales: una variante con 2+2 perdería contra una de 3, aunque
+-- aparezca cuatro veces y la otra tres.
 INSERT INTO universities (name, slug)
 SELECT DISTINCT ON (slug) nombre, slug
 FROM (
-  SELECT
-    enactus_normalizar_universidad(u.university) AS slug,
-    trim(u.university)                            AS nombre,
-    count(*)                                      AS veces
-  FROM users u
-  WHERE enactus_normalizar_universidad(u.university) IS NOT NULL
-  GROUP BY 1, 2
-  UNION ALL
-  SELECT
-    enactus_normalizar_universidad(g.university),
-    trim(g.university),
-    count(*)
-  FROM groups g
-  WHERE enactus_normalizar_universidad(g.university) IS NOT NULL
-  GROUP BY 1, 2
+  SELECT slug, nombre, sum(veces) AS veces
+  FROM (
+    SELECT
+      enactus_normalizar_universidad(u.university) AS slug,
+      trim(u.university)                            AS nombre,
+      count(*)                                      AS veces
+    FROM users u
+    WHERE enactus_normalizar_universidad(u.university) IS NOT NULL
+    GROUP BY 1, 2
+    UNION ALL
+    SELECT
+      enactus_normalizar_universidad(g.university),
+      trim(g.university),
+      count(*)
+    FROM groups g
+    WHERE enactus_normalizar_universidad(g.university) IS NOT NULL
+    GROUP BY 1, 2
+  ) por_fuente
+  GROUP BY slug, nombre
 ) variantes
-ORDER BY slug, veces DESC, length(nombre) DESC, nombre
+ORDER BY slug, veces DESC, length(nombre) DESC, nombre COLLATE "C"
 ON CONFLICT DO NOTHING;
 --> statement-breakpoint
 

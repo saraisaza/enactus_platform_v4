@@ -10,6 +10,7 @@ import {
 import { softDelete, timestamps } from './_shared';
 import { odsGoals } from './catalogs';
 import { projectMemberRole, projectStage } from './enums';
+import { universities } from './universities';
 import { users } from './users';
 
 export const projects = pgTable(
@@ -25,11 +26,25 @@ export const projects = pgTable(
     impactIndicators: text().notNull().default(''),
     /** Habilitado para RUTA NATIONAL EXPO. */
     expoEnabled: boolean().notNull().default(false),
+
+    /**
+     * Universidad del proyecto (INV-7). Sus integrantes tienen que ser de
+     * ella.
+     *
+     * Hasta hoy la universidad del proyecto vivía en `groups.university` —del
+     * lado del equipo, no del proyecto— que es justo al revés de como se
+     * consulta: «los proyectos de mi universidad» tenía que pasar por el
+     * equipo. Anulable en R1; el relleno la toma de `groups.university`.
+     */
+    universityId: uuid().references(() => universities.id, {
+      onDelete: 'restrict',
+    }),
     ...timestamps,
     ...softDelete,
   },
   (t) => [
     index('projects_stage_idx').on(t.stage),
+    index('projects_university_id_idx').on(t.universityId),
     index('projects_deleted_at_idx').on(t.deletedAt),
   ],
 );

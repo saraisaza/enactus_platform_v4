@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { softDelete, timestamps } from './_shared';
+import { universities } from './universities';
 import { studentType, userRole } from './enums';
 
 /**
@@ -44,8 +45,45 @@ export const users = pgTable(
     phone: text().notNull().default(''),
     cedula: text().notNull().default(''),
     city: text().notNull().default(''),
-    /** Estudiantes/alumni y asesores. `studentsForAdvisor` cruza por acá. */
+    /**
+     * LEGADO. Se conserva hasta R4 y ya no manda: la universidad de verdad es
+     * `universityId`. Mientras las dos convivan, todo endpoint que toque
+     * universidad escribe las dos (R2) — así el código viejo sigue leyendo
+     * texto si hay que hacer rollback.
+     *
+     * No se borra en el mismo despliegue que se agrega la nueva: el pipeline
+     * migra ANTES de publicar el código, así que entre los dos pasos el código
+     * VIEJO corre contra el esquema NUEVO. Borrarla acá dejaría el rollback
+     * inservible. Ver «Lo que el rollback NO deshace» en RUNBOOK.md.
+     */
     university: text().notNull().default(''),
+
+    /**
+     * La universidad, ahora sí como referencia.
+     *
+     * Anulable a propósito en R1: Open Learning no tiene (INV-9), y el relleno
+     * de datos viejos puede dejar filas sin mapear, que van a la universidad
+     * marcadora «Sin asignar» y salen en el reporte de integridad. El `NOT
+     * NULL` de INV-2 llega en R4, cuando ya no queden filas sueltas.
+     *
+     * `restrict` y no `set null`: borrar una universidad con gente adentro
+     * tiene que fallar, no vaciarle el campo a cada estudiante en silencio.
+     */
+    universityId: uuid().references(() => universities.id, {
+      onDelete: 'restrict',
+    }),
+
+    /**
+     * Asesor principal del estudiante. **Opcional, y no es quien lo ve.**
+     *
+     * La visibilidad sale de `university_advisors`: cualquier asesor de la
+     * universidad ve a todos sus estudiantes. Esto solo dice quién responde
+     * por él, y si está puesto tiene que ser uno de los asesores de su
+     * universidad (INV-5) — lo valida el servicio de asignación.
+     */
+    advisorId: uuid().references((): AnyPgColumn => users.id, {
+      onDelete: 'set null',
+    }),
     career: text().notNull().default(''),
     /** Solo rol `company`. */
     companyName: text().notNull().default(''),
@@ -95,8 +133,12 @@ export const users = pgTable(
     index('users_role_idx').on(t.role),
     index('users_company_id_idx').on(t.companyId),
     index('users_donor_id_idx').on(t.donorId),
-    // `studentsForAdvisor` filtra por universidad exacta.
+    // LEGADO, se va en R4 junto con la columna: `studentsForAdvisor` filtraba
+    // por universidad exacta. Que esa comparación frágil estuviera INDEXADA es
+    // lo que la hacía difícil de sospechar — respondía rápido y devolvía cero.
     index('users_university_idx').on(t.university),
+    index('users_university_id_idx').on(t.universityId),
+    index('users_advisor_id_idx').on(t.advisorId),
     index('users_deleted_at_idx').on(t.deletedAt),
     check(
       'users_student_type_matches_role',

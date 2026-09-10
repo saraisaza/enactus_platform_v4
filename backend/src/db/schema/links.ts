@@ -3,6 +3,7 @@ import { index, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
 import { timestamps } from './_shared';
 import { courses } from './courses';
 import { laboratories, objectives, rutaModules } from './labs';
+import { universities } from './universities';
 import { users } from './users';
 
 /**
@@ -120,5 +121,37 @@ export const mentorReviewCourses = pgTable(
   (t) => [
     primaryKey({ columns: [t.mentorId, t.courseId] }),
     index('mentor_review_courses_course_id_idx').on(t.courseId),
+  ],
+);
+
+/**
+ * Asesores de una universidad. 1..N asesores por universidad, y un asesor
+ * puede cubrir 1..N universidades (INV-4) — las dos direcciones salen de la
+ * misma tabla sin ninguna gimnasia.
+ *
+ * Es una tabla puente y no una lista dentro de `universities` por lo mismo
+ * que `laboratory_mentors` y `group_members`: una lista embebida no se puede
+ * consultar al revés («¿qué universidades cubre este asesor?») sin recorrerlas
+ * todas, y no tiene integridad referencial — nada impide que quede el id de un
+ * asesor borrado.
+ *
+ * **Esta tabla reemplaza la comparación de cadenas como fuente de la
+ * visibilidad del asesor.** Mientras exista `users.university`, las dos
+ * conviven (ver R2/R3 en el plan de despliegue); a partir de R3 manda esta.
+ */
+export const universityAdvisors = pgTable(
+  'university_advisors',
+  {
+    universityId: uuid()
+      .notNull()
+      .references(() => universities.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (t) => [
+    primaryKey({ columns: [t.universityId, t.userId] }),
+    index('university_advisors_user_id_idx').on(t.userId),
   ],
 );

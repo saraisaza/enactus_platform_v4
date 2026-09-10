@@ -68,6 +68,35 @@ export const laboratoryMentors = pgTable(
 );
 
 /**
+ * LXDs autorizados a editar este laboratorio y su Ruta de Impacto.
+ *
+ * Espejo exacto de `laboratory_mentors`. Sin esta tabla, «el LXD edita solo
+ * los laboratorios donde el Admin lo asignó» no tiene dónde guardarse.
+ *
+ * **No se deriva de «los laboratorios que tienen cursos suyos»**, que era la
+ * alternativa tentadora: eso sería un permiso que **crece solo** cada vez que
+ * el LXD crea un curso, sin que nadie lo conceda. Un permiso que se otorga a
+ * sí mismo como efecto secundario de una acción cotidiana es el peor tipo de
+ * permiso, porque nadie recuerda haberlo dado.
+ */
+export const laboratoryLxds = pgTable(
+  'laboratory_lxds',
+  {
+    laboratoryId: uuid()
+      .notNull()
+      .references(() => laboratories.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ...timestamps,
+  },
+  (t) => [
+    primaryKey({ columns: [t.laboratoryId, t.userId] }),
+    index('laboratory_lxds_user_id_idx').on(t.userId),
+  ],
+);
+
+/**
  * Fase de la Ruta de Impacto. Siempre 3 por laboratorio (`orderIndex` 1..3).
  * La fase 1 está siempre desbloqueada; cada siguiente exige la anterior
  * completa — eso se calcula, no se guarda (ver `src/db/completeness.sql`).

@@ -5,6 +5,7 @@
  * Mapa rápido de dónde vive cada cosa:
  * - `enums`        — todos los enums del dominio
  * - `catalogs`     — ODS y competencias (catálogos fijos, hoy constantes Dart)
+ * - `universities` — universidades (unidad de visibilidad del asesor)
  * - `users`        — usuarios, refresh tokens, bitácora de auditoría
  * - `orgs`         — proyectos, equipos e integrantes
  * - `labs`         — laboratorios, fases, objetivos y módulos de la Ruta
@@ -16,6 +17,7 @@
  */
 export * from './enums';
 export * from './catalogs';
+export * from './universities';
 export * from './users';
 export * from './orgs';
 export * from './labs';

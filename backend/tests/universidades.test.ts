@@ -253,7 +253,7 @@ describe('el reporte del relleno es accionable', () => {
     const bloques = readFileSync(REPORTE, 'utf8')
       .split(/\n(?=-- \d\.)/)
       .filter((b) => /\b(SELECT|WITH)\b/.test(b));
-    expect(bloques.length, 'el reporte perdió bloques').toBeGreaterThanOrEqual(6);
+    expect(bloques.length, 'el reporte perdió bloques').toBeGreaterThanOrEqual(7);
 
     const salidas: Record<string, unknown[]> = {};
     for (const bloque of bloques) {
@@ -298,5 +298,12 @@ describe('el reporte del relleno es accionable', () => {
 
     // 6 · texto contra id. Tiene que dar cero: es la condición de R3.
     expect(salidas['6'], 'texto e id no coinciden tras el relleno').toEqual([]);
+
+    // 7 · universidades activas sin asesor (INV-4). «Universidad de los
+    //     Andes» no tiene ninguno en este caso, así que tiene que salir —con
+    //     el conteo de estudiantes que quedarían sin que nadie los vea.
+    const sinAsesor = salidas['7'] as { name: string; estudiantes_sin_asesor: number }[];
+    expect(sinAsesor.map((f) => f.name)).toContain('Universidad de los Andes');
+    expect(Number(sinAsesor[0]!.estudiantes_sin_asesor)).toBeGreaterThan(0);
   });
 });

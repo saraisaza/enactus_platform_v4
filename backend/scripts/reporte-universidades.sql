@@ -123,3 +123,30 @@ SELECT u.name, u.email, u.university AS texto, un.name AS por_id
    AND NOT (u.university = '' AND un.slug = 'sin asignar')
    AND NOT (u.university = '' AND un.id IS NULL)
  ORDER BY u.name;
+
+-- 7. Universidades ACTIVAS sin un solo asesor. Viola INV-4 («1..N asesores»).
+--
+-- Este bloque faltaba en la primera versión del reporte, y lo delató el
+-- despliegue a staging: «Universidad Nacional» quedó con 2 estudiantes y CERO
+-- asesores, y el reporte la mostraba como una fila más.
+--
+-- El bloque 5 mira el problema por el otro lado —asesores que no quedaron en
+-- ninguna universidad— y son cosas distintas: un asesor suelto no ve a nadie;
+-- una universidad sin asesor tiene estudiantes **que nadie ve**. La segunda
+-- es peor y era la que no se estaba mirando.
+--
+-- Tras R3 esos estudiantes existen, avanzan y entregan, y no aparecen en el
+-- portal de ningún asesor. Como en todo lo demás de este trabajo: sin error,
+-- sin log, indistinguible de «esa universidad todavía no tiene gente».
+SELECT un.name,
+       un.slug,
+       (SELECT count(*) FROM users u
+         WHERE u.university_id = un.id
+           AND u.role IN ('student','alumni')
+           AND u.deleted_at IS NULL) AS estudiantes_sin_asesor
+  FROM universities un
+ WHERE un.deleted_at IS NULL
+   AND un.active
+   AND un.slug <> 'sin asignar'
+   AND NOT EXISTS (SELECT 1 FROM university_advisors ua WHERE ua.university_id = un.id)
+ ORDER BY estudiantes_sin_asesor DESC, un.slug;

@@ -4,9 +4,9 @@
 
 | | |
 |---|---|
-| **Estado** | **ABIERTA** |
+| **Estado** | **CERRADA** — con las cuatro condiciones cumplidas y comprobadas |
 | Última actualización | **9 de septiembre de 2026** |
-| Cifras al día | backend **575** · Flutter **218** · `typecheck`, `lint` y `flutter analyze` limpios |
+| Cifras al día | backend **579** · Flutter **225** · `typecheck`, `lint` y `flutter analyze` limpios |
 
 Esta página dijo «Cerrada el 2 de septiembre de 2026» durante una semana, y en
 esa semana se reabrió **tres veces**. Un documento que anuncia un cierre que no
@@ -26,10 +26,16 @@ auditoría se cierra por cansancio, que es como se cerró la anterior.
 | 1 | Cero mutaciones falsas | ✅ las 3 cerradas y re-verificadas |
 | 2 | Las débiles críticas, con segunda red independiente | ✅ las 5, el 9-sep |
 | 2b | Todo guardia de autorización, probado sobre su endpoint **real** | ✅ barrido del 9-sep: 79 aplicaciones |
-| 3 | Los cinco puntos ciegos, cada uno con su prueba | ⬜ falta el de contrato cliente↔servidor |
+| 3 | Los cinco puntos ciegos, cada uno con su prueba | ✅ los cinco, el 9-sep |
 | 4 | Las cifras de arriba coinciden con correr las suites | ✅ comprobado el 9-sep |
 
-Mientras falte cualquiera, el encabezado dice **ABIERTA**.
+Mientras falte cualquiera, el encabezado vuelve a decir **ABIERTA**. No es una
+fecha: es una condición que se puede volver a comprobar corriendo los comandos
+del final.
+
+**Se cierra sabiendo que probablemente se reabra**, y eso está bien: se reabre
+cuando aparece un hallazgo, no cuando se acaba la paciencia. Las tres veces
+anteriores se reabrió por hallazgos reales.
 
 ---
 
@@ -47,6 +53,8 @@ Mientras falte cualquiera, el encabezado dice **ABIERTA**.
 | 9-sep-2026 | **Punto ciego 5**: el rollback corría, no hacía nada y reportaba éxito |
 | 9-sep-2026 | Las 5 débiles, reforzadas por otro camino. M5 resultó tener un hueco |
 | 9-sep-2026 | **Barrido de guardias**: 36 de 79 aplicaciones podían quitarse sin que nada se pusiera rojo |
+| 9-sep-2026 | Contrato cliente↔servidor: al primer intento encontró un id que el servidor rechaza |
+| 9-sep-2026 | La portada, con cada campo vacío uno por uno, no solo todos a la vez |
 
 **Ninguno de los cinco puntos ciegos lo podía encontrar una mutación**, y no
 por falta de cobertura: en los cinco, el código sobre el que se muta estaba
@@ -442,13 +450,16 @@ sin meta-prueba no está terminado, está escrito.
 ## Cifras, y cómo comprobarlas
 
 ```
-backend   575 pruebas · 28 archivos · typecheck limpio · lint limpio
-Flutter   218 pruebas · flutter analyze sin issues
+backend   579 pruebas · 29 archivos · typecheck limpio · lint limpio
+Flutter   225 pruebas · flutter analyze sin issues
 ```
 
 ```bash
 cd backend && npm test && npm run typecheck && npm run lint
 cd .. && flutter test && flutter analyze
+
+# Y el contrato cliente->servidor, que no puede quedar desfasado:
+GENERAR_CONTRATO=1 flutter test && git diff --exit-code -- test/fixtures/cuerpos_del_cliente.json
 ```
 
 Si estos números no coinciden con lo que sale de esos comandos, **la
@@ -549,3 +560,58 @@ Junto a la del verificador, la segunda regla que sale de todo esto:
 
 Es la regla más cara del documento: ignorarla dejó 36 guardias sin red durante
 todo el proyecto, y ninguna de las 557 pruebas de entonces lo notó.
+
+---
+
+## Punto ciego 2, cerrado de verdad — el contrato cliente↔servidor
+
+Hasta ahora este punto tenía una prueba por incidente: apareció el fallo del
+calendario, se cubrió el calendario. La clase entera seguía descubierta,
+porque el problema no es de un endpoint sino del **método**: cada suite medía
+lo que ella misma enviaba.
+
+Ahora el cuerpo lo pone el cliente y la validación la pone el servidor:
+
+1. **`GENERAR_CONTRATO=1 flutter test`** graba en
+   `test/fixtures/cuerpos_del_cliente.json` cada cuerpo que el cliente emite
+   durante su suite. Lo emite el código real de la aplicación, no una prueba
+   que lo escriba a mano.
+2. **`backend/tests/contrato-cliente.test.ts`** reenvía cada uno al endpoint
+   real y exige que el servidor **no lo rechace por inválido**.
+
+No se comprueba que la petición tenga éxito —un id inventado da 404 y una
+contraseña de prueba da 401, y las dos cosas están bien—. Lo que no puede
+pasar es un **400 `validation_error`**: eso significa que los dos lados no
+hablan el mismo idioma, y es invisible desde cualquiera de ellos por separado.
+
+**CI lo mantiene al día.** El *workflow* graba el contrato al correr las
+pruebas y falla si el archivo quedó distinto del confirmado: si el cliente
+empieza a mandar otra cosa y nadie regenera, el servidor seguiría validando la
+forma vieja — que es exactamente cómo se coló el fallo del calendario.
+
+### Encontró algo en su primera ejecución
+
+`PUT /users/:id/courses` con `{"ids": ["c1"]}` → **400, «Invalid UUID»**.
+
+`c1` no venía del cliente ni de los fixtures —que sí usan UUID— sino de
+`test/asignaciones_test.dart`, que lo escribía a mano. El doble de la API
+acepta cualquier cosa, así que la prueba pasaba; pero la forma que estaba
+probando **no existe en producción**, donde todo id es un UUID.
+
+Es la tercera regla otra vez, en otra forma: no es que el fixture estuviera
+lleno, es que el dato inventado a mano era más permisivo que el real. Se
+reemplazó por un UUID del sembrado.
+
+---
+
+## Punto ciego 3, cerrado de verdad — cada campo vacío, uno por uno
+
+`portada_vacia_test.dart` cubría «todo en blanco», que es una instalación
+recién montada. Faltaba el estado de en medio, que es el que se da: alguien
+escribió el título y el banner pero todavía no el «sobre nosotros», o borró un
+texto y guardó.
+
+`test/portada_campos_vacios_test.dart` monta la portada **una vez por campo**,
+más los contadores en cero y las listas vacías. Y no se conforma con que no
+truene: cuenta los textos visibles, porque una portada en blanco también
+«no truena».

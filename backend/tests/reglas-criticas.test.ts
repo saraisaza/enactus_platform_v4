@@ -161,11 +161,7 @@ describe('M9 · nadie se sube el rol a sí mismo', () => {
     //    permisos se leen del registro vivo: un cambio que no toca la fila
     //    tampoco puede tocar esto.
     //
-    //    Se usa `POST /users`, que sí exige rol de administración. `GET /users`
-    //    NO sirve para esto: a un estudiante le responde 200 con lista vacía
-    //    —el alcance le devuelve `null`— así que un 200 ahí no significa que
-    //    haya ganado nada. Es buen diseño y una trampa para quien escriba la
-    //    prueba.
+    //    Se usa `POST /users`, que exige rol de administración.
     const crear = await app.request('/users', {
       ...json({ name: 'X', email: 'x@ejemplo.test', password: 'unaClaveLarga1', role: 'admin' }),
       headers: {
@@ -175,12 +171,12 @@ describe('M9 · nadie se sube el rol a sí mismo', () => {
     });
     expect(crear.status).toBe(403);
 
-    // Y sigue sin ver a nadie, que es lo que le toca a un estudiante.
+    // Y el listado de personas le sigue cerrado. Ojo: hasta el 9 de
+    // septiembre de 2026 esto respondía 200 con lista vacía, y un 200 ahí no
+    // significaba que hubiera ganado nada — la prueba no distinguía «no ve a
+    // nadie» de «no entra». Ahora sí: 403.
     const listar = await app.request('/users', { headers: auth(sesion.accessToken) });
-    expect(listar.status).toBe(200);
-    const cuerpo = (await listar.json()) as { items?: unknown[] } | unknown[];
-    const lista = Array.isArray(cuerpo) ? cuerpo : (cuerpo.items ?? []);
-    expect(lista.length).toBe(0);
+    expect(listar.status).toBe(403);
   });
 });
 

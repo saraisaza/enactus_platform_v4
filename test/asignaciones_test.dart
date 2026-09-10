@@ -18,6 +18,15 @@ import 'package:enactus_platform/views/admin/student_assignments_dialog.dart';
 
 import 'helpers/fake_api.dart';
 
+/// Los ids son UUID de verdad, tomados del sembrado.
+///
+/// Antes eran `'c1'`. El doble de la API acepta cualquier cosa, así que la
+/// prueba pasaba — pero el servidor rechaza eso con «Invalid UUID», y la
+/// forma que se estaba probando no existe en producción. Lo encontró
+/// `backend/tests/contrato-cliente.test.ts` al reenviar al endpoint real el
+/// cuerpo que esta prueba hacía emitir.
+const _idCurso = 'f5883732-7819-58a7-bc9a-e67556e5dc2d';
+
 const _idOl = 'aaaaaaaa-0000-4000-8000-000000000001';
 const _idEnactus = 'aaaaaaaa-0000-4000-8000-000000000002';
 
@@ -97,7 +106,7 @@ void main() {
       },
       '/courses': {
         'data': [
-          _curso('c1', 'Marketing Digital', openLearning: true),
+          _curso(_idCurso, 'Marketing Digital', openLearning: true),
           _curso('c2', 'Gestión Hídrica'),
         ],
         'total': 2,
@@ -186,16 +195,16 @@ void main() {
         'courseIds': const <String>[],
       },
       '/courses': {
-        'data': [_curso('c1', 'Marketing Digital', status: 'draft')],
+        'data': [_curso(_idCurso, 'Marketing Digital', status: 'draft')],
         'total': 1,
         'page': 1,
         'pageSize': 100,
       },
       '/users/$_idOl/courses': {
         'studentId': _idOl,
-        'courseIds': ['c1'],
+        'courseIds': [_idCurso],
         'notReady': [
-          {'id': 'c1', 'name': 'Marketing Digital'},
+          {'id': _idCurso, 'name': 'Marketing Digital'},
         ],
       },
     });

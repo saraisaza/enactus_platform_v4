@@ -77,17 +77,44 @@ describe('alcance por rol', () => {
     expect(page.data.map((u) => u.role)).toContain('donor');
   });
 
-  it('un ESTUDIANTE no ve a nadie: no tiene directorio de personas', async () => {
+  it('un ESTUDIANTE recibe 403: no tiene directorio de personas', async () => {
     // Su equipo llega dentro del proyecto, con el rol de cada integrante.
     // Antes podía enumerar a toda la plataforma con universidad y carrera.
-    const page = await list(T.student!);
-    expect(page.total).toBe(0);
-    expect(page.data).toEqual([]);
+    //
+    // Y antes de eso, esta prueba esperaba 200 con lista vacía. Se cambió a
+    // 403 el 9 de septiembre de 2026: una lista vacía y una denegación se ven
+    // IGUAL desde fuera, así que un bug de permisos se disfrazaba de «todavía
+    // no hay datos». Es el criterio que `isolation.test.ts` ya aplicaba a
+    // Enactus/Open Learning; ahora rige también acá.
+    const res = await req('/users?pageSize=100', T.student!);
+    expect(res.status).toBe(403);
+    const cuerpo = await body<{ error: { code: string; message: string } }>(res);
+    expect(cuerpo.error.code).toBe('forbidden');
+    // El mensaje tiene que decir DÓNDE está su equipo, no solo que no puede.
+    expect(cuerpo.error.message).toMatch(/proyecto/i);
   });
 
   it('un Open Learning tampoco', async () => {
-    const page = await list(T.openLearning!);
-    expect(page.total).toBe(0);
+    const res = await req('/users?pageSize=100', T.openLearning!);
+    expect(res.status).toBe(403);
+  });
+
+  it('un asesor SIN universidad recibe 409, no una lista vacía', async () => {
+    // No es lo mismo que no tener directorio: la capacidad la tiene, le falta
+    // un dato. Con lista vacía se quedaba mirando una pantalla en blanco sin
+    // saber que hay algo que pedirle a un administrador.
+    await sql`update users set university = '' where id = (
+                select id from users where role = 'advisor' limit 1)`;
+    try {
+      const res = await req('/users?pageSize=100', T.advisor!);
+      expect(res.status).toBe(409);
+      const cuerpo = await body<{ error: { message: string } }>(res);
+      expect(cuerpo.error.message).toMatch(/universidad/i);
+      expect(cuerpo.error.message).toMatch(/administrador/i);
+    } finally {
+      await sql`update users set university = 'Universidad de los Andes'
+                 where role = 'advisor' and university = ''`;
+    }
   });
 
   it('el asesor ve solo a los de SU universidad', async () => {
@@ -406,8 +433,15 @@ describe('filtros', () => {
 
   it('un filtro NO amplía el alcance', async () => {
     // La comprobación de fondo: pedir explícitamente a los donantes desde una
-    // cuenta que no los ve sigue devolviendo vacío.
-    const page = await list(T.student!, '&role=donor');
+    // cuenta que no los ve. Con el cambio a 403 ya ni siquiera llega al
+    // filtro — que es más fuerte todavía: el corte pasó de "ves cero" a "no
+    // entras".
+    const res = await req('/users?pageSize=100&role=donor', T.student!);
+    expect(res.status).toBe(403);
+
+    // Y con una cuenta que SÍ tiene directorio, el filtro sigue sin ampliarlo:
+    // un mentor pidiendo donantes no ve donantes.
+    const page = await list(T.mentor!, '&role=donor');
     expect(page.data).toEqual([]);
   });
 });

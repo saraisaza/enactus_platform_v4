@@ -42,10 +42,28 @@ const listQuery = paginationSchema.extend({
 });
 
 /**
- * A quién puede ver cada rol.
+ * Por qué esto no devuelve `null` a secas.
  *
- * Devuelve `null` cuando el rol no ve a nadie: eso responde una página vacía,
- * no un 403 — el listado existe para todos, su alcance simplemente está vacío.
+ * Antes lo hacía, y el handler respondía 200 con una página vacía. Eso mezcla
+ * dos situaciones que no se parecen en nada y que desde fuera se ven igual:
+ *
+ *   - **un estudiante**, que no tiene directorio de personas y nunca debería
+ *     llegar acá;
+ *   - **un asesor sin universidad asignada**, que sí tiene la capacidad pero
+ *     le falta un dato de configuración.
+ *
+ * Y las confunde además con una tercera: "hay directorio y de verdad está
+ * vacío". Tres cosas distintas, una sola respuesta. Es justo lo que
+ * `isolation.test.ts` prohíbe desde el principio para Enactus/Open Learning:
+ * *«la respuesta tiene que ser 403, no una lista vacía: una lista vacía haría
+ * ver un bug de permisos como si fuera "todavía no hay datos"»*.
+ *
+ * Ahora cada caso dice lo suyo: `sinDirectorio` → 403, `sinUniversidad` → 409
+ * con un mensaje que explica qué falta y a quién pedírselo. Una lista vacía
+ * queda reservada para cuando de verdad no hay nadie.
+ */
+/**
+ * A quién puede ver cada rol.
  *
  * Cada regla es la MISMA que ya usa el resto de la API para ese rol, para que
  * no haya dos definiciones de "mis estudiantes" que puedan discrepar.
@@ -58,7 +76,11 @@ function scopeFor(user: AuthUser) {
   if (user.role === 'advisor') {
     // Los de su universidad. Sin universidad no ve a nadie: si no, un asesor
     // recién creado vería a todas las personas sin universidad asignada.
-    if (!user.university) return null;
+    //
+    // No es lo mismo que "no tiene directorio": la capacidad la tiene, le
+    // falta el dato. Devolver una lista vacía dejaba al asesor mirando una
+    // pantalla en blanco sin saber que hay algo que pedirle a un admin.
+    if (!user.university) return SIN_UNIVERSIDAD;
     return and(alive, eq(users.university, user.university))!;
   }
 
@@ -116,7 +138,28 @@ function scopeFor(user: AuthUser) {
 
   // Estudiante y alumni: no tienen directorio de personas. Su equipo llega
   // dentro del proyecto, con el rol de cada integrante.
-  return null;
+  return SIN_DIRECTORIO;
+}
+
+/** Marcas para los dos casos que NO son un filtro. Ver `Alcance` arriba. */
+const SIN_DIRECTORIO = Symbol('sinDirectorio');
+const SIN_UNIVERSIDAD = Symbol('sinUniversidad');
+
+/** Traduce el alcance a la respuesta que corresponde, o devuelve el filtro. */
+function filtroOCorte(alcance: ReturnType<typeof scopeFor>) {
+  if (alcance === SIN_DIRECTORIO) {
+    throw forbidden(
+      'Su cuenta no tiene directorio de personas. Su equipo aparece dentro ' +
+        'de cada proyecto, con el rol de quienes lo integran.',
+    );
+  }
+  if (alcance === SIN_UNIVERSIDAD) {
+    throw conflict(
+      'Su cuenta de asesor no tiene universidad asignada, así que todavía no ' +
+        'hay estudiantes que mostrarle. Pídale a un administrador que se la ponga.',
+    );
+  }
+  return alcance;
 }
 
 /**
@@ -140,8 +183,7 @@ function canSeeContactDetails(viewer: AuthUser): boolean {
 userRoutes.get('/', async (c) => {
   const user = currentUser(c);
   const query = listQuery.parse(c.req.query());
-  const scope = scopeFor(user);
-  if (!scope) return c.json(paginated([], 0, query));
+  const scope = filtroOCorte(scopeFor(user));
 
   const filters = [scope];
   if (query.role) {
@@ -305,9 +347,20 @@ userRoutes.get('/:id', async (c) => {
   if (id === user.id) return c.json(publicUser(user));
 
   const scope = scopeFor(user);
-  // 404 y no 403: si la persona existe pero está fuera del alcance de quien
-  // pregunta, un 403 ya confirmaría que existe.
-  if (!scope) throw notFound('No encontramos esa persona.');
+
+  // Acá SÍ va 404, al revés que en el listado, y la diferencia es deliberada:
+  //
+  //   - `GET /users`     -> 403. Decir "usted no tiene directorio" no revela
+  //                        nada sobre nadie: es una propiedad de quien pregunta.
+  //   - `GET /users/:id` -> 404. Un 403 acá confirmaría que ESA persona existe,
+  //                        y quien pregunta puede ir probando ids.
+  //
+  // Es la misma razón por la que un id mal formado también da 404 (ver
+  // `middleware/error.ts`): desde fuera, "no existe" y "no es suyo" tienen que
+  // ser indistinguibles.
+  if (scope === SIN_DIRECTORIO || scope === SIN_UNIVERSIDAD) {
+    throw notFound('No encontramos esa persona.');
+  }
 
   const [found] = await c
     .get('db')

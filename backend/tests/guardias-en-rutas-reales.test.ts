@@ -75,7 +75,6 @@ const ESTUDIANTE_PUEDE = [
   /^GET \/(phases|ruta-modules|objectives|progress)/,
   // Ve las suyas: el alcance del handler ya lo acota a su propia persona.
   /^GET \/submissions/,
-  /^GET \/users$/,
   /^GET \/talent/,
   /^(POST|PATCH|PUT|DELETE) \/(progress|submissions|forum-posts|notifications)/,
   /^POST \/lessons\/[^/]+\/(quiz-attempt|survey|activity-submission)/,

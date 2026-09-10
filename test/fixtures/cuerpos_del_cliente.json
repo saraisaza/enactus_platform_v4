@@ -1,0 +1,24 @@
+{
+ "POST /auth/login": {
+  "email": "admin@enactus.co",
+  "password": "Admin123"
+ },
+ "POST /calendar-events": {
+  "title": "Encuentro de Ruta",
+  "description": "",
+  "startsAt": "2026-10-01T15:00:00.000Z",
+  "type": "ruta_impacto",
+  "meetLink": "",
+  "guests": "",
+  "courseId": null,
+  "laboratoryId": null
+ },
+ "POST /files/download-url": {
+  "key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"
+ },
+ "PUT /users/:id/courses": {
+  "ids": [
+   "f5883732-7819-58a7-bc9a-e67556e5dc2d"
+  ]
+ }
+}

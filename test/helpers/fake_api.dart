@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:enactus_platform/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,11 +69,11 @@ class FakeApi {
     final client = MockClient((request) async {
       final path = request.url.path;
       requested.add('${request.method} $path');
-      cuerpos.add(
-        request.body.isEmpty
-            ? const {}
-            : jsonDecode(request.body) as Map<String, dynamic>,
-      );
+      final cuerpo = request.body.isEmpty
+          ? const <String, dynamic>{}
+          : jsonDecode(request.body) as Map<String, dynamic>;
+      cuerpos.add(cuerpo);
+      _anotarEnElContrato(request.method, path, cuerpo);
       if (delay > Duration.zero) await Future<void>.delayed(delay);
 
       if (notFound.contains(path)) {
@@ -102,4 +103,67 @@ class FakeApi {
 /// simulados o lanza al primer acceso.
 void useFakeTokenStorage() {
   SharedPreferences.setMockInitialValues({});
+}
+
+
+// ---------------------------------------------------------------------------
+// Contrato cliente -> servidor
+// ---------------------------------------------------------------------------
+//
+// Con `GENERAR_CONTRATO=1`, cada petición con cuerpo que el cliente emite
+// durante la suite queda anotada en `test/fixtures/cuerpos_del_cliente.json`.
+// Ese archivo lo consume `backend/tests/contrato-cliente.test.ts`, que reenvía
+// cada cuerpo al endpoint REAL y comprueba que el servidor no lo rechace por
+// inválido.
+//
+// Existe por el fallo del calendario: las pruebas del servidor escribían el
+// cuerpo por su cuenta —solo el campo que ese tipo de evento usa— mientras el
+// cliente mandaba los dos, con `''` en el que no aplicaba. El servidor
+// respondía 400 y ninguna de las dos suites podía verlo, porque **cada una
+// medía lo que ella misma enviaba**. Con esto, el cuerpo lo pone el cliente y
+// la validación la pone el servidor: se acabó el circuito cerrado.
+//
+// Regenerar:  GENERAR_CONTRATO=1 flutter test
+
+final Map<String, Map<String, dynamic>> _contrato = {};
+bool _contratoRegistrado = false;
+
+void _anotarEnElContrato(String metodo, String path, Map<String, dynamic> cuerpo) {
+  if (Platform.environment['GENERAR_CONTRATO'] != '1') return;
+  if (cuerpo.isEmpty) return;
+
+  // Los ids concretos se normalizan: lo que se contrasta es la FORMA del
+  // cuerpo, no a qué fila apuntaba esa corrida.
+  final clave = '$metodo ${path.replaceAll(
+    RegExp(r'/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'),
+    '/:id',
+  )}';
+  // Se queda el cuerpo MÁS COMPLETO de cada endpoint: el que más campos trae
+  // es el que más superficie de validación ejercita.
+  final previo = _contrato[clave];
+  if (previo == null || cuerpo.length > previo.length) _contrato[clave] = cuerpo;
+
+  if (!_contratoRegistrado) {
+    _contratoRegistrado = true;
+    addTearDown(_volcarContrato);
+  }
+}
+
+void _volcarContrato() {
+  if (_contrato.isEmpty) return;
+  final archivo = File('test/fixtures/cuerpos_del_cliente.json');
+  final previo = archivo.existsSync()
+      ? (jsonDecode(archivo.readAsStringSync()) as Map).cast<String, dynamic>()
+      : <String, dynamic>{};
+  final union = <String, dynamic>{...previo};
+  _contrato.forEach((k, v) {
+    final anterior = union[k];
+    if (anterior is! Map || v.length > anterior.length) union[k] = v;
+  });
+  final ordenado = Map.fromEntries(
+    union.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+  );
+  archivo.writeAsStringSync(
+    '${const JsonEncoder.withIndent(' ').convert(ordenado)}\n',
+  );
 }

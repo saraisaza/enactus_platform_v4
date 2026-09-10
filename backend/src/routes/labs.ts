@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { laboratories } from '../db/schema';
-import { notFound } from '../lib/errors';
+import { forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
 import {
   currentUser,
@@ -86,8 +86,24 @@ function scopeFor(user: AuthUser) {
     )!;
   }
   // Donante: su portal no tiene laboratorios.
-  return null;
+  return SIN_LABORATORIOS;
 }
+
+/**
+ * Marca del único rol que no tiene laboratorios en absoluto.
+ *
+ * Antes esto era `null` y el listado respondía 200 con una página vacía,
+ * mientras el detalle del mismo alcance respondía 404. El mismo rol, la misma
+ * ausencia de permiso, dos respuestas distintas según si pedía lista o ficha:
+ * cualquier prueba futura iba a esperar una u otra y acertar por casualidad.
+ *
+ * Ahora el listado dice 403. El detalle **sigue en 404**, y eso no es
+ * incoherencia sino la misma regla que en `users.ts`: decirle a un donante
+ * «usted no tiene laboratorios» no revela nada —es una propiedad suya—,
+ * mientras que un 403 sobre un id concreto sí confirmaría que ese laboratorio
+ * existe.
+ */
+const SIN_LABORATORIOS = Symbol('sinLaboratorios');
 
 labRoutes.get('/', async (c) => {
   const user = currentUser(c);
@@ -120,7 +136,12 @@ labRoutes.get('/', async (c) => {
   }
 
   const scope = scopeFor(user);
-  if (!scope) return c.json(paginated([], 0, query));
+  if (scope === SIN_LABORATORIOS) {
+    throw forbidden(
+      'Su portal no incluye laboratorios. El impacto que apoya aparece en ' +
+        'Evidencias y en el tablero.',
+    );
+  }
 
   const db = c.get('db');
   const [rows, [total]] = await Promise.all([
@@ -140,7 +161,8 @@ labRoutes.get('/', async (c) => {
 labRoutes.get('/:id', async (c) => {
   const user = currentUser(c);
   const scope = scopeFor(user);
-  if (!scope) throw notFound('No se encontró el laboratorio.');
+  // 404 y no 403, a propósito: ver la nota en `SIN_LABORATORIOS`.
+  if (scope === SIN_LABORATORIOS) throw notFound('No se encontró el laboratorio.');
 
   const db = c.get('db');
   const [lab] = await db

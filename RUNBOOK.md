@@ -637,6 +637,47 @@ se pueda borrar importa más que antes, no menos.
 
 ---
 
+## Denegar es 403, no una lista vacía
+
+**Cambio de contrato del 9 de septiembre de 2026.** Antes, un rol sin alcance
+recibía `200` con una página vacía. Eso mezcla tres situaciones que desde fuera
+se ven idénticas:
+
+- no tiene permiso;
+- tiene permiso pero le falta un dato de configuración;
+- tiene permiso, todo bien, y de verdad no hay nada.
+
+Con una sola respuesta para las tres, **un fallo de permisos se disfraza de
+«todavía no hay datos»** y nadie lo reporta. El criterio ya estaba escrito en
+`isolation.test.ts` para Enactus/Open Learning; ahora rige en toda la API.
+
+| Endpoint | Quién | Antes | Ahora |
+|---|---|---|---|
+| `GET /users` | estudiante, alumni | 200 + vacía | **403** — «su equipo aparece dentro de cada proyecto» |
+| `GET /users` | asesor sin universidad | 200 + vacía | **409** — «pídale a un administrador que se la ponga» |
+| `GET /laboratories` | donante | 200 + vacía | **403** — «su portal no incluye laboratorios» |
+
+### Los detalles siguen dando 404, y es a propósito
+
+`GET /users/:id` y `GET /laboratories/:id` responden **404** cuando la fila
+está fuera del alcance de quien pregunta. No es incoherencia con lo de arriba:
+
+- en el **listado**, decir «usted no tiene directorio» es una propiedad de
+  quien pregunta y no revela nada de nadie;
+- en el **detalle**, un `403` sobre un id concreto **confirmaría que esa fila
+  existe**, y quien pregunta puede ir probando ids.
+
+Es la misma razón por la que un id mal formado también da 404 (ver
+`middleware/error.ts`): desde fuera, «no existe» y «no es suyo» tienen que ser
+indistinguibles.
+
+### Si una pantalla se queda vacía
+
+Antes había que adivinar. Ahora el código lo dice: 403 es permiso, 409 es
+configuración, y una lista vacía es una lista vacía de verdad.
+
+---
+
 ## Respaldo y restauración
 
 ```bash

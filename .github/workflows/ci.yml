@@ -77,7 +77,26 @@ jobs:
 
       - run: flutter pub get
       - run: flutter analyze
-      - run: flutter test
+
+      # Se corre con GENERAR_CONTRATO para que, de paso, quede grabado cada
+      # cuerpo que el cliente emite. Ese archivo lo consume la prueba de
+      # contrato del backend.
+      - name: Pruebas, grabando el contrato cliente -> servidor
+        run: GENERAR_CONTRATO=1 flutter test
+
+      # Si el cliente empezó a mandar algo distinto y nadie regeneró el
+      # contrato, el backend seguiría validando la forma VIEJA — que es
+      # exactamente cómo se coló el fallo del calendario. Acá se ve.
+      - name: El contrato del cliente está al día
+        run: |
+          if ! git diff --exit-code -- test/fixtures/cuerpos_del_cliente.json; then
+            echo ""
+            echo "El cliente manda cuerpos distintos de los que dice el contrato."
+            echo "Regenere y confirme el cambio:"
+            echo "    GENERAR_CONTRATO=1 flutter test"
+            echo "    git add test/fixtures/cuerpos_del_cliente.json"
+            exit 1
+          fi
 
       # Compilar acá no es redundante con el despliegue: un fallo de
       # compilación en una rama de trabajo se ve ahora y no cuando alguien

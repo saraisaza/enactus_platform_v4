@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { auditLog, refreshTokens, users } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
+import { resolverUniversidad } from '../services/universidad';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
@@ -389,7 +390,19 @@ const createBody = z.object({
   phone: z.string().trim().default(''),
   cedula: z.string().trim().default(''),
   city: z.string().trim().default(''),
+  /**
+   * LEGADO. Se sigue aceptando para no romper a ningún cliente que todavía
+   * mande texto, pero **`universityId` manda**: si vienen los dos, el texto se
+   * ignora y se usa el nombre del catálogo.
+   */
   university: z.string().trim().default(''),
+  /**
+   * La universidad de verdad. El servidor escribe además la columna de texto
+   * con el nombre del catálogo (ver `services/universidad.ts`): hasta R3 la
+   * visibilidad del asesor todavía compara texto, así que poner solo el id
+   * dejaría al estudiante invisible.
+   */
+  universityId: z.uuid().nullable().optional(),
   career: z.string().trim().default(''),
   companyName: z.string().trim().default(''),
   impactCode: z.string().trim().nullable().optional(),
@@ -468,6 +481,13 @@ userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
     .insert(users)
     .values({
       ...rest,
+      // Escritura doble mientras `university_id` y el texto convivan (R2). Si
+      // vino `universityId`, el texto sale del catálogo y NO de lo que mandó
+      // el cliente: las dos columnas tienen que decir lo mismo, y la del
+      // catálogo es la buena.
+      ...(body.universityId !== undefined
+        ? await resolverUniversidad(db, body.universityId)
+        : {}),
       studentType: body.studentType ?? null,
       passwordHash: await hashPassword(password),
       // `canGrade*` NO se acepta en el alta: se cambia por su propio endpoint,
@@ -530,6 +550,11 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     .update(users)
     .set({
       ...campos,
+      // Ver el alta. `undefined` = no lo mandaron, no se toca; `null` = se lo
+      // quitan, y entonces se limpian LAS DOS columnas.
+      ...(body.universityId !== undefined
+        ? await resolverUniversidad(db, body.universityId)
+        : {}),
       studentType,
       ...(password ? { passwordHash: await hashPassword(password) } : {}),
       updatedAt: new Date(),

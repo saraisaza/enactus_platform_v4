@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../widgets/university_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
@@ -399,7 +401,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   late final TextEditingController _phone;
   late final TextEditingController _cedula;
   late final TextEditingController _city;
-  late final TextEditingController _university;
+  /// El id de la universidad. Ya NO es un campo de texto: ver
+  /// `UniversityPicker` y por qué no se puede escribir a mano.
+  String? _universityId;
   late final TextEditingController _career;
   late final TextEditingController _companyName;
   late final TextEditingController _impactCode;
@@ -438,7 +442,6 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     _phone = TextEditingController(text: u?.phone ?? '');
     _cedula = TextEditingController(text: u?.cedula ?? '');
     _city = TextEditingController(text: u?.city ?? '');
-    _university = TextEditingController(text: u?.university ?? '');
     _career = TextEditingController(text: u?.career ?? '');
     _companyName = TextEditingController(text: u?.companyName ?? '');
     _impactCode = TextEditingController(text: u?.impactCode ?? '');
@@ -449,6 +452,10 @@ class _UserFormDialogState extends State<_UserFormDialog> {
 
     _role = u?.role ?? widget.creatableRoles.first;
     _studentType = u?.studentType ?? StudentType.enactus;
+    // Al editar se parte de lo que ya tiene. Sin esto, abrir la ficha de
+    // alguien y guardar sin tocar nada le BORRARÍA la universidad — el peor
+    // tipo de pérdida de datos, porque no se hizo ningún cambio.
+    _universityId = u?.universityId;
     // La ciudad del estudiante sale de un catálogo cerrado: el mapa necesita
     // coordenadas reales. Un valor viejo que no esté cae a "sin elegir" en vez
     // de reventar.
@@ -468,7 +475,6 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       _phone,
       _cedula,
       _city,
-      _university,
       _career,
       _companyName,
       _impactCode,
@@ -510,7 +516,10 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       'phone': _phone.text.trim(),
       'cedula': _cedula.text.trim(),
       'city': esEstudiante ? (_studentCity ?? '') : _city.text.trim(),
-      'university': _university.text.trim(),
+      // Se manda el id; el servidor escribe además el texto con el nombre
+      // del catálogo (escritura doble, R2). Mandar texto desde acá volvería a
+      // abrir la puerta que este cambio cierra.
+      'universityId': _universityId,
       'career': _career.text.trim(),
       'companyName': _role == Roles.company ? _companyName.text.trim() : '',
       'impactCode': _role == Roles.donor ? _impactCode.text.trim() : null,
@@ -695,7 +704,14 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         if (_role == Roles.mentor) ..._camposMentor(data),
         if (_role == Roles.advisor) ...[
           const SizedBox(height: 12),
-          _campo(_university, 'Universidad'),
+          UniversityPicker(
+            value: _universityId,
+            onChanged: (v) => setState(() => _universityId = v),
+            // Un asesor sin universidad no ve a NADIE, así que la ausencia no
+            // es un estado neutro: se avisa acá y no al guardar.
+            allowEmpty: true,
+            emptyLabel: 'Sin universidad — no verá estudiantes',
+          ),
         ],
         if (_role == Roles.company) ...[
           const SizedBox(height: 12),
@@ -741,7 +757,16 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         const SizedBox(height: 12),
         _campo(_cedula, 'Cédula'),
         const SizedBox(height: 12),
-        _campo(_university, 'Universidad'),
+        UniversityPicker(
+          value: _universityId,
+          onChanged: (v) => setState(() => _universityId = v),
+          // Un estudiante Enactus DEBE tener universidad (INV-2); un Open
+          // Learning no lleva, y eso es correcto, no un campo sin llenar.
+          allowEmpty: _studentType != 'enactus',
+          emptyLabel: _studentType == 'enactus'
+              ? 'Elija una universidad'
+              : 'Sin universidad (Open Learning)',
+        ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: _studentCity,

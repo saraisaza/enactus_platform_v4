@@ -13,6 +13,7 @@ import {
   requireRole,
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
+import { resolverUniversidad } from '../services/universidad';
 
 /**
  * Proyectos y equipos. Ambos son territorio Enactus: un estudiante de Open
@@ -36,6 +37,15 @@ const projectBody = z.object({
   impactIndicators: z.string().trim().default(''),
   expoEnabled: z.boolean().default(false),
   ods: z.array(z.string().trim()).default([]),
+  /**
+   * La universidad del proyecto (INV-7).
+   *
+   * Hasta ahora vivía en `groups.university` —del lado del equipo, no del
+   * proyecto— que es al revés de como se consulta: «los proyectos de mi
+   * universidad» tenía que pasar por el equipo. Anulable mientras se
+   * reconcilian los datos viejos.
+   */
+  universityId: z.uuid().nullable().optional(),
 });
 
 const groupBody = z.object({
@@ -188,6 +198,14 @@ projectRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {
   const db = c.get('db');
   const { ods, ...fields } = body;
 
+  // La clave ajena garantiza que la universidad EXISTA, no que admita
+  // asignaciones nuevas. «Sin asignar» y las dadas de baja existen y son
+  // referencias válidas: sin esta comprobación se podría crear un proyecto en
+  // una de ellas desde un formulario.
+  if (fields.universityId !== undefined) {
+    await resolverUniversidad(db, fields.universityId ?? null);
+  }
+
   const [created] = await db.insert(projects).values(fields).returning();
   await replaceOds(db, created!.id, ods);
   return c.json({ ...created, ods }, 201);
@@ -203,6 +221,14 @@ projectRoutes.patch('/:id', async (c) => {
   const body = projectBody.partial().parse(await c.req.json());
   const db = c.get('db');
   const { ods, ...fields } = body;
+
+  // La clave ajena garantiza que la universidad EXISTA, no que admita
+  // asignaciones nuevas. «Sin asignar» y las dadas de baja existen y son
+  // referencias válidas: sin esta comprobación se podría crear un proyecto en
+  // una de ellas desde un formulario.
+  if (fields.universityId !== undefined) {
+    await resolverUniversidad(db, fields.universityId ?? null);
+  }
 
   const [updated] = await db
     .update(projects)

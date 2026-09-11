@@ -49,7 +49,13 @@ class AppUser {
   final String phone;
   final String cedula;
   final String city;
+  /// LEGADO: el nombre en texto. Sigue llegando hasta R4 y sirve para
+  /// mostrar; para DECIDIR o para guardar se usa [universityId].
   final String university;
+
+  /// La universidad como referencia. `null` en Open Learning y en los roles
+  /// que no llevan universidad, que es su estado correcto y no un hueco.
+  final String? universityId;
   final String career;
 
   /// Solo rol `company`.
@@ -106,6 +112,7 @@ class AppUser {
     this.cedula = '',
     this.city = '',
     this.university = '',
+    this.universityId,
     this.career = '',
     this.companyName = '',
     this.impactCode,
@@ -138,6 +145,7 @@ class AppUser {
         cedula: (j['cedula'] as String?) ?? '',
         city: (j['city'] as String?) ?? '',
         university: (j['university'] as String?) ?? '',
+        universityId: j['universityId'] as String?,
         career: (j['career'] as String?) ?? '',
         companyName: (j['companyName'] as String?) ?? '',
         impactCode: j['impactCode'] as String?,
@@ -292,6 +300,13 @@ class Project {
   final String impactIndicators;
   final bool expoEnabled;
 
+  /// La universidad del proyecto (INV-7): sus integrantes son de ella.
+  ///
+  /// Antes esto vivía en el EQUIPO (`Group.university`), que es al revés de
+  /// como se consulta — «los proyectos de mi universidad» tenía que pasar por
+  /// el equipo. Anulable mientras se reconcilian los datos viejos.
+  final String? universityId;
+
   /// Códigos ODS (`ods_6`). Solo con `?include=ods` o en el detalle.
   final List<String> ods;
 
@@ -325,6 +340,7 @@ class Project {
     this.stage = 'ideation',
     this.impactIndicators = '',
     this.expoEnabled = false,
+    this.universityId,
     this.ods = const [],
     this.team = const [],
     this.teams = const [],
@@ -345,6 +361,7 @@ class Project {
         stage: (j['stage'] as String?) ?? 'ideation',
         impactIndicators: (j['impactIndicators'] as String?) ?? '',
         expoEnabled: (j['expoEnabled'] as bool?) ?? false,
+        universityId: j['universityId'] as String?,
         ods: List<String>.from(j['ods'] as List? ?? const []),
         team: (j['team'] as List? ?? const [])
             .map((e) =>
@@ -1041,6 +1058,48 @@ class Catalogs {
     final goal = ods.where((o) => o.code == code).firstOrNull;
     return goal == null ? code : 'ODS ${goal.number}: ${goal.title}';
   }
+}
+
+/// Una universidad de la red.
+///
+/// Existe como entidad con id porque hasta ahora la universidad era texto
+/// libre, y de comparar esas cadenas dependía qué estudiantes veía cada
+/// asesor: un espacio o una tilde lo dejaban sin ver a su gente, sin error y
+/// sin log. Ningún formulario vuelve a tener un campo de texto para esto.
+class University {
+  final String id;
+  final String name;
+
+  /// Para chips y tablas, donde el nombre oficial no cabe. Puede venir vacío.
+  final String shortName;
+  final String city;
+  final String country;
+
+  /// `false` = no admite asignaciones nuevas. El servidor las rechaza, así que
+  /// el cliente no las ofrece: por defecto `GET /universities` ni siquiera las
+  /// manda.
+  final bool active;
+
+  const University({
+    required this.id,
+    required this.name,
+    this.shortName = '',
+    this.city = '',
+    this.country = 'Colombia',
+    this.active = true,
+  });
+
+  /// Lo que se muestra cuando hay poco sitio.
+  String get label => shortName.isNotEmpty ? shortName : name;
+
+  factory University.fromJson(Map<String, dynamic> j) => University(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        shortName: (j['shortName'] as String?) ?? '',
+        city: (j['city'] as String?) ?? '',
+        country: (j['country'] as String?) ?? 'Colombia',
+        active: (j['active'] as bool?) ?? true,
+      );
 }
 
 class Competency {

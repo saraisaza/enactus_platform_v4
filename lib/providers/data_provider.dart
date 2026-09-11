@@ -101,6 +101,7 @@ class DataProvider extends ChangeNotifier {
     _evidences = const AsyncValue.idle();
     _groups = const AsyncValue.idle();
     _catalogs = const AsyncValue.idle();
+    _universities = const AsyncValue.idle();
     _talent = const AsyncValue.idle();
     _impactMetrics = const AsyncValue.idle();
     // `_siteContent` NO se limpia: es público y no depende de quién mire.
@@ -300,6 +301,35 @@ class DataProvider extends ChangeNotifier {
       return Catalogs.fromJson(Map<String, dynamic>.from(json as Map));
     });
     return _catalogs;
+  }
+
+  AsyncValue<List<University>> _universities = const AsyncValue.idle();
+
+  /// El catálogo de universidades, para los desplegables.
+  ///
+  /// Se pide una vez por sesión, como los otros catálogos. Solo trae las
+  /// activas: una inactiva —«Sin asignar» lo es— no debe aparecer como opción,
+  /// porque alguien la elegiría por estar ahí y el servidor la rechazaría de
+  /// todas formas.
+  AsyncValue<List<University>> get universities {
+    _lazy(_universities, (v) => _universities = v, () async {
+      final json = await api.get('/universities');
+      final mapa = Map<String, dynamic>.from(json as Map);
+      return (mapa['data'] as List? ?? const [])
+          .map((e) => University.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    });
+    return _universities;
+  }
+
+  /// La universidad por su id, o `null` si no está en el catálogo cargado.
+  ///
+  /// Devuelve `null` en vez de inventar un nombre: una universidad que no está
+  /// puede ser una inactiva, y mostrarla como si fuera normal es lo que este
+  /// trabajo viene a evitar.
+  University? universityById(String? id) {
+    if (id == null || id.isEmpty) return null;
+    return _universities.valueOrNull?.where((u) => u.id == id).firstOrNull;
   }
 
   /// Reemplaza la categorización completa: etiquetas, objetivos, competencias,

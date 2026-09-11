@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../widgets/university_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/models.dart';
@@ -192,6 +194,10 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
   late bool _expoEnabled;
   late Set<String> _ods;
 
+  /// La universidad del proyecto. Sus integrantes tienen que ser de ella
+  /// (INV-7), así que elegirla es lo primero: filtra todo lo demás.
+  String? _universityId;
+
   bool _saving = false;
   ApiException? _error;
 
@@ -210,6 +216,9 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
     _stage = p?.stage ?? ProjectStage.all.first;
     _expoEnabled = p?.expoEnabled ?? false;
     _ods = {...(p?.ods ?? const <String>[])};
+    // Se parte de lo que ya tiene: abrir y guardar sin tocar nada no puede
+    // borrarle la universidad al proyecto.
+    _universityId = p?.universityId;
   }
 
   @override
@@ -250,6 +259,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
       'impactIndicators': _indicators.text.trim(),
       'expoEnabled': _expoEnabled,
       'ods': _ods.toList(),
+      'universityId': _universityId,
     };
 
     try {
@@ -288,6 +298,19 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             const SizedBox(height: 12),
           ],
           _campo(_name, 'Nombre'),
+          const SizedBox(height: 12),
+          UniversityPicker(
+            value: _universityId,
+            onChanged:
+                _saving ? (_) {} : (v) => setState(() => _universityId = v),
+            enabled: !_saving,
+            // Un proyecto sin universidad es un estado que queda de los datos
+            // viejos, no algo que se deba poder elegir a propósito. Se permite
+            // para no bloquear la edición de los que ya están así, y se dice.
+            allowEmpty: true,
+            emptyLabel: 'Sin universidad (pendiente de reconciliar)',
+            helperText: 'Sus integrantes tienen que ser de esta universidad.',
+          ),
           const SizedBox(height: 12),
           _campo(_description, 'Descripción', maxLines: 2),
           const SizedBox(height: 12),
@@ -533,7 +556,6 @@ class _GroupFormDialog extends StatefulWidget {
 
 class _GroupFormDialogState extends State<_GroupFormDialog> {
   late final TextEditingController _name;
-  late final TextEditingController _university;
   String? _projectId;
   String? _advisorId;
 
@@ -546,8 +568,6 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
   void initState() {
     super.initState();
     _name = TextEditingController(text: widget.original?.name ?? '');
-    _university =
-        TextEditingController(text: widget.original?.university ?? '');
     _projectId = widget.original?.projectId;
     _advisorId = widget.original?.advisorId;
   }
@@ -555,7 +575,6 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
   @override
   void dispose() {
     _name.dispose();
-    _university.dispose();
     super.dispose();
   }
 
@@ -573,7 +592,6 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
     final campos = {
       'name': _name.text.trim(),
       'projectId': _projectId,
-      'university': _university.text.trim(),
       'advisorId': _advisorId,
     };
 
@@ -639,11 +657,38 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
             ),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _university,
-            enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Universidad'),
-          ),
+          // La universidad del equipo NO se escribe: **se deriva del proyecto**.
+          //
+          // Tenerla de los dos lados era una de las dos fuentes de verdad que
+          // podían contradecirse. Ahora hay una sola —`Project.universityId`—
+          // y acá se muestra para que quien edita sepa en qué universidad
+          // queda el equipo, sin poder desalinearla.
+          Builder(builder: (context) {
+            final data = context.watch<DataProvider>();
+            final proyecto = _projectId == null
+                ? null
+                : data.projects.valueOrNull
+                    ?.where((p) => p.id == _projectId)
+                    .firstOrNull;
+            final uni = data.universityById(proyecto?.universityId);
+            return InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'Universidad',
+                helperText: 'Sale del proyecto. Para cambiarla, edite el proyecto.',
+              ),
+              child: Text(
+                uni?.name ??
+                    (_projectId == null
+                        ? 'Elija un proyecto'
+                        : 'El proyecto todavía no tiene universidad'),
+                style: TextStyle(
+                  color: uni == null
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
+                ),
+              ),
+            );
+          }),
           const SizedBox(height: 12),
           data.users(role: Roles.advisor).when(
                 loading: () => const CardListSkeleton(count: 1, height: 56),

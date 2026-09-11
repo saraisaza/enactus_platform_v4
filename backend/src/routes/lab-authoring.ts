@@ -53,6 +53,11 @@ const labBody = z.object({
 
 const labUpdate = labBody.partial();
 
+const phaseCreate = z.object({
+  title: z.string().trim().min(1, 'La fase necesita un título.'),
+  description: z.string().trim().default(''),
+});
+
 const phaseUpdate = z.object({
   title: z.string().trim().optional(),
   description: z.string().trim().optional(),
@@ -201,6 +206,65 @@ labAuthoringRoutes.delete('/:id', async (c) => {
  * Reemplazo y no alta/baja de a uno: la pantalla edita la lista completa, y
  * dos llamadas (quitar a uno, agregar a otro) pueden quedar a la mitad.
  */
+/**
+ * Agregar una fase a la Ruta de un laboratorio.
+ *
+ * No existía. Los laboratorios nacían con **tres** fases y no había forma de
+ * agregar una cuarta: el comentario de `phases` decía «siempre 3 por
+ * laboratorio» y se había tomado como un hecho del dominio.
+ *
+ * No lo era. La metodología real de Enactus tiene **cinco** —ACTIVAR,
+ * DESCUBRIR, CONSTRUIR, VALIDAR, MOVILIZAR— así que el sistema estaba
+ * modelando tres porque nadie lo había contradicho, no porque fueran tres.
+ *
+ * El esquema aguantaba desde el principio: la única regla es `order_index > 0`
+ * y que no se repita dentro del laboratorio. Las vistas de completitud cuentan
+ * las fases que haya (`count(ph.id)`) y encadenan el desbloqueo por
+ * `order_index - 1`; ninguna supone tres.
+ *
+ * **Lo que sí cambia al agregar una fase**: `ruta_completion` exige TODAS las
+ * fases completas, así que el certificado pasa a pedir una más. Con progreso
+ * en curso eso baja el avance de quien ya iba adelantado — no rompe nada, pero
+ * se nota. Por eso el endpoint devuelve cuántas fases quedaron.
+ */
+labAuthoringRoutes.post('/:id/phases', async (c) => {
+  const body = phaseCreate.parse(await c.req.json());
+  const db = c.get('db');
+  const labId = c.req.param('id');
+
+  const [lab] = await db
+    .select({ id: laboratories.id })
+    .from(laboratories)
+    .where(and(eq(laboratories.id, labId), isNull(laboratories.deletedAt)))
+    .limit(1);
+  if (!lab) throw notFound('No se encontró el laboratorio.');
+
+  // El orden se calcula, no se acepta del cliente: hay un `unique(lab, order)`
+  // y dejar que lo mande quien llama convierte una carrera entre dos
+  // administradores en un 500 en vez de en dos fases seguidas.
+  const [{ next } = { next: 1 }] = await db.execute<{ next: number }>(sql`
+    select coalesce(max(order_index), 0) + 1 as next
+      from phases where laboratory_id = ${lab.id}
+  `);
+
+  const [created] = await db
+    .insert(phases)
+    .values({
+      laboratoryId: lab.id,
+      orderIndex: next,
+      title: body.title,
+      description: body.description,
+    })
+    .returning();
+
+  await bumpContentVersion(db, lab.id);
+
+  const [{ total } = { total: next }] = await db.execute<{ total: number }>(sql`
+    select count(*)::int as total from phases where laboratory_id = ${lab.id}
+  `);
+  return c.json({ ...created, phasesTotal: total }, 201);
+});
+
 labAuthoringRoutes.put('/:id/mentors', async (c) => {
   const { ids } = idsBody.parse(await c.req.json());
   const db = c.get('db');

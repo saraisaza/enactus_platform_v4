@@ -1348,6 +1348,56 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { description: Tiene estudiantes o certificados }
 
+  /laboratories/{id}/phases:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [laboratories]
+      summary: Agregar una fase a la Ruta
+      description: |
+        No existía: los laboratorios nacían con **tres** fases y no había forma
+        de agregar una cuarta. El comentario del esquema decía «siempre 3 por
+        laboratorio» y se había tomado como un hecho del dominio.
+
+        No lo era. La metodología real de Enactus tiene **cinco** —ACTIVAR,
+        DESCUBRIR, CONSTRUIR, VALIDAR, MOVILIZAR— así que el sistema modelaba
+        tres porque nadie lo había contradicho.
+
+        El `orderIndex` lo calcula el servidor (`max + 1`): aceptarlo del
+        cliente convierte una carrera entre dos administradores en un 500, por
+        el `unique(laboratory_id, order_index)`.
+
+        **Ojo con el efecto en los certificados**: `ruta_completion` exige
+        TODAS las fases completas, así que agregar una sube el listón. Con
+        progreso en curso, el avance de quien ya iba adelantado baja. Por eso
+        la respuesta trae `phasesTotal`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, minLength: 1 }
+                description: { type: string }
+      responses:
+        '201':
+          description: La fase creada, con el total de fases del laboratorio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  laboratoryId: { type: string, format: uuid }
+                  orderIndex: { type: integer }
+                  title: { type: string }
+                  description: { type: string }
+                  phasesTotal: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /laboratories/{id}/mentors:
     parameters: [{ $ref: '#/components/parameters/id' }]
     put:

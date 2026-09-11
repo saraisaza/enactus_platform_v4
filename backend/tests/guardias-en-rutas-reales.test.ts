@@ -60,7 +60,14 @@ const PUBLICAS = new Set([
  * crece sin que nadie lo discuta, el alcance creció sin que nadie lo discuta.
  */
 const ESTUDIANTE_PUEDE = [
-  /^GET \/(health|site-content|catalogs)/,
+  // `universities` va con los otros catálogos: es la lista de universidades
+  // de la red, no un dato de nadie. Un estudiante la necesita en cuanto haya
+  // un formulario suyo que la pregunte, y esconderla no protegería nada — los
+  // nombres de las universidades están en la portada.
+  //
+  // Que esta prueba obligara a escribir esta línea es el punto: el endpoint
+  // nuevo no entró por defecto, hubo que decidirlo.
+  /^GET \/(health|site-content|catalogs|universities)/,
   /^(GET|PATCH) \/auth\/me$/,
   /^POST \/auth\/(login|refresh|logout)$/,
   /^GET \/(courses|laboratories|projects|groups|certificates|evidences)/,

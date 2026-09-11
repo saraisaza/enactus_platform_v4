@@ -619,6 +619,51 @@ paths:
       responses:
         '200': { description: Archivado }
 
+  /universities:
+    get:
+      tags: [users]
+      summary: Catálogo de universidades de la red
+      description: |
+        La lista que alimenta TODOS los desplegables de universidad. Existe
+        para que ningún formulario vuelva a tener un campo de texto libre: ese
+        campo es el origen del defecto por el que un asesor dejaba de ver a sus
+        estudiantes cuando alguien escribía «U. de los Andes» en vez de
+        «Universidad de los Andes» — sin error y sin log.
+
+        Por defecto **no** devuelve las inactivas. Importa: «Sin asignar» es
+        una de ellas, y si apareciera en un desplegable alguien la elegiría
+        —está ahí, parece una opción— y se estaría metiendo a mano el estado
+        que el reporte de integridad existe para vaciar.
+      parameters:
+        - in: query
+          name: incluirInactivas
+          schema: { type: string, enum: ['1'] }
+          required: false
+          description: |
+            `1` para incluir las inactivas. Solo para pantallas de
+            administración, donde hace falta verlas para reactivarlas o para
+            reasignar a quien quedó en «Sin asignar».
+      responses:
+        '200':
+          description: Las universidades, por nombre.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        name: { type: string }
+                        shortName: { type: string }
+                        city: { type: string }
+                        country: { type: string }
+                        active: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /catalogs:
     get:
       tags: [courses]

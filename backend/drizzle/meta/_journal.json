@@ -43,6 +43,13 @@
       "when": 1789057095005,
       "tag": "0005_universidades",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789057095006,
+      "tag": "0006_catalogo_universidades",
+      "breakpoints": true
     }
   ]
 }

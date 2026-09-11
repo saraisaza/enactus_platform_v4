@@ -20,6 +20,7 @@ import { makeTestClient, resetTestDatabase } from './helpers/db';
 
 const MIGRACION = resolve(__dirname, '../drizzle/0005_universidades.sql');
 const REPORTE = resolve(__dirname, '../scripts/reporte-universidades.sql');
+const CATALOGO = resolve(__dirname, '../drizzle/0006_catalogo_universidades.sql');
 
 let sql: Sql;
 
@@ -305,5 +306,72 @@ describe('el reporte del relleno es accionable', () => {
     const sinAsesor = salidas['7'] as { name: string; estudiantes_sin_asesor: number }[];
     expect(sinAsesor.map((f) => f.name)).toContain('Universidad de los Andes');
     expect(Number(sinAsesor[0]!.estudiantes_sin_asesor)).toBeGreaterThan(0);
+  });
+});
+
+describe('el catálogo de las 33 universidades de la red', () => {
+  async function correrCatalogo(): Promise<void> {
+    const texto = readFileSync(CATALOGO, 'utf8');
+    for (const s of texto.split('--> statement-breakpoint')) {
+      const q = s.trim();
+      if (q && !/^(--[^\n]*\n?)*$/.test(q)) await sql.unsafe(q);
+    }
+  }
+
+  it('entran las 33 y ninguna queda sin slug', async () => {
+    await correrCatalogo();
+    const filas = await sql<{ n: number }[]>`
+      select count(*)::int as n from universities where slug <> 'sin asignar'`;
+    expect(filas[0]!.n).toBe(33);
+
+    const sinSlug = await sql`select name from universities where slug is null or slug = ''`;
+    expect(sinSlug.length).toBe(0);
+  });
+
+  it('correrlo dos veces no duplica', async () => {
+    await correrCatalogo();
+    const [antes] = await sql<{ n: number }[]>`select count(*)::int as n from universities`;
+    await correrCatalogo();
+    const [despues] = await sql<{ n: number }[]>`select count(*)::int as n from universities`;
+    expect(despues!.n).toBe(antes!.n);
+  });
+
+  it('el slug lo calcula la MISMA función que el relleno, no una copia a mano', async () => {
+    await correrCatalogo();
+    // Si el catálogo escribiera sus slugs a mano, una universidad de la lista
+    // y la misma escrita por una persona podrían normalizar distinto y entrar
+    // como dos filas. Se comprueba que coincidan para las 33.
+    const desalineadas = await sql<{ name: string }[]>`
+      select name from universities
+       where slug <> enactus_normalizar_universidad(name)`;
+    expect(desalineadas.map((f) => f.name)).toEqual([]);
+  });
+
+  it('las siglas entre paréntesis quedan como nombre corto, no en el nombre', async () => {
+    await correrCatalogo();
+    const [uniminuto] = await sql<{ name: string; short_name: string }[]>`
+      select name, short_name from universities where short_name = 'UNIMINUTO'`;
+    expect(uniminuto!.name).toBe('Corporación Universitaria Minuto de Dios (UNIMINUTO)');
+    // El nombre completo se conserva tal cual llegó: es el oficial y es el que
+    // alguien reconoce. El corto es para chips y tablas, donde no cabe.
+    expect(uniminuto!.short_name).toBe('UNIMINUTO');
+  });
+
+  it('una universidad que ya existía con otro nombre NO se fusiona sola', async () => {
+    // «Universidad Nacional» (la que hay en el sembrado) y «Universidad
+    // Nacional de Colombia» (la del catálogo) son slugs distintos. El catálogo
+    // NO las junta: fusionarlas sería adivinar, y adivinar mal une dos
+    // universidades de verdad. Sale en el bloque 3 del reporte.
+    await crearUsuario('Ana Uno', 'student', 'Universidad Nacional', 'enactus');
+    await correrRelleno();
+    await correrCatalogo();
+
+    const filas = await sql<{ slug: string }[]>`
+      select slug from universities where slug like 'universidad nacional%' order by slug`;
+    expect(filas.map((f) => f.slug)).toEqual([
+      'universidad nacional',
+      'universidad nacional abierta y a distancia (unad)',
+      'universidad nacional de colombia',
+    ]);
   });
 });

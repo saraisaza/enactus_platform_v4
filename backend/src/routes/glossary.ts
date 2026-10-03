@@ -13,6 +13,7 @@ import {
   lessons,
 } from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
+import { parcial } from '../lib/parcial';
 import {
   CONTENT_ROLES,
   currentUser,
@@ -42,14 +43,7 @@ type Db = AppEnv['Variables']['db'];
 // Validación
 // ---------------------------------------------------------------------------
 
-/**
- * Los campos, SIN valores por defecto.
- *
- * Es a propósito: en zod 4 `.partial()` sigue aplicando los `.default()`, así
- * que un PATCH que mandara solo la palabra borraría la explicación y el
- * ejemplo. Los vacíos de la creación se ponen en [termCreate].
- */
-const termFields = {
+const termCreate = z.object({
   word: z
     .string()
     .trim()
@@ -63,8 +57,13 @@ const termFields = {
   explanation: z
     .string()
     .trim()
-    .max(5000, 'La explicación admite hasta 5000 caracteres.'),
-  example: z.string().trim().max(2000, 'El ejemplo admite hasta 2000 caracteres.'),
+    .max(5000, 'La explicación admite hasta 5000 caracteres.')
+    .default(''),
+  example: z
+    .string()
+    .trim()
+    .max(2000, 'El ejemplo admite hasta 2000 caracteres.')
+    .default(''),
 
   /**
    * Solo una key bajo `glossary-images/`, que es donde deja el archivo
@@ -76,21 +75,17 @@ const termFields = {
     .string()
     .trim()
     .regex(/^glossary-images\//, 'La imagen tiene que ser un archivo subido desde el editor.')
-    .nullable(),
-  lessonIds: z.array(z.uuid()).max(200),
-  relatedTermIds: z.array(z.uuid()).max(50, 'Un término admite hasta 50 relacionados.'),
-};
-
-const termCreate = z.object({
-  ...termFields,
-  explanation: termFields.explanation.default(''),
-  example: termFields.example.default(''),
-  imageS3Key: termFields.imageS3Key.optional(),
-  lessonIds: termFields.lessonIds.default([]),
-  relatedTermIds: termFields.relatedTermIds.default([]),
+    .nullable()
+    .optional(),
+  lessonIds: z.array(z.uuid()).max(200).default([]),
+  relatedTermIds: z
+    .array(z.uuid())
+    .max(50, 'Un término admite hasta 50 relacionados.')
+    .default([]),
 });
 
-const termUpdate = z.object(termFields).partial();
+/** Sin los vacíos de la creación: un PATCH que no manda un campo no lo toca. */
+const termUpdate = parcial(termCreate);
 
 const reorderBody = z.object({
   orderedIds: z.array(z.uuid()).min(1, 'Hace falta al menos un id.'),

@@ -14,6 +14,7 @@ import {
   studentLaboratories,
 } from '../db/schema';
 import { conflict, notFound } from '../lib/errors';
+import { parcial } from '../lib/parcial';
 import { ADMIN_ROLES, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import { drainStorageDeletes } from '../services/storage-cleanup';
@@ -52,7 +53,7 @@ const labBody = z.object({
   sponsorCompanyId: z.uuid().nullable().optional(),
 });
 
-const labUpdate = labBody.partial();
+const labUpdate = parcial(labBody);
 
 const phaseCreate = z.object({
   title: z.string().trim().min(1, 'La fase necesita un título.'),
@@ -74,7 +75,7 @@ const objectiveBody = z.object({
   text: z.string().trim().min(1, 'El objetivo necesita su texto.'),
 });
 
-const objectiveUpdate = objectiveBody.partial();
+const objectiveUpdate = parcial(objectiveBody);
 
 const idsBody = z.object({
   ids: z.array(z.uuid()).default([]),
@@ -445,7 +446,7 @@ export const rutaModuleRoutes = new Hono<AppEnv>();
 rutaModuleRoutes.use('*', requireAuth, requireRole(...ADMIN_ROLES));
 
 rutaModuleRoutes.patch('/:id', async (c) => {
-  const body = moduleBody.partial().parse(await c.req.json());
+  const body = parcial(moduleBody).parse(await c.req.json());
   const db = c.get('db');
   const mod = await loadRutaModule(db, c.req.param('id'));
 

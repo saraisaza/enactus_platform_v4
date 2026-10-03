@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { groupMembers, groups, projectOds, projects } from '../db/schema';
 import { forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
+import { parcial } from '../lib/parcial';
 import {
   ADMIN_ROLES,
   currentUser,
@@ -218,7 +219,7 @@ projectRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {
 projectRoutes.patch('/:id', async (c) => {
   const user = currentUser(c);
   assertCanEditProject(user);
-  const body = projectBody.partial().parse(await c.req.json());
+  const body = parcial(projectBody).parse(await c.req.json());
   const db = c.get('db');
   const { ods, ...fields } = body;
 
@@ -352,7 +353,7 @@ groupRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {
 });
 
 groupRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
-  const body = groupBody.partial().parse(await c.req.json());
+  const body = parcial(groupBody).parse(await c.req.json());
   const db = c.get('db');
   const [updated] = await db
     .update(groups)

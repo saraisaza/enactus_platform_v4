@@ -33,6 +33,7 @@ import {
   createUploadUrl,
   videoKeyFor,
 } from '../lib/s3';
+import { parcial } from '../lib/parcial';
 import { authorizeLessonVideo } from '../services/file-access';
 import { drainStorageDeletes } from '../services/storage-cleanup';
 import {
@@ -66,7 +67,7 @@ const lessonBody = z.object({
   externalUrl: z.url().nullable().optional(),
 });
 
-const lessonUpdate = lessonBody.partial();
+const lessonUpdate = parcial(lessonBody);
 
 const reorderBody = z.object({
   orderedIds: z.array(z.uuid()).min(1, 'Hace falta al menos un id.'),

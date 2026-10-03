@@ -17,6 +17,7 @@ import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
 import { deleteObject } from '../lib/s3';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
+import { parcial } from '../lib/parcial';
 import {
   ADMIN_ROLES,
   currentUser,
@@ -553,7 +554,7 @@ userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
  * tal cual sino hasheada, y **cierra las sesiones abiertas de esa persona** —
  * un restablecimiento que deja vivo el token anterior no restablece nada.
  */
-const updateBody = createBody.partial().extend({
+const updateBody = parcial(createBody).extend({
   password: z
     .string()
     .min(6, 'La contraseña necesita al menos 6 caracteres.')

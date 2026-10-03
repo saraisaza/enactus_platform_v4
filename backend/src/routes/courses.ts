@@ -15,6 +15,7 @@ import {
 import { createVideoUrl } from '../lib/cloudfront';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
+import { parcial } from '../lib/parcial';
 import { authorizeCourseIntroVideo } from '../services/file-access';
 import { drainStorageDeletes } from '../services/storage-cleanup';
 import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
@@ -69,7 +70,7 @@ const courseBody = z.object({
   sponsorCompanyId: z.uuid().nullable().optional(),
 });
 
-const courseUpdate = courseBody.partial();
+const courseUpdate = parcial(courseBody);
 
 const listQuery = paginationSchema.extend({
   laboratoryId: z.uuid().optional(),

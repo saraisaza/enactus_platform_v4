@@ -10,6 +10,7 @@ import {
 } from '../db/schema';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
+import { parcial } from '../lib/parcial';
 import {
   ADMIN_ROLES,
   currentUser,
@@ -84,7 +85,7 @@ evidenceRoutes.post('/', requireRole(...ADMIN_ROLES), async (c) => {
 });
 
 evidenceRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
-  const body = evidenceBody.partial().parse(await c.req.json());
+  const body = parcial(evidenceBody).parse(await c.req.json());
   const [updated] = await c
     .get('db')
     .update(evidences)
@@ -218,7 +219,7 @@ calendarRoutes.post('/', async (c) => {
 
 calendarRoutes.patch('/:id', async (c) => {
   const user = currentUser(c);
-  const { startsAt, ...body } = eventBody.partial().parse(await c.req.json());
+  const { startsAt, ...body } = parcial(eventBody).parse(await c.req.json());
   const db = c.get('db');
   const event = await loadEvent(db, c.req.param('id'));
   assertOwnsEvent(user.role, user.id, event.createdBy);

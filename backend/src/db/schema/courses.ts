@@ -264,6 +264,8 @@ export const lessons = pgTable(
     videoType: videoType(),
     videoUrl: text(),
     videoS3Key: text('video_s3_key'),
+    /** Solo `video_type = 'youtube'`: los 11 caracteres del id, sin URL. */
+    videoYoutubeId: text(),
     videoSizeBytes: bigint({ mode: 'number' }),
     videoDurationSec: integer(),
     videoMimeType: text(),
@@ -278,11 +280,31 @@ export const lessons = pgTable(
       'lessons_exactly_one_parent',
       sql`(${t.courseModuleId} is not null) <> (${t.rutaModuleId} is not null)`,
     ),
+    // Las tres primeras ramas son EXACTAMENTE las de antes de 0007, sin
+    // mencionar `video_youtube_id`, y es a propósito: el código anterior no
+    // conoce la columna, así que si tras un rollback pasa una lección de
+    // `youtube` a `external` deja el id puesto. Exigirle `null` ahí le haría
+    // fallar una escritura que antes funcionaba. El código nuevo sí la limpia
+    // al cambiar de origen.
+    //
+    // La rama nueva compara `::text` y no contra el enum: el valor `youtube`
+    // se agrega en la MISMA transacción de la migración, y PostgreSQL no deja
+    // usar un valor de enum sin confirmar («unsafe use of new value»). Contra
+    // una base recién creada no se ve —el tipo nace en esa transacción y ahí
+    // sí se permite—; solo se ve al migrar una base que ya existía, es decir,
+    // al desplegar.
     check(
       'lessons_video_source',
       sql`(${t.videoType} is null and ${t.videoUrl} is null and ${t.videoS3Key} is null)
        or (${t.videoType} = 'external' and ${t.videoUrl} is not null and ${t.videoS3Key} is null)
-       or (${t.videoType} = 'uploaded' and ${t.videoS3Key} is not null and ${t.videoUrl} is null)`,
+       or (${t.videoType} = 'uploaded' and ${t.videoS3Key} is not null and ${t.videoUrl} is null)
+       or (${t.videoType}::text = 'youtube' and ${t.videoYoutubeId} is not null and ${t.videoUrl} is null and ${t.videoS3Key} is null)`,
+    ),
+    // El id y nada más: una URL pegada en esta columna es justo lo que no se
+    // quiere guardar, y la base lo rechaza aunque la API se equivoque.
+    check(
+      'lessons_video_youtube_id_format',
+      sql`${t.videoYoutubeId} is null or ${t.videoYoutubeId} ~ '^[A-Za-z0-9_-]{11}$'`,
     ),
     // Ojo: NO hay un CHECK que exija que una lección de tipo `video` tenga
     // origen. Se quitó en la migración 0002 porque hacía imposible el flujo

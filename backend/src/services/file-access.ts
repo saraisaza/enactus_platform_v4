@@ -291,7 +291,9 @@ export async function authorizeLessonVideo(
     throw conflict(
       lesson.videoType === 'external'
         ? 'Esta lección tiene video externo: se reproduce con su propia URL.'
-        : 'Esta lección no tiene video propio.',
+        : lesson.videoType === 'youtube'
+          ? 'Esta lección tiene video de YouTube: se reproduce con su id, sin URL firmada.'
+          : 'Esta lección no tiene video propio.',
       { videoType: lesson.videoType },
     );
   }

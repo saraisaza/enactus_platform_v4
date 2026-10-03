@@ -75,13 +75,18 @@ export async function toggleLesson(
   };
 }
 
-/** Lección de curso: exige que el estudiante tenga acceso a ese curso. */
-async function toggleCourseLesson(
+/**
+ * El curso de ese módulo, si el estudiante tiene acceso a él; si no, 403.
+ *
+ * Es la regla de «puede escribir avance en esta lección de curso». La usan el
+ * toggle y la posición del video (`services/video-progress.ts`): una sola
+ * definición, para que las dos escrituras no puedan discrepar en quién puede.
+ */
+export async function courseAccessForModule(
   db: Database,
   studentId: string,
   courseModuleId: string,
-  lessonId: string,
-): Promise<boolean> {
+): Promise<string> {
   const [access] = await db.execute<{ course_id: string }>(sql`
     select a.course_id
       from student_course_access a
@@ -91,10 +96,41 @@ async function toggleCourseLesson(
   if (!access) {
     throw forbidden('No tiene acceso a este curso.');
   }
+  return access.course_id;
+}
+
+/** El laboratorio de ese módulo de la Ruta, si el estudiante está en él; si no, 403. */
+export async function labAccessForRutaModule(
+  db: Database,
+  studentId: string,
+  rutaModuleId: string,
+): Promise<string> {
+  const [lab] = await db.execute<{ laboratory_id: string }>(sql`
+    select p.laboratory_id
+      from ruta_modules rm
+      join phases p on p.id = rm.phase_id
+      join student_laboratories sl
+        on sl.laboratory_id = p.laboratory_id and sl.student_id = ${studentId}
+     where rm.id = ${rutaModuleId}
+  `);
+  if (!lab) {
+    throw forbidden('No está asignado a este laboratorio.');
+  }
+  return lab.laboratory_id;
+}
+
+/** Lección de curso: exige que el estudiante tenga acceso a ese curso. */
+async function toggleCourseLesson(
+  db: Database,
+  studentId: string,
+  courseModuleId: string,
+  lessonId: string,
+): Promise<boolean> {
+  const courseId = await courseAccessForModule(db, studentId, courseModuleId);
 
   const [row] = await db
     .insert(progress)
-    .values({ studentId, courseId: access.course_id })
+    .values({ studentId, courseId })
     .onConflictDoUpdate({
       target: [progress.studentId, progress.courseId],
       set: { updatedAt: new Date() },
@@ -136,21 +172,11 @@ async function toggleOwnLesson(
   rutaModuleId: string,
   lessonId: string,
 ): Promise<boolean> {
-  const [lab] = await db.execute<{ laboratory_id: string }>(sql`
-    select p.laboratory_id
-      from ruta_modules rm
-      join phases p on p.id = rm.phase_id
-      join student_laboratories sl
-        on sl.laboratory_id = p.laboratory_id and sl.student_id = ${studentId}
-     where rm.id = ${rutaModuleId}
-  `);
-  if (!lab) {
-    throw forbidden('No está asignado a este laboratorio.');
-  }
+  const laboratoryId = await labAccessForRutaModule(db, studentId, rutaModuleId);
 
   const [row] = await db
     .insert(rutaProgress)
-    .values({ studentId, laboratoryId: lab.laboratory_id })
+    .values({ studentId, laboratoryId })
     .onConflictDoUpdate({
       target: [rutaProgress.studentId, rutaProgress.laboratoryId],
       set: { updatedAt: new Date() },

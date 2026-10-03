@@ -987,6 +987,23 @@ costó una tarde entera en septiembre (ver `BLOQUEOS_INFRA.md`). Por eso las
 pruebas de humo comprueban que la CSP del frontend permite el origen de SU
 API, no una lista fija.
 
+### YouTube necesita su lugar en las DOS
+
+El reproductor de las lecciones de YouTube corre en el navegador dentro de un
+iframe que hereda la CSP del sitio. Sin estas entradas no carga, y la lección
+muestra «No se pudo cargar el reproductor» con un botón para verlo en YouTube:
+
+```
+script-src  … https://www.youtube.com 'sha256-<hash del script del reproductor>'
+frame-src   … https://www.youtube-nocookie.com
+img-src     … https://i.ytimg.com
+```
+
+**Nunca `'unsafe-inline'` en `script-src`**: es lo que protege el token de
+sesión. El hash es uno por origen y cambia al actualizar
+`youtube_player_iframe`; cómo obtenerlo está en MIGRACION_FRONT.md,
+«Reproductor de YouTube».
+
 ### Staging no debe ser público
 
 Tres capas, porque fallan distinto:

@@ -827,6 +827,7 @@ async function loadLessons(db: Db, moduleId: string) {
            l.external_url as "externalUrl",
            l.video_type as "videoType", l.video_url as "videoUrl",
            l.video_s3_key as "videoS3Key",
+           l.video_youtube_id as "videoYoutubeId",
            l.video_duration_sec as "videoDurationSec",
            coalesce((
              select json_agg(json_build_object(

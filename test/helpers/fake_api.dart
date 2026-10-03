@@ -126,7 +126,15 @@ void useFakeTokenStorage() {
 // Regenerar:  GENERAR_CONTRATO=1 flutter test
 
 final Map<String, Map<String, dynamic>> _contrato = {};
-bool _contratoRegistrado = false;
+
+/// Hay algo anotado que todavía no se volcó al archivo.
+///
+/// El volcado se engancha con `addTearDown`, que es de UNA prueba. Antes se
+/// enganchaba una sola vez por archivo, en la primera prueba que anotara
+/// algo, y lo que anotaban las siguientes del mismo archivo nunca llegaba al
+/// contrato — en silencio. Ahora cada prueba que anota algo nuevo engancha su
+/// propio volcado.
+bool _pendienteDeVolcar = false;
 
 void _anotarEnElContrato(String metodo, String path, Map<String, dynamic> cuerpo) {
   if (Platform.environment['GENERAR_CONTRATO'] != '1') return;
@@ -143,13 +151,14 @@ void _anotarEnElContrato(String metodo, String path, Map<String, dynamic> cuerpo
   final previo = _contrato[clave];
   if (previo == null || cuerpo.length > previo.length) _contrato[clave] = cuerpo;
 
-  if (!_contratoRegistrado) {
-    _contratoRegistrado = true;
+  if (!_pendienteDeVolcar) {
+    _pendienteDeVolcar = true;
     addTearDown(_volcarContrato);
   }
 }
 
 void _volcarContrato() {
+  _pendienteDeVolcar = false;
   if (_contrato.isEmpty) return;
   final archivo = File('test/fixtures/cuerpos_del_cliente.json');
   final previo = archivo.existsSync()

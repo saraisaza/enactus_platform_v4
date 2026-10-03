@@ -39,6 +39,7 @@ const CONTRATO = resolve(__dirname, '../../test/fixtures/cuerpos_del_cliente.jso
 let app: ReturnType<typeof makeTestApp>['app'];
 let sql: Sql;
 let token = '';
+let tokenEstudiante = '';
 
 beforeAll(async () => {
   const t = makeTestApp();
@@ -47,6 +48,8 @@ beforeAll(async () => {
   await seedTestDatabase();
   const s = await login(app, 'superadmin1@enactus.co', 'Super123');
   token = s.accessToken;
+  tokenEstudiante = (await login(app, 'estudiante1@uniandes.edu.co', 'Est123'))
+    .accessToken;
 }, 120_000);
 
 beforeEach(() => resetRateLimits());
@@ -86,13 +89,21 @@ describe('el servidor acepta los cuerpos que arma el cliente', () => {
     for (const [clave, cuerpo] of Object.entries(contrato)) {
       const [metodo, plantilla] = clave.split(' ');
       const ruta = plantilla!.replace(/:id/g, UUID);
-      resetRateLimits();
+      const enviar = (conToken: string) => {
+        resetRateLimits();
+        return app.request(ruta, {
+          method: metodo,
+          headers: { 'content-type': 'application/json', ...auth(conToken) },
+          body: JSON.stringify(cuerpo),
+        });
+      };
 
-      const res = await app.request(ruta, {
-        method: metodo,
-        headers: { 'content-type': 'application/json', ...auth(token) },
-        body: JSON.stringify(cuerpo),
-      });
+      // Los endpoints que son SOLO del estudiante —su avance, por ejemplo—
+      // le niegan al superadmin con 403 antes de mirar el cuerpo, y así el
+      // cuerpo no se validaba nunca: la prueba daba verde sin haber probado
+      // nada. Ante un 403 se repite como estudiante.
+      let res = await enviar(token);
+      if (res.status === 403) res = await enviar(tokenEstudiante);
 
       if (res.status !== 400) continue;
       const texto = await res.text();

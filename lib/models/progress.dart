@@ -29,6 +29,75 @@ enum DeadlineStatus {
       this == DeadlineStatus.overdue || this == DeadlineStatus.approaching;
 }
 
+/// Hasta dónde vio una persona el video de una lección.
+///
+/// No es completitud: la lección se completa por el toggle de siempre. Esto
+/// sirve para retomar donde quedó —en cualquier dispositivo— y para mostrar
+/// cuánto vio.
+class VideoProgress {
+  final String lessonId;
+
+  /// Dónde retomar. Puede retroceder si vuelve a ver un tramo.
+  final int positionSec;
+
+  /// Lo más lejos que llegó alguna vez. Solo crece.
+  final int furthestSec;
+
+  /// La que reportó el reproductor; `null` si nunca llegó a saberla.
+  final int? durationSec;
+
+  const VideoProgress({
+    required this.lessonId,
+    this.positionSec = 0,
+    this.furthestSec = 0,
+    this.durationSec,
+  });
+
+  /// Cuánto vio, 0..1. `null` sin duración: no hay de qué sacar un porcentaje.
+  double? get watchedRatio {
+    final duration = durationSec;
+    if (duration == null || duration <= 0) return null;
+    return (furthestSec / duration).clamp(0.0, 1.0);
+  }
+
+  /// Desde dónde arrancar el reproductor, o `null` para arrancar del principio.
+  ///
+  /// No se retoma en los primeros segundos —volver al segundo 3 es empezar—
+  /// ni en el final: un video que se terminó se vuelve a ver desde el
+  /// comienzo, como hace YouTube.
+  Duration? get resumeAt {
+    if (positionSec < 5) return null;
+    final duration = durationSec;
+    if (duration != null && positionSec >= duration - 10) return null;
+    if (duration != null && positionSec >= duration * 0.95) return null;
+    return Duration(seconds: positionSec);
+  }
+
+  /// El mismo avance con una posición nueva, como lo calcula el servidor:
+  /// [furthestSec] nunca baja y una duración nula no borra la conocida.
+  VideoProgress advancedTo(int position, {int? duration}) {
+    final newDuration = duration ?? durationSec;
+    final clamped = newDuration == null || position <= newDuration
+        ? position
+        : newDuration;
+    return VideoProgress(
+      lessonId: lessonId,
+      positionSec: clamped,
+      furthestSec: clamped > furthestSec ? clamped : furthestSec,
+      durationSec: newDuration,
+    );
+  }
+
+  factory VideoProgress.fromJson(Map<String, dynamic> j,
+          {String? lessonId}) =>
+      VideoProgress(
+        lessonId: (j['lessonId'] as String?) ?? lessonId ?? '',
+        positionSec: (j['positionSec'] as num?)?.toInt() ?? 0,
+        furthestSec: (j['furthestSec'] as num?)?.toInt() ?? 0,
+        durationSec: (j['durationSec'] as num?)?.toInt(),
+      );
+}
+
 /// Avance de un estudiante en un curso.
 class CourseProgress {
   final String courseId;
@@ -43,6 +112,10 @@ class CourseProgress {
   /// Solo viene en `/students/:id/course-progress/:courseId`.
   final List<String> completedLessonIds;
 
+  /// Hasta dónde vio cada video. Mismo origen que [completedLessonIds]: solo
+  /// el detalle del curso lo trae, no el resumen del listado.
+  final List<VideoProgress> videoProgress;
+
   const CourseProgress({
     required this.courseId,
     this.courseName = '',
@@ -51,6 +124,7 @@ class CourseProgress {
     this.ratio = 0,
     this.isComplete = false,
     this.completedLessonIds = const [],
+    this.videoProgress = const [],
   });
 
   /// Progreso vacío, para un curso que el estudiante todavía no empezó.
@@ -59,6 +133,9 @@ class CourseProgress {
 
   bool isLessonComplete(String lessonId) =>
       completedLessonIds.contains(lessonId);
+
+  VideoProgress? videoProgressFor(String lessonId) =>
+      videoProgress.where((v) => v.lessonId == lessonId).firstOrNull;
 
   factory CourseProgress.fromJson(Map<String, dynamic> j) => CourseProgress(
         courseId: j['courseId'] as String,
@@ -69,6 +146,10 @@ class CourseProgress {
         isComplete: (j['isComplete'] as bool?) ?? false,
         completedLessonIds:
             List<String>.from(j['completedLessonIds'] as List? ?? const []),
+        videoProgress: (j['videoProgress'] as List? ?? const [])
+            .map((e) =>
+                VideoProgress.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList(),
       );
 }
 
@@ -187,6 +268,10 @@ class OwnLesson {
   final VideoSourceType? videoType;
   final String? videoUrl;
   final String? videoS3Key;
+  final String? videoYoutubeId;
+
+  /// Hasta dónde vio el video quien mira; `null` si nunca lo abrió.
+  final VideoProgress? videoProgress;
   final bool isComplete;
 
   const OwnLesson({
@@ -200,6 +285,8 @@ class OwnLesson {
     this.videoType,
     this.videoUrl,
     this.videoS3Key,
+    this.videoYoutubeId,
+    this.videoProgress,
     this.isComplete = false,
   });
 
@@ -218,6 +305,7 @@ class OwnLesson {
         videoType: videoType,
         videoUrl: videoUrl,
         videoS3Key: videoS3Key,
+        videoYoutubeId: videoYoutubeId,
       );
 
   factory OwnLesson.fromJson(Map<String, dynamic> j) => OwnLesson(
@@ -231,6 +319,13 @@ class OwnLesson {
         videoType: VideoSourceType.fromJson(j['videoType'] as String?),
         videoUrl: j['videoUrl'] as String?,
         videoS3Key: j['videoS3Key'] as String?,
+        videoYoutubeId: j['videoYoutubeId'] as String?,
+        videoProgress: j['videoProgress'] is Map
+            ? VideoProgress.fromJson(
+                Map<String, dynamic>.from(j['videoProgress'] as Map),
+                lessonId: j['id'] as String,
+              )
+            : null,
         isComplete: (j['isComplete'] as bool?) ?? false,
       );
 }

@@ -10,6 +10,7 @@ import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
+import '../../utils/constants.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -17,6 +18,7 @@ import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../../widgets/video_player_dialog.dart';
+import '../../widgets/youtube_lesson_player.dart';
 
 /// Detalle de un curso: módulos y lecciones de todos los tipos, avance y
 /// entregas.
@@ -232,6 +234,15 @@ class _CourseBody extends StatelessWidget {
                         course: course,
                         done: progress.isLessonComplete(lesson.id),
                         readOnly: readOnly,
+                        // El propio: lo que el reproductor acaba de guardar,
+                        // aunque la lectura del servidor todavía no lo traiga.
+                        // El de otra persona: lo que dice su progreso.
+                        video: lesson.type != LessonType.video
+                            ? null
+                            : readOnly
+                                ? progress.videoProgressFor(lesson.id)
+                                : data.myVideoProgress(lesson.id) ??
+                                    progress.videoProgressFor(lesson.id),
                       ),
                   ],
                 const SectionTitle('Mis entregas'),
@@ -282,15 +293,38 @@ class _LessonTile extends StatelessWidget {
   final bool done;
   final bool readOnly;
 
+  /// Hasta dónde vio el video; `null` si no es de video o nunca lo abrió.
+  final VideoProgress? video;
+
   const _LessonTile({
     required this.lesson,
     required this.course,
     required this.done,
     required this.readOnly,
+    this.video,
   });
+
+  /// "Video · 12 min · Visto 40%", o "· Seguir desde 3:12" si quedó a medias.
+  String get _subtitle {
+    final partes = [
+      lesson.youtubeVideoId != null
+          ? 'Video de YouTube'
+          : lessonTypeLabel(lesson.type),
+      if (lesson.durationMin > 0) '${lesson.durationMin} min',
+    ];
+    final visto = video?.watchedRatio;
+    final resume = video?.resumeAt;
+    if (!done && resume != null) {
+      partes.add('Seguir desde ${formatVideoTime(resume)}');
+    } else if (visto != null && visto > 0) {
+      partes.add('Visto ${(visto * 100).round()}%');
+    }
+    return partes.join(' · ');
+  }
 
   @override
   Widget build(BuildContext context) {
+    final visto = video?.watchedRatio;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: HoverCard(
@@ -306,11 +340,25 @@ class _LessonTile extends StatelessWidget {
                 children: [
                   Text(lesson.title,
                       style: const TextStyle(fontWeight: FontWeight.w600)),
-                  Text(
-                      '${lessonTypeLabel(lesson.type)}'
-                      '${lesson.durationMin > 0 ? ' · ${lesson.durationMin} min' : ''}',
+                  Text(_subtitle,
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
+                  // Lo visto, como la barrita roja de YouTube bajo la
+                  // miniatura: se entiende sin leer el porcentaje.
+                  if (!done && visto != null && visto > 0 && visto < 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, right: 24),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: visto,
+                          minHeight: 3,
+                          backgroundColor: AppColors.surfaceAlt,
+                          valueColor:
+                              const AlwaysStoppedAnimation(AppColors.gold),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -368,7 +416,16 @@ class _LessonTile extends StatelessWidget {
 
     switch (lesson.type) {
       case LessonType.video:
-        VideoPlayerDialog.show(context, lesson);
+        // El avance se guarda solo para el propio estudiante: el equipo puede
+        // abrir el curso de alguien, pero mirar el video no es avance suyo.
+        final viewer = context.read<AuthProvider>().currentUser;
+        VideoPlayerDialog.show(
+          context,
+          lesson,
+          courseId: course.id,
+          trackProgress:
+              !readOnly && viewer != null && Roles.isStudentLike(viewer.role),
+        );
       case LessonType.pdf:
       case LessonType.resource:
         _openResource(context);

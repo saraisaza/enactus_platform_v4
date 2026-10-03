@@ -2436,7 +2436,9 @@ class _OwnLessonRow extends StatelessWidget {
     final data = context.read<DataProvider>();
 
     if (lesson.type == LessonType.video) {
-      await VideoPlayerDialog.show(context, lesson.toLesson());
+      // Su propia Ruta: el avance del video se guarda para retomar.
+      await VideoPlayerDialog.show(context, lesson.toLesson(),
+          trackProgress: true);
     } else {
       final key = lesson.resourceS3Key;
       final url = lesson.externalUrl;

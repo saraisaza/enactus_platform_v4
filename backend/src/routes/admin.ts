@@ -175,6 +175,9 @@ const BACKUP_TABLES = [
   'progress_lessons',
   'ruta_progress',
   'ruta_progress_lessons',
+  // Después de `users` y `lessons`, de las que cuelga: el orden de la lista
+  // es el de inserción al restaurar.
+  'lesson_video_progress',
   'submissions',
   'submission_files',
   'quiz_attempts',

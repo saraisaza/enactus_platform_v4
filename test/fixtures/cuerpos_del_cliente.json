@@ -1,4 +1,21 @@
 {
+ "PATCH /calendar-events/:id": {
+  "title": "Encuentro",
+  "description": "",
+  "startsAt": "2026-10-01T15:00:00.000Z",
+  "type": "ruta_impacto",
+  "meetLink": "",
+  "guests": "",
+  "courseId": null,
+  "laboratoryId": null
+ },
+ "PATCH /lessons/:id": {
+  "title": "Charla de apertura",
+  "type": "video",
+  "description": "",
+  "durationMin": 0,
+  "externalUrl": null
+ },
  "POST /auth/login": {
   "email": "admin@enactus.co",
   "password": "Admin123"
@@ -15,6 +32,22 @@
  },
  "POST /files/download-url": {
   "key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"
+ },
+ "POST /lessons/:id/video-external": {
+  "url": "https://vimeo.com/76979871"
+ },
+ "POST /lessons/:id/video-youtube": {
+  "videoId": "dQw4w9WgXcQ"
+ },
+ "POST /modules/:id/lessons": {
+  "title": "Charla de apertura",
+  "type": "video",
+  "description": "",
+  "durationMin": 0
+ },
+ "PUT /progress/lessons/:id/video": {
+  "positionSec": 30,
+  "durationSec": 212
  },
  "PUT /users/:id/courses": {
   "ids": [

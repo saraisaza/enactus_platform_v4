@@ -75,6 +75,32 @@ const externalVideoBody = z.object({
   durationSec: z.number().int().min(0).optional(),
 });
 
+/**
+ * El id de un video de YouTube: 11 caracteres de `[A-Za-z0-9_-]`.
+ *
+ * Es la misma expresión que el CHECK `lessons_video_youtube_id_format`. La
+ * API la valida igual para contestar 400 con un mensaje que se entienda, en
+ * vez del 500 de una restricción violada.
+ */
+const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * Se recibe el id, NO el enlace. Sacar el id de las muchas formas de enlace
+ * (`watch?v=`, `youtu.be/`, `shorts/`, `embed/`, con `&t=` o `?si=`…) lo hace
+ * el cliente en un solo lugar; acá se exige que lo que llegue ya sea el id.
+ * Un enlace pegado tal cual se rechaza: guardar solo el id es el punto.
+ */
+const youtubeVideoBody = z.object({
+  videoId: z
+    .string()
+    .trim()
+    .regex(
+      YOUTUBE_VIDEO_ID,
+      'Tiene que ser el id del video de YouTube (11 caracteres), no el enlace.',
+    ),
+  durationSec: z.number().int().min(0).optional(),
+});
+
 const resourceBody = z.object({
   key: z.string().trim().min(1),
   fileName: z.string().trim().min(1, 'Falta el nombre del archivo.'),
@@ -260,6 +286,7 @@ lessonRoutes.post('/:id/video', requireRole(...CONTENT_ROLES), async (c) => {
       videoType: 'uploaded',
       videoS3Key: body.key,
       videoUrl: null,
+      videoYoutubeId: null,
       videoSizeBytes: body.sizeBytes,
       videoMimeType: body.mimeType,
       videoDurationSec: body.durationSec ?? null,
@@ -302,6 +329,40 @@ lessonRoutes.post('/:id/video-external', requireRole(...CONTENT_ROLES), async (c
       type: 'video',
       videoType: 'external',
       videoUrl: body.url,
+      videoS3Key: null,
+      videoYoutubeId: null,
+      videoSizeBytes: null,
+      videoMimeType: null,
+      videoDurationSec: body.durationSec ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(lessons.id, lesson.id))
+    .returning();
+
+  return c.json(updated);
+});
+
+/**
+ * Video de YouTube: se guarda SOLO el id.
+ *
+ * Con el id el cliente arma el reproductor y la miniatura; el enlace que pegó
+ * el LXD no aporta nada y traía basura (`&t=`, `?si=` de rastreo, la lista de
+ * reproducción de donde lo sacó). Cambiar de origen limpia los otros dos:
+ * nunca quedan dos orígenes a la vez.
+ */
+lessonRoutes.post('/:id/video-youtube', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = youtubeVideoBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  const [updated] = await db
+    .update(lessons)
+    .set({
+      type: 'video',
+      videoType: 'youtube',
+      videoYoutubeId: body.videoId,
+      videoUrl: null,
       videoS3Key: null,
       videoSizeBytes: null,
       videoMimeType: null,

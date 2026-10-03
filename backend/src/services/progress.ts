@@ -35,6 +35,13 @@ export interface OwnLessonProgress {
   videoType: string | null;
   videoUrl: string | null;
   videoS3Key: string | null;
+  videoYoutubeId: string | null;
+  /** Hasta dónde vio el video esta persona; `null` si nunca lo abrió. */
+  videoProgress: {
+    positionSec: number;
+    furthestSec: number;
+    durationSec: number | null;
+  } | null;
   isComplete: boolean;
 }
 
@@ -210,11 +217,19 @@ export async function rutaProgressFor(
     video_type: string | null;
     video_url: string | null;
     video_s3_key: string | null;
+    video_youtube_id: string | null;
+    video_position_sec: number | null;
+    video_furthest_sec: number | null;
+    video_duration_sec: number | null;
     is_complete: boolean;
   }>(sql`
     select l.ruta_module_id as module_id, l.id, l.title, l.type, l.description,
            l.order_index, l.resource_s3_key, l.resource_file_name,
            l.external_url, l.video_type, l.video_url, l.video_s3_key,
+           l.video_youtube_id,
+           vp.position_sec as video_position_sec,
+           vp.furthest_sec as video_furthest_sec,
+           vp.duration_sec as video_duration_sec,
            (rpl.lesson_id is not null) as is_complete
       from lessons l
       join ruta_modules rm on rm.id = l.ruta_module_id
@@ -226,6 +241,8 @@ export async function rutaProgressFor(
             and rp.laboratory_id = ph.laboratory_id
       left join ruta_progress_lessons rpl
              on rpl.ruta_progress_id = rp.id and rpl.lesson_id = l.id
+      left join lesson_video_progress vp
+             on vp.student_id = ${studentId} and vp.lesson_id = l.id
      where l.ruta_module_id is not null
      order by l.order_index
   `);
@@ -317,6 +334,15 @@ export async function rutaProgressFor(
             videoType: l.video_type,
             videoUrl: l.video_url,
             videoS3Key: l.video_s3_key,
+            videoYoutubeId: l.video_youtube_id,
+            videoProgress:
+              l.video_position_sec === null
+                ? null
+                : {
+                    positionSec: l.video_position_sec,
+                    furthestSec: l.video_furthest_sec ?? l.video_position_sec,
+                    durationSec: l.video_duration_sec,
+                  },
             isComplete: l.is_complete,
           })),
         })),

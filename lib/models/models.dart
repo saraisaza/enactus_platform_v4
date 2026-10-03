@@ -17,6 +17,7 @@
 ///    mapea lo que el servidor ya calculó.
 library;
 
+import '../utils/youtube.dart';
 import 'progress.dart';
 
 // ---------------------------------------------------------------------------
@@ -815,15 +816,20 @@ enum LessonType {
 
 /// Origen del video de una lección.
 enum VideoSourceType {
-  /// Enlace a YouTube o Vimeo: se muestra en un iframe.
+  /// Enlace a Vimeo —o a YouTube, si se guardó antes de que existiera
+  /// [youtube]—: se muestra en un iframe.
   external,
 
   /// Archivo propio en S3, servido por CloudFront con URL firmada.
-  uploaded;
+  uploaded,
+
+  /// Video de YouTube guardado como id (`Lesson.videoYoutubeId`), sin enlace.
+  youtube;
 
   static VideoSourceType? fromJson(String? raw) => switch (raw) {
         'external' => VideoSourceType.external,
         'uploaded' => VideoSourceType.uploaded,
+        'youtube' => VideoSourceType.youtube,
         _ => null,
       };
 }
@@ -934,6 +940,9 @@ class Lesson {
   /// Solo `videoType == uploaded`: la key en S3. Para reproducirlo hay que
   /// pedirle al servidor una URL firmada de CloudFront — nunca se arma a mano.
   final String? videoS3Key;
+
+  /// Solo `videoType == youtube`: el id (11 caracteres), sin enlace.
+  final String? videoYoutubeId;
   final int? videoDurationSec;
 
   final List<QuizQuestion> quiz;
@@ -952,6 +961,7 @@ class Lesson {
     this.videoType,
     this.videoUrl,
     this.videoS3Key,
+    this.videoYoutubeId,
     this.videoDurationSec,
     this.quiz = const [],
     this.activity,
@@ -960,6 +970,20 @@ class Lesson {
   bool get hasVideo => videoType != null;
   bool get isExternalVideo => videoType == VideoSourceType.external;
   bool get isUploadedVideo => videoType == VideoSourceType.uploaded;
+
+  /// El id de YouTube con el que se reproduce, venga de donde venga.
+  ///
+  /// Una lección guardada antes de que existiera el tipo `youtube` tiene el
+  /// enlace en [videoUrl] como `external`. No se migró en la base —ver el
+  /// enum `video_type` del backend—, así que el id se saca acá: las dos
+  /// formas se ven con el mismo reproductor y guardan avance igual. Vimeo y
+  /// cualquier otro enlace dan `null`.
+  String? get youtubeVideoId => switch (videoType) {
+        VideoSourceType.youtube => videoYoutubeId,
+        VideoSourceType.external =>
+          videoUrl == null ? null : youtubeVideoIdFrom(videoUrl!),
+        _ => null,
+      };
 
   factory Lesson.fromJson(Map<String, dynamic> j) => Lesson(
         id: j['id'] as String,
@@ -974,6 +998,7 @@ class Lesson {
         videoType: VideoSourceType.fromJson(j['videoType'] as String?),
         videoUrl: j['videoUrl'] as String?,
         videoS3Key: j['videoS3Key'] as String?,
+        videoYoutubeId: j['videoYoutubeId'] as String?,
         videoDurationSec: (j['videoDurationSec'] as num?)?.toInt(),
         quiz: (j['quiz'] as List? ?? const [])
             .map((e) =>

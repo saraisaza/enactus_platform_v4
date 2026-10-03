@@ -52,6 +52,15 @@ dependencies:
   # (`services/video_source_web.dart`). Ya venía como dependencia transitiva;
   # se declara porque se importa directo.
   web: ^1.1.1
+  # Reproductor de las lecciones de YouTube. La 6.x y no la 5.2.2: la 6 trae
+  # el modo sin cookies (`youtube-nocookie.com`) por defecto, la pantalla
+  # completa que funciona en web y móvil, y soporte de macOS. Pide Flutter
+  # >= 3.38 / Dart ^3.10.
+  #
+  # En el NAVEGADOR el reproductor corre en un iframe que hereda la CSP del
+  # sitio: sin los permisos de MIGRACION_FRONT.md («Reproductor de YouTube»)
+  # no carga, y la lección lo dice en vez de quedarse cargando.
+  youtube_player_iframe: ^6.0.2
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +72,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  # Solo para probar el reproductor de YouTube sin un navegador: un WebView
+  # falso que habla el mismo protocolo de mensajes que el iframe del
+  # reproductor (`test/helpers/fake_youtube_webview.dart`).
+  webview_flutter_platform_interface: ^2.15.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

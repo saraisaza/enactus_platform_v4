@@ -895,7 +895,12 @@ paths:
     parameters: [{ $ref: '#/components/parameters/id' }]
     post:
       tags: [courses]
-      summary: Asociar un video externo (YouTube/Vimeo)
+      summary: Asociar un video externo (Vimeo, o un enlace de YouTube antiguo)
+      description: |
+        Guarda el enlace tal cual. Para YouTube el cliente usa
+        `POST /lessons/{id}/video-youtube`, que guarda solo el id; este
+        endpoint sigue aceptando enlaces de YouTube para no romper a un
+        cliente anterior durante un despliegue.
       requestBody:
         required: true
         content:
@@ -907,6 +912,37 @@ paths:
                 url: { type: string, format: uri }
                 durationSec: { type: integer }
       responses: { '200': { description: Lección actualizada } }
+
+  /lessons/{id}/video-youtube:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Asociar un video de YouTube, guardando SOLO su id
+      description: |
+        Recibe el **id** (11 caracteres de `[A-Za-z0-9_-]`), no el enlace:
+        sacarlo de las formas de enlace (`watch?v=`, `youtu.be/`, `shorts/`,
+        `embed/`, `live/`, con `&t=` o `?si=`) lo hace el cliente. Un enlace
+        pegado tal cual responde 400.
+
+        La lección queda con `videoType = youtube` y `videoYoutubeId`; los
+        otros dos orígenes (`videoUrl`, `videoS3Key`) se limpian. La base
+        exige el mismo formato con un CHECK, así que ni un error de la API
+        puede guardar otra cosa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [videoId]
+              properties:
+                videoId: { type: string, pattern: '^[A-Za-z0-9_-]{11}$', example: dQw4w9WgXcQ }
+                durationSec: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: Lección actualizada }
+        '400': { description: No es un id de YouTube (por ejemplo, se mandó el enlace) }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /lessons/{id}/video-url:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -1192,6 +1228,47 @@ paths:
           description: No es estudiante, o no tiene acceso a ese curso/laboratorio
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /progress/lessons/{lessonId}/video:
+    parameters:
+      - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [progress]
+      summary: Guardar hasta dónde vio el video de una lección
+      description: |
+        Solo el propio estudiante, con las mismas reglas de acceso que el
+        toggle. Idempotente: el reproductor la manda cada pocos segundos, al
+        pausar y al cerrar.
+
+        `positionSec` es dónde retomar; `furthestSec` (en la respuesta) es lo
+        más lejos que llegó alguna vez y solo crece. Una posición mayor que la
+        duración se recorta a la duración.
+
+        **No completa la lección.** Completar sigue siendo
+        `POST /progress/lessons/{lessonId}/toggle`, que el cliente pide al
+        llegar al final: si esto completara solo, quien desmarcó la lección
+        para repasarla la vería marcarse de nuevo en el primer guardado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [positionSec]
+              properties:
+                positionSec: { type: integer, minimum: 0, maximum: 86400 }
+                durationSec: { type: integer, minimum: 1, maximum: 86400 }
+      responses:
+        '200':
+          description: Posición guardada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VideoProgress' }
+        '400': { description: Posición o duración inválidas }
+        '403':
+          description: No es estudiante, o no tiene acceso a ese curso/laboratorio
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: La lección no es de video }
+
   /students/{id}/ruta-progress:
     parameters: [{ $ref: '#/components/parameters/id' }]
     get:
@@ -1220,8 +1297,30 @@ paths:
     get:
       tags: [students]
       summary: Progreso en un curso, con las lecciones completadas
+      description: |
+        Trae también `videoProgress`: hasta dónde vio el estudiante cada video
+        del curso (una entrada por lección que abrió), con la misma forma que
+        devuelve `PUT /progress/lessons/{lessonId}/video`.
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courseId: { type: string, format: uuid }
+                  studentId: { type: string, format: uuid }
+                  totalLessons: { type: integer }
+                  completedLessons: { type: integer }
+                  ratio: { type: number, format: float }
+                  isComplete: { type: boolean }
+                  completedLessonIds:
+                    type: array
+                    items: { type: string, format: uuid }
+                  videoProgress:
+                    type: array
+                    items: { $ref: '#/components/schemas/VideoProgress' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { description: El estudiante no tiene acceso a ese curso }
 
@@ -2497,6 +2596,16 @@ components:
         expiresInSeconds: { type: integer, example: 900 }
         method: { type: string, example: PUT }
         headers: { type: object }
+
+    VideoProgress:
+      type: object
+      description: Hasta dónde vio un estudiante el video de una lección.
+      properties:
+        lessonId: { type: string, format: uuid }
+        positionSec: { type: integer, description: Dónde retomar }
+        furthestSec: { type: integer, description: Lo más lejos que llegó; solo crece }
+        durationSec: { type: integer, nullable: true }
+        updatedAt: { type: string, format: date-time }
 
     ToggleImpact:
       type: object

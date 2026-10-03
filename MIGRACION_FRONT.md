@@ -219,7 +219,8 @@ Los dos orígenes, cada uno como corresponde:
 
 | Origen | Cómo se reproduce |
 |---|---|
-| `external` | `<iframe>` de `youtube-nocookie.com` / `player.vimeo.com` en el navegador; fuera del navegador se abre en la app del sistema |
+| `youtube` | Solo el id. `YoutubeLessonPlayer` (paquete `youtube_player_iframe`): miniatura primero, reproductor al tocar, avance guardado — ver «Reproductor de YouTube» |
+| `external` | `<iframe>` de `player.vimeo.com` en el navegador; fuera del navegador se abre en la app del sistema. Un enlace de YouTube guardado así (antes de que existiera `youtube`) va al reproductor de YouTube |
 | `uploaded` | `GET /lessons/:id/video-url` → URL firmada de CloudFront (5 min) → `<video>` HTML5 |
 
 **`video_source_io` / `video_source_web` estaban huérfanos.** Nadie los
@@ -276,6 +277,140 @@ verdad. `video_player` necesita el plugin de la plataforma, que en
 propio hace falta además la distribución de CloudFront, que todavía no existe:
 la URL está bien firmada pero apunta a un dominio que no responde. Queda
 anotado como pendiente de comprobación en navegador, no dado por hecho.
+
+---
+
+## Reproductor de YouTube
+
+El LXD pega el enlace de un video de YouTube en la lección; el estudiante lo
+ve en un reproductor 16:9 que se adapta a la pantalla, con la miniatura antes
+de cargar, y su avance se guarda para retomar donde quedó.
+
+### Se guarda SOLO el id, con tres barreras
+
+| Dónde | Qué hace |
+|---|---|
+| Cliente — `VideoLink.parse` (`lib/utils/youtube.dart`) | Saca el id de las formas que la gente pega (`watch?v=`, `youtu.be/`, `shorts/`, `embed/`, `live/`, con o sin `https://`, con `&t=` o `?si=`) y avisa **mientras se escribe**: un canal o una lista se rechazan diciendo qué son. Un enlace inválido no deja guardar, y se frena ANTES de crear la lección, para no dejarla a medias |
+| API — `POST /lessons/:id/video-youtube` | Recibe `{videoId}` y exige 11 caracteres de `[A-Za-z0-9_-]`. Un enlace pegado tal cual da 400 |
+| Base — CHECK `lessons_video_youtube_id_format` | La columna no admite otra cosa, aunque la API se equivoque |
+
+Las lecciones de YouTube guardadas antes como enlace (`external`) **no se
+migraron**: el cliente saca el id del enlace al reproducirlas
+(`Lesson.youtubeVideoId`) y pasan a `youtube` la próxima vez que el LXD
+guarde la lección. Migrarlas en la base habría roto al código anterior entre
+migrar y publicar (RUNBOOK, «Lo que el rollback NO deshace»). Vimeo sigue
+aceptándose como enlace.
+
+### El reproductor
+
+- **Miniatura primero.** Hasta que alguien toca «reproducir» no se crea el
+  reproductor: es una página web entera adentro de la nuestra. La miniatura es
+  `i.ytimg.com/vi/<id>/hqdefault.jpg` (480×360, existe para todo video; la
+  `maxresdefault` no, y cuando falta YouTube devuelve una imagen gris con 404
+  que el navegador igual dibuja).
+- **16:9 siempre.** En un teléfono el diálogo ocupa la pantalla y el video va
+  de borde a borde; acostado, se limita por el alto. En pantallas grandes es el
+  16:9 más grande que entra en la ventana — por el ancho Y por el alto: en una
+  laptop apaisada el límite es el alto, y mirar solo el ancho dejaba los
+  controles fuera de la pantalla.
+- **Si no carga, lo dice.** A los 20 s sin que el reproductor avise que está
+  listo se muestra «No se pudo cargar el reproductor» con «Ver en YouTube». Lo
+  mismo con los errores de YouTube: un video que su dueño no deja embeber, o
+  uno borrado, se explican con su propio mensaje.
+- **La vista previa del editor es el mismo reproductor**, sin guardar avance:
+  es la forma de enterarse antes de publicar de que el dueño del video no deja
+  verlo fuera de YouTube.
+
+### El avance del estudiante
+
+- `lesson_video_progress` guarda `position_sec` (dónde retomar) y
+  `furthest_sec` (lo más lejos que llegó; solo crece). No es completitud y no
+  alimenta ninguna vista de `0001_completeness.sql`.
+- `VideoWatchTracker` decide cuándo guardar: cada 15 s de reproducción, al
+  pausar, al terminar y al cerrar. Nunca dos veces la misma posición.
+- Al pasar el 90% (o al terminar) el cliente completa la lección con
+  `toggleLessonIfPending`, igual que al aprobar un quiz. **El servidor no la
+  completa solo**: si lo hiciera, quien la desmarcó para repasarla la vería
+  marcarse de nuevo en el primer guardado, porque `furthest_sec` ya estaba al
+  final.
+- `toggleLessonIfPending` ahora ignora un segundo pedido mientras el primero
+  está en vuelo: el video cruza el 90% y termina un segundo después, y los dos
+  veían la lección pendiente — el segundo toggle la desmarcaba.
+- El equipo que abre el curso de un estudiante ve cuánto vio, pero el
+  reproductor no guarda nada a su nombre.
+
+### La CSP — sin esto, en el navegador NO funciona
+
+En la app de escritorio y en móvil el reproductor corre en un WebView y no le
+afecta. **En el navegador corre en un iframe `srcdoc` que hereda la CSP del
+sitio**, y esa página trae un `<script>` en línea que carga
+`https://www.youtube.com/iframe_api`. Con la CSP de hoy
+(`script-src 'self' 'wasm-unsafe-eval' blob:`) las dos cosas se bloquean, el
+reproductor nunca arranca, y a los 20 s la lección muestra el aviso con «Ver en
+YouTube». No se rompe nada más, pero el video no se ve en el sitio.
+
+Hay que agregar, en `enactus-web-seguridad` **y** en
+`enactus-web-staging-seguridad` (CloudFront → *Response headers policies*):
+
+| Directiva | Agregar | Por qué |
+|---|---|---|
+| `script-src` | `https://www.youtube.com` | La API del reproductor (`iframe_api` y el `www-widgetapi.js` que trae) |
+| `script-src` | `'sha256-…'` del script en línea del reproductor | La página `srcdoc` del paquete. **No `'unsafe-inline'`** |
+| `frame-src` | `https://www.youtube-nocookie.com` | El reproductor en sí (modo sin cookies) |
+| `img-src` | `https://i.ytimg.com` | La miniatura |
+
+**Por qué un hash y no `'unsafe-inline'`.** El token de sesión vive en
+`localStorage` y el control que lo protege de un script inyectado es
+justamente que `script-src` no tenga `'unsafe-inline'` (ver
+`token_store.dart`). Abrirlo para todo el sitio por un reproductor de video
+sería cambiar esa protección por comodidad. El hash autoriza ese script exacto
+y nada más.
+
+**El hash es estable por origen** porque la clave del reproductor es fija
+(`YoutubeLessonPlayer.playerKey`): con una clave por video, el script cambiaría
+con cada lección. Lleva adentro el origen del sitio, así que hay un hash por
+origen (`eduxaction.com`, `www.eduxaction.com`, `staging.eduxaction.com`).
+Cómo obtenerlo: abrir una lección de YouTube, darle play y leer la consola de
+Chrome — el error de CSP trae el `'sha256-…'` exacto que hay que agregar.
+**Cambia si se actualiza `youtube_player_iframe`** (cambia su `player.html`):
+al subir de versión hay que volver a leerlo.
+
+### Versión del paquete
+
+Revisado en pub.dev el 3 de octubre de 2026: la última es **6.0.2** (30 de
+mayo de 2026), no la 5.2.2 que circulaba (agosto de 2025). Pide Flutter
+≥ 3.38 / Dart ^3.10; el proyecto está en 3.44.3 / Dart 3.12.2 y CI usa el
+estable (3.47.6 / Dart 3.13.5). Con las dos versiones: `analyze` limpio,
+suite completa en verde y `flutter build web --release` compila. El lockfile
+se generó con 3.44.3, la del proyecto, para no arrastrar cambios ajenos.
+
+### Cómo se prueba
+
+- `test/youtube_test.dart` — el analizador de enlaces (veintidós formas
+  válidas, diecinueve inválidas), `VideoProgress` y `VideoWatchTracker`.
+- `test/youtube_player_test.dart` — el reproductor DEL PAQUETE contra un
+  WebView falso que habla su mismo protocolo de mensajes
+  (`helpers/fake_youtube_webview.dart`): miniatura sin reproductor, retomar,
+  guardar al pausar y al cerrar, completar una sola vez, errores de YouTube,
+  el timeout, y el tamaño 16:9 en teléfono, teléfono acostado, laptop y
+  escritorio.
+- `test/lesson_editor_youtube_test.dart` — que viaje `{videoId}` y nada más,
+  y que un enlace inválido no cree la lección.
+- Backend: `video-youtube.test.ts`, `video-progreso.test.ts` y
+  `migracion-video-youtube.test.ts`, que corre 0007 **como se despliega**:
+  sola, sobre una base que ya estaba en 0006.
+
+Dos cosas que las pruebas encontraron:
+
+1. **El editor se rompía al pegar el enlace.** El `AlertDialog` pide medidas
+   intrínsecas a todo su contenido y el reproductor usa `LayoutBuilder`, que no
+   sabe darlas. El reproductor va dentro de una caja 16:9 que las responde con
+   la proporción (`_Caja16x9`).
+2. **La migración habría fallado al desplegar con CI en verde.** Comparar
+   contra el valor nuevo del enum en el CHECK funciona en una base vacía —el
+   tipo nace en la misma transacción— y falla sobre una existente con «unsafe
+   use of new value». El CHECK compara `video_type::text`; la prueba de
+   migración lo fija (comprobado por mutación).
 
 ---
 

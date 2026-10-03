@@ -84,9 +84,16 @@ export const lessonType = pgEnum('lesson_type', [
 
 /**
  * Origen del video de una lección. `external` = enlace a YouTube/Vimeo;
- * `uploaded` = archivo propio en S3, servido SIEMPRE por CloudFront.
+ * `uploaded` = archivo propio en S3, servido SIEMPRE por CloudFront;
+ * `youtube` = SOLO el id del video de YouTube (`lessons.video_youtube_id`),
+ * nunca el enlace que pegó el LXD.
+ *
+ * `external` sigue existiendo: es Vimeo, y las lecciones de YouTube que se
+ * guardaron como enlace antes de que existiera `youtube`. No se migran — el
+ * cliente saca el id del enlace al reproducirlas, y pasan a `youtube` la
+ * próxima vez que alguien guarde la lección.
  */
-export const videoType = pgEnum('video_type', ['external', 'uploaded']);
+export const videoType = pgEnum('video_type', ['external', 'uploaded', 'youtube']);
 
 export const quizKind = pgEnum('quiz_kind', [
   'multiple',

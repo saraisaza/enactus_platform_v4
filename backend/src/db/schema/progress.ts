@@ -1,5 +1,8 @@
+import { sql } from 'drizzle-orm';
 import {
+  check,
   index,
+  integer,
   pgTable,
   primaryKey,
   timestamp,
@@ -98,5 +101,44 @@ export const rutaProgressLessons = pgTable(
   (t) => [
     primaryKey({ columns: [t.rutaProgressId, t.lessonId] }),
     index('ruta_progress_lessons_lesson_id_idx').on(t.lessonId),
+  ],
+);
+
+/**
+ * Hasta dónde vio un estudiante el video de una lección.
+ *
+ * NO es completitud: la lección se completa por el mismo camino de siempre
+ * (`progress_lessons`, vía el toggle), y esta tabla no alimenta ninguna vista
+ * de `0001_completeness.sql`. Guarda otro hecho atómico —«iba por el segundo
+ * 312»— para retomar donde quedó, desde cualquier dispositivo.
+ *
+ * Dos posiciones porque responden preguntas distintas: `position_sec` es
+ * dónde retomar (puede retroceder si vuelve a ver un tramo) y `furthest_sec`
+ * es hasta dónde llegó alguna vez (solo crece; es lo que se muestra como
+ * «visto»).
+ */
+export const lessonVideoProgress = pgTable(
+  'lesson_video_progress',
+  {
+    studentId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    lessonId: uuid()
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    positionSec: integer().notNull().default(0),
+    furthestSec: integer().notNull().default(0),
+    /** La que reporta el reproductor. Nula hasta que el video arranca. */
+    durationSec: integer(),
+    ...timestamps,
+  },
+  (t) => [
+    primaryKey({ columns: [t.studentId, t.lessonId] }),
+    index('lesson_video_progress_lesson_id_idx').on(t.lessonId),
+    check(
+      'lesson_video_progress_positions_valid',
+      sql`${t.positionSec} >= 0 and ${t.furthestSec} >= ${t.positionSec}
+          and (${t.durationSec} is null or ${t.durationSec} > 0)`,
+    ),
   ],
 );

@@ -8,9 +8,11 @@ import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/responsive.dart';
+import '../../utils/youtube.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
+import '../../widgets/youtube_lesson_player.dart';
 
 IconData lessonTypeIcon(LessonType t) => switch (t) {
       LessonType.video => Icons.play_circle_outline,
@@ -89,6 +91,10 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   late TextEditingController _externalUrl;
   late TextEditingController _videoUrl;
 
+  /// Lo que hay escrito en el campo de video, ya leído. Se recalcula con
+  /// cada tecla para avisar ANTES de guardar, no con un 400 después.
+  VideoLink _videoLink = VideoLink.parse('');
+
   List<QuizQuestionDraft> _questions = [];
   late ActivityDraft _activity;
 
@@ -114,8 +120,23 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     _desc = TextEditingController(text: o?.description ?? '');
     _duration = TextEditingController(text: (o?.durationMin ?? 0).toString());
     _externalUrl = TextEditingController(text: o?.externalUrl ?? '');
+    // Una lección de YouTube guarda solo el id; al editarla se muestra el
+    // enlace canónico, que es lo que el LXD reconoce y vuelve a dar el id.
     _videoUrl = TextEditingController(
-        text: o?.videoType == VideoSourceType.external ? (o?.videoUrl ?? '') : '');
+        text: switch (o?.videoType) {
+      VideoSourceType.youtube when o?.videoYoutubeId != null =>
+        youtubeWatchUrl(o!.videoYoutubeId!),
+      VideoSourceType.external => o?.videoUrl ?? '',
+      _ => '',
+    });
+    _videoLink = VideoLink.parse(_videoUrl.text);
+    _videoUrl.addListener(() {
+      final link = VideoLink.parse(_videoUrl.text);
+      if (link.kind != _videoLink.kind ||
+          link.youtubeId != _videoLink.youtubeId) {
+        setState(() => _videoLink = link);
+      }
+    });
     _activity = o?.activity == null
         ? ActivityDraft()
         : ActivityDraft.from(o!.activity!);
@@ -170,6 +191,13 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     if (_type == LessonType.link && _externalUrl.text.trim().isEmpty) {
       setState(() => _error =
           const ValidationError('Una lección de tipo enlace necesita su URL.'));
+      return;
+    }
+    // Antes de crear nada: un enlace inválido detectado DESPUÉS de crear la
+    // lección la dejaría guardada a medias, sin video.
+    final videoProblem = _videoLink.problem;
+    if (_type == LessonType.video && videoProblem != null) {
+      setState(() => _error = ValidationError(videoProblem));
       return;
     }
 
@@ -247,12 +275,21 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           await data.reloadCourse(widget.courseId);
         }
       case LessonType.video:
-        final url = _videoUrl.text.trim();
-        if (url.isNotEmpty) {
-          await data.setLessonExternalVideo(lessonId, url,
-              courseId: widget.courseId);
-        } else {
-          await data.reloadCourse(widget.courseId);
+        final link = _videoLink;
+        switch (link.kind) {
+          case VideoLinkKind.youtube:
+            // Viaja y se guarda SOLO el id, nunca el enlace pegado.
+            await data.setLessonYoutubeVideo(lessonId, link.youtubeId!,
+                courseId: widget.courseId);
+          case VideoLinkKind.vimeo:
+            await data.setLessonExternalVideo(lessonId, link.url!,
+                courseId: widget.courseId);
+          case VideoLinkKind.empty:
+          case VideoLinkKind.youtubeNotVideo:
+          case VideoLinkKind.unsupported:
+            // Vacío: queda como está (sin video, o con su archivo propio).
+            // Los inválidos no llegan acá: `_save` los frena antes.
+            await data.reloadCourse(widget.courseId);
         }
       case LessonType.link:
         await data.reloadCourse(widget.courseId);
@@ -398,17 +435,60 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   List<Widget> _typeFields() {
     switch (_type) {
       case LessonType.video:
+        final link = _videoLink;
+        final tieneArchivo =
+            widget.original?.isUploadedVideo == true &&
+                link.kind == VideoLinkKind.empty;
         return [
           TextField(
+            key: const ValueKey('lesson-video-url'),
             controller: _videoUrl,
             enabled: !_saving,
-            decoration: const InputDecoration(
-              labelText: 'Enlace del video (YouTube o Vimeo)',
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            decoration: InputDecoration(
+              labelText: 'Enlace del video de YouTube',
               hintText: 'https://www.youtube.com/watch?v=…',
-              helperText: 'Para subir un archivo propio, usá el botón de video '
-                  'de la lección una vez creada.',
+              prefixIcon: const Icon(Icons.smart_display_outlined),
+              suffixIcon: link.kind == VideoLinkKind.youtube ||
+                      link.kind == VideoLinkKind.vimeo
+                  ? const Icon(Icons.check_circle, color: AppColors.statusGood)
+                  : null,
+              errorText: link.problem,
+              errorMaxLines: 3,
+              helperMaxLines: 3,
+              helperText: switch (link.kind) {
+                VideoLinkKind.youtube =>
+                  'Video de YouTube encontrado. Se guarda solo su id '
+                      '(${link.youtubeId}), no el enlace.',
+                VideoLinkKind.vimeo =>
+                  'Enlace de Vimeo: se guarda tal cual y se ve con el '
+                      'reproductor de Vimeo.',
+                _ when tieneArchivo =>
+                  'Esta lección ya tiene un video propio cargado. Pegar un '
+                      'enlace lo reemplaza.',
+                _ => 'Pega el enlace como lo copias de YouTube: sirven '
+                    'watch?v=, youtu.be, shorts y embed. También se acepta '
+                    'Vimeo.',
+              },
             ),
           ),
+          if (link.kind == VideoLinkKind.youtube) ...[
+            const SizedBox(height: 12),
+            const Text('Vista previa — así lo verán los estudiantes:',
+                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+            const SizedBox(height: 6),
+            // Reproducirlo acá es la única forma de enterarse ANTES de
+            // publicar de que el dueño del video no deja verlo fuera de
+            // YouTube. La vista previa no guarda avance de nadie.
+            YoutubeLessonPlayer(
+              key: ValueKey('preview-${link.youtubeId}'),
+              videoId: link.youtubeId!,
+              title: _title.text.trim().isEmpty
+                  ? 'Vista previa'
+                  : _title.text.trim(),
+            ),
+          ],
           const SizedBox(height: 12),
           TextField(
             controller: _duration,

@@ -17,6 +17,7 @@ import {
   courseProgressFor,
   rutaProgressFor,
 } from '../services/progress';
+import { videoProgressForCourse } from '../services/video-progress';
 
 export const studentRoutes = new Hono<AppEnv>();
 studentRoutes.use('*', requireAuth);
@@ -119,7 +120,15 @@ studentRoutes.get('/:id/ruta-progress', requireEnactus, async (c) => {
   });
 });
 
-/** Progreso de un estudiante en UN curso, con las lecciones ya completadas. */
+/**
+ * Progreso de un estudiante en UN curso, con las lecciones ya completadas y
+ * hasta dónde vio cada video.
+ *
+ * `videoProgress` viaja acá y no en un endpoint aparte porque la pantalla del
+ * curso lo necesita junto con lo demás —para mostrar «visto 40%» en la lista
+ * y retomar donde quedó—, y quien mira el avance de otra persona (con el mismo
+ * alcance de `loadTarget`) ve también esto.
+ */
 studentRoutes.get('/:id/course-progress/:courseId', async (c) => {
   const db = c.get('db');
   const target = await loadTarget(db, currentUser(c), c.req.param('id'));
@@ -135,6 +144,7 @@ studentRoutes.get('/:id/course-progress/:courseId', async (c) => {
     ...progress,
     studentId: target.id,
     completedLessonIds: await completedLessonIds(db, target.id, courseId),
+    videoProgress: await videoProgressForCourse(db, target.id, courseId),
   });
 });
 

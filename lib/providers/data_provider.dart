@@ -84,6 +84,16 @@ class DataProvider extends ChangeNotifier {
   final Map<String, AsyncValue<ForumPost>> _forumPostById = {};
   final Map<String, AsyncValue<CourseProgress>> _courseProgress = {};
 
+  /// Hasta dónde vio cada video quien tiene la sesión, por id de lección.
+  ///
+  /// Se llena con lo que traen el progreso del curso y la Ruta, y se pisa con
+  /// cada guardado del reproductor: así, cerrar el video y volver a abrirlo
+  /// retoma donde quedó sin pedir nada, y la lista muestra lo recién visto.
+  final Map<String, VideoProgress> _myVideoProgress = {};
+
+  /// Lecciones con un "completar" ya en vuelo. Ver [toggleLessonIfPending].
+  final Set<String> _completing = {};
+
   void _resetAll() {
     _courses = const AsyncValue.idle();
     _authoredCourses = const AsyncValue.idle();
@@ -112,6 +122,8 @@ class DataProvider extends ChangeNotifier {
     _groupById.clear();
     _forumPostById.clear();
     _courseProgress.clear();
+    _myVideoProgress.clear();
+    _completing.clear();
     _usersByQuery.clear();
     _userById.clear();
     _courseStudents.clear();
@@ -461,13 +473,26 @@ class DataProvider extends ChangeNotifier {
     await reloadCourse(courseId);
   }
 
-  /// Asocia un video externo (YouTube/Vimeo) a la lección.
+  /// Asocia un video externo (Vimeo) a la lección, guardando el enlace.
   Future<void> setLessonExternalVideo(
     String lessonId,
     String url, {
     required String courseId,
   }) async {
     await api.post('/lessons/$lessonId/video-external', body: {'url': url});
+    await reloadCourse(courseId);
+  }
+
+  /// Asocia un video de YouTube a la lección. Viaja y se guarda **solo el
+  /// id**: sacarlo del enlace es trabajo de `VideoLink.parse`, y el servidor
+  /// rechaza con 400 cualquier cosa que no sean los 11 caracteres.
+  Future<void> setLessonYoutubeVideo(
+    String lessonId,
+    String videoId, {
+    required String courseId,
+  }) async {
+    await api.post('/lessons/$lessonId/video-youtube',
+        body: {'videoId': videoId});
     await reloadCourse(courseId);
   }
 
@@ -509,7 +534,18 @@ class DataProvider extends ChangeNotifier {
   Future<RutaProgress> _fetchRutaProgress() async {
     final id = _requireUser();
     final json = await api.get('/students/$id/ruta-progress');
-    return RutaProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    final ruta = RutaProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    for (final lab in ruta.laboratories) {
+      for (final phase in lab.phases) {
+        for (final module in phase.modules) {
+          for (final lesson in module.ownLessons) {
+            final video = lesson.videoProgress;
+            if (video != null) _rememberVideoProgress(video);
+          }
+        }
+      }
+    }
+    return ruta;
   }
 
   /// Ruta de Impacto de OTRO estudiante (Mentor, Asesor, LXD, Admin).
@@ -554,7 +590,22 @@ class DataProvider extends ChangeNotifier {
       String courseId, String? studentId) async {
     final id = studentId ?? _requireUser();
     final json = await api.get('/students/$id/course-progress/$courseId');
-    return CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    final progress =
+        CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    // Solo el propio: el de otra persona no es desde dónde retoma quien mira.
+    if (id == _currentUserId) {
+      progress.videoProgress.forEach(_rememberVideoProgress);
+    }
+    return progress;
+  }
+
+  /// Lo que dice el servidor, salvo que acá haya algo más nuevo: un guardado
+  /// que salió hace un segundo y todavía no está en la lectura que llega.
+  void _rememberVideoProgress(VideoProgress fromServer) {
+    final local = _myVideoProgress[fromServer.lessonId];
+    if (local == null || fromServer.furthestSec >= local.furthestSec) {
+      _myVideoProgress[fromServer.lessonId] = fromServer;
+    }
   }
 
   /// Marca o desmarca una lección.
@@ -588,6 +639,7 @@ class DataProvider extends ChangeNotifier {
         ratio: course.ratio,
         isComplete: course.isComplete,
         completedLessonIds: completed,
+        videoProgress: previous?.videoProgress ?? const [],
       ));
     }
 
@@ -605,13 +657,22 @@ class DataProvider extends ChangeNotifier {
   ///
   /// [toggleLesson] alterna: aprobar un quiz dos veces lo desmarcaría. Acá el
   /// acto es "esto quedó hecho", no "cambiá el estado".
+  ///
+  /// Dos pedidos seguidos —el video que cruza el 90% y termina un segundo
+  /// después— verían los dos la lección pendiente, porque la respuesta del
+  /// primero todavía no llegó: el segundo toggle la DESMARCARÍA. Mientras hay
+  /// uno en vuelo para esa lección, los siguientes no hacen nada.
   Future<void> toggleLessonIfPending(String lessonId, String courseId) async {
     final done = _courseProgress[_progressKey(courseId, null)]
             ?.valueOrNull
             ?.isLessonComplete(lessonId) ??
         false;
-    if (done) return;
-    await toggleLesson(lessonId, courseId);
+    if (done || !_completing.add(lessonId)) return;
+    try {
+      await toggleLesson(lessonId, courseId);
+    } finally {
+      _completing.remove(lessonId);
+    }
   }
 
   /// Marca una lectura o entrega PROPIA de un módulo de la Ruta.
@@ -625,10 +686,53 @@ class DataProvider extends ChangeNotifier {
             lab.phases.any((phase) => phase.modules.any((module) =>
                 module.ownLessons.any((l) => l.id == lessonId && l.isComplete)))) ??
         false;
-    if (alreadyDone) return;
+    if (alreadyDone || !_completing.add(lessonId)) return;
 
-    await api.post('/progress/lessons/$lessonId/toggle');
-    await reloadRutaProgress();
+    try {
+      await api.post('/progress/lessons/$lessonId/toggle');
+      await reloadRutaProgress();
+    } finally {
+      _completing.remove(lessonId);
+    }
+  }
+
+  /// Hasta dónde vio el video quien tiene la sesión, o `null` si nunca lo
+  /// abrió (o el dato todavía no llegó).
+  VideoProgress? myVideoProgress(String lessonId) => _myVideoProgress[lessonId];
+
+  /// Guarda hasta dónde va el video. Lo llama el reproductor cada pocos
+  /// segundos, al pausar, al terminar y al cerrar.
+  ///
+  /// **No completa la lección** —eso es [toggleLessonIfPending]— y **nunca
+  /// lanza**: un guardado que falla no puede interrumpir el video que la
+  /// persona está mirando. La copia local se actualiza igual, así que cerrar
+  /// y volver a abrir retoma bien en esta sesión, y el próximo guardado que
+  /// sí llegue lleva la posición al día.
+  Future<void> saveVideoProgress(
+    String lessonId, {
+    required int positionSec,
+    int? durationSec,
+  }) async {
+    final previous = _myVideoProgress[lessonId] ??
+        VideoProgress(lessonId: lessonId, durationSec: durationSec);
+    _myVideoProgress[lessonId] =
+        previous.advancedTo(positionSec, duration: durationSec);
+    // Se avisa fuera del cuadro actual: el último guardado sale del
+    // `dispose` del reproductor, y notificar ahí reconstruiría pantallas con
+    // el árbol a mitad de desmontar.
+    scheduleMicrotask(notifyListeners);
+
+    try {
+      final json = await api.put('/progress/lessons/$lessonId/video', body: {
+        'positionSec': positionSec,
+        'durationSec': ?durationSec,
+      });
+      _rememberVideoProgress(
+          VideoProgress.fromJson(Map<String, dynamic>.from(json as Map)));
+    } on ApiException catch (e) {
+      debugPrint('No se pudo guardar el avance del video $lessonId: '
+          '${e.message}');
+    }
   }
 
   /// Envía las respuestas de un quiz y devuelve el resultado.

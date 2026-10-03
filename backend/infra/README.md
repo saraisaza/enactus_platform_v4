@@ -133,6 +133,46 @@ Crear el usuario acotado no reduce nada mientras la llave vieja siga viva.
 
 ---
 
+## `s3-cors.json` — qué páginas pueden subir al bucket
+
+El navegador hace el `PUT` **directo** contra `enactus-media-dev`, desde otro
+origen que la página. Antes de mandar el archivo hace un *preflight*
+(`OPTIONS`), y si el bucket no lista ese origen S3 responde 403 y el archivo
+no sale nunca. En la pantalla se ve como "se interrumpió la conexión"; en la
+API no queda **nada**, porque la petición nunca llegó.
+
+Hasta el 3 de octubre de 2026 el bucket solo aceptaba `http://localhost:8080`:
+en local todo subía, y desde `eduxaction.com` no subía ningún archivo.
+
+El pipeline **no** aplica este archivo — el rol de GitHub no tiene
+`s3:PutBucketCORS`, a propósito. Se aplica a mano, con `enactus-deploy`:
+
+```bash
+aws s3api put-bucket-cors --bucket enactus-media-dev \
+  --cors-configuration file://backend/infra/s3-cors.json \
+  --profile enactus-deploy
+```
+
+`put-bucket-cors` **reemplaza** la configuración entera: lo que no esté en el
+archivo deja de valer. Por eso `localhost:8080` sigue en la lista.
+
+Para comprobarlo (no hace falta credencial; el preflight es anónimo):
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X OPTIONS \
+  https://enactus-media-dev.s3.us-east-1.amazonaws.com/lesson-resources/x.png \
+  -H 'Origin: https://eduxaction.com' \
+  -H 'Access-Control-Request-Method: PUT' \
+  -H 'Access-Control-Request-Headers: content-type'
+```
+
+Tiene que dar `200`. Un `403` es que el origen no está en la lista.
+
+Un dominio nuevo para el frontend se agrega acá **y** se vuelve a aplicar;
+`tests/s3-firma.test.ts` exige que los tres dominios actuales estén.
+
+---
+
 ## Lo que NO cubre este archivo
 
 **La distribución de CloudFront.** El video propio se sirve por CDN y nunca por

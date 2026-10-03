@@ -12,6 +12,7 @@ import '../../utils/constants.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
+import '../../widgets/file_viewer.dart';
 import '../../widgets/portal_shell.dart';
 
 /// Recursos de comunicaciones: plantillas, guías de marca y material que el
@@ -142,10 +143,17 @@ class _ResourceCard extends StatelessWidget {
     final clave = resource.s3Key;
     if (!resource.isLink && clave == null) return;
     try {
-      final destino =
-          resource.isLink ? resource.url : await data.resolveFileUrl(clave!);
-      if (destino == null || !context.mounted) return;
-      await launchUrl(Uri.parse(destino), mode: LaunchMode.externalApplication);
+      if (resource.isLink) {
+        final destino = resource.url;
+        if (destino == null) return;
+        await launchUrl(Uri.parse(destino),
+            mode: LaunchMode.externalApplication);
+        return;
+      }
+      final url = await data.resolveFileUrl(clave!);
+      if (!context.mounted) return;
+      await FileViewer.show(context,
+          url: url, fileName: resource.fileName, s3Key: clave);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message, error: true);
     }

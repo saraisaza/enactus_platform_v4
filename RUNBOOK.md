@@ -227,6 +227,7 @@ huérfano: algo se enganchó a otro.
 | Cifrado | SSE-S3 (AES256) por defecto |
 | Versionado | **Enabled** |
 | Acceso del backend | usuario IAM `enactus-s3-dev` — ver `backend/infra/` |
+| CORS | `backend/infra/s3-cors.json` — se aplica a mano, ver `backend/infra/README.md` |
 
 El versionado se activó el 1 de septiembre de 2026; **no estaba puesto** aunque
 se daba por configurado. Ojo con el costo: las versiones viejas se cobran como

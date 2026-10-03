@@ -25,7 +25,15 @@ const UPLOAD_URL_TTL_SECONDS = 900; // 15 min
 let client: S3Client | null = null;
 
 function s3(): S3Client {
-  client ??= new S3Client({ region: env.AWS_REGION });
+  client ??= new S3Client({
+    region: env.AWS_REGION,
+    // Sin esto la SDK mete en la URL de subida `x-amz-checksum-crc32=AAAAAA==`:
+    // el CRC32 de un cuerpo VACÍO, porque al firmar todavía no hay archivo. S3
+    // compara ese valor con los bytes que llegan en el PUT y rechaza toda
+    // subida que no sea un archivo de 0 bytes. Con `WHEN_REQUIRED` solo se
+    // calcula checksum donde S3 lo exige, y `PutObject` no lo exige.
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+  });
   return client;
 }
 

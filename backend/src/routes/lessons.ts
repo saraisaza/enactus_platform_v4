@@ -13,7 +13,20 @@ import {
   quizQuestions,
 } from '../db/schema';
 import { createVideoUrl } from '../lib/cloudfront';
-import { conflict, forbidden, notFound } from '../lib/errors';
+import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
+import {
+  MAX_PARTS_PER_SIGN,
+  PART_URL_TTL_SECONDS,
+  THUMBNAIL_URL_TTL_SECONDS,
+  UPLOADED_VIDEO_TYPE,
+  VIDEO_PART_BYTES,
+  assertValidThumbnail,
+  assertValidUploadedVideo,
+  expectedPartBytes,
+  mediaStorage,
+  thumbnailKeyFor,
+  videoPartCount,
+} from '../lib/media-storage';
 import {
   assertValidDocumentUpload,
   assertValidVideoUpload,
@@ -21,6 +34,7 @@ import {
   videoKeyFor,
 } from '../lib/s3';
 import { authorizeLessonVideo } from '../services/file-access';
+import { drainStorageDeletes } from '../services/storage-cleanup';
 import {
   CONTENT_ROLES,
   currentUser,
@@ -99,6 +113,62 @@ const youtubeVideoBody = z.object({
       'Tiene que ser el id del video de YouTube (11 caracteres), no el enlace.',
     ),
   durationSec: z.number().int().min(0).optional(),
+});
+
+/**
+ * El nombre con que se subió, para mostrárselo al LXD. Sin rutas ni
+ * caracteres de control: es texto que se muestra, no un camino.
+ */
+const fileNameField = z
+  .string()
+  .trim()
+  .min(1, 'Falta el nombre del archivo.')
+  .transform((nombre) =>
+    nombre
+      .replace(/^.*[\\/]/, '')
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .slice(0, 255),
+  );
+
+const startVideoUploadBody = z.object({
+  fileName: fileNameField,
+  contentType: z.string().trim().min(1, 'Falta el content-type del archivo.'),
+  sizeBytes: z.number().int().positive('El tamaño debe ser mayor a 0.'),
+});
+
+const uploadRef = {
+  key: z.string().trim().min(1),
+  uploadId: z.string().trim().min(1),
+};
+
+const signPartsBody = z.object({
+  ...uploadRef,
+  sizeBytes: z.number().int().positive(),
+  partNumbers: z
+    .array(z.number().int().min(1))
+    .min(1, 'Hace falta al menos una parte.')
+    .max(MAX_PARTS_PER_SIGN, `Se firman hasta ${MAX_PARTS_PER_SIGN} partes por pedido.`),
+});
+
+const uploadQuery = z.object(uploadRef);
+
+const completeVideoUploadBody = z.object({
+  ...uploadRef,
+  fileName: fileNameField,
+  sizeBytes: z.number().int().positive(),
+  durationSec: z.number().int().min(0).max(24 * 3600).optional(),
+  thumbnailKey: z.string().trim().min(1).optional(),
+});
+
+const thumbnailUploadBody = z.object({
+  contentType: z.string().trim().min(1),
+  sizeBytes: z.number().int().positive(),
+});
+
+/** `null` quita la portada propia. */
+const setThumbnailBody = z.object({
+  key: z.string().trim().min(1).nullable(),
 });
 
 const resourceBody = z.object({
@@ -221,6 +291,8 @@ lessonRoutes.delete('/:id', requireRole(...CONTENT_ROLES), async (c) => {
 
   await db.delete(lessons).where(eq(lessons.id, lesson.id));
   if (lesson.courseModuleId) await renumberLessons(db, lesson.courseModuleId);
+  // El trigger anotó su video y su portada; acá se borran de S3.
+  await drainStorageDeletes(db);
   return c.body(null, 204);
 });
 
@@ -290,11 +362,16 @@ lessonRoutes.post('/:id/video', requireRole(...CONTENT_ROLES), async (c) => {
       videoSizeBytes: body.sizeBytes,
       videoMimeType: body.mimeType,
       videoDurationSec: body.durationSec ?? null,
+      // La portada y el nombre eran del video anterior.
+      videoThumbnailS3Key: null,
+      videoOriginalName: null,
+      videoUploadedAt: new Date(),
       updatedAt: new Date(),
     })
     .where(eq(lessons.id, lesson.id))
     .returning();
 
+  await drainStorageDeletes(db);
   return c.json(updated);
 });
 
@@ -312,8 +389,287 @@ lessonRoutes.post('/:id/video', requireRole(...CONTENT_ROLES), async (c) => {
 lessonRoutes.get('/:id/video-url', async (c) => {
   const user = currentUser(c);
   const db = c.get('db');
-  const { key } = await authorizeLessonVideo(db, user, c.req.param('id'));
-  return c.json(createVideoUrl({ key }));
+  const { key, thumbnailKey } = await authorizeLessonVideo(
+    db,
+    user,
+    c.req.param('id'),
+  );
+  return c.json({
+    ...createVideoUrl({ key }),
+    // Misma autorización que el video: quien no puede verlo, tampoco su portada.
+    thumbnailUrl: thumbnailKey
+      ? createVideoUrl({ key: thumbnailKey, ttlSeconds: 3600 }).url
+      : null,
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Video subido por partes (multipart)
+//
+// 1. `POST video-uploads`           abre la subida en S3
+// 2. `POST video-uploads/sign`      firma las partes que faltan
+//    (el navegador sube cada parte directo a S3, con su URL)
+// 3. `GET  video-uploads/parts`     qué partes ya llegaron: para retomar
+// 4. `POST video-uploads/complete`  cierra la subida y la lección queda apuntando
+//    `DELETE video-uploads`         cancela
+//
+// Mismos permisos que el resto de la edición: el LXD o el admin que pueden
+// editar ese curso. Ver el video es otra regla (`GET /:id/video-url`).
+// ---------------------------------------------------------------------------
+
+/** La key es de un video de ESTA lección, no de otra ni de su portada. */
+function assertVideoKeyOf(lessonId: string, key: string): void {
+  const ok =
+    key.startsWith(`lessons/${lessonId}/`) &&
+    key.endsWith('.mp4') &&
+    !key.includes('/thumb-') &&
+    !key.includes('..');
+  if (!ok) throw conflict('Esa subida no corresponde a esta lección.');
+}
+
+function assertThumbnailKeyOf(lessonId: string, key: string): void {
+  const ok = key.startsWith(`lessons/${lessonId}/thumb-`) && !key.includes('..');
+  if (!ok) throw conflict('Esa portada no corresponde a esta lección.');
+}
+
+lessonRoutes.post('/:id/video-uploads', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = startVideoUploadBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  assertValidUploadedVideo(body);
+
+  const key = videoKeyFor(lesson.id, UPLOADED_VIDEO_TYPE);
+  const uploadId = await mediaStorage().createMultipartUpload(key, UPLOADED_VIDEO_TYPE);
+
+  return c.json(
+    {
+      key,
+      uploadId,
+      partSizeBytes: VIDEO_PART_BYTES,
+      partCount: videoPartCount(body.sizeBytes),
+    },
+    201,
+  );
+});
+
+lessonRoutes.post('/:id/video-uploads/sign', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = signPartsBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  assertValidUploadedVideo({ contentType: UPLOADED_VIDEO_TYPE, sizeBytes: body.sizeBytes });
+  assertVideoKeyOf(lesson.id, body.key);
+
+  const total = videoPartCount(body.sizeBytes);
+  const fuera = body.partNumbers.find((n) => n > total);
+  if (fuera !== undefined) {
+    throw badRequest(`El video tiene ${total} partes; no existe la parte ${fuera}.`);
+  }
+
+  const storage = mediaStorage();
+  const parts = await Promise.all(
+    [...new Set(body.partNumbers)].map(async (partNumber) => ({
+      partNumber,
+      url: await storage.signUploadPart(
+        body.key,
+        body.uploadId,
+        partNumber,
+        expectedPartBytes(body.sizeBytes, partNumber),
+      ),
+    })),
+  );
+
+  return c.json({ parts, expiresInSeconds: PART_URL_TTL_SECONDS });
+});
+
+lessonRoutes.get('/:id/video-uploads/parts', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const query = uploadQuery.parse(c.req.query());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+  assertVideoKeyOf(lesson.id, query.key);
+
+  const parts = await mediaStorage().listParts(query.key, query.uploadId);
+  return c.json({
+    parts: parts
+      .map(({ partNumber, sizeBytes }) => ({ partNumber, sizeBytes }))
+      .sort((a, b) => a.partNumber - b.partNumber),
+  });
+});
+
+/**
+ * Cierra la subida y deja la lección apuntando al video.
+ *
+ * Las partes NO se le creen al cliente: se le preguntan a S3, y tienen que
+ * estar todas y cada una del tamaño exacto. Después de cerrar, se comprueba
+ * el tamaño del objeto que quedó.
+ */
+lessonRoutes.post('/:id/video-uploads/complete', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = completeVideoUploadBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  assertValidUploadedVideo({ contentType: UPLOADED_VIDEO_TYPE, sizeBytes: body.sizeBytes });
+  assertVideoKeyOf(lesson.id, body.key);
+  if (body.thumbnailKey) assertThumbnailKeyOf(lesson.id, body.thumbnailKey);
+
+  const storage = mediaStorage();
+  const total = videoPartCount(body.sizeBytes);
+  const llegaron = new Map(
+    (await storage.listParts(body.key, body.uploadId)).map((p) => [p.partNumber, p]),
+  );
+
+  const faltan: number[] = [];
+  for (let n = 1; n <= total; n++) {
+    const parte = llegaron.get(n);
+    if (!parte) {
+      faltan.push(n);
+      continue;
+    }
+    const esperado = expectedPartBytes(body.sizeBytes, n);
+    if (parte.sizeBytes !== esperado) {
+      throw conflict(
+        `La parte ${n} llegó con ${parte.sizeBytes} bytes y debía tener ${esperado}.`,
+        { partNumber: n },
+      );
+    }
+  }
+  if (faltan.length > 0) {
+    throw conflict(`Faltan ${faltan.length} de ${total} partes del video.`, {
+      missingParts: faltan,
+    });
+  }
+  if ([...llegaron.keys()].some((n) => n > total)) {
+    throw conflict('Llegaron más partes de las que tiene el video.');
+  }
+
+  await storage.completeMultipartUpload(
+    body.key,
+    body.uploadId,
+    [...llegaron.values()]
+      .sort((a, b) => a.partNumber - b.partNumber)
+      .map(({ partNumber, etag }) => ({ partNumber, etag })),
+  );
+
+  const tamano = await storage.objectSize(body.key);
+  if (tamano !== body.sizeBytes) {
+    await storage.deleteObjects([body.key]).catch(() => undefined);
+    throw conflict(
+      'El archivo que quedó en el almacenamiento no tiene el tamaño esperado. ' +
+        'Súbalo de nuevo.',
+    );
+  }
+
+  // Una portada que no llegó no tumba un video de 400 MB que sí llegó: se
+  // guarda sin portada y el LXD la puede subir después.
+  const portada =
+    body.thumbnailKey && (await storage.objectSize(body.thumbnailKey)) !== null
+      ? body.thumbnailKey
+      : null;
+
+  let updated;
+  try {
+    [updated] = await db
+      .update(lessons)
+      .set({
+        type: 'video',
+        videoType: 'uploaded',
+        videoS3Key: body.key,
+        videoUrl: null,
+        videoYoutubeId: null,
+        videoSizeBytes: body.sizeBytes,
+        videoMimeType: UPLOADED_VIDEO_TYPE,
+        videoDurationSec: body.durationSec ?? null,
+        videoThumbnailS3Key: portada,
+        videoOriginalName: body.fileName,
+        videoUploadedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(lessons.id, lesson.id))
+      .returning();
+  } catch (error) {
+    // Sin la fila apuntándolo, el archivo nuevo sería un huérfano desde ya.
+    await storage
+      .deleteObjects([body.key, ...(portada ? [portada] : [])])
+      .catch(() => undefined);
+    throw error;
+  }
+
+  // El video anterior y su portada, si había, quedaron anotados por el trigger.
+  await drainStorageDeletes(db);
+  return c.json(updated);
+});
+
+lessonRoutes.delete('/:id/video-uploads', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const query = uploadQuery.parse(c.req.query());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+  assertVideoKeyOf(lesson.id, query.key);
+
+  await mediaStorage().abortMultipartUpload(query.key, query.uploadId);
+  return c.body(null, 204);
+});
+
+/** Permiso para subir la portada (un `PUT` simple: es una imagen chica). */
+lessonRoutes.post(
+  '/:id/video-thumbnail-upload-url',
+  requireRole(...CONTENT_ROLES),
+  async (c) => {
+    const user = currentUser(c);
+    const body = thumbnailUploadBody.parse(await c.req.json());
+    const db = c.get('db');
+    const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+    assertValidThumbnail(body);
+    const key = thumbnailKeyFor(lesson.id, body.contentType);
+    const uploadUrl = await mediaStorage().signPutObject(
+      key,
+      body.contentType,
+      body.sizeBytes,
+    );
+
+    return c.json({
+      key,
+      uploadUrl,
+      method: 'PUT',
+      headers: { 'Content-Type': body.contentType },
+      expiresInSeconds: THUMBNAIL_URL_TTL_SECONDS,
+    });
+  },
+);
+
+/** Pone, cambia o quita (`key: null`) la portada de un video ya subido. */
+lessonRoutes.put('/:id/video-thumbnail', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const body = setThumbnailBody.parse(await c.req.json());
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+
+  if (lesson.videoType !== 'uploaded') {
+    throw conflict(
+      'Solo los videos subidos llevan portada propia; los de YouTube usan la de YouTube.',
+    );
+  }
+  if (body.key) {
+    assertThumbnailKeyOf(lesson.id, body.key);
+    if ((await mediaStorage().objectSize(body.key)) === null) {
+      throw conflict('La portada no llegó al almacenamiento. Súbala de nuevo.');
+    }
+  }
+
+  const [updated] = await db
+    .update(lessons)
+    .set({ videoThumbnailS3Key: body.key, updatedAt: new Date() })
+    .where(eq(lessons.id, lesson.id))
+    .returning();
+
+  await drainStorageDeletes(db);
+  return c.json(updated);
 });
 
 /** Video externo: se guarda el enlace, no hay archivo ni S3 de por medio. */
@@ -334,11 +690,16 @@ lessonRoutes.post('/:id/video-external', requireRole(...CONTENT_ROLES), async (c
       videoSizeBytes: null,
       videoMimeType: null,
       videoDurationSec: body.durationSec ?? null,
+      videoThumbnailS3Key: null,
+      videoOriginalName: null,
+      videoUploadedAt: null,
       updatedAt: new Date(),
     })
     .where(eq(lessons.id, lesson.id))
     .returning();
 
+  // Si antes era un video subido, el trigger anotó el archivo y la portada.
+  await drainStorageDeletes(db);
   return c.json(updated);
 });
 
@@ -367,11 +728,16 @@ lessonRoutes.post('/:id/video-youtube', requireRole(...CONTENT_ROLES), async (c)
       videoSizeBytes: null,
       videoMimeType: null,
       videoDurationSec: body.durationSec ?? null,
+      videoThumbnailS3Key: null,
+      videoOriginalName: null,
+      videoUploadedAt: null,
       updatedAt: new Date(),
     })
     .where(eq(lessons.id, lesson.id))
     .returning();
 
+  // Si antes era un video subido, el trigger anotó el archivo y la portada.
+  await drainStorageDeletes(db);
   return c.json(updated);
 });
 

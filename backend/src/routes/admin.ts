@@ -193,6 +193,8 @@ const BACKUP_TABLES = [
   'site_gallery_images',
   'staff_notes',
   'expo_checklist_items',
+  // `storage_pending_deletes` NO va: es la cola de archivos por borrar, trabajo
+  // pendiente y no datos. Restaurarla volvería a anotar archivos ya borrados.
 ] as const;
 
 /**

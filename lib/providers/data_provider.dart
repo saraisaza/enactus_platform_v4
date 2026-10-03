@@ -1916,6 +1916,16 @@ class DataProvider extends ChangeNotifier {
     return _videoUrls[lessonId] ?? current;
   }
 
+  /// La URL firmada del video propio y la de su portada, recién pedidas.
+  ///
+  /// Sin caché, a diferencia de [lessonVideoUrl]: el reproductor la pide al
+  /// abrirse (para la portada) y de nuevo al tocar «reproducir» si ya venció
+  /// — una URL de video dura cinco minutos.
+  Future<LessonVideoSource> fetchLessonVideoSource(String lessonId) async {
+    final json = await api.get('/lessons/$lessonId/video-url');
+    return LessonVideoSource.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
   /// Vuelve a pedir la URL del video. Lo usa el botón de reintentar del
   /// reproductor: sin esto, un fallo de red dejaría la lección muerta hasta
   /// recargar la página entera.

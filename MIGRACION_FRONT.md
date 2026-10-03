@@ -221,7 +221,7 @@ Los dos orígenes, cada uno como corresponde:
 |---|---|
 | `youtube` | Solo el id. `YoutubeLessonPlayer` (paquete `youtube_player_iframe`): miniatura primero, reproductor al tocar, avance guardado — ver «Reproductor de YouTube» |
 | `external` | `<iframe>` de `player.vimeo.com` en el navegador; fuera del navegador se abre en la app del sistema. Un enlace de YouTube guardado así (antes de que existiera `youtube`) va al reproductor de YouTube |
-| `uploaded` | `GET /lessons/:id/video-url` → URL firmada de CloudFront (5 min) → `<video>` HTML5 |
+| `uploaded` | El LXD lo sube desde la lección («Subir video»). `GET /lessons/:id/video-url` → URL firmada de CloudFront (5 min) → `UploadedLessonPlayer`: portada primero, controles propios, avance guardado — ver «Video subido» |
 
 **`video_source_io` / `video_source_web` estaban huérfanos.** Nadie los
 importaba y seguían apuntando a `course_resources/`, la carpeta local de la era
@@ -440,6 +440,121 @@ Tres cosas que las pruebas encontraron:
    cambió. La prueba del reproductor fija las dos cosas (comprobado por
    mutación: con la `key` vuelve la miniatura fantasma; sin el id fijo, el id
    cambia con cada instancia).
+
+---
+
+## Video subido
+
+En la lección de video el LXD elige el origen con dos botones, **«Pegar link
+de YouTube»** y **«Subir video»**: son dos opciones aparte, cada una con su
+panel, y cambiar de una a otra no pierde lo que había en la otra hasta
+guardar. El estudiante ve las dos en la misma caja (`LessonVideoShell`): 16:9,
+hasta 960 px de ancho, esquinas redondeadas, la portada con el botón de play,
+y el reproductor carga recién cuando la toca.
+
+### La subida
+
+| Paso | Dónde | Qué pasa |
+|---|---|---|
+| Elegir | `video_upload_panel.dart` | «Elegir video», o arrastrar el archivo sobre la zona punteada |
+| Revisar | `mp4_inspector.dart` | Lee las cajas del MP4 (`ftyp`, `moov` al principio **o al final**, `stsd`, `esds`) y exige H.264 + AAC. Lee entre 10 y 40 KB, nunca el archivo. Lo que no sirve se rechaza diciendo qué es y cómo arreglarlo (el HEVC del iPhone: exportar «Más compatible») |
+| Portada | `video_platform_web.dart` | Un `<video>` oculto con la URL `blob:` y un `<canvas>`: JPEG de un cuadro al 10 % del video. O una imagen propia |
+| Vista previa | `UploadedLessonPlayer` | El mismo reproductor del estudiante, con la URL `blob:` |
+| Subir | `video_uploader.dart` | S3 multipart: partes de 8 MiB, tres a la vez, cada una con su URL firmada y cuatro intentos con espera creciente. Barra, porcentaje y «Cancelar subida» |
+| Cerrar | `POST /lessons/:id/video-uploads/complete` | La API le pregunta a S3 qué partes llegaron —no le cree al cliente—, cierra la subida, compara el tamaño final y recién ahí guarda la lección |
+
+**En el navegador no se usa `file_picker`.** En web entrega el archivo como
+bytes, o como un stream que igual lo lee entero (en base64, o de a un trozo
+sin poder saltar). Un video de 500 MB dentro de la memoria de la pestaña es lo
+que el encargo prohíbe, y en un portátil modesto la cuelga. Con
+`<input type=file>` y `Blob.slice()` (por `package:web`) cada parte es una
+vista sobre el archivo en disco, y `XMLHttpRequest.send(blob)` la manda sin
+copiarla. Fuera del navegador sí: `file_picker` y `RandomAccessFile`, parte
+por parte.
+
+**Se retoma de verdad.** La subida en curso queda anotada en el navegador
+(`upload_resume_store.dart`: key, uploadId, huella del archivo). Si se cierra
+la pestaña o se cae la red, al elegir el mismo archivo la API dice qué partes
+llegaron y sigue desde ahí. Si S3 ya la descartó (a los 7 días,
+`backend/infra/s3-lifecycle.json`), empieza de nuevo sin preguntar nada.
+
+**Cancelar** corta las partes en vuelo y aborta la subida en S3
+(`DELETE /lessons/:id/video-uploads`): no quedan partes cobrando.
+
+**El tope de 500 MB y el formato se revisan antes de subir un byte**, y la API
+los vuelve a revisar: el cliente avisa, el servidor decide.
+
+### El reproductor
+
+`video_player` con controles propios (`video_controls.dart`), sin `chewie`:
+chewie trae su tema y sus textos en inglés, y pelearle el estilo costaba más
+que escribir la barra.
+
+- Play/pausa, barra de avance que muestra lo ya cargado, volumen, velocidad de
+  0.5× a 2×, pantalla completa.
+- Teclado: espacio o K, ← → (5 s), ↑ ↓ (volumen), F (pantalla completa), M
+  (silencio). La barra toma el foco al aparecer.
+- Lector de pantalla: cada control con su nombre («Reproducir el video»,
+  «Posición del video», «Velocidad de reproducción: 1×», «Pantalla completa
+  (F)»), leídos así en Chromium.
+- Indicador de carga mientras el video se llena, y error con «Reintentar».
+  Un `cdn_not_configured` no ofrece reintentar (no puede funcionar) y un 404
+  dice que el video ya no está.
+- El avance es el mismo `VideoWatchTracker` de YouTube: se guarda por
+  estudiante, se retoma donde quedó y la lección queda vista al 90 %.
+
+YouTube conserva sus controles nativos: reemplazarlos exige ocultar los del
+iframe, y YouTube no lo permite del todo.
+
+### Lo que hace falta en AWS
+
+El código no alcanza: la CSP, el CORS del bucket, un permiso nuevo del rol de
+la Lambda y el ciclo de vida del bucket se aplican a mano. Todo está en
+`backend/infra/video-subido.sh` (revisa por defecto; `--aplicar` aplica) y
+explicado en `backend/infra/README.md`, «Video subido». Sin la CSP, el
+reproductor y la vista previa no cargan en producción aunque todo lo demás
+esté bien.
+
+### Verificado
+
+- **El inspector**, contra archivos reales hechos con `ffmpeg`: H.264 + AAC
+  con `moov` al principio y al final, aceptados; HEVC, VP9, AC-3, MP3 y Opus,
+  rechazados con su mensaje.
+- **El flujo entero en Chromium**, contra la API local, un S3 local (`moto`) y
+  la CSP de producción con las entradas nuevas. En el editor: «Subir video»
+  aparece aparte de YouTube; soltar el archivo lo elige; queda revisado, con
+  la portada sacada del video y la duración; la vista previa reproduce el
+  archivo local; guardar lo sube en partes con la barra a la vista, y la
+  lección queda apuntando al video y a la portada, los dos en S3. Del lado del
+  estudiante, en escritorio y en 390 px: arranca al tocar la portada, K pausa
+  y guarda el avance, → adelanta 5 s, M silencia, F entra y sale de pantalla
+  completa sin cerrar la lección, y pasado el 90 % la lección queda completa.
+  Reemplazar el video borra del bucket el anterior y su portada. Ninguna
+  violación de CSP del video (la única es la hoja de Manrope de Google Fonts,
+  que ya fallaba antes y no tiene que ver).
+- **Cancelar, retomar, reintentar una parte y renovar una firma vencida**:
+  `video_uploader_test.dart`, contra un S3 de mentira que falla a pedido.
+
+  Chromium de pruebas no trae H.264 ni AAC (son patentados: el de Chrome sí).
+  Para esa corrida el inspector aceptó también VP9, en una compilación que no
+  se publica; las partes que dependen del códec —reproducir y sacar la
+  portada— quedaron probadas con VP9, y el H.264 real con las pruebas del
+  inspector sobre archivos reales.
+
+- **La prueba en el navegador encontró tres bugs** que las pruebas de widget
+  no veían: la barra entera se anunciaba como un solo botón; salir de
+  pantalla completa con Escape cerraba también la lección y perdía el foco del
+  teclado; y la opción elegida del selector de origen no se distinguía.
+
+### Un bug que habría roto todas las subidas en producción
+
+La SDK de AWS (desde la 3.729) firma cada URL de subida con el CRC32 de un
+cuerpo vacío (`x-amz-checksum-crc32=AAAAAA==`). S3 lo compara con lo que llega
+y rechaza cualquier archivo real. No se ve en local con `moto`, que no lo
+revisa. Afectaba también a las subidas de siempre (`POST /files/upload-url`).
+Se arregló con `requestChecksumCalculation: 'WHEN_REQUIRED'` en `lib/s3.ts`, y
+`video-subido.test.ts` y `s3-firma.test.ts` revisan que ninguna URL firmada
+lleve un checksum.
 
 ---
 

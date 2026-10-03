@@ -76,6 +76,9 @@ dev_dependencies:
   # falso que habla el mismo protocolo de mensajes que el iframe del
   # reproductor (`test/helpers/fake_youtube_webview.dart`).
   webview_flutter_platform_interface: ^2.15.1
+  # Lo mismo para el video subido: un `video_player` falso que emite los
+  # eventos de la plataforma (`test/helpers/fake_video_player.dart`).
+  video_player_platform_interface: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -24,15 +24,31 @@ const UPLOAD_URL_TTL_SECONDS = 900; // 15 min
 
 let client: S3Client | null = null;
 
-function s3(): S3Client {
+/**
+ * El cliente de S3, con tiempos de espera cortos.
+ *
+ * Firmar es un cálculo local, pero la subida por partes y el borrado SÍ
+ * llaman a S3 (`lib/media-storage.ts`). La Lambda vive en una VPC sin NAT y
+ * llega a S3 por el endpoint Gateway: si algún día esa ruta se corta, sin
+ * estos topes cada pedido esperaría los 30 s de la Lambda antes de fallar.
+ * Con ellos falla en segundos, con un 503 que dice qué pasó.
+ */
+export function s3(): S3Client {
   client ??= new S3Client({
     region: env.AWS_REGION,
+    maxAttempts: 2,
+    requestHandler: { connectionTimeout: 3_000, requestTimeout: 15_000 },
     // Sin esto la SDK mete en la URL de subida `x-amz-checksum-crc32=AAAAAA==`:
     // el CRC32 de un cuerpo VACÍO, porque al firmar todavía no hay archivo. S3
     // compara ese valor con los bytes que llegan en el PUT y rechaza toda
-    // subida que no sea un archivo de 0 bytes. Con `WHEN_REQUIRED` solo se
-    // calcula checksum donde S3 lo exige, y `PutObject` no lo exige.
+    // subida que no sea un archivo de 0 bytes. Pasa igual con cada parte del
+    // video. Con `WHEN_REQUIRED` solo se calcula checksum donde S3 lo exige
+    // (`DeleteObjects`, que la API manda con el cuerpo en la mano), y ni
+    // `PutObject` ni `UploadPart` lo exigen. Lo fijan `s3-firma.test.ts` y
+    // `video-subido.test.ts`.
     requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
+    ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT, forcePathStyle: true } : {}),
   });
   return client;
 }

@@ -131,7 +131,7 @@ de pago:
 | Servicio | Por qué |
 |---|---|
 | S3 (secretos) | Gateway endpoint, gratuito |
-| S3 (medios) | firmar una URL es cálculo local, sin llamada de red |
+| S3 (medios) | Gateway endpoint, gratuito. Firmar es cálculo local; el video subido de las lecciones además abre y cierra la subida por partes y borra los videos reemplazados |
 | CloudFront | firmar es cálculo local |
 | CloudWatch Logs | Lambda escribe por el entorno, no por la ENI de la VPC |
 | STS | las credenciales las inyecta el runtime desde el rol |
@@ -228,11 +228,20 @@ huérfano: algo se enganchó a otro.
 | Versionado | **Enabled** |
 | Acceso del backend | usuario IAM `enactus-s3-dev` — ver `backend/infra/` |
 | CORS | `backend/infra/s3-cors.json` — se aplica a mano, ver `backend/infra/README.md` |
+| Ciclo de vida | `backend/infra/s3-lifecycle.json` — subidas por partes sin terminar a los 7 días; versiones viejas de `lessons/` a los 30 |
+| Videos de lecciones | se borran solos al reemplazarlos o borrar la lección (`storage_pending_deletes`) |
 
 El versionado se activó el 1 de septiembre de 2026; **no estaba puesto** aunque
 se daba por configurado. Ojo con el costo: las versiones viejas se cobran como
-almacenamiento y no caducan solas. Cuando haya volumen real conviene una regla
-de ciclo de vida que expire versiones no actuales a los 30–90 días.
+almacenamiento y no caducan solas. Para `lessons/` —donde están los videos, que
+pesan hasta 500 MB y ahora sí se borran— la regla `videos-de-lecciones-borrados`
+las expira a los 30 días. El resto del bucket sigue sin regla: cuando haya
+volumen real conviene extenderla a los 30–90 días.
+
+Todo lo que el video subido necesita en AWS (permiso del rol, CORS, ciclo de
+vida, endpoint de la VPC y CSP) lo revisa y lo aplica
+`backend/infra/video-subido.sh`; ver `backend/infra/README.md`, «Video
+subido».
 
 ---
 
@@ -1020,6 +1029,30 @@ Los dos primeros van en `enactus-web-seguridad`; el tercero, en
 `enactus-web-staging-seguridad`. Con la CSP de producción más estas entradas,
 Chrome cargó la API de YouTube y creó el reproductor sin reportar ninguna
 violación; con la de hoy, bloqueó el script en línea.
+
+### El video subido también necesita su lugar en las DOS
+
+El reproductor del video que sube el LXD es un `<video>` con la URL firmada de
+CloudFront, y su portada un `<img>` del mismo dominio. La vista previa del
+editor y la portada automática reproducen el archivo local con una URL `blob:`.
+Sin estas entradas, en producción el video no carga aunque todo lo demás esté
+bien:
+
+```
+media-src   … https://videos.eduxaction.com blob:
+img-src     … https://videos.eduxaction.com
+```
+
+Van en `enactus-web-seguridad` y en `enactus-web-staging-seguridad`: las dos
+usan el mismo CDN de video. `connect-src` ya tiene el bucket (las partes viajan
+igual que las subidas de siempre). No hace falta `'unsafe-inline'` ni ningún
+otro host.
+
+`backend/infra/video-subido.sh --aplicar` las agrega sin tocar el resto de la
+CSP (con `media-src` inexistente la crea heredando `default-src`), y después
+revisa lo que CloudFront sirve de verdad. Comprobado en Chromium con la CSP de
+producción más estas dos líneas: el editor y el reproductor no dejan ninguna
+violación.
 
 ### Staging no debe ser público
 

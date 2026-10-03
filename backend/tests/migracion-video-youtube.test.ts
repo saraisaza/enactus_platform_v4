@@ -37,16 +37,24 @@ const REVERSO = resolve(CARPETA, 'down', `${TAG}.down.sql`);
 const ID = 'dQw4w9WgXcQ';
 
 let hasta0006 = '';
+let hasta0007 = '';
 
-/** Copia de `drizzle/` cuyo registro termina antes de 0007. */
-function carpetaHasta0006(): string {
+/**
+ * Copia de `drizzle/` cuyo registro solo tiene las migraciones que [incluir]
+ * acepta.
+ *
+ * Se migra hasta 0007 y no hasta la última: el reverso de abajo borra el
+ * registro de la migración MÁS RECIENTE, y con migraciones posteriores a 0007
+ * aplicadas, esa ya no sería 0007.
+ */
+function carpetaCon(incluir: (tag: string) => boolean): string {
   const dir = mkdtempSync(join(tmpdir(), 'migraciones-'));
   cpSync(CARPETA, dir, { recursive: true });
   const ruta = join(dir, 'meta', '_journal.json');
   const journal = JSON.parse(readFileSync(ruta, 'utf8')) as {
     entries: { tag: string }[];
   };
-  journal.entries = journal.entries.filter((e) => e.tag < TAG);
+  journal.entries = journal.entries.filter((e) => incluir(e.tag));
   writeFileSync(ruta, JSON.stringify(journal));
   return dir;
 }
@@ -69,7 +77,8 @@ const migrarCon = (carpeta: string) =>
   conCliente((sql) => migrate(drizzle(sql), { migrationsFolder: carpeta }));
 
 beforeAll(async () => {
-  hasta0006 = carpetaHasta0006();
+  hasta0006 = carpetaCon((tag) => tag < TAG);
+  hasta0007 = carpetaCon((tag) => tag <= TAG);
   await conCliente(async (sql) => {
     await sql.unsafe('drop schema if exists public cascade');
     await sql.unsafe('drop schema if exists drizzle cascade');
@@ -80,6 +89,7 @@ beforeAll(async () => {
 
 afterAll(() => {
   rmSync(hasta0006, { recursive: true, force: true });
+  rmSync(hasta0007, { recursive: true, force: true });
 });
 
 describe('0007 sobre una base que ya existía', () => {
@@ -108,7 +118,7 @@ describe('0007 sobre una base que ya existía', () => {
       propia = conArchivo!.id;
     });
 
-    await migrarCon(CARPETA);
+    await migrarCon(hasta0007);
 
     await conCliente(async (sql) => {
       const valores = await sql<{ v: string }[]>`
@@ -169,7 +179,7 @@ describe('0007 sobre una base que ya existía', () => {
   it('y 0007 se puede volver a aplicar después del reverso', async () => {
     // El valor `youtube` del enum sobrevive al reverso (PostgreSQL no sabe
     // quitarlo): sin `IF NOT EXISTS`, esto fallaría con «already exists».
-    await migrarCon(CARPETA);
+    await migrarCon(hasta0007);
     await conCliente(async (sql) => {
       const columnas = await sql`
         select 1 from information_schema.columns

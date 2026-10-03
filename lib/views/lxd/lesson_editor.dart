@@ -11,7 +11,11 @@ import '../../utils/responsive.dart';
 import '../../utils/youtube.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
+import '../../services/video_upload/upload_resume_store.dart';
+import '../../services/video_upload/upload_types.dart';
+import '../../services/video_upload/video_upload_controller.dart';
 import '../../widgets/file_upload_field.dart';
+import '../../widgets/video_upload_panel.dart';
 import '../../widgets/youtube_lesson_player.dart';
 
 IconData lessonTypeIcon(LessonType t) => switch (t) {
@@ -101,6 +105,16 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   /// El archivo que se acaba de subir para una lección de PDF o recurso.
   final List<UploadedFile> _resource = [];
 
+  /// De dónde sale el video: un enlace de YouTube o un archivo subido. Son
+  /// dos opciones aparte, y se guarda solo la que está elegida.
+  late VideoSourceMode _mode;
+  final VideoUploadController _upload = VideoUploadController.forEditor();
+
+  /// La lección que creó ESTE diálogo para subirle un video. Si la subida
+  /// falla, el próximo «Guardar» la reusa y retoma la subida; si se cancela,
+  /// se borra — no quedan lecciones nuevas a medias.
+  String? _creada;
+
   bool _loadingQuiz = false;
   bool _saving = false;
   ApiException? _error;
@@ -140,14 +154,32 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     _activity = o?.activity == null
         ? ActivityDraft()
         : ActivityDraft.from(o!.activity!);
+    _mode = o?.isUploadedVideo == true
+        ? VideoSourceMode.upload
+        : VideoSourceMode.youtube;
+    _upload.addListener(_alCambiarSubida);
+    _upload.loadPending(o?.id);
 
     if (o != null && (o.type == LessonType.quiz || o.type == LessonType.survey)) {
       _loadQuiz(o.id);
     }
   }
 
+  /// La duración del video la sabe el navegador: se completa sola si el
+  /// campo estaba vacío.
+  void _alCambiarSubida() {
+    final segundos = _upload.probe?.duration.inSeconds ?? 0;
+    final actual = int.tryParse(_duration.text) ?? 0;
+    if (segundos > 0 && actual == 0) {
+      _duration.text = ((segundos + 59) ~/ 60).toString();
+    }
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _upload.removeListener(_alCambiarSubida);
+    _upload.dispose();
     _title.dispose();
     _desc.dispose();
     _duration.dispose();
@@ -193,12 +225,26 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           const ValidationError('Una lección de tipo enlace necesita su URL.'));
       return;
     }
-    // Antes de crear nada: un enlace inválido detectado DESPUÉS de crear la
-    // lección la dejaría guardada a medias, sin video.
-    final videoProblem = _videoLink.problem;
-    if (_type == LessonType.video && videoProblem != null) {
-      setState(() => _error = ValidationError(videoProblem));
-      return;
+    // Antes de crear nada: un enlace o un archivo inválido detectado DESPUÉS
+    // de crear la lección la dejaría guardada a medias, sin video.
+    final subir = _type == LessonType.video && _mode == VideoSourceMode.upload;
+    if (subir) {
+      if (_upload.checking) {
+        setState(() => _error = const ValidationError(
+            'Espere a que termine la revisión del video.'));
+        return;
+      }
+      final problema = _upload.file == null ? null : _upload.problem;
+      if (problema != null) {
+        setState(() => _error = ValidationError(problema));
+        return;
+      }
+    } else {
+      final videoProblem = _videoLink.problem;
+      if (_type == LessonType.video && videoProblem != null) {
+        setState(() => _error = ValidationError(videoProblem));
+        return;
+      }
     }
 
     setState(() {
@@ -209,10 +255,29 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
 
     final data = context.read<DataProvider>();
     try {
-      final lessonId = await _saveLesson(data);
-      await _saveTypeSpecific(data, lessonId);
+      final lessonId =
+          await _saveLesson(data, conSubida: subir && _upload.ready);
+      if (subir) {
+        try {
+          await _saveUpload(data, lessonId);
+        } on UploadCancelled {
+          rethrow;
+        } catch (_) {
+          // El panel ya muestra qué pasó, y que guardar de nuevo retoma.
+          if (mounted) setState(() => _saving = false);
+          return;
+        }
+      } else {
+        await _saveTypeSpecific(data, lessonId);
+      }
       if (!mounted) return;
       Navigator.pop(context, true);
+    } on UploadCancelled {
+      await _descartarCreada(data);
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showAppSnack(context,
+          'Se canceló la subida. Si la lección ya tenía video, sigue igual.');
     } on ConflictError catch (e) {
       if (!mounted) return;
       setState(() {
@@ -229,8 +294,47 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     }
   }
 
+  /// Sube el video elegido, o cambia solo la portada del que ya estaba.
+  Future<void> _saveUpload(DataProvider data, String lessonId) async {
+    if (_upload.ready) {
+      await _upload.upload(api: data.api, lessonId: lessonId);
+    } else if (_upload.customCover != null &&
+        widget.original?.isUploadedVideo == true) {
+      await _upload.saveCoverOnly(api: data.api, lessonId: lessonId);
+    }
+    // Ya tiene su video: dejó de ser una lección a medias.
+    _creada = null;
+    await data.reloadCourse(widget.courseId);
+  }
+
+  /// Borra la lección que creó este diálogo y no llegó a tener su video.
+  Future<void> _descartarCreada(DataProvider data) async {
+    final id = _creada;
+    if (id == null) return;
+    _creada = null;
+    try {
+      await data.deleteLesson(id, courseId: widget.courseId);
+    } on ApiException {
+      // Queda en el curso, sin video, y se puede borrar a mano.
+    }
+    await const UploadResumeStore().clear(id);
+  }
+
+  Future<void> _cerrar() async {
+    final data = context.read<DataProvider>();
+    if (_creada != null) {
+      setState(() => _saving = true);
+      await _descartarCreada(data);
+    }
+    if (mounted) Navigator.pop(context, false);
+  }
+
   /// Crea o actualiza la lección y devuelve su id.
-  Future<String> _saveLesson(DataProvider data) async {
+  ///
+  /// [conSubida]: la lección nueva se crea para subirle un video, así que se
+  /// recuerda en [_creada] hasta que el video llegue.
+  Future<String> _saveLesson(DataProvider data,
+      {bool conSubida = false}) async {
     final fields = {
       'title': _title.text.trim(),
       'type': _type.name,
@@ -240,6 +344,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           _type == LessonType.link ? _externalUrl.text.trim() : null,
     };
 
+    final creada = _creada;
+    if (_isNew && creada != null) {
+      await data.updateLesson(creada, fields);
+      return creada;
+    }
     if (_isNew) {
       final created = await data.createLesson(
         widget.moduleId,
@@ -249,6 +358,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         durationMin: fields['durationMin']! as int,
         externalUrl: fields['externalUrl'] as String?,
       );
+      if (conSubida) _creada = created.id;
       return created.id;
     }
     await data.updateLesson(widget.original!.id, fields);
@@ -296,6 +406,64 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     }
   }
 
+  /// El enlace de YouTube (o de Vimeo) y su vista previa.
+  List<Widget> _camposYoutube() {
+    final link = _videoLink;
+    final tieneArchivo = widget.original?.isUploadedVideo == true &&
+        link.kind == VideoLinkKind.empty;
+    return [
+          TextField(
+            key: const ValueKey('lesson-video-url'),
+            controller: _videoUrl,
+            enabled: !_saving,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            decoration: InputDecoration(
+              labelText: 'Enlace del video de YouTube',
+              hintText: 'https://www.youtube.com/watch?v=…',
+              prefixIcon: const Icon(Icons.smart_display_outlined),
+              suffixIcon: link.kind == VideoLinkKind.youtube ||
+                      link.kind == VideoLinkKind.vimeo
+                  ? const Icon(Icons.check_circle, color: AppColors.statusGood)
+                  : null,
+              errorText: link.problem,
+              errorMaxLines: 3,
+              helperMaxLines: 3,
+              helperText: switch (link.kind) {
+                VideoLinkKind.youtube =>
+                  'Video de YouTube encontrado. Se guarda solo su id '
+                      '(${link.youtubeId}), no el enlace.',
+                VideoLinkKind.vimeo =>
+                  'Enlace de Vimeo: se guarda tal cual y se ve con el '
+                      'reproductor de Vimeo.',
+                _ when tieneArchivo =>
+                  'Esta lección ya tiene un video propio cargado. Pegar un '
+                      'enlace lo reemplaza.',
+                _ => 'Pegue el enlace tal como lo copia de YouTube: sirven '
+                    'watch?v=, youtu.be, shorts y embed. También se acepta '
+                    'Vimeo.',
+              },
+            ),
+          ),
+          if (link.kind == VideoLinkKind.youtube) ...[
+            const SizedBox(height: 12),
+            const Text('Vista previa — así lo verán los estudiantes:',
+                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+            const SizedBox(height: 6),
+            // Reproducirlo acá es la única forma de enterarse ANTES de
+            // publicar de que el dueño del video no deja verlo fuera de
+            // YouTube. La vista previa no guarda avance de nadie.
+            YoutubeLessonPlayer(
+              key: ValueKey('preview-${link.youtubeId}'),
+              videoId: link.youtubeId!,
+              title: _title.text.trim().isEmpty
+                  ? 'Vista previa'
+                  : _title.text.trim(),
+            ),
+          ],
+    ];
+  }
+
   /// Traduce el 409 del servidor a "qué le falta a cada pregunta".
   Map<int, String> _problemsFrom(ConflictError error) {
     final raw = error.details['problems'];
@@ -310,17 +478,35 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   @override
   Widget build(BuildContext context) {
     final title = _isNew ? 'Nueva lección' : 'Editar lección';
+    final subiendo = _upload.uploading;
     final actions = [
       TextButton(
-        onPressed: _saving ? null : () => Navigator.pop(context, false),
-        child: const Text('Cancelar'),
+        onPressed: subiendo
+            ? _upload.cancelUpload
+            : _saving
+                ? null
+                : _cerrar,
+        child: Text(subiendo ? 'Cancelar subida' : 'Cancelar'),
       ),
       ElevatedButton(
         onPressed: _saving ? null : _save,
-        child: Text(_saving ? 'Guardando…' : 'Guardar'),
+        child: Text(subiendo
+            ? 'Subiendo…'
+            : _saving
+                ? 'Guardando…'
+                : 'Guardar'),
       ),
     ];
 
+    return PopScope(
+      // Con una subida en curso no se cierra por Esc ni por el gesto de
+      // volver: la subida se perdería sin que nadie la cancele.
+      canPop: !_saving,
+      child: _dialogo(context, title, actions),
+    );
+  }
+
+  Widget _dialogo(BuildContext context, String title, List<Widget> actions) {
     if (context.isCompact) {
       return Dialog.fullscreen(
         backgroundColor: AppColors.background,
@@ -333,8 +519,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 leading: IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: 'Cerrar',
-                  onPressed:
-                      _saving ? null : () => Navigator.pop(context, false),
+                  onPressed: _saving ? null : _cerrar,
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
               ),
@@ -435,60 +620,50 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   List<Widget> _typeFields() {
     switch (_type) {
       case LessonType.video:
-        final link = _videoLink;
-        final tieneArchivo =
-            widget.original?.isUploadedVideo == true &&
-                link.kind == VideoLinkKind.empty;
         return [
-          TextField(
-            key: const ValueKey('lesson-video-url'),
-            controller: _videoUrl,
-            enabled: !_saving,
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-            decoration: InputDecoration(
-              labelText: 'Enlace del video de YouTube',
-              hintText: 'https://www.youtube.com/watch?v=…',
-              prefixIcon: const Icon(Icons.smart_display_outlined),
-              suffixIcon: link.kind == VideoLinkKind.youtube ||
-                      link.kind == VideoLinkKind.vimeo
-                  ? const Icon(Icons.check_circle, color: AppColors.statusGood)
-                  : null,
-              errorText: link.problem,
-              errorMaxLines: 3,
-              helperMaxLines: 3,
-              helperText: switch (link.kind) {
-                VideoLinkKind.youtube =>
-                  'Video de YouTube encontrado. Se guarda solo su id '
-                      '(${link.youtubeId}), no el enlace.',
-                VideoLinkKind.vimeo =>
-                  'Enlace de Vimeo: se guarda tal cual y se ve con el '
-                      'reproductor de Vimeo.',
-                _ when tieneArchivo =>
-                  'Esta lección ya tiene un video propio cargado. Pegar un '
-                      'enlace lo reemplaza.',
-                _ => 'Pegue el enlace tal como lo copia de YouTube: sirven '
-                    'watch?v=, youtu.be, shorts y embed. También se acepta '
-                    'Vimeo.',
-              },
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<VideoSourceMode>(
+              key: const ValueKey('origen-del-video'),
+              segments: const [
+                ButtonSegment(
+                  value: VideoSourceMode.youtube,
+                  icon: Icon(Icons.smart_display_outlined),
+                  label: Text('Pegar link de YouTube'),
+                ),
+                ButtonSegment(
+                  value: VideoSourceMode.upload,
+                  icon: Icon(Icons.upload_file),
+                  label: Text('Subir video'),
+                ),
+              ],
+              selected: {_mode},
+              showSelectedIcon: false,
+              // La elegida tiene que verse elegida: con el tema oscuro, sin
+              // esto las dos opciones quedan iguales.
+              style: SegmentedButton.styleFrom(
+                selectedBackgroundColor: AppColors.gold.withValues(alpha: 0.18),
+                selectedForegroundColor: AppColors.gold,
+                foregroundColor: AppColors.textSecondary,
+              ),
+              onSelectionChanged: _saving
+                  ? null
+                  : (s) => setState(() {
+                        _mode = s.first;
+                        _error = null;
+                      }),
             ),
           ),
-          if (link.kind == VideoLinkKind.youtube) ...[
-            const SizedBox(height: 12),
-            const Text('Vista previa — así lo verán los estudiantes:',
-                style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
-            const SizedBox(height: 6),
-            // Reproducirlo acá es la única forma de enterarse ANTES de
-            // publicar de que el dueño del video no deja verlo fuera de
-            // YouTube. La vista previa no guarda avance de nadie.
-            YoutubeLessonPlayer(
-              key: ValueKey('preview-${link.youtubeId}'),
-              videoId: link.youtubeId!,
-              title: _title.text.trim().isEmpty
-                  ? 'Vista previa'
-                  : _title.text.trim(),
-            ),
-          ],
+          const SizedBox(height: 12),
+          if (_mode == VideoSourceMode.upload)
+            VideoUploadPanel(
+              controller: _upload,
+              title: _title.text.trim(),
+              original: widget.original,
+              enabled: !_saving,
+            )
+          else
+            ..._camposYoutube(),
           const SizedBox(height: 12),
           TextField(
             controller: _duration,

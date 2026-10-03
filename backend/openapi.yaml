@@ -944,6 +944,203 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /lessons/{id}/video-uploads:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Video subido — abrir la subida por partes
+      description: |
+        Abre una subida *multipart* en S3 para un video de esta lección. El
+        archivo va directo del navegador a S3, parte por parte; la API solo
+        firma y, al final, comprueba.
+
+        Solo `video/mp4` (H.264 con AAC: lo reproduce cualquier navegador) y
+        hasta 500 MB. Partes de 8 MiB: un corte de red cuesta una parte, no
+        el video entero.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileName, contentType, sizeBytes]
+              properties:
+                fileName: { type: string }
+                contentType: { type: string, enum: ['video/mp4'] }
+                sizeBytes: { type: integer, maximum: 524288000 }
+      responses:
+        '201':
+          description: Subida abierta
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string, example: 'lessons/<id>/<uuid>.mp4' }
+                  uploadId: { type: string }
+                  partSizeBytes: { type: integer, example: 8388608 }
+                  partCount: { type: integer }
+        '400': { description: No es MP4 }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { description: Supera los 500 MB }
+        '503': { description: Almacenamiento no configurado o no disponible }
+    delete:
+      tags: [courses]
+      summary: Video subido — cancelar la subida
+      parameters:
+        - { name: key, in: query, required: true, schema: { type: string } }
+        - { name: uploadId, in: query, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Cancelada (o ya no existía) }
+        '409': { description: La key no es de esta lección }
+
+  /lessons/{id}/video-uploads/sign:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Video subido — firmar partes
+      description: |
+        Una URL de `PUT` por parte, firmada con el tamaño EXACTO de esa parte:
+        S3 rechaza una de otro tamaño, así que el total no puede pasar del que
+        se validó al abrir. Hasta 100 partes por pedido; vencen en una hora, y
+        si vencen se piden de nuevo las que falten.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, uploadId, sizeBytes, partNumbers]
+              properties:
+                key: { type: string }
+                uploadId: { type: string }
+                sizeBytes: { type: integer }
+                partNumbers:
+                  type: array
+                  items: { type: integer, minimum: 1 }
+                  maxItems: 100
+      responses:
+        '200':
+          description: URLs firmadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        partNumber: { type: integer }
+                        url: { type: string, format: uri }
+                  expiresInSeconds: { type: integer, example: 3600 }
+        '400': { description: Una parte que el video no tiene }
+        '409': { description: La key no es de esta lección }
+
+  /lessons/{id}/video-uploads/parts:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Video subido — qué partes ya llegaron (para retomar)
+      parameters:
+        - { name: key, in: query, required: true, schema: { type: string } }
+        - { name: uploadId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Partes que S3 ya tiene
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        partNumber: { type: integer }
+                        sizeBytes: { type: integer }
+        '404': { description: '`upload_not_found` — la subida venció o se canceló' }
+
+  /lessons/{id}/video-uploads/complete:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Video subido — cerrar la subida y asociar el video
+      description: |
+        Las partes se le preguntan a S3, no al cliente: tienen que estar todas
+        y del tamaño exacto. Después de cerrar se comprueba el tamaño del
+        objeto. La lección queda `video_type = 'uploaded'` con la key, el
+        tamaño, la duración, la portada, el nombre original y la fecha.
+
+        El video anterior y su portada, si había, se borran de S3.
+        Una portada que no llegó no hace fallar el video: queda sin portada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, uploadId, fileName, sizeBytes]
+              properties:
+                key: { type: string }
+                uploadId: { type: string }
+                fileName: { type: string }
+                sizeBytes: { type: integer }
+                durationSec: { type: integer }
+                thumbnailKey: { type: string }
+      responses:
+        '200': { description: Lección actualizada }
+        '404': { description: '`upload_not_found` — la subida venció o se canceló' }
+        '409': { description: Faltan partes, una llegó de otro tamaño, o la key no es de esta lección }
+
+  /lessons/{id}/video-thumbnail-upload-url:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [courses]
+      summary: Portada del video — URL firmada de subida
+      description: JPG, PNG o WebP, hasta 5 MB. Un `PUT` simple.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, sizeBytes]
+              properties:
+                contentType: { type: string, enum: ['image/jpeg', 'image/png', 'image/webp'] }
+                sizeBytes: { type: integer, maximum: 5242880 }
+      responses:
+        '200':
+          description: URL firmada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UploadUrl' }
+        '400': { description: Formato no permitido }
+        '413': { description: Supera los 5 MB }
+
+  /lessons/{id}/video-thumbnail:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [courses]
+      summary: Portada del video — poner, cambiar o quitar
+      description: |
+        `key: null` la quita. La anterior se borra de S3. Solo para videos
+        subidos: los de YouTube usan la portada de YouTube.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key: { type: [string, 'null'] }
+      responses:
+        '200': { description: Lección actualizada }
+        '409': { description: No es un video subido, la portada no llegó, o es de otra lección }
+
   /lessons/{id}/video-url:
     parameters: [{ $ref: '#/components/parameters/id' }]
     get:
@@ -979,6 +1176,12 @@ paths:
                 properties:
                   url: { type: string, format: uri }
                   expiresInSeconds: { type: integer, example: 300 }
+                  thumbnailUrl:
+                    type: [string, 'null']
+                    format: uri
+                    description: |
+                      La portada, firmada por una hora con la misma
+                      autorización que el video. `null` si no tiene.
         '404': { description: No existe o está fuera de tu alcance }
         '409': { description: La lección no tiene video propio }
         '503':

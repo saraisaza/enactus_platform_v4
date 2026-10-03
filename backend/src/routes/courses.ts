@@ -16,6 +16,7 @@ import { createVideoUrl } from '../lib/cloudfront';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
 import { authorizeCourseIntroVideo } from '../services/file-access';
+import { drainStorageDeletes } from '../services/storage-cleanup';
 import { CONTENT_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import {
@@ -782,6 +783,8 @@ moduleRoutes.delete('/:id', requireRole(...CONTENT_ROLES), async (c) => {
   // tiene. Se borran de verdad y sus lecciones caen por CASCADE.
   await db.delete(courseModules).where(eq(courseModules.id, mod.id));
   await renumberModules(c.get('db'), mod.courseId);
+  // Las lecciones que cayeron en cascada dejaron sus archivos en la cola.
+  await drainStorageDeletes(db);
   return c.body(null, 204);
 });
 
@@ -829,6 +832,12 @@ async function loadLessons(db: Db, moduleId: string) {
            l.video_s3_key as "videoS3Key",
            l.video_youtube_id as "videoYoutubeId",
            l.video_duration_sec as "videoDurationSec",
+           -- Del video subido, lo que el editor le muestra al LXD. La key de la
+           -- portada no viaja: se ve con la URL firmada de /video-url.
+           l.video_original_name as "videoOriginalName",
+           l.video_size_bytes::float8 as "videoSizeBytes",
+           l.video_uploaded_at as "videoUploadedAt",
+           (l.video_thumbnail_s3_key is not null) as "hasVideoThumbnail",
            coalesce((
              select json_agg(json_build_object(
                       'id', q.id, 'kind', q.kind, 'question', q.question,

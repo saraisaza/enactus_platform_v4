@@ -245,22 +245,25 @@ export async function authorizeFileRead(
  * [assertCourseVisible] / [assertLabVisible] en vez de escribir una segunda
  * definición de "sus cursos" que pueda separarse de la primera.
  *
- * Devuelve la key. Firmar es responsabilidad de `lib/cloudfront.ts`.
+ * Devuelve la key del video y la de su portada, si tiene. Firmar es
+ * responsabilidad de `lib/cloudfront.ts`.
  */
 export async function authorizeLessonVideo(
   db: Database,
   user: AuthUser,
   lessonId: string,
-): Promise<{ key: string }> {
+): Promise<{ key: string; thumbnailKey: string | null }> {
   const [lesson] = await db.execute<{
     videoType: string | null;
     videoS3Key: string | null;
+    videoThumbnailS3Key: string | null;
     videoUrl: string | null;
     courseId: string | null;
     laboratoryId: string | null;
   }>(sql`
     select l.video_type as "videoType",
            l.video_s3_key as "videoS3Key",
+           l.video_thumbnail_s3_key as "videoThumbnailS3Key",
            l.video_url as "videoUrl",
            cm.course_id as "courseId",
            ph.laboratory_id as "laboratoryId"
@@ -298,7 +301,7 @@ export async function authorizeLessonVideo(
     );
   }
 
-  return { key: lesson.videoS3Key };
+  return { key: lesson.videoS3Key, thumbnailKey: lesson.videoThumbnailS3Key };
 }
 
 /**

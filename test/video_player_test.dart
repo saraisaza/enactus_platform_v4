@@ -8,6 +8,7 @@ import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/widgets/video_player_dialog.dart';
 
 import 'helpers/fake_api.dart';
+import 'helpers/fake_video_player.dart';
 
 /// El reproductor de video: conversión de enlaces y estados de la pantalla.
 ///
@@ -135,8 +136,9 @@ void main() {
       expect(find.text('Abrir video'), findsOneWidget);
     });
 
-    testWidgets('el video propio muestra un estado de carga mientras pide la URL',
+    testWidgets('el video propio muestra la portada, y un estado de carga al tocar',
         (tester) async {
+      FakeVideoPlayer.install();
       final fake = FakeApi(
         routes: {
           '/lessons/lec-1/video-url': {
@@ -151,11 +153,16 @@ void main() {
         fake,
       ));
       await tester.pump();
-      expect(find.textContaining('Preparando el video'), findsOneWidget);
+      // Primero la portada: el video no se carga hasta que alguien lo pide.
+      expect(find.bySemanticsLabel(RegExp('Reproducir el video')), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel(RegExp('Reproducir el video')));
+      await tester.pump();
+      expect(find.text('Cargando el video…'), findsOneWidget);
 
       // Se deja terminar la petición para no dejar temporizadores vivos.
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
     });
 
     testWidgets('pide la URL al endpoint de CloudFront, no a /files/download-url',
@@ -185,22 +192,50 @@ void main() {
 
     testWidgets('si la API falla, se ve el error con botón de reintentar',
         (tester) async {
+      FakeVideoPlayer.install();
+      final fake = FakeApi(
+        routes: {
+          '/lessons/lec-1/video-url': {
+            'error': {'code': 'internal_error', 'message': 'Algo falló.'},
+          },
+        },
+        statuses: {'/lessons/lec-1/video-url': 500},
+      );
+      await tester.pumpWidget(_app(
+        _leccion(videoType: VideoSourceType.uploaded, videoS3Key: 'lessons/1/a.mp4'),
+        fake,
+      ));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel(RegExp('Reproducir el video')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('No se pudo cargar el video'), findsOneWidget);
+      expect(find.text('Reintentar'), findsOneWidget);
+    });
+
+    testWidgets('un video que ya no existe lo dice, sin un reintentar que no sirve',
+        (tester) async {
+      FakeVideoPlayer.install();
       final fake = FakeApi(notFound: {'/lessons/lec-1/video-url'});
       await tester.pumpWidget(_app(
         _leccion(videoType: VideoSourceType.uploaded, videoS3Key: 'lessons/1/a.mp4'),
         fake,
       ));
       await tester.pump();
+      await tester.tap(find.bySemanticsLabel(RegExp('Reproducir el video')));
+      await tester.pump();
       await tester.pump();
 
-      expect(find.textContaining('No pudimos preparar el video'), findsOneWidget);
-      expect(find.text('Reintentar'), findsOneWidget);
+      expect(find.text('Este video ya no está disponible'), findsOneWidget);
+      expect(find.text('Reintentar'), findsNothing);
     });
 
     testWidgets('sin CloudFront configurado se explica, sin ofrecer reintentar',
         (tester) async {
       // Reintentar un 503 de configuración no arregla nada: ofrecerlo sería
       // mandar a la persona a apretar un botón que no puede funcionar.
+      FakeVideoPlayer.install();
       final fake = FakeApi(
         routes: {
           '/lessons/lec-1/video-url': {
@@ -218,9 +253,11 @@ void main() {
         fake,
       ));
       await tester.pump();
+      await tester.tap(find.bySemanticsLabel(RegExp('Reproducir el video')));
+      await tester.pump();
       await tester.pump();
 
-      expect(find.textContaining('no disponible en este entorno'), findsOneWidget);
+      expect(find.textContaining('no está disponible en este entorno'), findsOneWidget);
       expect(find.textContaining('CLOUDFRONT_DOMAIN'), findsOneWidget);
       expect(find.text('Reintentar'), findsNothing);
     });

@@ -16,6 +16,7 @@ import {
 import { conflict, notFound } from '../lib/errors';
 import { ADMIN_ROLES, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
+import { drainStorageDeletes } from '../services/storage-cleanup';
 
 type Db = AppEnv['Variables']['db'];
 
@@ -466,6 +467,8 @@ rutaModuleRoutes.delete('/:id', async (c) => {
   await db.delete(rutaModules).where(eq(rutaModules.id, mod.id));
   await renumberModules(db, mod.phaseId);
   await afterStructuralChange(db, mod.phaseId, mod.laboratoryId);
+  // Las lecciones propias que cayeron en cascada dejaron sus archivos en la cola.
+  await drainStorageDeletes(db);
 
   return c.body(null, 204);
 });

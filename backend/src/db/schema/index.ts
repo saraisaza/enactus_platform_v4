@@ -14,6 +14,7 @@
  * - `progress`     — progreso de curso y de Ruta de Impacto
  * - `submissions`  — entregas, archivos, intentos de quiz, certificados
  * - `content`      — evidencias, recursos, foro, calendario, sitio, notas
+ * - `storage`      — archivos de S3 pendientes de borrar
  */
 export * from './enums';
 export * from './catalogs';
@@ -26,3 +27,4 @@ export * from './links';
 export * from './progress';
 export * from './submissions';
 export * from './content';
+export * from './storage';

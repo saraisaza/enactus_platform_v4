@@ -36,6 +36,33 @@
  "POST /lessons/:id/video-external": {
   "url": "https://vimeo.com/76979871"
  },
+ "POST /lessons/:id/video-thumbnail-upload-url": {
+  "contentType": "image/jpeg",
+  "sizeBytes": 3
+ },
+ "POST /lessons/:id/video-uploads": {
+  "fileName": "clase 1.mp4",
+  "contentType": "video/mp4",
+  "sizeBytes": 2500
+ },
+ "POST /lessons/:id/video-uploads/complete": {
+  "key": "lessons/8f2b6a1e-3c4d-4e5f-9a0b-1c2d3e4f5a6b/video.mp4",
+  "uploadId": "subida-1",
+  "fileName": "clase 1.mp4",
+  "sizeBytes": 2500,
+  "durationSec": 754,
+  "thumbnailKey": "lessons/8f2b6a1e-3c4d-4e5f-9a0b-1c2d3e4f5a6b/thumb-1.jpg"
+ },
+ "POST /lessons/:id/video-uploads/sign": {
+  "key": "lessons/8f2b6a1e-3c4d-4e5f-9a0b-1c2d3e4f5a6b/video.mp4",
+  "uploadId": "subida-1",
+  "sizeBytes": 2500,
+  "partNumbers": [
+   1,
+   2,
+   3
+  ]
+ },
  "POST /lessons/:id/video-youtube": {
   "videoId": "dQw4w9WgXcQ"
  },

@@ -1,0 +1,17 @@
+{
+  "Rules": [
+    {
+      "ID": "subidas-por-partes-sin-terminar",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "" },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 7 }
+    },
+    {
+      "ID": "videos-de-lecciones-borrados",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "lessons/" },
+      "NoncurrentVersionExpiration": { "NoncurrentDays": 30 },
+      "Expiration": { "ExpiredObjectDeleteMarker": true }
+    }
+  ]
+}

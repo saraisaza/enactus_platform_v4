@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:video_player/video_player.dart';
 
 import '../models/models.dart';
 import '../providers/data_provider.dart';
@@ -13,6 +12,7 @@ import '../services/video_source_io.dart'
 import '../utils/app_theme.dart';
 import '../utils/responsive.dart';
 import '../utils/youtube.dart';
+import 'uploaded_lesson_player.dart';
 import 'youtube_lesson_player.dart';
 
 /// Reproductor de video de una lección.
@@ -32,10 +32,12 @@ import 'youtube_lesson_player.dart';
 ///   `X-Frame-Options`— y embeberlo daría un recuadro en blanco sin ningún
 ///   error visible.
 ///
-/// - **`uploaded`** — un archivo propio. Se pide `GET /lessons/:id/video-url`,
-///   que devuelve una URL firmada de CloudFront con cinco minutos de vigencia,
-///   y se reproduce con un `<video>` HTML5. **Nunca por URL firmada de S3**: es
-///   una decisión de costo y la API rechaza esas keys con 400.
+/// - **`uploaded`** — un archivo propio. Se reproduce con
+///   [UploadedLessonPlayer]: la misma carátula, el mismo 16:9 y el mismo
+///   avance guardado que YouTube, con controles propios. El video sale de
+///   `GET /lessons/:id/video-url`, una URL firmada de CloudFront con cinco
+///   minutos de vigencia. **Nunca por URL firmada de S3**: es una decisión de
+///   costo y la API rechaza esas keys con 400.
 ///
 /// Los tres estados son obligatorios, como en el resto de la app: mientras se
 /// pide la URL hay un indicador; si falla, el error con botón de reintentar; y
@@ -85,7 +87,7 @@ class VideoPlayerDialog extends StatelessWidget {
   /// Ancho máximo del video en pantallas grandes. Más allá de esto el
   /// diálogo deja de parecer un diálogo y la miniatura de YouTube (480 px)
   /// se ve borrosa.
-  static const maxVideoWidth = 1040.0;
+  static const maxVideoWidth = 960.0;
 
   /// Lo que ocupan el encabezado, el pie y los márgenes del diálogo: es lo que
   /// se le descuenta al alto de la ventana antes de calcular el 16:9.
@@ -200,9 +202,11 @@ class VideoPlayerDialog extends StatelessWidget {
     }
 
     if (lesson.isUploadedVideo) {
-      return AspectRatio(
-        aspectRatio: 16 / 9,
-        child: _UploadedVideo(lessonId: lesson.id),
+      return _UploadedBody(
+        lesson: lesson,
+        courseId: courseId,
+        trackProgress: trackProgress,
+        borderRadius: edgeToEdge ? 0 : 12,
       );
     }
 
@@ -297,20 +301,60 @@ class _YoutubeBody extends StatelessWidget {
     );
   }
 
-  /// Ver el video es completarlo, igual que aprobar un quiz completa el suyo.
-  /// `IfPending`: si ya estaba completa no se toca — un toggle la desmarcaría.
-  Future<void> _complete(DataProvider data) async {
-    final course = courseId;
-    try {
-      if (course != null) {
-        await data.toggleLessonIfPending(lesson.id, course);
-      } else {
-        await data.toggleRutaLessonIfPending(lesson.id);
-      }
-    } on ApiException catch (e) {
-      // El video sigue: quien mira puede marcarla a mano desde la lista.
-      debugPrint('No se pudo completar ${lesson.id}: ${e.message}');
+  Future<void> _complete(DataProvider data) =>
+      _completeLesson(data, lesson.id, courseId);
+}
+
+/// Ver el video es completarlo, igual que aprobar un quiz completa el suyo.
+/// `IfPending`: si ya estaba completa no se toca — un toggle la desmarcaría.
+Future<void> _completeLesson(
+    DataProvider data, String lessonId, String? courseId) async {
+  try {
+    if (courseId != null) {
+      await data.toggleLessonIfPending(lessonId, courseId);
+    } else {
+      await data.toggleRutaLessonIfPending(lessonId);
     }
+  } on ApiException catch (e) {
+    // El video sigue: quien mira puede marcarla a mano desde la lista.
+    debugPrint('No se pudo completar $lessonId: ${e.message}');
+  }
+}
+
+/// El video subido, con el mismo avance que el de YouTube.
+class _UploadedBody extends StatelessWidget {
+  final Lesson lesson;
+  final String? courseId;
+  final bool trackProgress;
+  final double borderRadius;
+
+  const _UploadedBody({
+    required this.lesson,
+    required this.courseId,
+    required this.trackProgress,
+    required this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final data = trackProgress ? context.watch<DataProvider>() : null;
+    final saved = data?.myVideoProgress(lesson.id);
+    final seconds = lesson.videoDurationSec;
+
+    return UploadedLessonPlayer(
+      lessonId: lesson.id,
+      title: lesson.title,
+      durationHint: seconds == null ? null : Duration(seconds: seconds),
+      resumeAt: saved?.resumeAt,
+      watchedRatio: saved?.watchedRatio,
+      borderRadius: borderRadius,
+      onProgress: data == null
+          ? null
+          : (position, duration) => data.saveVideoProgress(lesson.id,
+              positionSec: position, durationSec: duration),
+      onWatched:
+          data == null ? null : () => _completeLesson(data, lesson.id, courseId),
+    );
   }
 }
 
@@ -330,10 +374,10 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final description = lesson.description.trim();
-    final youtube = lesson.youtubeVideoId != null;
+    final conAvance = lesson.youtubeVideoId != null || lesson.isUploadedVideo;
 
     final data =
-        trackProgress && youtube ? context.watch<DataProvider>() : null;
+        trackProgress && conAvance ? context.watch<DataProvider>() : null;
     final watched = data?.myVideoProgress(lesson.id)?.watchedRatio;
     final course = courseId;
     final complete = data != null &&
@@ -426,176 +470,6 @@ String? embedUrlFor(String raw) {
   if (vimeo != null) return 'https://player.vimeo.com/video/$vimeo';
 
   return null;
-}
-
-/// Video propio: pide la URL firmada y la reproduce.
-class _UploadedVideo extends StatefulWidget {
-  final String lessonId;
-  const _UploadedVideo({required this.lessonId});
-
-  @override
-  State<_UploadedVideo> createState() => _UploadedVideoState();
-}
-
-class _UploadedVideoState extends State<_UploadedVideo> {
-  VideoPlayerController? _controller;
-  Object? _playbackError;
-  String? _preparedUrl;
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  /// Se prepara el reproductor una sola vez por URL.
-  ///
-  /// La URL se refresca sola al vencer (cinco minutos), y sin esta guarda cada
-  /// rebuild del provider crearía un controlador nuevo y dejaría el anterior
-  /// vivo: el video se reiniciaría solo y se filtrarían controladores.
-  void _prepare(String url) {
-    if (_preparedUrl == url) return;
-    _preparedUrl = url;
-    final anterior = _controller;
-    _controller = null;
-    _playbackError = null;
-
-    createSignedVideoController(url).then((controller) {
-      anterior?.dispose();
-      if (!mounted) {
-        controller.dispose();
-        return;
-      }
-      setState(() => _controller = controller);
-    }).catchError((Object error) {
-      anterior?.dispose();
-      if (mounted) setState(() => _playbackError = error);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-
-    return data.lessonVideoUrl(widget.lessonId).when(
-          loading: () => const _Panel(
-            icon: Icons.hourglass_empty,
-            title: 'Preparando el video…',
-            message: 'Pidiendo el permiso de reproducción.',
-          ),
-          error: (e) => _ErrorPanel(
-            error: e,
-            onRetry: () => data.reloadLessonVideoUrl(widget.lessonId),
-          ),
-          data: (url) {
-            // No se llama dentro del build: crear el controlador dispara un
-            // `setState`, y hacerlo durante la construcción es un error.
-            WidgetsBinding.instance
-                .addPostFrameCallback((_) => _prepare(url));
-
-            final error = _playbackError;
-            if (error != null) {
-              return _Panel(
-                icon: Icons.error_outline,
-                title: 'No se pudo reproducir el video',
-                message: '$error',
-                action: (
-                  'Reintentar',
-                  () {
-                    setState(() {
-                      _preparedUrl = null;
-                      _playbackError = null;
-                    });
-                    data.reloadLessonVideoUrl(widget.lessonId);
-                  }
-                ),
-              );
-            }
-
-            final controller = _controller;
-            if (controller == null) {
-              return const _Panel(
-                icon: Icons.hourglass_empty,
-                title: 'Cargando el video…',
-                message: 'Ya casi.',
-              );
-            }
-            return _Surface(controller: controller);
-          },
-        );
-  }
-}
-
-/// El `<video>` con sus controles.
-class _Surface extends StatefulWidget {
-  final VideoPlayerController controller;
-  const _Surface({required this.controller});
-
-  @override
-  State<_Surface> createState() => _SurfaceState();
-}
-
-class _SurfaceState extends State<_Surface> {
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Colors.black,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: widget.controller.value.aspectRatio,
-              child: VideoPlayer(widget.controller),
-            ),
-          ),
-          VideoProgressIndicator(widget.controller, allowScrubbing: true),
-          Center(
-            child: IconButton(
-              iconSize: 56,
-              color: Colors.white,
-              icon: Icon(
-                widget.controller.value.isPlaying
-                    ? Icons.pause_circle_filled
-                    : Icons.play_circle_fill,
-              ),
-              onPressed: () => setState(() {
-                widget.controller.value.isPlaying
-                    ? widget.controller.pause()
-                    : widget.controller.play();
-              }),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Error de la API con reintento, en el mismo formato que el resto de la app.
-class _ErrorPanel extends StatelessWidget {
-  final Object error;
-  final VoidCallback onRetry;
-  const _ErrorPanel({required this.error, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    // El 503 de un entorno sin CloudFront no es un fallo de la persona ni un
-    // error de red: se dice qué pasa en vez de "algo salió mal".
-    final sinCdn = error is ApiException &&
-        (error as ApiException).code == 'cdn_not_configured';
-
-    return _Panel(
-      icon: sinCdn ? Icons.cloud_off_outlined : Icons.wifi_off_outlined,
-      title: sinCdn
-          ? 'Reproducción no disponible en este entorno'
-          : 'No pudimos preparar el video',
-      message: error is ApiException
-          ? (error as ApiException).message
-          : '$error',
-      action: sinCdn ? null : ('Reintentar', onRetry),
-    );
-  }
 }
 
 class _Panel extends StatelessWidget {

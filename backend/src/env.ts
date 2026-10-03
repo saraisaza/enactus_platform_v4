@@ -24,6 +24,11 @@ const schema = z.object({
 
   AWS_REGION: z.string().default('us-east-1'),
   S3_BUCKET: z.string().default(''),
+  /**
+   * Solo para desarrollo local, contra un S3 compatible (MinIO, moto). En AWS
+   * va vacío y el SDK usa el endpoint de la región.
+   */
+  S3_ENDPOINT: z.string().default(''),
   CLOUDFRONT_DOMAIN: z.string().default(''),
   CLOUDFRONT_KEY_PAIR_ID: z.string().default(''),
   CLOUDFRONT_PRIVATE_KEY: z.string().default(''),

@@ -135,7 +135,11 @@ export function signCloudFrontUrl(
  * mismo criterio que S3: es preferible a devolver una URL que el reproductor
  * va a rechazar con un error que no explica nada.
  */
-export function createVideoUrl(input: { key: string }): {
+export function createVideoUrl(input: {
+  key: string;
+  /** La portada vive más: una imagen en caché no debería vencer a los 5 min. */
+  ttlSeconds?: number;
+}): {
   url: string;
   expiresInSeconds: number;
 } {
@@ -150,13 +154,13 @@ export function createVideoUrl(input: { key: string }): {
     );
   }
 
-  const expiresAtEpochSeconds =
-    Math.floor(Date.now() / 1000) + VIDEO_URL_TTL_SECONDS;
+  const ttl = input.ttlSeconds ?? VIDEO_URL_TTL_SECONDS;
+  const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + ttl;
 
   try {
     return {
       url: signCloudFrontUrl(config, { key: input.key, expiresAtEpochSeconds }),
-      expiresInSeconds: VIDEO_URL_TTL_SECONDS,
+      expiresInSeconds: ttl,
     };
   } catch (error) {
     // Una llave mal formada es un problema de configuración del entorno, no

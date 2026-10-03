@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
-import '../utils/app_theme.dart';
 import '../utils/video_watch_tracker.dart';
 import '../utils/youtube.dart';
 import 'common.dart';
+import 'lesson_video_shell.dart';
+
+export 'lesson_video_shell.dart' show formatVideoTime;
 
 /// Reproductor de una lección de YouTube, siempre en 16:9.
 ///
@@ -238,14 +239,16 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _Caja16x9(
+    return VideoBox16x9(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(widget.borderRadius),
         child: ColoredBox(
           color: Colors.black,
           child: switch (_fase) {
-            _Fase.miniatura => _Caratula(
-                videoId: widget.videoId,
+            _Fase.miniatura => LessonVideoCover(
+                image: _Miniatura(widget.videoId),
+                sourceLabel: 'YouTube',
+                sourceIcon: Icons.smart_display_outlined,
                 title: widget.title,
                 resumeAt: widget.resumeAt,
                 watchedRatio: widget.watchedRatio,
@@ -271,8 +274,10 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
                     child: AnimatedOpacity(
                       opacity: _fase == _Fase.listo ? 0 : 1,
                       duration: const Duration(milliseconds: 300),
-                      child: _Caratula(
-                        videoId: widget.videoId,
+                      child: LessonVideoCover(
+                        image: _Miniatura(widget.videoId),
+                        sourceLabel: 'YouTube',
+                        sourceIcon: Icons.smart_display_outlined,
                         title: widget.title,
                         resumeAt: widget.resumeAt,
                         watchedRatio: widget.watchedRatio,
@@ -296,7 +301,7 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
 /// `i3.ytimg.com/vi_webp/<key>/…`. Con `key: 'leccion'` pedía una imagen que
 /// no existe, y en el sitio la CSP la bloqueaba con un error en la consola en
 /// cada reproducción. Sin `key` esa capa no pide nada —la miniatura ya la
-/// pone [_Caratula]— y el id se fija acá.
+/// pone la carátula— y el id se fija acá.
 class _ControladorLeccion extends YoutubePlayerController {
   _ControladorLeccion({super.params});
 
@@ -306,231 +311,6 @@ class _ControladorLeccion extends YoutubePlayerController {
   // arrancaría y lo atrapan las pruebas de `youtube_player_test.dart`.
   @override
   String get playerId => YoutubeLessonPlayer.playerId;
-}
-
-/// 16:9 que responde sus medidas intrínsecas con la proporción, sin
-/// preguntarle a lo que tiene adentro.
-///
-/// Hace falta porque adentro hay `LayoutBuilder` —en la carátula, y en el
-/// reproductor del paquete en Android/iOS— y un `LayoutBuilder` no sabe
-/// responder medidas intrínsecas: lanza. Un `AlertDialog` las pide siempre
-/// (envuelve su contenido en un `IntrinsicWidth`), y la vista previa del
-/// editor de lecciones vive en uno. Sin esto, pegar un enlace en el editor
-/// rompía el diálogo entero.
-class _Caja16x9 extends AspectRatio {
-  const _Caja16x9({super.child}) : super(aspectRatio: 16 / 9);
-
-  @override
-  RenderAspectRatio createRenderObject(BuildContext context) =>
-      _RenderCaja16x9(aspectRatio: aspectRatio);
-}
-
-class _RenderCaja16x9 extends RenderAspectRatio {
-  _RenderCaja16x9({required super.aspectRatio});
-
-  @override
-  double computeMinIntrinsicWidth(double height) =>
-      height.isFinite ? height * aspectRatio : 0;
-
-  @override
-  double computeMaxIntrinsicWidth(double height) =>
-      height.isFinite ? height * aspectRatio : 0;
-
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      width.isFinite ? width / aspectRatio : 0;
-
-  @override
-  double computeMaxIntrinsicHeight(double width) =>
-      width.isFinite ? width / aspectRatio : 0;
-}
-
-/// La miniatura con el botón de reproducir.
-class _Caratula extends StatelessWidget {
-  final String videoId;
-  final String title;
-  final Duration? resumeAt;
-  final double? watchedRatio;
-  final VoidCallback? onPlay;
-  final bool loading;
-
-  const _Caratula({
-    required this.videoId,
-    required this.title,
-    this.resumeAt,
-    this.watchedRatio,
-    this.onPlay,
-    this.loading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      // En un teléfono el reproductor mide ~360 px de ancho: el botón y las
-      // etiquetas se achican para no tapar la miniatura entera.
-      final chico = constraints.maxWidth < 480;
-      final resume = resumeAt;
-
-      return KeyboardHoverBuilder(
-        onTap: loading ? null : onPlay,
-        builder: (context, activo) => Semantics(
-          label: loading
-              ? 'Cargando el video «$title»'
-              : resume == null
-                  ? 'Reproducir el video «$title»'
-                  : 'Seguir viendo «$title» desde ${formatVideoTime(resume)}',
-          excludeSemantics: true,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.network(
-                youtubeThumbnailUrl(videoId),
-                fit: BoxFit.cover,
-                // Un `<img>` del navegador: no necesita CORS y la CSP solo
-                // tiene que permitir `img-src https://i.ytimg.com`.
-                webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                errorBuilder: (_, _, _) => const _FondoSinMiniatura(),
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : const _FondoSinMiniatura(),
-              ),
-              // Degradé para que las etiquetas se lean sobre cualquier imagen.
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x33000000),
-                      Color(0x00000000),
-                      Color(0xB3000000),
-                    ],
-                    stops: [0, 0.45, 1],
-                  ),
-                ),
-              ),
-              Center(
-                child: loading
-                    ? const SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation(AppColors.gold),
-                        ),
-                      )
-                    : AnimatedScale(
-                        scale: activo ? 1.08 : 1,
-                        duration: const Duration(milliseconds: 150),
-                        child: Container(
-                          width: chico ? 56 : 72,
-                          height: chico ? 56 : 72,
-                          decoration: BoxDecoration(
-                            color: activo
-                                ? AppColors.goldBright
-                                : AppColors.gold,
-                            shape: BoxShape.circle,
-                            boxShadow: const [
-                              BoxShadow(
-                                  color: Color(0x80000000),
-                                  blurRadius: 18,
-                                  offset: Offset(0, 6)),
-                            ],
-                          ),
-                          // Tinta oscura sobre el ámbar: blanco ahí da 1.6:1.
-                          child: Icon(Icons.play_arrow_rounded,
-                              color: AppColors.ink, size: chico ? 34 : 44),
-                        ),
-                      ),
-              ),
-              Positioned(
-                left: chico ? 10 : 14,
-                right: chico ? 10 : 14,
-                bottom: chico ? 10 : 14,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    const _Etiqueta(
-                        icon: Icons.smart_display_outlined, text: 'YouTube'),
-                    if (loading)
-                      const _Etiqueta(
-                          icon: Icons.hourglass_empty,
-                          text: 'Cargando el video…')
-                    else if (resume != null)
-                      _Etiqueta(
-                          icon: Icons.history,
-                          text: 'Seguir desde ${formatVideoTime(resume)}'),
-                  ],
-                ),
-              ),
-              if ((watchedRatio ?? 0) > 0)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: LinearProgressIndicator(
-                    value: watchedRatio,
-                    minHeight: 4,
-                    backgroundColor: const Color(0x55FFFFFF),
-                    valueColor: const AlwaysStoppedAnimation(AppColors.gold),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _FondoSinMiniatura extends StatelessWidget {
-  const _FondoSinMiniatura();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.slate, AppColors.slateDark],
-        ),
-      ),
-      child: Center(
-        child: Icon(Icons.smart_display_outlined,
-            color: AppColors.textMuted, size: 48),
-      ),
-    );
-  }
-}
-
-class _Etiqueta extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const _Etiqueta({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xB3000000),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 5),
-          Text(text,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
 }
 
 /// No cargó, o YouTube no lo deja ver acá. Siempre con una salida.
@@ -584,60 +364,29 @@ class _Fallo extends StatelessWidget {
     final (titulo, detalle) = _mensaje;
     final noExiste = error == YoutubeError.videoNotFound ||
         error == YoutubeError.cannotFindVideo;
-
-    return Container(
-      color: AppColors.surfaceAlt,
-      padding: const EdgeInsets.all(16),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.videocam_off_outlined,
-                  size: 40, color: AppColors.textMuted),
-              const SizedBox(height: 10),
-              Text(titulo,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
-              Text(detalle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12.5)),
-              const SizedBox(height: 14),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (_puedeReintentar)
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Reintentar'),
-                      onPressed: onRetry,
-                    ),
-                  if (!noExiste)
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.open_in_new, size: 18),
-                      label: const Text('Ver en YouTube'),
-                      onPressed: onOpenYoutube,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+    return LessonVideoFailure(
+      title: titulo,
+      detail: detalle,
+      onRetry: _puedeReintentar ? onRetry : null,
+      secondary:
+          noExiste ? null : ('Ver en YouTube', Icons.open_in_new, onOpenYoutube),
     );
   }
 }
 
-/// `m:ss`, o `h:mm:ss` en videos de una hora o más.
-String formatVideoTime(Duration d) {
-  final h = d.inHours;
-  final m = d.inMinutes.remainder(60);
-  final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return h > 0 ? '$h:${m.toString().padLeft(2, '0')}:$s' : '$m:$s';
+/// La miniatura de YouTube. Un `<img>` del navegador: no necesita CORS y la
+/// CSP solo tiene que permitir `img-src https://i.ytimg.com`.
+class _Miniatura extends StatelessWidget {
+  final String videoId;
+  const _Miniatura(this.videoId);
+
+  @override
+  Widget build(BuildContext context) => Image.network(
+        youtubeThumbnailUrl(videoId),
+        fit: BoxFit.cover,
+        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+        errorBuilder: (_, _, _) => const VideoCoverFallback(),
+        loadingBuilder: (_, child, progress) =>
+            progress == null ? child : const VideoCoverFallback(),
+      );
 }

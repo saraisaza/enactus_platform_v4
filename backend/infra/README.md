@@ -25,12 +25,17 @@ un solo ARN para las dos, `ListBucket` no funciona nunca.
 
 ### Qué usa el código, hoy
 
-El backend solo llama a dos comandos del SDK (`src/lib/s3.ts`):
+`src/lib/s3.ts` firma; `src/lib/media-storage.ts` (el video subido de las
+lecciones) además **llama** a S3:
 
 | Acción | Para qué |
 |---|---|
-| `s3:PutObject` | firmar la URL de subida (`POST /files/upload-url`, `POST /lessons/:id/video-upload-url`) |
-| `s3:GetObject` | firmar la URL de lectura (`POST /files/download-url`) |
+| `s3:PutObject` | firmar la URL de subida (`POST /files/upload-url`, la portada del video); abrir y cerrar la subida por partes del video (`CreateMultipartUpload`, `CompleteMultipartUpload`) y firmar cada parte (`UploadPart`) |
+| `s3:GetObject` | firmar la URL de lectura (`POST /files/download-url`); mirar el tamaño del video ya cerrado (`HeadObject`) |
+| `s3:ListMultipartUploadParts` | preguntarle a S3 qué partes llegaron, en vez de creerle al navegador (`ListParts`) |
+| `s3:AbortMultipartUpload` | cancelar una subida, para que sus partes no queden cobrando |
+| `s3:DeleteObject` | borrar el video y la portada que se reemplazaron, o los de una lección borrada (`DeleteObjects`) |
+| `s3:ListBucket` | que `HeadObject` de una key que no existe dé 404 y no 403 |
 
 El archivo **nunca pasa por la API**: el navegador hace `PUT` directo contra la
 URL firmada. API Gateway corta el payload en 10 MB y un video lo revienta.
@@ -43,8 +48,9 @@ URL firmada. API Gateway corta el payload en 10 MB y un video lo revienta.
   entregan al navegador, eso convierte "esa imagen no está" en "no tiene
   permiso", que es una pista falsa cada vez que haya que depurar algo.
 
-- **`s3:DeleteObject`** — hoy no se usa, y eso es un hueco de la aplicación, no
-  de la política: **los borrados solo eliminan la fila de la base**. Borrar una
+- **`s3:DeleteObject`** — se usa solo para los videos de las lecciones (ver
+  «Video subido»). Para todo lo demás sigue el hueco de la aplicación, no de
+  la política: **los borrados solo eliminan la fila de la base**. Borrar una
   evidencia, una imagen de la galería o un recurso deja el archivo en el bucket
   para siempre. No queda accesible —`authorizeFileRead` resuelve la key contra
   la fila que la referencia, y sin fila responde 404— pero sigue almacenado, y
@@ -52,13 +58,14 @@ URL firmada. API Gateway corta el payload en 10 MB y un video lo revienta.
   de un donante eso importa. El permiso conviene dejarlo puesto para poder
   cerrar ese hueco sin volver a tocar IAM.
 
-- **`s3:AbortMultipartUpload` y `s3:ListBucketMultipartUploads`** — el
-  navegador sube con un solo `PUT` firmado, no en partes. El tope de un `PUT`
-  simple en S3 son 5 GB y la app corta en 500 MB, así que multipart no se usa.
-  Son inofensivos y quedan si en algún momento se sube en partes.
+- **`s3:ListBucketMultipartUploads`** — nada lista las subidas a medias: las
+  que nadie termina las descarta el ciclo de vida (`s3-lifecycle.json`). Es
+  inofensivo.
 
-No falta ningún permiso: firmar una URL es un cálculo local, y el permiso se
-evalúa recién cuando alguien la usa.
+Firmar una URL es un cálculo local y el permiso se evalúa recién cuando
+alguien la usa; las llamadas de `media-storage.ts`, en cambio, fallan en el
+acto si falta el permiso (503 `storage_unavailable`, con el `AccessDenied` de
+S3 en el log).
 
 ### Se puede acotar más
 
@@ -170,6 +177,100 @@ Tiene que dar `200`. Un `403` es que el origen no está en la lista.
 
 Un dominio nuevo para el frontend se agrega acá **y** se vuelve a aplicar;
 `tests/s3-firma.test.ts` exige que los tres dominios actuales estén.
+
+---
+
+## Video subido
+
+El LXD sube el video de una lección desde el navegador, en partes de 8 MiB, y
+la API arma el archivo en S3. **Es la primera vez que la Lambda llama a S3
+de medios**: hasta acá solo firmaba URLs, que es un cálculo local. Eso trae
+cinco cosas que el pipeline no puede poner —su rol no tiene permiso, a
+propósito— y que se aplican a mano:
+
+```bash
+backend/infra/video-subido.sh             # revisa, y dice qué falta
+backend/infra/video-subido.sh --aplicar   # además aplica lo que falte
+```
+
+Usa el perfil `enactus-deploy` (u otro con `AWS_PROFILE=...`). Todo es
+aditivo: no quita ningún permiso, origen, regla ni fuente que ya esté, y se
+puede correr las veces que haga falta. Se aplica **antes** de aprobar el
+despliegue a producción: nada de esto le cambia nada al código de hoy.
+
+| # | Qué | Archivo | Si falta |
+|---|---|---|---|
+| 1 | Permisos del rol `enactus-backend-lambda` sobre `lessons/*` | `iam/lambda-video-subido.json` | La subida llega al 100 % y «Guardar» falla con 503: sin `s3:ListMultipartUploadParts` la API no puede confirmar las partes |
+| 2 | CORS del bucket | `s3-cors.json` | Ninguna parte sale del navegador (403 en el preflight) |
+| 3 | Ciclo de vida del bucket | `s3-lifecycle.json` | Funciona igual, pero lo cancelado y lo borrado se sigue cobrando |
+| 4 | Política del endpoint de S3 de la VPC | — (solo se revisa) | Cada llamada de la Lambda a S3 da `AccessDenied` |
+| 5 | CSP del frontend, en las dos políticas de cabeceras | `scripts/csp-video.mjs` | El reproductor, la portada y la vista previa no cargan |
+
+**1. Permisos.** Va como una política **aparte** (`enactus-video-subido`) en
+vez de reemplazar `enactus-media-dev-s3`: `put-role-policy` reemplaza la
+política del mismo nombre entera, y si la que está puesta tuviera algo que no
+está en `s3-policy.json` (el bucket de secretos, por ejemplo) se perdería y la
+API dejaría de arrancar. Sumar una política nueva no puede quitar nada.
+`s3-policy.json` también se actualizó, para el día que se reaplique completa.
+
+**2. CORS.** `s3-cors.json` (ver arriba) ya alcanza: las partes del video van
+con un `PUT` sin cabeceras y la portada con `content-type`. El script prueba
+los dos preflights desde los tres dominios.
+
+**3. Ciclo de vida.** Dos reglas:
+
+- `subidas-por-partes-sin-terminar`: S3 descarta, a los 7 días, una subida por
+  partes que nadie cerró ni canceló (la pestaña que se cerró a mitad). Siete y
+  no uno, para que el LXD pueda retomar después de un fin de semana.
+- `videos-de-lecciones-borrados`: el bucket tiene **versionado**, así que
+  borrar un objeto solo le pone una marca encima y la versión vieja se sigue
+  cobrando. Esta regla elimina las versiones viejas de `lessons/` a los 30
+  días. Es también la ventana para recuperar un video borrado por error.
+
+`put-bucket-lifecycle-configuration` reemplaza todas las reglas: el script lee
+las que haya y agrega las que falten, por ID, sin tocar las demás.
+
+**4. El endpoint.** La Lambda no tiene salida a internet y llega a S3 solo por
+`vpce-01fd4eef0b54f6287`. Con la política por defecto (todo S3) no hay nada
+que hacer. Si alguna vez se acotó al bucket de secretos, hay que agregar una
+declaración para `arn:aws:s3:::enactus-media-dev` y `.../*`; el script avisa
+pero no la toca, porque una política de endpoint mal puesta corta también la
+lectura de los secretos, y con eso la API entera.
+
+**5. La CSP.** Lo que pide el navegador, en `enactus-web-seguridad` y en
+`enactus-web-staging-seguridad` (las dos usan el mismo CDN de video):
+
+```
+media-src  … https://videos.eduxaction.com blob:
+img-src    … https://videos.eduxaction.com
+```
+
+`media-src` es para el `<video>` del reproductor y, con `blob:`, para la vista
+previa del editor y la portada automática, que salen del archivo local. Si
+`media-src` no existe, el script la crea copiando lo de `default-src` primero,
+para que lo que hoy pasa por herencia siga pasando. `connect-src` ya tiene el
+bucket (las subidas de siempre lo usan); el script igual lo revisa. Se niega a
+dejar la CSP por encima de los 1783 caracteres que acepta CloudFront.
+
+### Los archivos que se borran
+
+Reemplazar el video o la portada, pasar la lección a YouTube, borrar la
+lección o su módulo: en todos los casos un *trigger* de la base anota las keys
+viejas en `storage_pending_deletes`, en la misma transacción. Con el cambio
+ya confirmado, la API las borra de S3 (`services/storage-cleanup.ts`), y antes
+vuelve a mirar que ninguna lección ni curso las use. Si S3 falla, el pedido
+no falla: las keys quedan anotadas con el error y se reintentan en el
+siguiente cambio de video. Solo se anotan keys de `lessons/`: las del *seed*
+las comparten staging y producción.
+
+```sql
+select key, reason, attempts, last_error from storage_pending_deletes;
+```
+
+**Staging y producción comparten el bucket.** Las keys de video llevan el id
+de la lección y un UUID, así que no chocan; pero si alguna vez se copiaran
+lecciones de producción a staging, borrar una en staging borraría el video de
+producción. No copiar lecciones entre entornos mientras compartan bucket.
 
 ---
 

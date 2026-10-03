@@ -945,6 +945,13 @@ class Lesson {
   final String? videoYoutubeId;
   final int? videoDurationSec;
 
+  /// Solo `videoType == uploaded`: lo que el editor le muestra al LXD. La
+  /// portada no viaja como key: se ve con la URL firmada de `/video-url`.
+  final String? videoOriginalName;
+  final int? videoSizeBytes;
+  final DateTime? videoUploadedAt;
+  final bool hasVideoThumbnail;
+
   final List<QuizQuestion> quiz;
   final ActivityConfig? activity;
 
@@ -963,6 +970,10 @@ class Lesson {
     this.videoS3Key,
     this.videoYoutubeId,
     this.videoDurationSec,
+    this.videoOriginalName,
+    this.videoSizeBytes,
+    this.videoUploadedAt,
+    this.hasVideoThumbnail = false,
     this.quiz = const [],
     this.activity,
   });
@@ -1000,6 +1011,12 @@ class Lesson {
         videoS3Key: j['videoS3Key'] as String?,
         videoYoutubeId: j['videoYoutubeId'] as String?,
         videoDurationSec: (j['videoDurationSec'] as num?)?.toInt(),
+        videoOriginalName: j['videoOriginalName'] as String?,
+        videoSizeBytes: (j['videoSizeBytes'] as num?)?.toInt(),
+        videoUploadedAt: j['videoUploadedAt'] == null
+            ? null
+            : DateTime.tryParse(j['videoUploadedAt'] as String),
+        hasVideoThumbnail: j['hasVideoThumbnail'] == true,
         quiz: (j['quiz'] as List? ?? const [])
             .map((e) =>
                 QuizQuestion.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -1008,6 +1025,33 @@ class Lesson {
             ? null
             : ActivityConfig.fromJson(
                 Map<String, dynamic>.from(j['activity'] as Map)),
+      );
+}
+
+/// Lo que devuelve `GET /lessons/:id/video-url`: el video propio firmado
+/// por CloudFront y, si tiene, su portada.
+class LessonVideoSource {
+  const LessonVideoSource({
+    required this.url,
+    this.thumbnailUrl,
+    required this.expiresAt,
+  });
+
+  final String url;
+  final String? thumbnailUrl;
+
+  /// La URL del video vence a los minutos: después hay que pedir otra.
+  final DateTime expiresAt;
+
+  bool get isFresh =>
+      DateTime.now().isBefore(expiresAt.subtract(const Duration(seconds: 20)));
+
+  factory LessonVideoSource.fromJson(Map<String, dynamic> j) =>
+      LessonVideoSource(
+        url: j['url'] as String,
+        thumbnailUrl: j['thumbnailUrl'] as String?,
+        expiresAt: DateTime.now().add(
+            Duration(seconds: (j['expiresInSeconds'] as num?)?.toInt() ?? 300)),
       );
 }
 

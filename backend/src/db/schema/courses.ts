@@ -10,6 +10,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -269,6 +270,16 @@ export const lessons = pgTable(
     videoSizeBytes: bigint({ mode: 'number' }),
     videoDurationSec: integer(),
     videoMimeType: text(),
+    /**
+     * Solo `video_type = 'uploaded'`. La portada también vive en S3: la
+     * genera el navegador con un fotograma del video, o la sube el LXD.
+     * Se guarda la key y no la URL, igual que el video: la URL es firmada y
+     * vence a los minutos, así que se arma cada vez que alguien la pide.
+     */
+    videoThumbnailS3Key: text('video_thumbnail_s3_key'),
+    /** El nombre con que se subió el archivo, para mostrárselo al LXD. */
+    videoOriginalName: text(),
+    videoUploadedAt: timestamp({ withTimezone: true }),
 
     ...timestamps,
   },

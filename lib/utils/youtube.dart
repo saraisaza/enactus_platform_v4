@@ -161,9 +161,9 @@ class VideoLink {
   String? get problem => switch (kind) {
         VideoLinkKind.youtubeNotVideo =>
           'Ese enlace es de YouTube, pero no de un video (parece un canal o '
-              'una lista). Abre el video y copia su enlace.',
+              'una lista). Abra el video y copie su enlace.',
         VideoLinkKind.unsupported =>
-          'Pega el enlace de un video de YouTube, por ejemplo '
+          'Pegue el enlace de un video de YouTube, por ejemplo '
               'https://www.youtube.com/watch?v=… o https://youtu.be/…',
         _ => null,
       };

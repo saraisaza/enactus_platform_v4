@@ -467,7 +467,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 _ when tieneArchivo =>
                   'Esta lección ya tiene un video propio cargado. Pegar un '
                       'enlace lo reemplaza.',
-                _ => 'Pega el enlace como lo copias de YouTube: sirven '
+                _ => 'Pegue el enlace tal como lo copia de YouTube: sirven '
                     'watch?v=, youtu.be, shorts y embed. También se acepta '
                     'Vimeo.',
               },

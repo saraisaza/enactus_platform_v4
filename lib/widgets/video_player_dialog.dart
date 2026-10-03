@@ -366,8 +366,8 @@ class _Footer extends StatelessWidget {
                   SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                        'Tu avance se guarda solo: si cierras, sigues donde '
-                        'quedaste.',
+                        'Su avance se guarda solo: si cierra, sigue donde '
+                        'quedó.',
                         style: TextStyle(
                             color: AppColors.textMuted, fontSize: 12)),
                   ),

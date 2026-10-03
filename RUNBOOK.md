@@ -1006,6 +1006,20 @@ sesión. El hash es uno por origen y cambia al actualizar
 YouTube — comprobado en Chromium: con esas tres líneas, el reproductor no
 deja ni una violación de CSP.
 
+Los hashes de `youtube_player_iframe` 6.0.2, calculados el 3 de octubre de
+2026 con los valores que el reproductor arma de verdad en Chrome:
+
+| Origen | Hash |
+|---|---|
+| `https://eduxaction.com` | `'sha256-mWFg57gl8GJ7fzq2EpNugYZ+DmaKVteJFmNmucj0+9w='` |
+| `https://www.eduxaction.com` | `'sha256-OcB8eJH2m+ok5yKjLu9WJmY3A0Mz5WLMGCLI3iuYmQU='` |
+| `https://staging.eduxaction.com` | `'sha256-W2RO/Ktr3okQaWAqTRwds0VOSx9dzFfySPN71W6CoIY='` |
+
+Los dos primeros van en `enactus-web-seguridad`; el tercero, en
+`enactus-web-staging-seguridad`. Con la CSP de producción más estas entradas,
+Chrome cargó la API de YouTube y creó el reproductor sin reportar ninguna
+violación; con la de hoy, bloqueó el script en línea.
+
 ### Staging no debe ser público
 
 Tres capas, porque fallan distinto:

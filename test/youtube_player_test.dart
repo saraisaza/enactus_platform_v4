@@ -364,7 +364,7 @@ void main() {
       await _settle(tester);
 
       expect(fake.requested.where((r) => r.contains('/progress/')), isEmpty);
-      expect(find.textContaining('Tu avance se guarda'), findsNothing);
+      expect(find.textContaining('Su avance se guarda'), findsNothing);
     });
   });
 

@@ -550,7 +550,7 @@ class _Fallo extends StatelessWidget {
         null => (
             'No se pudo cargar el reproductor',
             'Puede ser la conexión, o que el navegador esté bloqueando a '
-                'YouTube. Puedes intentar de nuevo o verlo directamente allá.',
+                'YouTube. Puede intentar de nuevo o verlo directamente allá.',
           ),
         YoutubeError.notEmbeddable ||
         YoutubeError.sameAsNotEmbeddable ||
@@ -561,16 +561,16 @@ class _Fallo extends StatelessWidget {
           ),
         YoutubeError.videoNotFound || YoutubeError.cannotFindVideo => (
             'Este video ya no está disponible',
-            'Lo borraron de YouTube o lo hicieron privado. Avísale a quien '
+            'Lo borraron de YouTube o lo hicieron privado. Avísele a quien '
                 'armó el curso.',
           ),
         YoutubeError.invalidParam => (
             'El video guardado no es válido',
-            'Avísale a quien armó el curso para que revise el enlace.',
+            'Avísele a quien armó el curso para que revise el enlace.',
           ),
         _ => (
             'YouTube no pudo reproducir el video',
-            'Prueba de nuevo, o míralo directamente en YouTube.',
+            'Pruebe de nuevo, o mírelo directamente en YouTube.',
           ),
       };
 

@@ -89,6 +89,7 @@ void main() {
       FakeApi(routes: {
         '/auth/me': _ana,
         '/courses/course1': _curso,
+        '/courses/course1/glossary': {'terms': [], 'reviews': {}},
         '/students/student1/course-progress/course1': {
           'courseId': 'course1',
           'totalLessons': 3,

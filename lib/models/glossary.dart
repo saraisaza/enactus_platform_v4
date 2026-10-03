@@ -44,6 +44,26 @@ String claveDeTermino(String palabra) {
       .replaceAllMapped(RegExp('[A-Z]'), (m) => m[0]!.toLowerCase());
 }
 
+final Map<int, int> _sinTildePorUnidad = {
+  for (var i = 0; i < _acentos.length; i++)
+    _acentos.codeUnitAt(i): _sinAcentos.codeUnitAt(i),
+};
+
+/// [claveDeTermino] letra por letra, SIN tocar espacios ni largo: cada unidad
+/// del texto queda en su misma posición.
+///
+/// Sirve para buscar términos dentro de un texto y devolver los pedazos del
+/// ORIGINAL con los mismos índices (ver `segmentarConGlosario`).
+String normalizarConMismoLargo(String texto) {
+  final unidades = texto.codeUnits.map((u) {
+    final sinTilde = _sinTildePorUnidad[u];
+    if (sinTilde != null) return sinTilde;
+    // A–Z → a–z, igual que `lower(... collate "C")`.
+    return u >= 0x41 && u <= 0x5A ? u + 0x20 : u;
+  });
+  return String.fromCharCodes(unidades);
+}
+
 class GlossaryTerm {
   final String id;
   final String courseId;

@@ -165,6 +165,7 @@ FakeApi _api({
           {..._curso, 'progress': courseProgress},
         ]),
         '/courses/course1': _cursoConLecciones,
+        '/courses/course1/glossary': {'terms': [], 'reviews': {}},
         '/laboratories': _page([_laboratorio]),
         '/laboratories/lab1': _laboratorio,
         '/students/student1/ruta-progress': _rutaVacia,
@@ -276,6 +277,7 @@ void main() {
         fake: FakeApi(routes: {
           '/auth/me': _ana,
           '/courses/course1': _cursoConLecciones,
+          '/courses/course1/glossary': {'terms': [], 'reviews': {}},
           // El progreso que se pide es el de OTRO estudiante, no el propio.
           '/students/otro/course-progress/course1': _progresoDeAna,
           '/submissions': _page([]),
@@ -296,6 +298,7 @@ void main() {
       final fake = FakeApi(routes: {
         '/auth/me': _ana,
         '/courses/course1': _cursoConLecciones,
+        '/courses/course1/glossary': {'terms': [], 'reviews': {}},
         '/students/otro/course-progress/course1': _progresoDeAna,
         '/submissions': _page([]),
         '/notifications': _page([]),

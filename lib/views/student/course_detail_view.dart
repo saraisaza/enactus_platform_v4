@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/glossary.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
@@ -16,6 +17,7 @@ import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
 import '../../widgets/file_viewer.dart';
+import '../../widgets/glosario.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/youtube_lesson_player.dart';
@@ -88,6 +90,13 @@ class _CourseBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    final glosarioAsync = data.glossaryOf(course.id);
+    final glosario = glosarioAsync.valueOrNull ?? const CourseGlossary();
+    // El repaso se guarda a nombre de quien tiene la sesión: solo si es un
+    // estudiante mirando SU curso, no alguien del equipo mirando el de otro.
+    final viewer = context.watch<AuthProvider>().currentUser;
+    final puedeRepasar =
+        !readOnly && viewer != null && Roles.isStudentLike(viewer.role);
 
     return CustomScrollView(
       slivers: [
@@ -230,22 +239,54 @@ class _CourseBody extends StatelessWidget {
                   for (final module in course.modules) ...[
                     SectionTitle(module.title),
                     for (final lesson in module.lessons)
-                      _LessonTile(
-                        lesson: lesson,
-                        course: course,
-                        done: progress.isLessonComplete(lesson.id),
-                        readOnly: readOnly,
-                        // El propio: lo que el reproductor acaba de guardar,
-                        // aunque la lectura del servidor todavía no lo traiga.
-                        // El de otra persona: lo que dice su progreso.
-                        video: lesson.type != LessonType.video
-                            ? null
-                            : readOnly
-                                ? progress.videoProgressFor(lesson.id)
-                                : data.myVideoProgress(lesson.id) ??
-                                    progress.videoProgressFor(lesson.id),
+                      // El texto de la lección y su glosario se despliegan
+                      // debajo de la tarjeta; tocar la lección sigue abriendo
+                      // su contenido, como siempre.
+                      LeccionDesplegable(
+                        key: ValueKey('leccion-${lesson.id}'),
+                        titulo: lesson.title,
+                        desplegable: lesson.description.isNotEmpty ||
+                            !glosario.isEmpty,
+                        panel: (_) => GlosarioDeLeccion(
+                          courseId: course.id,
+                          leccion: lesson,
+                          glosario: glosario,
+                          puedeRepasar: puedeRepasar,
+                        ),
+                        builder: (desplegar) => _LessonTile(
+                          lesson: lesson,
+                          course: course,
+                          done: progress.isLessonComplete(lesson.id),
+                          readOnly: readOnly,
+                          desplegar: desplegar,
+                          // El propio: lo que el reproductor acaba de guardar,
+                          // aunque la lectura del servidor todavía no lo traiga.
+                          // El de otra persona: lo que dice su progreso.
+                          video: lesson.type != LessonType.video
+                              ? null
+                              : readOnly
+                                  ? progress.videoProgressFor(lesson.id)
+                                  : data.myVideoProgress(lesson.id) ??
+                                      progress.videoProgressFor(lesson.id),
+                        ),
+                      ),
+                    if (glosario.forModule(module.id).isNotEmpty)
+                      GlosarioDelModulo(
+                        key: ValueKey('glosario-${module.id}'),
+                        courseId: course.id,
+                        modulo: module,
+                        glosario: glosario,
+                        puedeRepasar: puedeRepasar,
                       ),
                   ],
+                // El glosario acompaña al curso: si no carga, el curso se
+                // sigue viendo entero y acá se ofrece reintentar.
+                if (glosarioAsync.errorOrNull case final error?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ErrorBanner(error,
+                        onRetry: () => data.reloadGlossary(course.id)),
+                  ),
                 const SectionTitle('Mis entregas'),
                 data.submissions.when(
                   loading: () => const CardListSkeleton(count: 2, height: 90),
@@ -303,12 +344,16 @@ class _LessonTile extends StatelessWidget {
   /// Hasta dónde vio el video; `null` si no es de video o nunca lo abrió.
   final VideoProgress? video;
 
+  /// El botón que despliega el texto y el glosario de la lección, si tiene.
+  final Widget? desplegar;
+
   const _LessonTile({
     required this.lesson,
     required this.course,
     required this.done,
     required this.readOnly,
     this.video,
+    this.desplegar,
   });
 
   /// "Video · 12 min · Visto 40%", o "· Seguir desde 3:12" si quedó a medias.
@@ -369,6 +414,7 @@ class _LessonTile extends StatelessWidget {
                 ],
               ),
             ),
+            ?desplegar,
             Tooltip(
               message: readOnly
                   ? (done ? 'Completada' : 'Pendiente')

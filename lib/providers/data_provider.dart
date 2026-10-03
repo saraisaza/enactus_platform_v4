@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../models/authoring.dart';
+import '../models/glossary.dart';
 import '../models/models.dart';
 import '../models/progress.dart';
 import '../services/api_errors.dart';
@@ -110,6 +111,7 @@ class DataProvider extends ChangeNotifier {
   final Map<String, AsyncValue<Group>> _groupById = {};
   final Map<String, AsyncValue<ForumPost>> _forumPostById = {};
   final Map<String, AsyncValue<CourseProgress>> _courseProgress = {};
+  final Map<String, AsyncValue<CourseGlossary>> _glossaryByCourse = {};
 
   /// Hasta dónde vio cada video quien tiene la sesión, por id de lección.
   ///
@@ -154,6 +156,8 @@ class DataProvider extends ChangeNotifier {
     _courseProgress.clear();
     _myVideoProgress.clear();
     _completing.clear();
+    // El repaso viaja dentro del glosario y es de la cuenta con sesión.
+    _glossaryByCourse.clear();
     _usersByQuery.clear();
     _userById.clear();
     _courseStudents.clear();
@@ -404,6 +408,8 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> deleteModule(String moduleId, {required String courseId}) async {
     await api.delete('/modules/$moduleId');
+    // Sus términos se fueron con él (CASCADE en el servidor).
+    _glossaryByCourse.remove(courseId);
     await reloadCourse(courseId);
   }
 
@@ -449,6 +455,8 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> deleteLesson(String lessonId, {required String courseId}) async {
     await api.delete('/lessons/$lessonId');
+    // Los términos que la marcaban ya no la tienen en `lessonIds`.
+    _glossaryByCourse.remove(courseId);
     await reloadCourse(courseId);
   }
 
@@ -539,6 +547,109 @@ class DataProvider extends ChangeNotifier {
       'sizeBytes': uploaded['sizeBytes'],
     });
     await reloadCourse(courseId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Glosario
+  // -------------------------------------------------------------------------
+
+  /// El glosario de un curso, con el repaso de quien tiene la sesión.
+  AsyncValue<CourseGlossary> glossaryOf(String courseId) {
+    final current = _glossaryByCourse[courseId] ??
+        const AsyncValue<CourseGlossary>.idle();
+    _lazy(current, (v) => _glossaryByCourse[courseId] = v,
+        () => _fetchGlossary(courseId));
+    return _glossaryByCourse[courseId] ?? current;
+  }
+
+  Future<void> reloadGlossary(String courseId) => _refresh(
+        (v) => _glossaryByCourse[courseId] = v,
+        () => _fetchGlossary(courseId),
+        _glossaryByCourse[courseId]?.valueOrNull,
+      );
+
+  Future<CourseGlossary> _fetchGlossary(String courseId) async {
+    final json = await api.get('/courses/$courseId/glossary');
+    return CourseGlossary.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Agrega un término al final del glosario del módulo.
+  ///
+  /// Si la palabra ya está en el curso, el servidor responde 409 con el
+  /// módulo donde está; llega como [ConflictError] para que el editor lo
+  /// muestre junto al campo.
+  Future<GlossaryTerm> createGlossaryTerm(
+    String moduleId,
+    GlossaryTermDraft draft, {
+    required String courseId,
+  }) async {
+    final json =
+        await api.post('/modules/$moduleId/glossary-terms', body: draft.toJson());
+    await reloadGlossary(courseId);
+    return GlossaryTerm.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Guarda el formulario completo de un término, listas incluidas.
+  Future<GlossaryTerm> updateGlossaryTerm(
+    String termId,
+    GlossaryTermDraft draft, {
+    required String courseId,
+  }) async {
+    final json =
+        await api.patch('/glossary-terms/$termId', body: draft.toJson());
+    await reloadGlossary(courseId);
+    return GlossaryTerm.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  Future<void> deleteGlossaryTerm(
+    String termId, {
+    required String courseId,
+  }) async {
+    await api.delete('/glossary-terms/$termId');
+    await reloadGlossary(courseId);
+  }
+
+  /// Reordena TODOS los términos del módulo de una vez, como módulos y
+  /// lecciones.
+  Future<void> reorderGlossaryTerms(
+    String moduleId,
+    List<String> orderedIds, {
+    required String courseId,
+  }) async {
+    await api.put('/modules/$moduleId/glossary-terms/order',
+        body: {'orderedIds': orderedIds});
+    await reloadGlossary(courseId);
+  }
+
+  /// Modo repaso: «ya lo sé» o «repasar».
+  ///
+  /// Optimista: la tarjeta cambia en el acto, sin esperar a la red —el
+  /// estudiante va pasando tarjetas y una espera en cada una cansa—. Si el
+  /// servidor lo rechaza se vuelve a lo que había y el error sube, para que
+  /// la pantalla lo diga.
+  Future<void> setGlossaryReview(
+    String termId,
+    ReviewStatus status, {
+    required String courseId,
+  }) async {
+    final before = _glossaryByCourse[courseId]?.valueOrNull;
+    if (before != null) {
+      _glossaryByCourse[courseId] =
+          AsyncValue.data(before.withReview(termId, status));
+      notifyListeners();
+    }
+    try {
+      await api.put('/glossary-terms/$termId/review',
+          body: {'status': status.name});
+    } catch (_) {
+      final now = _glossaryByCourse[courseId]?.valueOrNull;
+      if (before != null && now != null) {
+        _glossaryByCourse[courseId] = AsyncValue.data(
+            now.withReview(termId, before.reviewOf(termId)));
+        notifyListeners();
+      }
+      rethrow;
+    }
   }
 
   // -------------------------------------------------------------------------

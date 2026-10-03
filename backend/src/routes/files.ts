@@ -30,6 +30,7 @@ const uploadBody = z.object({
     'avatar',
     'course_cover',
     'lesson_resource',
+    'glossary_image',
     'site_gallery',
   ]),
   fileName: z.string().trim().min(1, 'Falta el nombre del archivo.'),
@@ -48,6 +49,9 @@ const ALLOWED_ROLES: Record<string, readonly string[]> = {
   // `POST /lessons/:id/resource`, cada uno con su propio permiso de edición.
   course_cover: ['lxd', 'admin', 'superadmin'],
   lesson_resource: ['lxd', 'admin', 'superadmin'],
+  // Igual con la imagen de un término: la ata a un curso
+  // `POST /modules/:id/glossary-terms` (o el PATCH), con su permiso de edición.
+  glossary_image: ['lxd', 'admin', 'superadmin'],
   // La galería de la portada se ve SIN sesión: solo la administra el equipo.
   site_gallery: ['admin', 'superadmin'],
 };
@@ -59,6 +63,7 @@ const FOLDER: Record<string, string> = {
   avatar: 'avatars',
   course_cover: 'covers',
   lesson_resource: 'lesson-resources',
+  glossary_image: 'glossary-images',
   site_gallery: 'site-gallery',
 };
 

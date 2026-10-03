@@ -166,6 +166,9 @@ const BACKUP_TABLES = [
   'lesson_activities',
   'activity_allowed_types',
   'activity_rubric_items',
+  'glossary_terms',
+  'glossary_term_lessons',
+  'glossary_term_related',
   'objective_courses',
   'ruta_module_courses',
   'student_laboratories',
@@ -178,6 +181,7 @@ const BACKUP_TABLES = [
   // Después de `users` y `lessons`, de las que cuelga: el orden de la lista
   // es el de inserción al restaurar.
   'lesson_video_progress',
+  'glossary_reviews',
   'submissions',
   'submission_files',
   'quiz_attempts',
@@ -300,6 +304,18 @@ adminRoutes.post('/restore', async (c) => {
     // pero no se puede entrar a ella hasta que le asignen una nueva.
     const hashInservible = await hashPassword(randomBytes(32).toString('hex'));
 
+    // Las columnas generadas (`glossary_terms.word_key`) las calcula la base:
+    // PostgreSQL rechaza cualquier valor que se le quiera escribir, así que se
+    // quitan de la fila antes del insert. El respaldo las trae porque sale
+    // de un `select *`.
+    const generadas = new Set<string>();
+    for (const fila of await tx.execute<{ table_name: string; column_name: string }>(
+      sql`select table_name, column_name from information_schema.columns
+           where table_schema = 'public' and is_generated = 'ALWAYS'`,
+    )) {
+      generadas.add(`${fila.table_name}.${fila.column_name}`);
+    }
+
     // En orden inverso, para no chocar con las claves ajenas.
     for (const table of [...BACKUP_TABLES].reverse()) {
       await tx.execute(sql`delete from ${sql.identifier(table)}`);
@@ -317,7 +333,9 @@ adminRoutes.post('/restore', async (c) => {
               }
             : row;
 
-        const cols = Object.keys(fila);
+        const cols = Object.keys(fila).filter(
+          (col) => !generadas.has(`${table}.${col}`),
+        );
         if (cols.length === 0) continue;
         const identifiers = sql.join(
           cols.map((col) => sql.identifier(col)),

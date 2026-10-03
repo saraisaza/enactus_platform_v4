@@ -9,6 +9,17 @@
   "courseId": null,
   "laboratoryId": null
  },
+ "PATCH /glossary-terms/:id": {
+  "word": "IA",
+  "shortDefinition": "Definición de Inteligencia artificial.",
+  "explanation": "",
+  "example": "",
+  "imageS3Key": null,
+  "lessonIds": [
+   "dddddddd-0000-4000-8000-000000000021"
+  ],
+  "relatedTermIds": []
+ },
  "PATCH /lessons/:id": {
   "title": "Charla de apertura",
   "type": "video",
@@ -82,11 +93,27 @@
  "POST /lessons/:id/video-youtube": {
   "videoId": "dQw4w9WgXcQ"
  },
+ "POST /modules/:id/glossary-terms": {
+  "word": "Modelo",
+  "shortDefinition": "Programa que aprendió patrones.",
+  "explanation": "Se entrena con datos.",
+  "example": "Uno que predice la deserción.",
+  "imageS3Key": "glossary-images/modelo.png",
+  "lessonIds": [
+   "dddddddd-0000-4000-8000-000000000021"
+  ],
+  "relatedTermIds": [
+   "dddddddd-0000-4000-8000-000000000031"
+  ]
+ },
  "POST /modules/:id/lessons": {
   "title": "Charla de apertura",
   "type": "video",
   "description": "",
   "durationMin": 0
+ },
+ "PUT /glossary-terms/:id/review": {
+  "status": "review"
  },
  "PUT /groups/:id/members": {
   "members": [
@@ -99,6 +126,12 @@
  "PUT /laboratories/:id/students": {
   "ids": [
    "bbbbbbbb-0000-4000-8000-000000000003"
+  ]
+ },
+ "PUT /modules/:id/glossary-terms/order": {
+  "orderedIds": [
+   "dddddddd-0000-4000-8000-000000000032",
+   "dddddddd-0000-4000-8000-000000000031"
   ]
  },
  "PUT /progress/lessons/:id/video": {

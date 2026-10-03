@@ -222,6 +222,10 @@ export const courseModules = pgTable(
   (t) => [
     unique('course_modules_course_order_unique').on(t.courseId, t.orderIndex),
     index('course_modules_course_id_idx').on(t.courseId),
+    // Redundante con la clave primaria, y a propósito: es el destino de la
+    // clave foránea compuesta de `glossary_terms`, que necesita un único
+    // sobre las dos columnas para poder apuntarles.
+    unique('course_modules_id_course_unique').on(t.id, t.courseId),
   ],
 );
 

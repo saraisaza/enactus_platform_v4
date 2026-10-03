@@ -165,6 +165,18 @@ export async function authorizeFileRead(
     };
   }
 
+  // --- Imagen de un término del glosario -------------------------------
+  // La ve quien ve el curso: es la misma regla que la portada.
+  const [glossaryImage] = await db.execute<{ courseId: string }>(sql`
+    select course_id as "courseId" from glossary_terms
+     where image_s3_key = ${key}
+     limit 1
+  `);
+  if (glossaryImage) {
+    await assertCourseVisible(db, user, glossaryImage.courseId);
+    return { key, fileName: null, contentType: null, source: 'glossary_image' };
+  }
+
   // --- Recurso de comunicaciones ---------------------------------------
   const [commResource] = await db.execute<{
     fileName: string | null;

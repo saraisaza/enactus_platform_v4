@@ -10,6 +10,7 @@
  * - `orgs`         — proyectos, equipos e integrantes
  * - `labs`         — laboratorios, fases, objetivos y módulos de la Ruta
  * - `courses`      — cursos, módulos, lecciones, quiz y actividades
+ * - `glossary`     — glosario de cada curso y el repaso de cada estudiante
  * - `links`        — tablas puente entre cursos, Ruta y personas
  * - `progress`     — progreso de curso y de Ruta de Impacto
  * - `submissions`  — entregas, archivos, intentos de quiz, certificados
@@ -23,6 +24,7 @@ export * from './users';
 export * from './orgs';
 export * from './labs';
 export * from './courses';
+export * from './glossary';
 export * from './links';
 export * from './progress';
 export * from './submissions';

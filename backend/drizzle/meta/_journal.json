@@ -71,6 +71,13 @@
       "when": 1791071010503,
       "tag": "0009_moderacion_foro",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791071865495,
+      "tag": "0010_glosario",
+      "breakpoints": true
     }
   ]
 }

@@ -42,6 +42,8 @@ tags:
     description: Sesión, tokens y rotación
   - name: courses
     description: Cursos, módulos y lecciones (autoría de contenido)
+  - name: glossary
+    description: Glosario de cada curso y modo repaso del estudiante
   - name: progress
     description: Progreso y completitud — calculado en el servidor
   - name: students
@@ -915,6 +917,133 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/Reorder' }
       responses: { '200': { description: Nuevo orden } }
+
+  /courses/{id}/glossary:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [glossary]
+      summary: Glosario completo del curso, con el repaso de quien pregunta
+      description: |
+        Términos ordenados por módulo y por el orden que les dio el LXD. Lo ve
+        quien puede ver el curso (mismo alcance que `GET /courses/{id}`).
+
+        `reviews` es el modo repaso de la persona con sesión: `{ termId →
+        known | review }`. Un término sin entrada todavía no se repasó. Para
+        quien no es estudiante es siempre `{}`.
+      responses:
+        '200':
+          description: Glosario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Glossary' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /modules/{id}/glossary-terms:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [glossary]
+      summary: Agregar un término al glosario del módulo (al final)
+      description: |
+        Solo quien puede editar el curso. La palabra no puede estar ya en el
+        curso: se comparan sin tildes, sin mayúsculas y con los espacios
+        repetidos reducidos a uno (la ñ sí cuenta). Las lecciones tienen que
+        ser de este módulo y los relacionados, términos de este curso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GlossaryTermInput' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlossaryTerm' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: |
+            Palabra repetida en el curso (`details.field = word`, con el id y
+            el módulo del término que ya la tiene), una lección de otro módulo
+            (`lessonIds`) o un relacionado de otro curso (`relatedTermIds`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /modules/{id}/glossary-terms/order:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [glossary]
+      summary: Reordenar los términos de un módulo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Reorder' }
+      responses:
+        '200':
+          description: Nuevo orden
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GlossaryTerm' }
+        '409': { description: La lista no es exactamente la de los términos del módulo }
+
+  /glossary-terms/{id}:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      tags: [glossary]
+      summary: Editar un término
+      description: |
+        Parcial: lo que no llega queda como estaba. `lessonIds` y
+        `relatedTermIds`, si llegan, reemplazan la lista entera. Mismas reglas
+        que al crear.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GlossaryTermInput' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlossaryTerm' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [glossary]
+      summary: Borrar un término (renumera el módulo)
+      description: Se va también de los relacionados de otros términos y del repaso de cada estudiante.
+      responses: { '204': { description: Borrado } }
+
+  /glossary-terms/{id}/review:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    put:
+      tags: [glossary]
+      summary: Modo repaso — «ya lo sé» o «repasar»
+      description: Solo estudiantes, y solo de un curso que pueden ver. Guarda lo último que se marcó.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [known, review] }
+      responses:
+        '200':
+          description: Guardado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  termId: { type: string, format: uuid }
+                  status: { type: string, enum: [known, review] }
+        '403': { description: Quien no es estudiante no guarda repaso }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /lessons/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -2536,7 +2665,15 @@ paths:
               properties:
                 purpose:
                   type: string
-                  enum: [evidence, communication_resource, submission, avatar]
+                  enum:
+                    - evidence
+                    - communication_resource
+                    - submission
+                    - avatar
+                    - course_cover
+                    - lesson_resource
+                    - glossary_image
+                    - site_gallery
                 fileName: { type: string }
                 contentType: { type: string }
                 sizeBytes: { type: integer, maximum: 26214400 }
@@ -3036,6 +3173,65 @@ components:
           type: array
           items: { type: string, format: uuid }
           description: El conjunto COMPLETO; reemplaza al anterior.
+
+    GlossaryTermInput:
+      type: object
+      required: [word, shortDefinition]
+      description: Al editar (PATCH) todos los campos son opcionales.
+      properties:
+        word: { type: string, minLength: 1, maxLength: 120 }
+        shortDefinition:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Una o dos frases. Es lo que se ve en la tarjeta y en el tooltip.
+        explanation: { type: string, maxLength: 5000 }
+        example: { type: string, maxLength: 2000 }
+        imageS3Key:
+          type: string
+          nullable: true
+          pattern: '^glossary-images/'
+          description: Key que devolvió `POST /files/upload-url` con `purpose = glossary_image`; `null` la quita.
+        lessonIds:
+          type: array
+          items: { type: string, format: uuid }
+          description: Lecciones de ESTE módulo. Reemplaza la lista.
+        relatedTermIds:
+          type: array
+          maxItems: 50
+          items: { type: string, format: uuid }
+          description: Términos de este curso, nunca el mismo. Reemplaza la lista.
+
+    GlossaryTerm:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        courseId: { type: string, format: uuid }
+        moduleId: { type: string, format: uuid }
+        orderIndex: { type: integer }
+        word: { type: string }
+        shortDefinition: { type: string }
+        explanation: { type: string }
+        example: { type: string }
+        imageS3Key: { type: string, nullable: true }
+        lessonIds:
+          type: array
+          description: En el orden del módulo
+          items: { type: string, format: uuid }
+        relatedTermIds:
+          type: array
+          description: En el orden del glosario (módulo, después término)
+          items: { type: string, format: uuid }
+
+    Glossary:
+      type: object
+      properties:
+        terms:
+          type: array
+          items: { $ref: '#/components/schemas/GlossaryTerm' }
+        reviews:
+          type: object
+          additionalProperties: { type: string, enum: [known, review] }
 
     Reorder:
       type: object

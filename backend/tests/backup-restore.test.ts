@@ -48,7 +48,11 @@ const conteos = async () => {
            (select count(*) from courses)          as cursos,
            (select count(*) from submissions)      as entregas,
            (select count(*) from progress_lessons) as lecciones,
-           (select count(*) from forum_posts)      as foro`;
+           (select count(*) from forum_posts)      as foro,
+           -- glossary_terms tiene una columna generada que la restauración
+           -- no puede escribir: si no la saltara, esto volvería en cero.
+           (select count(*) from glossary_terms)   as glosario,
+           (select count(*) from glossary_reviews) as repaso`;
   return fila as Record<string, string>;
 };
 
@@ -73,6 +77,7 @@ describe('respaldo → destrucción → restauración', () => {
 
     const roto = await conteos();
     expect(Number(roto.cursos)).toBe(0);
+    expect(Number(roto.glosario)).toBe(0);
     expect(Number(roto.entregas)).toBe(0);
 
     const res = await app.request('/admin/restore', {

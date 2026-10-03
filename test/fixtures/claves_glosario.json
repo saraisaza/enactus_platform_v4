@@ -1,0 +1,17 @@
+{
+  "nota": "Palabra del glosario -> clave con la que se compara para detectar duplicados. La leen backend/tests/glosario.test.ts (contra PostgreSQL) y test/glosario_modelo_test.dart (contra claveDeTermino): si los dos lados no dan lo mismo, el editor avisaría distinto de lo que la base rechaza.",
+  "casos": [
+    ["Inteligencia artificial", "inteligencia artificial"],
+    ["  Intéligencia    artificiál ", "inteligencia artificial"],
+    ["INNOVACIÓN SOCIAL", "innovacion social"],
+    ["Éxito", "exito"],
+    ["Pingüino", "pinguino"],
+    ["Ñandú", "ñandu"],
+    ["AÑO", "año"],
+    ["Año", "año"],
+    ["Ano", "ano"],
+    ["Tasa\tde  retorno", "tasa de retorno"],
+    ["KPI", "kpi"],
+    ["3D", "3d"]
+  ]
+}

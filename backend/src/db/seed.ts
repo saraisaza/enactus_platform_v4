@@ -78,6 +78,7 @@ export async function seed(db: Db): Promise<void> {
   await seedLaboratories(db);
   await seedProjectsAndGroups(db);
   await seedCourses(db);
+  await seedGlossary(db);
   await seedRutaLinks(db);
   await seedAssignments(db);
   await seedDemoActivity(db);
@@ -881,6 +882,108 @@ async function seedCourses(db: Db) {
     maxFiles: 1,
     gradingMode: 'review',
   });
+}
+
+// ---------------------------------------------------------------------------
+// Glosario
+// ---------------------------------------------------------------------------
+
+/**
+ * Glosario del curso demo `crs_ia_1`: cuatro términos en el módulo 1 y uno en
+ * el 2, con lecciones y relacionados, para que las pruebas y la pantalla
+ * tengan algo que mostrar. No existía en Flutter: el glosario es nuevo.
+ *
+ * `est1` ya marcó dos en el modo repaso.
+ */
+async function seedGlossary(db: Db) {
+  const term = (
+    key: string,
+    moduleKey: string,
+    orderIndex: number,
+    word: string,
+    shortDefinition: string,
+    extra: { explanation?: string; example?: string } = {},
+  ) => ({
+    id: seedId(key),
+    courseId: seedId('crs_ia_1'),
+    moduleId: seedId(moduleKey),
+    orderIndex,
+    word,
+    shortDefinition,
+    explanation: extra.explanation ?? '',
+    example: extra.example ?? '',
+  });
+
+  await db.insert(s.glossaryTerms).values([
+    term(
+      'glo_ia',
+      'mia1',
+      1,
+      'Inteligencia artificial',
+      'Rama de la informática que crea sistemas capaces de hacer tareas que normalmente requieren inteligencia humana.',
+      {
+        explanation:
+          'Incluye reconocer imágenes, entender texto, recomendar contenidos o tomar decisiones a partir de datos. No piensa como una persona: aprende patrones.',
+        example:
+          'Una aplicación que identifica plagas en fotos de cultivos usa inteligencia artificial.',
+      },
+    ),
+    term(
+      'glo_modelo',
+      'mia1',
+      2,
+      'Modelo',
+      'Programa que aprendió patrones a partir de datos y los usa para hacer predicciones.',
+      { example: 'Un modelo que estima el riesgo de deserción escolar de un estudiante.' },
+    ),
+    term(
+      'glo_datos',
+      'mia1',
+      3,
+      'Datos de entrenamiento',
+      'Ejemplos con los que un modelo aprende.',
+      {
+        explanation:
+          'Su calidad decide la del modelo: datos incompletos o poco representativos producen predicciones malas o injustas.',
+      },
+    ),
+    term(
+      'glo_supervisado',
+      'mia1',
+      4,
+      'Aprendizaje supervisado',
+      'Forma de entrenar un modelo con datos que ya traen la respuesta correcta.',
+    ),
+    term(
+      'glo_sesgo',
+      'mia2',
+      1,
+      'Sesgo',
+      'Error sistemático que hace que un modelo favorezca o perjudique a un grupo de personas.',
+    ),
+  ]);
+
+  await db.insert(s.glossaryTermLessons).values([
+    { termId: seedId('glo_ia'), lessonId: seedId('lia1') },
+    { termId: seedId('glo_modelo'), lessonId: seedId('lia1') },
+    { termId: seedId('glo_modelo'), lessonId: seedId('lia2') },
+    { termId: seedId('glo_datos'), lessonId: seedId('lia2') },
+    { termId: seedId('glo_supervisado'), lessonId: seedId('lia2') },
+    { termId: seedId('glo_sesgo'), lessonId: seedId('lia5') },
+  ]);
+
+  await db.insert(s.glossaryTermRelated).values([
+    { termId: seedId('glo_ia'), relatedTermId: seedId('glo_modelo') },
+    { termId: seedId('glo_ia'), relatedTermId: seedId('glo_datos') },
+    { termId: seedId('glo_modelo'), relatedTermId: seedId('glo_datos') },
+    { termId: seedId('glo_supervisado'), relatedTermId: seedId('glo_datos') },
+    { termId: seedId('glo_sesgo'), relatedTermId: seedId('glo_datos') },
+  ]);
+
+  await db.insert(s.glossaryReviews).values([
+    { studentId: seedId('est1'), termId: seedId('glo_ia'), status: 'known' },
+    { studentId: seedId('est1'), termId: seedId('glo_sesgo'), status: 'review' },
+  ]);
 }
 
 // ---------------------------------------------------------------------------

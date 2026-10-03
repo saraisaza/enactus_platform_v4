@@ -26,6 +26,11 @@ import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
 import { forumRoutes } from './routes/forum';
 import {
+  courseGlossaryRoutes,
+  glossaryTermRoutes,
+  moduleGlossaryRoutes,
+} from './routes/glossary';
+import {
   labAuthoringRoutes,
   objectiveRoutes,
   phaseRoutes,
@@ -181,6 +186,11 @@ export function createApp(database: Database = defaultDb) {
   app.route('/modules', moduleRoutes);
   app.route('/modules', moduleLessonRoutes);
   app.route('/lessons', lessonRoutes);
+  // Glosario: se lee por curso (lo pide la pantalla del curso entera), se
+  // crea y se reordena por módulo, y cada término se edita por su id.
+  app.route('/courses', courseGlossaryRoutes);
+  app.route('/modules', moduleGlossaryRoutes);
+  app.route('/glossary-terms', glossaryTermRoutes);
   app.route('/progress', progressRoutes);
   app.route('/students', studentRoutes);
   app.route('/certificates', certificateRoutes);

@@ -7,7 +7,7 @@ import {
   createUploadUrl,
   documentKeyFor,
 } from '../lib/s3';
-import { forbidden } from '../lib/errors';
+import { badRequest, forbidden } from '../lib/errors';
 import { currentUser, requireAuth } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import { authorizeFileRead } from '../services/file-access';
@@ -56,6 +56,13 @@ const ALLOWED_ROLES: Record<string, readonly string[]> = {
   site_gallery: ['admin', 'superadmin'],
 };
 
+/**
+ * La imagen de un término se dibuja con `Image.network` en la tarjeta del
+ * glosario: un PDF o un ZIP ahí es una imagen rota frente a todo el curso.
+ * SVG tampoco: puede traer scripts, y no hace falta para una ilustración.
+ */
+const SOLO_IMAGENES = ['image/png', 'image/jpeg'];
+
 const FOLDER: Record<string, string> = {
   evidence: 'evidences',
   communication_resource: 'communication-resources',
@@ -77,6 +84,11 @@ fileRoutes.post('/upload-url', async (c) => {
   }
 
   assertValidDocumentUpload(body);
+  if (body.purpose === 'glossary_image' && !SOLO_IMAGENES.includes(body.contentType)) {
+    throw badRequest('La imagen del término tiene que ser PNG o JPG.', {
+      allowed: SOLO_IMAGENES,
+    });
+  }
 
   const signed = await createUploadUrl({
     key: documentKeyFor(FOLDER[body.purpose] ?? 'misc', body.fileName),

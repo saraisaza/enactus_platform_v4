@@ -513,6 +513,17 @@ describe('imagen de un término', () => {
     expect((await body<{ key: string }>(res)).key).toMatch(/^glossary-images\//);
   });
 
+  it('solo PNG o JPG: un PDF no se puede subir como imagen del término', async () => {
+    const res = await post('/files/upload-url', lxdToken, {
+      purpose: 'glossary_image',
+      fileName: 'apuntes.pdf',
+      contentType: 'application/pdf',
+      sizeBytes: 2048,
+    });
+    expect(res.status).toBe(400);
+    expect((await body<Error>(res)).error.message).toContain('PNG o JPG');
+  });
+
   it('un estudiante no puede subir imágenes de glosario', async () => {
     const res = await post('/files/upload-url', est1Token, {
       purpose: 'glossary_image',

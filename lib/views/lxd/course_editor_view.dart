@@ -13,6 +13,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
+import 'glossary_editor.dart';
 import 'lesson_editor.dart';
 
 /// Constructor de cursos: información general, categorización, contenido,
@@ -995,6 +996,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
                     key: ValueKey(module.lessons[li].id)),
               ),
             ),
+          ModuleGlossaryEditor(course: course, module: module),
         ],
       ),
     );

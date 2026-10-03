@@ -10,6 +10,7 @@ import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
+import '../../widgets/file_viewer.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
@@ -253,7 +254,7 @@ class _EvidenceCard extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.open_in_new, size: 16),
+                icon: const Icon(Icons.visibility_outlined, size: 16),
                 label: const Text('Ver archivo'),
                 onPressed: () => _abrir(context),
               ),
@@ -272,23 +273,9 @@ class _EvidenceCard extends StatelessWidget {
       // La URL firmada vence en una hora: se pide al tocar, no al dibujar.
       final url = await data.resolveFileUrl(clave);
       if (!context.mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (_) => Dialog(
-          backgroundColor: AppColors.surface,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: Image.network(url,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text(
-                          'No pudimos mostrar este archivo. Puede que no sea '
-                          'una imagen.'),
-                    )),
-          ),
-        ),
-      );
+      // Una evidencia puede ser foto o PDF: el visor decide por la extensión.
+      await FileViewer.show(context,
+          url: url, fileName: evidence.title, s3Key: clave);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message, error: true);
     }

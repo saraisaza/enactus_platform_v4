@@ -16,6 +16,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
+import '../../widgets/file_viewer.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/youtube_lesson_player.dart';
@@ -460,7 +461,9 @@ class _LessonTile extends StatelessWidget {
     final data = context.read<DataProvider>();
     try {
       final url = await data.resolveFileUrl(key);
-      if (context.mounted) _openExternal(context, url);
+      if (!context.mounted) return;
+      await FileViewer.show(context,
+          url: url, fileName: lesson.resourceFileName, s3Key: key);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
     }
@@ -1215,8 +1218,9 @@ class _AttachmentRow extends StatelessWidget {
     final data = context.read<DataProvider>();
     try {
       final url = await data.resolveFileUrl(file.s3Key);
-      final uri = Uri.tryParse(url);
-      if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!context.mounted) return;
+      await FileViewer.show(context,
+          url: url, fileName: file.fileName, s3Key: file.s3Key);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
     }

@@ -21,6 +21,7 @@ import '../../widgets/async_states.dart';
 import '../../widgets/charts.dart' show ProgressRing;
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
+import '../../widgets/file_viewer.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/lesson_visuals.dart';
@@ -2445,10 +2446,9 @@ class _OwnLessonRow extends StatelessWidget {
       if (key != null && key.isNotEmpty) {
         try {
           final signed = await data.resolveFileUrl(key);
-          final uri = Uri.tryParse(signed);
-          if (uri != null) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
+          if (!context.mounted) return;
+          await FileViewer.show(context,
+              url: signed, fileName: lesson.resourceFileName, s3Key: key);
         } on ApiException catch (e) {
           if (context.mounted) showAppSnack(context, e.message);
           return;

@@ -23,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
 
   AppUser? _currentUser;
   bool _restoring = true;
+  bool _offline = false;
   ApiException? _loginError;
   bool _loggingIn = false;
 
@@ -44,17 +45,27 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggingIn => _loggingIn;
   ApiException? get loginError => _loginError;
 
+  /// Hay una sesión guardada pero no se pudo comprobar: sin red, o el servidor
+  /// falló. NO es lo mismo que "sin sesión".
+  ///
+  /// Antes los dos casos se veían igual: quien abría la app en el metro veía
+  /// la portada como si hubiera cerrado sesión, y al volver la señal seguía
+  /// "afuera". Ahora la app ofrece reintentar, y reintenta sola al volver.
+  bool get isOffline => _offline;
+
   /// Recupera la sesión guardada al arrancar.
   Future<void> restoreSession() async {
     _restoring = true;
     notifyListeners();
     try {
       final json = await api.restoreSession();
+      _offline = false;
       _setUser(json == null ? null : AppUser.fromJson(json));
     } on ApiException catch (e) {
       // Sin red al arrancar no es "sesión inválida": no se borran los tokens,
       // para que al volver la conexión la sesión siga estando.
       debugPrint('No se pudo restaurar la sesión: ${e.message}');
+      _offline = e is NetworkError || e is ServerError;
       _setUser(null);
     } finally {
       _restoring = false;
@@ -69,6 +80,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final user = AppUser.fromJson(await api.login(email, password));
+      _offline = false;
       _setUser(user);
       return user;
     } on ApiException catch (e) {
@@ -82,6 +94,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await api.logout();
+    _offline = false;
     _setUser(null);
     notifyListeners();
   }
@@ -111,6 +124,26 @@ class AuthProvider extends ChangeNotifier {
     final json = await api.patch('/auth/me', body: changes);
     _currentUser = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
     notifyListeners();
+  }
+
+  /// Pide eliminar la cuenta de la sesión (App Store, guía 5.1.1(v); Google
+  /// Play). Devuelve el plazo, en días, en que se borran los datos.
+  ///
+  /// El servidor la desactiva en el acto y revoca todas sus sesiones, así que
+  /// acá solo queda soltar los tokens locales: `logout()` le pediría al
+  /// servidor revocar un token que ya no existe.
+  ///
+  /// No atrapa el error, igual que [updateProfile]: la pantalla tiene que
+  /// poder decir «contraseña incorrecta» o «sin conexión».
+  Future<int> requestAccountDeletion(String password) async {
+    final json = await api.post('/auth/me/deletion-request',
+        body: {'password': password});
+    await api.tokens.clear();
+    _offline = false;
+    _setUser(null);
+    notifyListeners();
+    final days = json is Map ? json['days'] : null;
+    return days is num ? days.toInt() : 30;
   }
 
   // Acá vivía `debugSetSession`, un atajo para que las pruebas de maquetación

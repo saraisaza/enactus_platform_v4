@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -10,6 +12,7 @@ import '../utils/constants.dart';
 import '../utils/responsive.dart';
 import 'animated_logo.dart';
 import 'common.dart';
+import 'cuenta.dart';
 
 /// Header con logo, buscador global, campana de notificaciones y avatar
 /// con menú desplegable. En compact (<600dp) se reduce de alto, oculta el
@@ -42,7 +45,18 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     // nombre), desborda por un margen real (~46px), no solo en compact.
     final roomy = context.isExpanded;
 
-    return Column(
+    // El encabezado va dentro del cuerpo de la pantalla, no como `appBar`, así
+    // que nadie le reservaba el espacio de la barra de estado: en un iPhone
+    // con notch o Dynamic Island —y en Android 15+, que dibuja de borde a
+    // borde— el botón de menú quedaba debajo de la hora y la batería. Se
+    // reserva ese margen con el mismo fondo, y los íconos del sistema van en
+    // claro sobre el gris de la marca.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+      color: AppColors.background,
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         const ColombiaFlagBar(height: _flagBarHeight),
@@ -68,17 +82,44 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
               // cualquier ventana por debajo de ~1100px — en TODOS los
               // portales, porque todos heredan este encabezado.
               Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: AnimatedLogo(
-                    height: compact ? 34 : (roomy ? 135 : 72),
-                    compact: compact,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false),
-                  ),
-                ),
+                child: compact
+                    // En el teléfono el logo mide 34 dp: el área tocable llega
+                    // a 48 alrededor, y el lector de pantalla dice qué hace.
+                    ? Semantics(
+                        button: true,
+                        label: 'Ir al inicio',
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => Navigator.of(context)
+                              .pushNamedAndRemoveUntil(
+                                  AppRoutes.landing, (_) => false),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                                minHeight: 48, minWidth: 48),
+                            child: const Align(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: 1,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: AnimatedLogo(height: 34, compact: true),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: AnimatedLogo(
+                          height: roomy ? 135 : 72,
+                          compact: false,
+                          onTap: () => Navigator.of(
+                            context,
+                          ).pushNamedAndRemoveUntil(
+                              AppRoutes.landing, (_) => false),
+                        ),
+                      ),
               ),
               if (!compact && roomy) ...[
                 const SizedBox(width: 16),
@@ -128,6 +169,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ],
+    ),
+    ),
     );
   }
 }
@@ -423,7 +466,8 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Avatar con menú desplegable (Mi perfil / Cerrar sesión)
+// Avatar con menú desplegable: Mi perfil, lo que piden las tiendas (eliminar
+// la cuenta, privacidad, contacto) y Cerrar sesión.
 // ---------------------------------------------------------------------------
 
 class _AvatarMenu extends StatelessWidget {
@@ -474,6 +518,43 @@ class _AvatarMenu extends StatelessWidget {
             ],
           ),
         ),
+        // En la web esto ya está en el pie de página, con enlaces `<a>` de
+        // verdad (ver `social_button_web.dart`); en la app no hay pie.
+        if (!kIsWeb) ...[
+          const PopupMenuItem(
+            value: 'about',
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 18),
+                SizedBox(width: 10),
+                // Flexible: el menú mide como mucho 280 dp, y con letra
+                // grande del sistema el rótulo no cabría.
+                Flexible(child: Text('Acerca de eduXaction')),
+              ],
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'privacy',
+            child: Row(
+              children: [
+                Icon(Icons.privacy_tip_outlined, size: 18),
+                SizedBox(width: 10),
+                Flexible(child: Text('Política de privacidad')),
+              ],
+            ),
+          ),
+        ],
+        const PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.person_remove_outlined, size: 18),
+              SizedBox(width: 10),
+              Flexible(child: Text('Eliminar mi cuenta')),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
         const PopupMenuItem(
           value: 'logout',
           child: Row(
@@ -492,6 +573,12 @@ class _AvatarMenu extends StatelessWidget {
         switch (value) {
           case 'profile':
             _showProfile(context);
+          case 'about':
+            mostrarAcercaDe(context);
+          case 'privacy':
+            abrirPoliticaDePrivacidad(context);
+          case 'delete':
+            mostrarEliminarCuenta(context);
           case 'logout':
             // Se espera a que termine: cerrar sesión ahora incluye avisarle al
             // servidor para que revoque el refresh token. Navegar antes
@@ -569,19 +656,29 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedScale(
-            scale: _hover ? 1.08 : 1,
-            duration: const Duration(milliseconds: 150),
-            child: CircleAvatar(
-              radius: 17,
-              backgroundColor: _hover ? AppColors.goldBright : AppColors.gold,
-              child: Text(
-                widget.user.name.isNotEmpty
-                    ? widget.user.name[0].toUpperCase()
-                    : '?',
-                style: const TextStyle(
-                  color: AppColors.ink,
-                  fontWeight: FontWeight.w700,
+          // En el teléfono el área tocable mide 48×48 dp aunque el círculo se
+          // vea de 34: es la única entrada a "Mi perfil" y "Cerrar sesión", y
+          // con 34 dp costaba acertarle con el dedo.
+          SizedBox(
+            width: compact ? 48 : null,
+            height: compact ? 48 : null,
+            child: Center(
+              child: AnimatedScale(
+                scale: _hover ? 1.08 : 1,
+                duration: const Duration(milliseconds: 150),
+                child: CircleAvatar(
+                  radius: 17,
+                  backgroundColor:
+                      _hover ? AppColors.goldBright : AppColors.gold,
+                  child: Text(
+                    widget.user.name.isNotEmpty
+                        ? widget.user.name[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      color: AppColors.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ),

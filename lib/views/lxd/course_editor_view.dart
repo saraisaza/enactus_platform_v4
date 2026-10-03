@@ -214,7 +214,13 @@ class _CourseSection extends StatelessWidget {
   Widget build(BuildContext context) => switch (section) {
         0 => _GeneralSection(course: course),
         1 => _CategorySection(course: course),
-        2 => _BuilderSection(course: course),
+        // Módulos y lecciones se arman arrastrando y con el editor de quiz y
+        // rúbricas: en el teléfono, primero el aviso de que conviene hacerlo
+        // desde un computador.
+        2 => AvisoEscritorio(
+            herramienta: 'el constructor de módulos y lecciones',
+            child: _BuilderSection(course: course),
+          ),
         3 => _CertificateSection(course: course),
         _ => _RestrictionsSection(course: course),
       };
@@ -844,7 +850,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
           ],
         ),
         const Text(
-          'Arrastra con el ícono ⠿ para reordenar módulos y lecciones.',
+          'Arrastre con el ícono ⠿ para reordenar módulos y lecciones.',
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
         ),
         if (_error != null) ...[
@@ -855,7 +861,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
         if (course.modules.isEmpty)
           const EmptyState(
               icon: Icons.view_agenda_outlined,
-              message: 'Crea el primer módulo para empezar.')
+              message: 'Cree el primer módulo para empezar.')
         else
           ReorderableListView.builder(
             shrinkWrap: true,
@@ -951,7 +957,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
                           final ok = await confirmDoubleDialog(
                             context,
                             'Eliminar módulo',
-                            'Vas a eliminar "${module.title}" con sus '
+                            'Va a eliminar "${module.title}" con sus '
                                 '${module.lessons.length} lecciones.',
                           );
                           if (ok) {

@@ -71,8 +71,8 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
       eyebrow: 'Comunidad eduXaction Colombia',
       title: 'Directorio de Proyectos',
       subtitle:
-          'Todos los proyectos activos de la red. Filtra por etapa, explora '
-          'los ODS que atienden y descubre qué está construyendo el resto '
+          'Todos los proyectos activos de la red. Filtre por etapa, explore '
+          'los ODS que atienden y descubra qué está construyendo el resto '
           'de los equipos.',
       searchHint: 'Buscar proyecto, comunidad u ODS',
       onSearchChanged: (v) => setState(() => _query = v),
@@ -176,8 +176,8 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
       message: noProjectsAtAll
           ? 'Todavía no se ha publicado ningún proyecto en la comunidad. '
               'Cuando su equipo registre el suyo, aparecerá aquí para toda la red.'
-          : 'Ningún proyecto coincide con este filtro. Prueba con otra '
-              'etapa o limpia la búsqueda.',
+          : 'Ningún proyecto coincide con este filtro. Pruebe con otra '
+              'etapa o limpie la búsqueda.',
       primaryLabel: 'Ver todas las etapas',
       onPrimary: () => setState(() {
         _stageFilter = 'todas';
@@ -268,11 +268,17 @@ class _StageChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
-                      color: active ? colors.goldInk : colors.text2)),
+              // Etapas largas ("Escalamiento e impacto") con la letra
+              // agrandada: elipsis en vez de salirse de la pantalla.
+              Flexible(
+                child: Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: active ? colors.goldInk : colors.text2)),
+              ),
               const SizedBox(width: 7),
               Container(
                 constraints: const BoxConstraints(minWidth: 22),
@@ -352,7 +358,7 @@ Widget _buildProjectCover(Project project, ContentColors colors,
                   children: [
                     const Icon(Icons.flag_rounded, size: 15, color: Colors.white),
                     const SizedBox(width: 6),
-                    Text(project.stage,
+                    Text(ProjectStage.label(project.stage),
                         style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -579,7 +585,7 @@ class ProjectSummaryCard extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                     ),
                     StatusChip(
-                        label: project.stage, color: AppColors.gold, icon: Icons.flag_outlined),
+                        label: ProjectStage.label(project.stage), color: AppColors.gold, icon: Icons.flag_outlined),
                   ],
                 ),
                 if (project.description.isNotEmpty) ...[
@@ -934,17 +940,23 @@ class _MemberRow extends StatelessWidget {
         const SizedBox(width: 10),
         // El rol dentro del proyecto: la brecha de modelo que cerró el
         // esquema. Antes un equipo era una lista de ids sin rol.
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: colors.goldSoft,
-            borderRadius: BorderRadius.circular(999),
+        // `Flexible`: con la letra agrandada, "Comunicaciones" junto al
+        // nombre ya no cabía.
+        Flexible(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: colors.goldSoft,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(member.roleLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: colors.goldInk)),
           ),
-          child: Text(member.roleLabel,
-              style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: colors.goldInk)),
         ),
       ]),
     );

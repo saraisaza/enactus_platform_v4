@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
@@ -6,6 +8,7 @@ import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
+import '../../widgets/cuenta.dart';
 
 /// Login único: identifica el rol del usuario y lo lleva a su portal.
 class LoginView extends StatefulWidget {
@@ -18,11 +21,22 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _passwordFocus = FocusNode();
   String? _error;
   bool _obscure = true;
 
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    _passwordFocus.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
     final auth = context.read<AuthProvider>();
+    // Un toque más mientras se espera la respuesta no manda otro intento.
+    if (auth.isLoggingIn) return;
     setState(() => _error = null);
 
     final user = await auth.login(_email.text.trim(), _password.text);
@@ -36,15 +50,20 @@ class _LoginViewState extends State<LoginView> {
           auth.loginError?.message ?? 'Correo o contraseña incorrectos.');
       return;
     }
+    // El Llavero de iOS y Google ofrecen guardar la contraseña recién cuando
+    // el formulario de ingreso se da por terminado.
+    TextInput.finishAutofillContext();
     Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.forRole(user.role), (_) => false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final enviando = context.watch<AuthProvider>().isLoggingIn;
     // Footer dentro del scroll: solo aparece al desplazarse al final.
     return Scaffold(
-      body: CustomScrollView(
+      body: SafeArea(
+        child: CustomScrollView(
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
@@ -83,33 +102,64 @@ class _LoginViewState extends State<LoginView> {
                               color: AppColors.textMuted, fontSize: 13),
                         ),
                         const SizedBox(height: 24),
-                        TextField(
-                          controller: _email,
-                          decoration: const InputDecoration(
-                            labelText: 'Correo electrónico',
-                            prefixIcon: Icon(Icons.mail_outline, size: 20),
+                        // Autocompletar del Llavero de iOS y de Google: los
+                        // dos campos juntos y marcados como correo y
+                        // contraseña.
+                        AutofillGroup(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextField(
+                                controller: _email,
+                                enabled: !enviando,
+                                keyboardType: TextInputType.emailAddress,
+                                autofillHints: const [
+                                  AutofillHints.email,
+                                  AutofillHints.username,
+                                ],
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                textInputAction: TextInputAction.next,
+                                decoration: const InputDecoration(
+                                  labelText: 'Correo electrónico',
+                                  prefixIcon:
+                                      Icon(Icons.mail_outline, size: 20),
+                                ),
+                                // "Siguiente" pasa a la contraseña. Antes
+                                // enviaba el formulario con la contraseña
+                                // vacía.
+                                onSubmitted: (_) =>
+                                    _passwordFocus.requestFocus(),
+                              ),
+                              const SizedBox(height: 14),
+                              TextField(
+                                controller: _password,
+                                focusNode: _passwordFocus,
+                                enabled: !enviando,
+                                obscureText: _obscure,
+                                autofillHints: const [AutofillHints.password],
+                                textInputAction: TextInputAction.done,
+                                decoration: InputDecoration(
+                                  labelText: 'Contraseña',
+                                  prefixIcon:
+                                      const Icon(Icons.lock_outline, size: 20),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                        _obscure
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                        size: 20),
+                                    tooltip: _obscure
+                                        ? 'Mostrar contraseña'
+                                        : 'Ocultar contraseña',
+                                    onPressed: () =>
+                                        setState(() => _obscure = !_obscure),
+                                  ),
+                                ),
+                                onSubmitted: (_) => _submit(),
+                              ),
+                            ],
                           ),
-                          onSubmitted: (_) => _submit(),
-                        ),
-                        const SizedBox(height: 14),
-                        TextField(
-                          controller: _password,
-                          obscureText: _obscure,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            prefixIcon:
-                                const Icon(Icons.lock_outline, size: 20),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                  _obscure
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                  size: 20),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
-                            ),
-                          ),
-                          onSubmitted: (_) => _submit(),
                         ),
                         if (_error != null) ...[
                           const SizedBox(height: 12),
@@ -129,15 +179,37 @@ class _LoginViewState extends State<LoginView> {
                         ],
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: _submit,
-                          child: const Text('Ingresar'),
+                          onPressed: enviando ? null : _submit,
+                          child: enviando
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2),
+                                )
+                              : const Text('Ingresar'),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                              context, AppRoutes.landing, (_) => false),
-                          child: const Text('← Volver al inicio'),
-                        ),
+                        // La portada es el sitio de presentación de la web:
+                        // en la app no hay "inicio" al cual volver.
+                        if (kIsWeb) ...[
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                                context, AppRoutes.landing, (_) => false),
+                            child: const Text('← Volver al inicio'),
+                          ),
+                        ],
+                        // Las tiendas piden la política de privacidad a la
+                        // vista también ANTES de entrar. La web no pasa por
+                        // una tienda; ahí se enlaza cuando el texto esté
+                        // aprobado (docs/movil/DATOS_Y_PRIVACIDAD.md).
+                        if (!kIsWeb) ...[
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => abrirPoliticaDePrivacidad(context),
+                            child: const Text('Política de privacidad'),
+                          ),
+                        ],
                       ],
                     ),
                     ),
@@ -145,11 +217,12 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
-                const AppFooter(),
+                if (kIsWeb) const AppFooter(),
               ],
             ),
           ),
         ],
+      ),
       ),
     );
   }

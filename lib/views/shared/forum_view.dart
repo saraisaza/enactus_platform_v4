@@ -6,11 +6,14 @@ import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
+import '../../utils/async_value.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/common.dart';
+import '../../widgets/normas_comunidad.dart';
 import '../../widgets/portal_shell.dart';
+import 'foro_moderacion.dart';
 
 // "Recurso" usaba un naranja (#FD6925) casi idéntico al acento de marca de
 // entonces — se reasignó a un tono de la paleta categórica de gráficos para
@@ -79,6 +82,8 @@ class _ForumViewState extends State<ForumView> {
   Future<void> _publish(DataProvider data, AppUser me) async {
     final text = _composerCtrl.text.trim();
     if (text.isEmpty || _sending) return;
+    // App Store (guía 1.2): antes de publicar, la persona acepta las normas.
+    if (!await asegurarNormasAceptadas(context, me.id) || !mounted) return;
     setState(() => _sending = true);
     try {
       await data.createForumPost(text, _categoryDraft);
@@ -143,14 +148,17 @@ class _ForumViewState extends State<ForumView> {
     // muestra igual — no vale la pena bloquearlo por un contador.
     final stats = data.forumStats.valueOrNull;
     final activeCount = stats?.activeUsersThisWeek ?? 0;
+    // Solo quien modera pide la cola: para el resto el servidor responde 403.
+    final pendientes =
+        canModerate ? (data.forumReports.valueOrNull?.length ?? 0) : 0;
     final topTeams = stats?.mostActiveTeams ?? const <ForumTeamActivity>[];
 
     return ContentScreenShell(
       eyebrow: '$activeCount persona${activeCount == 1 ? '' : 's'} '
           'activa${activeCount == 1 ? '' : 's'} esta semana',
       title: 'Foro de la Comunidad',
-      subtitle: 'Pregunta, comparte avances y encuentra a quién ya resolvió lo '
-          'que tú está resolviendo. Escriben estudiantes, mentores y LXD de '
+      subtitle: 'Pregunte, comparta avances y encuentre a quién ya resolvió lo '
+          'que usted está resolviendo. Escriben estudiantes, mentores y LXD de '
           'toda la red.',
       searchHint: 'Buscar autor, organización o contenido',
       onSearchChanged: (v) => setState(() => _query = v),
@@ -158,6 +166,10 @@ class _ForumViewState extends State<ForumView> {
         final left = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (pendientes > 0) ...[
+              _BannerReportes(pendientes: pendientes, colors: colors),
+              const SizedBox(height: 16),
+            ],
             _Composer(
               controller: _composerCtrl,
               me: me,
@@ -176,10 +188,10 @@ class _ForumViewState extends State<ForumView> {
                 icon: Icons.forum_outlined,
                 title: 'Nadie ha escrito aún',
                 message: allPosts.isEmpty
-                    ? 'El foro está vacío. Sé la primera en abrir la '
+                    ? 'El foro está vacío. Puede ser la primera persona en abrir la '
                         'conversación de la comunidad.'
-                    : 'Ninguna publicación coincide con este filtro. Prueba '
-                        'con otra categoría o limpia la búsqueda.',
+                    : 'Ninguna publicación coincide con este filtro. Pruebe '
+                        'con otra categoría o limpie la búsqueda.',
                 primaryLabel: 'Ver todo el foro',
                 onPrimary: () => setState(() {
                   _categoryFilter = 'todas';
@@ -207,7 +219,7 @@ class _ForumViewState extends State<ForumView> {
         final right = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _RulesCard(colors: colors),
+            _RulesCard(colors: colors, canModerate: canModerate),
             if (topTeams.isNotEmpty) ...[
               const SizedBox(height: 20),
               _TopTeamsCard(teams: topTeams, colors: colors),
@@ -507,15 +519,17 @@ class _PostCardState extends State<_PostCard> {
   Future<void> _submitReply(DataProvider data) async {
     final text = _replyCtrl.text.trim();
     if (text.isEmpty || _sendingReply) return;
+    if (!await asegurarNormasAceptadas(context, widget.me.id) || !mounted) {
+      return;
+    }
     setState(() => _sendingReply = true);
     try {
       await data.replyToForumPost(widget.post.id, text);
       _replyCtrl.clear();
-      if (mounted) setState(() => _replyOpen = false);
-    } catch (_) {
-      if (mounted) {
-        showAppSnack(context, 'No se pudo enviar la respuesta.', error: true);
-      }
+    } on ApiException catch (e) {
+      // El motivo real: «sin conexión» no se arregla igual que «lenguaje que
+      // no está permitido».
+      if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
       if (mounted) setState(() => _sendingReply = false);
     }
@@ -536,8 +550,16 @@ class _PostCardState extends State<_PostCard> {
     final catColor = forumCategoryColor(post.category);
     final liked = post.likedByMe;
     final canDelete = widget.canModerate || post.authorId == widget.me.id;
+    // El listado del servidor trae cuántas respuestas hay, no las respuestas:
+    // esas vienen con el detalle, que se pide al abrir la conversación. Antes
+    // la tarjeta contaba las que traía el listado —siempre cero— y ninguna
+    // respuesta se veía nunca.
+    final detalle = _replyOpen ? data.forumPostById(post.id) : null;
+    final replies = post.replies.isNotEmpty
+        ? post.replies
+        : (detalle?.valueOrNull?.replies ?? const <ForumReply>[]);
     final visibleReplies =
-        _repliesExpanded ? post.replies : post.replies.take(2).toList();
+        _repliesExpanded ? replies : replies.take(2).toList();
 
     // Nota: un Border con colores no uniformes (el filete izquierdo de
     // catColor vs. los otros 3 lados en colors.border) no se puede combinar
@@ -565,7 +587,8 @@ class _PostCardState extends State<_PostCard> {
                   border: Border.all(color: colors.border),
                 ),
                 child: _postCardBody(context, colors, post, name, isStaff, org,
-                    catColor, data, liked, canDelete, visibleReplies),
+                    catColor, data, liked, canDelete, visibleReplies,
+                    replies.length, detalle),
               ),
               Positioned(
                 left: 0,
@@ -591,7 +614,12 @@ class _PostCardState extends State<_PostCard> {
       DataProvider data,
       bool liked,
       bool canDelete,
-      List<ForumReply> visibleReplies) {
+      List<ForumReply> visibleReplies,
+      int totalReplies,
+      AsyncValue<ForumPost>? detalle) {
+    final esMia = post.authorId == widget.me.id;
+    final bloqueable = sePuedeBloquear(
+        autorId: post.authorId, autorRol: post.authorRole, miId: widget.me.id);
     return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -671,48 +699,98 @@ class _PostCardState extends State<_PostCard> {
             const SizedBox(height: 14),
             Divider(height: 1, color: colors.border),
             const SizedBox(height: 14),
+            // Las dos acciones de todos a la izquierda, en un `Wrap`; las de
+            // moderación en un menú ⋮. En una sola fila, con el espaciador y
+            // dos íconos de 32 dp, no cabía a 360 dp (se salía 68 px).
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _ActionButton(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: '${post.likeCount}',
-                  active: liked,
-                  colors: colors,
-                  onTap: () => data.toggleForumLike(post.id),
-                ),
-                const SizedBox(width: 10),
-                _ActionButton(
-                  icon: Icons.mode_comment_outlined,
-                  label: '${post.replies.length} '
-                      'respuesta${post.replies.length == 1 ? '' : 's'}',
-                  active: _replyOpen,
-                  colors: colors,
-                  onTap: () => setState(() => _replyOpen = !_replyOpen),
-                ),
-                const Spacer(),
-                if (widget.canModerate)
-                  _IconOnlyButton(
-                    icon: post.pinned ? Icons.push_pin : Icons.push_pin_outlined,
-                    colors: colors,
-                    hoverColor: colors.goldInk,
-                    tooltip: post.pinned ? 'Desfijar' : 'Fijar anuncio',
-                    onTap: () => data.toggleForumPin(post.id),
+                Expanded(
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      _ActionButton(
+                        icon: Icons.volunteer_activism_outlined,
+                        label: '${post.likeCount}',
+                        active: liked,
+                        colors: colors,
+                        onTap: () => data.toggleForumLike(post.id),
+                      ),
+                      _ActionButton(
+                        icon: Icons.mode_comment_outlined,
+                        label: '${post.replyCount} '
+                            'respuesta${post.replyCount == 1 ? '' : 's'}',
+                        active: _replyOpen,
+                        colors: colors,
+                        onTap: () => setState(() => _replyOpen = !_replyOpen),
+                      ),
+                    ],
                   ),
-                if (canDelete) ...[
-                  const SizedBox(width: 8),
-                  _IconOnlyButton(
-                    icon: Icons.delete_outline,
-                    colors: colors,
-                    hoverColor: colors.alertInk,
-                    tooltip: 'Eliminar',
-                    onTap: () async {
-                      if (await confirmDialog(context, 'Eliminar publicación',
-                          '¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.')) {
-                        await data.deleteForumPost(post.id);
+                ),
+                if (widget.canModerate || canDelete || !esMia)
+                  PopupMenuButton<String>(
+                    tooltip: 'Más acciones',
+                    icon: Icon(Icons.more_vert, color: colors.text2),
+                    onSelected: (accion) async {
+                      switch (accion) {
+                        case 'fijar':
+                          await data.toggleForumPin(post.id);
+                        case 'reportar':
+                          await mostrarReportar(context,
+                              postId: post.id,
+                              autorId: post.authorId,
+                              autorNombre: name,
+                              autorBloqueable: bloqueable);
+                        case 'bloquear':
+                          await confirmarBloqueo(context,
+                              autorId: post.authorId, autorNombre: name);
+                        case 'eliminar':
+                          if (await confirmDialog(context, 'Eliminar publicación',
+                              '¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.')) {
+                            await data.deleteForumPost(post.id);
+                          }
                       }
                     },
+                    itemBuilder: (_) => [
+                      if (widget.canModerate)
+                        PopupMenuItem(
+                          value: 'fijar',
+                          child: ListTile(
+                            leading: Icon(post.pinned
+                                ? Icons.push_pin
+                                : Icons.push_pin_outlined),
+                            title: Text(
+                                post.pinned ? 'Desfijar' : 'Fijar anuncio'),
+                          ),
+                        ),
+                      if (!esMia)
+                        const PopupMenuItem(
+                          value: 'reportar',
+                          child: ListTile(
+                            leading: Icon(Icons.flag_outlined),
+                            title: Text('Reportar'),
+                          ),
+                        ),
+                      if (bloqueable)
+                        PopupMenuItem(
+                          value: 'bloquear',
+                          child: ListTile(
+                            leading: const Icon(Icons.block),
+                            title: Text('Bloquear a $name'),
+                          ),
+                        ),
+                      if (canDelete)
+                        const PopupMenuItem(
+                          value: 'eliminar',
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline,
+                                color: AppColors.statusCritical),
+                            title: Text('Eliminar'),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
               ],
             ),
             if (_replyOpen) ...[
@@ -755,19 +833,34 @@ class _PostCardState extends State<_PostCard> {
                 ],
               ),
             ],
-            if (post.replies.isNotEmpty) ...[
+            if (detalle != null && detalle.isLoading && totalReplies == 0)
+              const Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+            if (detalle?.errorOrNull case final error?)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: ErrorState(error,
+                    compact: true,
+                    onRetry: () => data.reloadForumPost(post.id)),
+              ),
+            if (totalReplies > 0) ...[
               for (final r in visibleReplies)
                 _ReplyTile(
-                  authorName: _replyAuthorName(data, r.authorId),
+                  authorName: _replyAuthorName(r),
                   reply: r,
                   colors: colors,
+                  postId: post.id,
+                  me: widget.me,
+                  canModerate: widget.canModerate,
                 ),
-              if (!_repliesExpanded && post.replies.length > 2)
+              if (!_repliesExpanded && totalReplies > 2)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: TextButton(
                     onPressed: () => setState(() => _repliesExpanded = true),
-                    child: Text('Ver las ${post.replies.length} respuestas'),
+                    child: Text('Ver las $totalReplies respuestas'),
                   ),
                 ),
             ],
@@ -776,10 +869,10 @@ class _PostCardState extends State<_PostCard> {
   }
 }
 
-String _replyAuthorName(DataProvider data, String authorId) {
-  final name = authorId;
-  return name.isEmpty ? 'Usuario eliminado' : name;
-}
+/// El nombre lo manda la API en cada respuesta. Antes se mostraba el
+/// `authorId`: un identificador de 36 caracteres en lugar de una persona.
+String _replyAuthorName(ForumReply reply) =>
+    reply.authorName.isEmpty ? 'Usuario eliminado' : reply.authorName;
 
 class _RolePill extends StatelessWidget {
   final String label;
@@ -824,9 +917,14 @@ class _ActionButton extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       builder: (context, hover) {
         final on = active || hover;
+        // El botón se ve de ~32 dp de alto, pero el área tocable llega a 48
+        // con el relleno transparente de arriba y abajo.
         return GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          child: Container(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
             decoration: BoxDecoration(
               color: colors.surface2,
@@ -838,59 +936,100 @@ class _ActionButton extends StatelessWidget {
               children: [
                 Icon(icon, size: 16, color: on ? colors.goldInk : colors.text2),
                 const SizedBox(width: 7),
-                Text(label,
-                    style: TextStyle(fontSize: 12.5, color: on ? colors.goldInk : colors.text2)),
+                Flexible(
+                  child: Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12.5, color: on ? colors.goldInk : colors.text2)),
+                ),
               ],
             ),
+          ),
           ),
         );
       },
     );
   }
 }
-
-class _IconOnlyButton extends StatelessWidget {
-  final IconData icon;
-  final ContentColors colors;
-  final Color hoverColor;
-  final String tooltip;
-  final VoidCallback onTap;
-  const _IconOnlyButton(
-      {required this.icon,
-      required this.colors,
-      required this.hoverColor,
-      required this.tooltip,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: HoverBuilder(
-        cursor: SystemMouseCursors.click,
-        builder: (context, hover) => GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 32,
-            height: 32,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color: hover ? hoverColor : colors.border),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, size: 16, color: hover ? hoverColor : colors.text3),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _ReplyTile extends StatelessWidget {
   final String authorName;
   final ForumReply reply;
   final ContentColors colors;
-  const _ReplyTile({required this.authorName, required this.reply, required this.colors});
+  final String postId;
+  final AppUser me;
+  final bool canModerate;
+  const _ReplyTile(
+      {required this.authorName,
+      required this.reply,
+      required this.colors,
+      required this.postId,
+      required this.me,
+      required this.canModerate});
+
+  Widget _menu(BuildContext context) {
+    final esMia = reply.authorId == me.id;
+    final bloqueable = sePuedeBloquear(
+        autorId: reply.authorId, autorRol: reply.authorRole, miId: me.id);
+    final puedeBorrar = esMia || canModerate;
+    if (esMia && !puedeBorrar) return const SizedBox.shrink();
+    return PopupMenuButton<String>(
+      tooltip: 'Más acciones',
+      icon: Icon(Icons.more_vert, size: 18, color: colors.text3),
+      onSelected: (accion) async {
+        final data = context.read<DataProvider>();
+        switch (accion) {
+          case 'reportar':
+            await mostrarReportar(context,
+                postId: postId,
+                replyId: reply.id,
+                autorId: reply.authorId,
+                autorNombre: authorName,
+                autorBloqueable: bloqueable);
+          case 'bloquear':
+            await confirmarBloqueo(context,
+                autorId: reply.authorId, autorNombre: authorName);
+          case 'eliminar':
+            if (await confirmDialog(context, 'Eliminar respuesta',
+                '¿Eliminar esta respuesta del foro? Esta acción no se puede deshacer.')) {
+              try {
+                await data.deleteForumReply(postId, reply.id);
+              } on ApiException catch (e) {
+                if (context.mounted) {
+                  showAppSnack(context, e.message, error: true);
+                }
+              }
+            }
+        }
+      },
+      itemBuilder: (_) => [
+        if (!esMia)
+          const PopupMenuItem(
+            value: 'reportar',
+            child: ListTile(
+              leading: Icon(Icons.flag_outlined),
+              title: Text('Reportar'),
+            ),
+          ),
+        if (bloqueable)
+          PopupMenuItem(
+            value: 'bloquear',
+            child: ListTile(
+              leading: const Icon(Icons.block),
+              title: Text('Bloquear a $authorName'),
+            ),
+          ),
+        if (puedeBorrar)
+          const PopupMenuItem(
+            value: 'eliminar',
+            child: ListTile(
+              leading:
+                  Icon(Icons.delete_outline, color: AppColors.statusCritical),
+              title: Text('Eliminar'),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -916,9 +1055,13 @@ class _ReplyTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(authorName,
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600, color: colors.text)),
+                    Flexible(
+                      child: Text(authorName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600, color: colors.text)),
+                    ),
                     const SizedBox(width: 8),
                     Text(relativeTime(reply.createdAt),
                         style: TextStyle(fontSize: 11.5, color: colors.text3)),
@@ -930,6 +1073,7 @@ class _ReplyTile extends StatelessWidget {
               ],
             ),
           ),
+          _menu(context),
         ],
       ),
     );
@@ -938,16 +1082,17 @@ class _ReplyTile extends StatelessWidget {
 
 class _RulesCard extends StatelessWidget {
   final ContentColors colors;
-  const _RulesCard({required this.colors});
+  final bool canModerate;
+  const _RulesCard({required this.colors, required this.canModerate});
 
   static const _rules = [
     (
       Icons.handshake_outlined,
-      'Respeta a los demás equipos y comparte con la misma apertura con la que le gustaría recibir ayuda.'
+      'Respete a los demás equipos y comparta con la misma apertura con la que le gustaría recibir ayuda.'
     ),
     (
       Icons.verified_outlined,
-      'Publica contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'
+      'Publique contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'
     ),
     (
       Icons.groups_outlined,
@@ -986,6 +1131,62 @@ class _RulesCard extends StatelessWidget {
                 ],
               ),
             ),
+          Wrap(
+            spacing: 4,
+            runSpacing: 0,
+            children: [
+              TextButton(
+                onPressed: () => mostrarNormasDeLaComunidad(context),
+                child: const Text('Normas completas'),
+              ),
+              TextButton(
+                onPressed: () => mostrarPersonasBloqueadas(context),
+                child: const Text('Personas bloqueadas'),
+              ),
+              if (canModerate)
+                TextButton(
+                  onPressed: () => ForoReportesView.abrir(context),
+                  child: const Text('Reportes del foro'),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Aviso para quien modera: hay reportes sin atender.
+class _BannerReportes extends StatelessWidget {
+  final int pendientes;
+  final ContentColors colors;
+  const _BannerReportes({required this.pendientes, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      decoration: BoxDecoration(
+        color: colors.goldSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.goldInk),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.flag_outlined, color: colors.goldInk),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              pendientes == 1
+                  ? 'Hay 1 reporte sin atender.'
+                  : 'Hay $pendientes reportes sin atender.',
+              style: TextStyle(color: colors.text, fontWeight: FontWeight.w600),
+            ),
+          ),
+          TextButton(
+            onPressed: () => ForoReportesView.abrir(context),
+            child: const Text('Revisar'),
+          ),
         ],
       ),
     );

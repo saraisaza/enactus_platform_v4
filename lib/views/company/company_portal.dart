@@ -33,10 +33,13 @@ class CompanyPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Impacto',
+            destacada: true,
             icon: Icons.insights_outlined,
             builder: (_) => const _CompanyDashboard()),
         PortalTab(
             label: 'Mapa de Estudiantes',
+            shortLabel: 'Mapa',
+            destacada: true,
             icon: Icons.public,
             builder: (_) => const StudentsMapView()),
         PortalTab(
@@ -45,18 +48,24 @@ class CompanyPortal extends StatelessWidget {
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
             label: 'Mis Laboratorios',
+            shortLabel: 'Laboratorios',
             icon: Icons.science_outlined,
             builder: (_) => const _CompanyLabs()),
         PortalTab(
             label: 'Estudiantes Patrocinados',
+            shortLabel: 'Patrocinados',
+            destacada: true,
             icon: Icons.school_outlined,
             builder: (_) => const _CompanyStudents()),
         PortalTab(
             label: 'Mi Equipo',
+            shortLabel: 'Equipo',
             icon: Icons.badge_outlined,
             builder: (_) => const _CompanyTeam()),
         PortalTab(
             label: 'BuscaTalento',
+            shortLabel: 'Talento',
+            destacada: true,
             icon: Icons.search,
             builder: (_) => const TalentSearchView()),
       ],
@@ -177,7 +186,7 @@ class _CompanyLabs extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Laboratorios',
-      subtitle: 'Los que patrocinás y aquellos donde trabaja su equipo',
+      subtitle: 'Los que patrocina y aquellos donde trabaja su equipo',
       children: [
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 3, height: 100),
@@ -350,7 +359,7 @@ class _TeamNotice extends StatelessWidget {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Las cuentas que crees quedan atadas a su organización. Solo '
+              'Las cuentas que cree quedan atadas a su organización. Solo '
               'puede dar de alta LXD y mentores: los estudiantes los asigna '
               'el equipo de administración.',
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
@@ -541,6 +550,9 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
           const SizedBox(height: 12),
           TextField(
             controller: _email,
+            keyboardType: TextInputType.emailAddress,
+            autocorrect: false,
+            autofillHints: const [AutofillHints.email],
             enabled: !_saving,
             decoration:
                 const InputDecoration(labelText: 'Correo electrónico'),
@@ -552,7 +564,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
             obscureText: true,
             decoration: const InputDecoration(
               labelText: 'Contraseña',
-              helperText: 'Mínimo 6 caracteres. Se la compartís usted.',
+              helperText: 'Mínimo 6 caracteres. Usted se la comparte.',
             ),
           ),
           const SizedBox(height: 12),

@@ -278,7 +278,7 @@ class _ContinueCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('CONTINÚA DONDE IBAS',
+                    Text('CONTINÚE DONDE IBA',
                         style: TextStyle(
                             fontSize: 12,
                             letterSpacing: 12 * 0.16,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/models/models.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
@@ -53,7 +52,7 @@ Widget _app(Lesson lesson, FakeApi fake) {
 }
 
 void main() {
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() => useFakeTokenStorage());
 
   group('embedUrlFor — YouTube', () {
     const esperado = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ';

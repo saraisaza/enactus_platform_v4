@@ -24,13 +24,14 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/models/models.dart';
 import 'package:enactus_platform/providers/auth_provider.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
+
+import 'helpers/fake_api.dart' show useFakeTokenStorage;
 
 const _enactus = 'estudiante1@uniandes.edu.co';
 const _openLearning = 'camila.rivas@gmail.com';
@@ -121,7 +122,7 @@ void main() {
     }
   });
 
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() => useFakeTokenStorage());
 
   test('entra con una cuenta real y trae equipo y patrocinador', () async {
     if (!up) return;

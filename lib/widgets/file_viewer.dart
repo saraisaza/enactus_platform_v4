@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../utils/app_theme.dart';
 import 'pdf_view_io.dart' if (dart.library.js_interop) 'pdf_view_web.dart';
+import 'visor_pdf.dart';
 
 /// Visor de archivos DENTRO de la página, como el reproductor de YouTube.
 ///
@@ -29,10 +30,12 @@ class FileViewer {
     final nombre = _nombreVisible(fileName, s3Key, url);
     final tipo = _tipoDe(fileName, s3Key);
 
-    // Fuera del navegador (escritorio) no hay pdf.js: el PDF se abre con la
-    // aplicación del sistema, que ahí no significa salir de ninguna página.
+    // Fuera del navegador no hay pdf.js. En la app (Android, iOS) y en el
+    // escritorio, el PDF se ve DENTRO con [VisorPdf] —que trae Compartir e
+    // Imprimir—: abrirlo con la aplicación del sistema sacaba a la persona de
+    // la lección en el teléfono.
     if (tipo == _Tipo.pdf && !visorPdfDisponible) {
-      await _abrirAfuera(context, url);
+      await abrirPdf(context, url, titulo: nombre);
       return;
     }
 

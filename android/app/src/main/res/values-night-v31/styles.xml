@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: el sistema dibuja la pantalla de arranque con el ícono de
+         la app sobre este color, e ignora launch_background. Sin esto, sale
+         blanca (o negra) según el tema del teléfono. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/marca_fondo</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/marca_fondo</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@color/marca_fondo</item>
+    </style>
+</resources>

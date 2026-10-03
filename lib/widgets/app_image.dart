@@ -53,14 +53,24 @@ class AppImage extends StatelessWidget {
           loading: () => loadingBuilder?.call(context) ?? _empty(context),
           error: (error) =>
               errorWidgetBuilder?.call(context, error) ?? _empty(context),
-          data: (url) => Image.network(
-            url,
-            fit: fit,
-            // La URL puede vencer con la pestaña abierta. Se muestra el
-            // marcador de posición en vez de el ícono de imagen rota del
-            // navegador; el siguiente rebuild pide una URL nueva.
-            errorBuilder: (_, _, _) => _empty(context),
-          ),
+          // Se decodifica al tamaño en que se dibuja, no al original: una foto
+          // de 12 MP ocupaba ~48 MB de memoria aunque se mostrara como un
+          // avatar de 84 dp. En un teléfono, varias juntas cerraban la app.
+          data: (url) => LayoutBuilder(builder: (context, caja) {
+            final densidad = MediaQuery.devicePixelRatioOf(context);
+            final ancho = caja.maxWidth.isFinite
+                ? (caja.maxWidth * densidad).round()
+                : null;
+            return Image.network(
+              url,
+              fit: fit,
+              cacheWidth: ancho == null || ancho <= 0 ? null : ancho,
+              // La URL puede vencer con la pestaña abierta. Se muestra el
+              // marcador de posición en vez de el ícono de imagen rota del
+              // navegador; el siguiente rebuild pide una URL nueva.
+              errorBuilder: (_, _, _) => _empty(context),
+            );
+          }),
         );
   }
 }
@@ -70,8 +80,14 @@ class AppImage extends StatelessWidget {
 ///
 /// Devuelve `null` mientras la URL no esté resuelta — quien lo use tiene que
 /// tener un `child` de reserva, que es justo lo que `CircleAvatar` espera.
-ImageProvider? appImageProvider(BuildContext context, String? s3Key) {
+///
+/// [anchoLogico] es el ancho al que se va a dibujar, en dp: la imagen se
+/// decodifica a ese tamaño (por la densidad de la pantalla) y no al original.
+ImageProvider? appImageProvider(BuildContext context, String? s3Key,
+    {double anchoLogico = 128}) {
   if (s3Key == null || s3Key.isEmpty) return null;
   final url = context.watch<DataProvider>().fileUrl(s3Key).valueOrNull;
-  return url == null ? null : NetworkImage(url);
+  if (url == null) return null;
+  final px = (anchoLogico * MediaQuery.devicePixelRatioOf(context)).round();
+  return ResizeImage.resizeIfNeeded(px, null, NetworkImage(url));
 }

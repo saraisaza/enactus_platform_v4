@@ -49,7 +49,7 @@ async function assertNotVideo(db: Database, key: string): Promise<void> {
   const rechazar = (): never => {
     throw badRequest(
       'Los videos no se sirven por URL firmada de S3: se reproducen por CloudFront. ' +
-        'Usá GET /lessons/:id/video-url o GET /courses/:id/intro-video-url.',
+        'Use GET /lessons/:id/video-url o GET /courses/:id/intro-video-url.',
       { key },
     );
   };

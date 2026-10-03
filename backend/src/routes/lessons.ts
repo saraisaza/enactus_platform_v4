@@ -302,7 +302,7 @@ lessonRoutes.delete('/:id', requireRole(...CONTENT_ROLES), async (c) => {
  * El archivo NO pasa por acá — va directo del navegador a S3. API Gateway
  * corta el payload en 10 MB y un video de 400 MB lo revienta.
  *
- * Se valida ANTES de firmar: tipo permitido (mp4/webm), tamaño ≤ 500 MB y rol
+ * Se valida ANTES de firmar: tipo permitido (solo mp4), tamaño ≤ 500 MB y rol
  * con permiso de crear contenido. Una URL firmada es un permiso real de
  * escritura sobre el bucket; no se emite a la ligera.
  */

@@ -7,6 +7,7 @@ import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/responsive.dart';
 import '../../utils/colombia_cities.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/colombia_map.dart';
@@ -120,6 +121,10 @@ class _StudentsMapViewState extends State<StudentsMapView> {
     ];
 
     final emptyMine = _scope == 'mine' && propiosVacios;
+    // En el teléfono: márgenes de 16, sin anchos mínimos y título más chico.
+    // Con los de escritorio (40 de margen, cajas de 320 y 460 dp de ancho
+    // mínimo) la pantalla se salía hasta 454 px a 360 dp.
+    final compacto = context.isCompact;
 
     return DecoratedBox(
       decoration: BoxDecoration(color: colors.bg),
@@ -127,7 +132,8 @@ class _StudentsMapViewState extends State<StudentsMapView> {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 34, 40, 60),
+              padding: EdgeInsets.fromLTRB(
+                  compacto ? 16 : 40, 34, compacto ? 16 : 40, 60),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -138,7 +144,8 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                     runSpacing: 20,
                     children: [
                       ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 320, maxWidth: 620),
+                        constraints: BoxConstraints(
+                            minWidth: compacto ? 0 : 320, maxWidth: 620),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -148,22 +155,27 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                               children: [
                                 const _PulseDot(),
                                 const SizedBox(width: 9),
-                                Text(
-                                    (_scope == 'all'
-                                            ? 'Red nacional · actualizado hoy'
-                                            : 'Estudiantes que patrocina su organización')
-                                        .toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        letterSpacing: 12 * 0.16,
-                                        fontWeight: FontWeight.w600,
-                                        color: colors.text3)),
+                                Flexible(
+                                  child: Text(
+                                      (_scope == 'all'
+                                              ? 'Red nacional · actualizado hoy'
+                                              : 'Estudiantes que patrocina su organización')
+                                          .toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          letterSpacing: 12 * 0.16,
+                                          fontWeight: FontWeight.w600,
+                                          color: colors.text3)),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 10),
                             Text('Estudiantes en el país'.toUpperCase(),
                                 style: displayHeading(
-                                    fontSize: 58, fontWeight: AppWeights.display, color: colors.goldInk, height: 0.94)),
+                                    fontSize: compacto ? 38 : 58,
+                                    fontWeight: AppWeights.display,
+                                    color: colors.goldInk,
+                                    height: 0.94)),
                             const SizedBox(height: 12),
                             Text(
                                 'Dónde están los estudiantes registrados en eduXaction Colombia. '
@@ -173,7 +185,8 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                         ),
                       ),
                       ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 460, maxWidth: 640),
+                        constraints: BoxConstraints(
+                            minWidth: compacto ? 0 : 460, maxWidth: 640),
                         child: LayoutBuilder(builder: (context, c) {
                           final perRow = c.maxWidth > 380 ? 4 : 2;
                           final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
@@ -193,11 +206,14 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                     ],
                   ),
                   const SizedBox(height: 26),
-                  Row(
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 12,
                     children: [
                       _ScopeSegment(
                           scope: _scope, colors: colors, onChanged: (v) => setState(() => _scope = v)),
-                      const Spacer(),
                       _ThemeGhostButton(
                           isDark: _isDark, colors: colors, onTap: () => setState(() => _isDark = !_isDark)),
                     ],
@@ -205,7 +221,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                   const SizedBox(height: 26),
                   LayoutBuilder(builder: (context, c) {
                     final mapCard = Container(
-                      height: c.maxWidth > 1080 ? 620 : 520,
+                      height: c.maxWidth > 1080 ? 620 : (compacto ? 380 : 520),
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                           color: colors.surface,
@@ -220,7 +236,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                               isDark: _isDark,
                               hoveredCity: _hoveredCity,
                               onHoverCity: (v) => setState(() => _hoveredCity = v),
-                              tooltipSuffix: _scope == 'mine' ? 'estudiantes que patrocinas' : 'estudiantes',
+                              tooltipSuffix: _scope == 'mine' ? 'estudiantes que patrocina' : 'estudiantes',
                             ),
                     );
                     final listCard = _CityListCard(
@@ -264,8 +280,10 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                               child: ColoredBox(color: AppColors.gold),
                             ),
                             const SizedBox(width: 14),
-                            Text('Portal de aliados · eduXaction Colombia',
-                                style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                            Flexible(
+                              child: Text('Portal de aliados · eduXaction Colombia',
+                                  style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                            ),
                           ],
                         ),
                         Text('Geometría: Natural Earth (dominio público)',
@@ -434,6 +452,8 @@ class _ScopeSegment extends StatelessWidget {
             decoration:
                 BoxDecoration(color: active ? colors.goldSoft : Colors.transparent, borderRadius: BorderRadius.circular(999)),
             child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: active ? FontWeight.w600 : FontWeight.w500,
@@ -447,10 +467,12 @@ class _ScopeSegment extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration:
           BoxDecoration(color: colors.surface, border: Border.all(color: colors.border), borderRadius: BorderRadius.circular(999)),
+      // Cada segmento se puede encoger: en un teléfono angosto los dos
+      // rótulos juntos no siempre caben.
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        seg('all', 'Toda la red'),
+        Flexible(child: seg('all', 'Toda la red')),
         const SizedBox(width: 4),
-        seg('mine', 'Los que patrocino'),
+        Flexible(child: seg('mine', 'Los que patrocino')),
       ]),
     );
   }

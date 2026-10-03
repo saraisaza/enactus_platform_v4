@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
@@ -7,14 +8,25 @@ import 'common.dart';
 import 'social_button.dart';
 import 'social_icons.dart';
 
-/// Footer institucional presente en todas las pantallas.
+/// Footer institucional presente en todas las pantallas de la web.
 /// Borde tricolor superior (bandera de Colombia), logo animado, tagline y
 /// redes sociales.
+///
+/// En la app NO se dibuja: un pie de página de sitio web al final de cada
+/// pantalla es de lo primero que hace ver una app como "un sitio web
+/// empaquetado" (guía 4.2 de Apple), y ocupaba ~200 dp de cada scroll. Las
+/// redes y los créditos están en el menú de la cuenta › Acerca de eduXaction
+/// (`widgets/cuenta.dart`). Solo queda
+/// el margen de la barra de gestos, para que el último contenido no quede
+/// debajo del indicador de inicio.
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb) {
+      return SizedBox(height: MediaQuery.paddingOf(context).bottom + 24);
+    }
     final socialButtons = Row(
       mainAxisSize: MainAxisSize.min,
       children: [

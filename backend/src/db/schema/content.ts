@@ -178,6 +178,86 @@ export const forumLikes = pgTable(
   ],
 );
 
+/**
+ * Reportes de contenido del foro.
+ *
+ * Los exige App Store (guía 1.2) para publicar una app donde las personas
+ * publican: cualquiera con acceso al foro puede reportar una publicación o
+ * una respuesta, y el equipo lo atiende desde su cola.
+ *
+ * `replyId` nulo es la publicación; con valor, esa respuesta. Un reporte
+ * atendido no se borra: guarda quién lo atendió y qué decidió, para que la
+ * historia de moderación quede.
+ */
+export const forumReports = pgTable(
+  'forum_reports',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    postId: uuid()
+      .notNull()
+      .references(() => forumPosts.id, { onDelete: 'cascade' }),
+    replyId: uuid().references(() => forumReplies.id, { onDelete: 'cascade' }),
+    reporterId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reason: text().notNull().default(''),
+    /** `removed` (se quitó el contenido) o `dismissed` (no infringía). */
+    resolution: text(),
+    resolvedBy: uuid().references(() => users.id, { onDelete: 'set null' }),
+    resolvedAt: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    index('forum_reports_post_id_idx').on(t.postId),
+    index('forum_reports_reporter_id_idx').on(t.reporterId),
+    // Reportar dos veces lo mismo no suma: un pendiente por persona y
+    // contenido. `coalesce` porque en un índice único dos NULL no chocan, y
+    // sin él la misma publicación se podría reportar sin límite.
+    uniqueIndex('forum_reports_pending_unique')
+      .on(
+        t.reporterId,
+        t.postId,
+        sql`coalesce(${t.replyId}, '00000000-0000-0000-0000-000000000000'::uuid)`,
+      )
+      .where(sql`${t.resolvedAt} is null`),
+    check(
+      'forum_reports_resolution_valid',
+      sql`${t.resolution} is null or ${t.resolution} in ('removed', 'dismissed')`,
+    ),
+    // Atendido lleva fecha y decisión, o ninguna de las dos. Quién lo atendió
+    // no entra: queda vacío si esa cuenta se borra, y el reporte sigue atendido.
+    check(
+      'forum_reports_resolved_consistent',
+      sql`(${t.resolvedAt} is null) = (${t.resolution} is null)`,
+    ),
+  ],
+);
+
+/**
+ * A quién bloqueó cada persona en el foro (App Store, guía 1.2).
+ *
+ * Quien bloquea deja de ver lo que publica y responde la otra persona; la
+ * otra persona no se entera ni pierde nada. No es moderación —eso es
+ * `forumReports`—, es una decisión de cada quien sobre lo que ve.
+ */
+export const userBlocks = pgTable(
+  'user_blocks',
+  {
+    blockerId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    blockedId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    index('user_blocks_blocked_id_idx').on(t.blockedId),
+    check('user_blocks_not_self', sql`${t.blockerId} <> ${t.blockedId}`),
+  ],
+);
+
 export const calendarEvents = pgTable(
   'calendar_events',
   {

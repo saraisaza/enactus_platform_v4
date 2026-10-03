@@ -427,6 +427,16 @@ describe('URL de subida de video', () => {
     expect(b.error.message).toContain('video/mp4');
   });
 
+  it('rechaza WebM con 400: el reproductor de iPhone y iPad no lo abre', async () => {
+    const res = await req(`/lessons/${lessonId}/video-upload-url`, lxdToken, {
+      ...json({ contentType: 'video/webm', sizeBytes: 1024 }),
+    });
+    expect(res.status).toBe(400);
+    const b = await body<{ error: { code: string; message: string } }>(res);
+    // El mensaje nombra lo rechazado y dice que SOLO se acepta MP4.
+    expect(b.error.message).toContain('Se aceptan video/mp4.');
+  });
+
   it('rechaza un archivo de más de 500 MB con 413', async () => {
     const res = await req(`/lessons/${lessonId}/video-upload-url`, lxdToken, {
       ...json({ contentType: 'video/mp4', sizeBytes: MAX_VIDEO_BYTES + 1 }),

@@ -54,6 +54,29 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Lecturas en curso, para saber cuándo terminó [refreshAll].
+  int _enVuelo = 0;
+  final List<Completer<void>> _alTerminar = [];
+
+  /// Vuelve a pedir lo que muestran las pantallas abiertas: "deslizar para
+  /// actualizar" y volver a la app después de un rato en segundo plano.
+  ///
+  /// Vacía las cachés igual que al cambiar de sesión —sin tocar la sesión— y
+  /// las pantallas visibles piden lo suyo al reconstruirse. Termina cuando no
+  /// queda ninguna lectura en curso, o a los 20 s: el indicador de
+  /// "actualizando" nunca puede quedar girando para siempre.
+  Future<void> refreshAll() async {
+    _resetAll();
+    notifyListeners();
+    // Las pantallas piden en su próximo `build`, que llega en el frame
+    // siguiente: se le da ese margen antes de mirar si quedó algo en curso.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    if (_enVuelo == 0) return;
+    final listo = Completer<void>();
+    _alTerminar.add(listo);
+    await listo.future.timeout(const Duration(seconds: 20), onTimeout: () {});
+  }
+
   // -------------------------------------------------------------------------
   // Estado
   // -------------------------------------------------------------------------
@@ -67,6 +90,10 @@ class DataProvider extends ChangeNotifier {
   AsyncValue<List<CalendarEvent>> _calendarEvents = const AsyncValue.idle();
   AsyncValue<List<ForumPost>> _forumPosts = const AsyncValue.idle();
   AsyncValue<ForumStats> _forumStats = const AsyncValue.idle();
+  AsyncValue<List<ForumBlock>> _forumBlocks = const AsyncValue.idle();
+  AsyncValue<List<ForumReport>> _forumReports = const AsyncValue.idle();
+  AsyncValue<List<DeletionRequest>> _deletionRequests =
+      const AsyncValue.idle();
   AsyncValue<List<Submission>> _submissions = const AsyncValue.idle();
   AsyncValue<List<CommunicationResource>> _commResources =
       const AsyncValue.idle();
@@ -106,6 +133,9 @@ class DataProvider extends ChangeNotifier {
     _calendarEvents = const AsyncValue.idle();
     _forumPosts = const AsyncValue.idle();
     _forumStats = const AsyncValue.idle();
+    _forumBlocks = const AsyncValue.idle();
+    _forumReports = const AsyncValue.idle();
+    _deletionRequests = const AsyncValue.idle();
     _submissions = const AsyncValue.idle();
     _commResources = const AsyncValue.idle();
     _evidences = const AsyncValue.idle();
@@ -834,6 +864,34 @@ class DataProvider extends ChangeNotifier {
     _userById.remove(id);
     _usersByQuery.clear();
     notifyListeners();
+  }
+
+  // ---- Solicitudes de eliminación de cuenta ---------------------------------
+
+  /// Cuentas cuya dueña pidió eliminarlas y cuyos datos todavía no se
+  /// borraron. Solo Admin y Super Admin.
+  AsyncValue<List<DeletionRequest>> get deletionRequests {
+    _lazy(_deletionRequests, (v) => _deletionRequests = v,
+        _fetchDeletionRequests);
+    return _deletionRequests;
+  }
+
+  Future<List<DeletionRequest>> _fetchDeletionRequests() async {
+    final json = await api.get('/users/deletion-requests');
+    return ((json as Map)['data'] as List? ?? const [])
+        .map((e) =>
+            DeletionRequest.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Borra los datos personales de una cuenta que pidió eliminarse. No se
+  /// puede deshacer.
+  Future<void> purgeUser(String id) async {
+    await api.post('/users/$id/purge');
+    _userById.remove(id);
+    _usersByQuery.clear();
+    await _refresh((v) => _deletionRequests = v, _fetchDeletionRequests,
+        _deletionRequests.valueOrNull);
   }
 
   // -------------------------------------------------------------------------
@@ -1692,6 +1750,17 @@ class DataProvider extends ChangeNotifier {
     return _forumPostById[id] ?? current;
   }
 
+  /// Vuelve a pedir una publicación con sus respuestas ("Reintentar").
+  Future<void> reloadForumPost(String id) {
+    Future<ForumPost> fetch() async {
+      final json = await api.get('/forum-posts/$id');
+      return ForumPost.fromJson(Map<String, dynamic>.from(json as Map));
+    }
+
+    return _refresh((v) => _forumPostById[id] = v, fetch,
+        _forumPostById[id]?.valueOrNull);
+  }
+
   Future<void> createForumPost(String body, String category) async {
     await api.post('/forum-posts', body: {'body': body, 'category': category});
     _forumStats = const AsyncValue.idle();
@@ -1718,6 +1787,94 @@ class DataProvider extends ChangeNotifier {
     await api.delete('/forum-posts/$postId');
     _forumPostById.remove(postId);
     await reloadForumPosts();
+  }
+
+  Future<void> deleteForumReply(String postId, String replyId) async {
+    await api.delete('/forum-posts/$postId/replies/$replyId');
+    _forumPostById.remove(postId);
+    await reloadForumPosts();
+  }
+
+  // ---- Moderación (App Store, guía 1.2) ------------------------------------
+
+  /// Reporta una publicación —o, con [replyId], una de sus respuestas— al
+  /// equipo que modera. Devuelve `false` si ya la había reportado: no es un
+  /// error, pero la pantalla puede decirlo.
+  Future<bool> reportForumContent(
+    String postId, {
+    String? replyId,
+    String reason = '',
+  }) async {
+    final json = await api.post('/forum-posts/$postId/report', body: {
+      'replyId': ?replyId,
+      'reason': reason,
+    });
+    return !(json is Map && json['duplicate'] == true);
+  }
+
+  /// Personas que la sesión bloqueó, para poder desbloquearlas.
+  AsyncValue<List<ForumBlock>> get forumBlocks {
+    _lazy(_forumBlocks, (v) => _forumBlocks = v, _fetchForumBlocks);
+    return _forumBlocks;
+  }
+
+  Future<void> reloadForumBlocks() => _refresh(
+        (v) => _forumBlocks = v,
+        _fetchForumBlocks,
+        _forumBlocks.valueOrNull,
+      );
+
+  Future<List<ForumBlock>> _fetchForumBlocks() async {
+    final json = await api.get('/forum-posts/blocks');
+    return ((json as Map)['data'] as List? ?? const [])
+        .map((e) => ForumBlock.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Bloquear o desbloquear cambia lo que se ve en TODO el foro: se tira el
+  /// detalle en caché y se recarga el listado, para que el cambio se note en
+  /// el acto y no al volver a entrar.
+  Future<void> blockForumUser(String userId) async {
+    await api.post('/forum-posts/blocks', body: {'userId': userId});
+    await _trasCambiarBloqueos();
+  }
+
+  Future<void> unblockForumUser(String userId) async {
+    await api.delete('/forum-posts/blocks/$userId');
+    await _trasCambiarBloqueos();
+  }
+
+  Future<void> _trasCambiarBloqueos() async {
+    _forumPostById.clear();
+    await Future.wait([reloadForumBlocks(), reloadForumPosts()]);
+  }
+
+  /// La cola de reportes sin atender. Solo Admin y Super Admin.
+  AsyncValue<List<ForumReport>> get forumReports {
+    _lazy(_forumReports, (v) => _forumReports = v, _fetchForumReports);
+    return _forumReports;
+  }
+
+  Future<void> reloadForumReports() => _refresh(
+        (v) => _forumReports = v,
+        _fetchForumReports,
+        _forumReports.valueOrNull,
+      );
+
+  Future<List<ForumReport>> _fetchForumReports() async {
+    final json = await api.get('/forum-posts/reports');
+    return ((json as Map)['data'] as List? ?? const [])
+        .map((e) => ForumReport.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Atiende un reporte: [remove] quita el contenido; si no, se deja. El
+  /// servidor cierra todos los reportes pendientes de lo mismo.
+  Future<void> resolveForumReport(String reportId, {required bool remove}) async {
+    await api.post('/forum-posts/reports/$reportId/resolve',
+        body: {'action': remove ? 'remove' : 'dismiss'});
+    _forumPostById.clear();
+    await Future.wait([reloadForumReports(), reloadForumPosts()]);
   }
 
   // -------------------------------------------------------------------------
@@ -2028,6 +2185,25 @@ class DataProvider extends ChangeNotifier {
   }
 
   Future<void> _load<T>(
+    void Function(AsyncValue<T>) set,
+    Future<T> Function() fetch,
+    T? previous,
+  ) async {
+    _enVuelo++;
+    try {
+      await _loadSinContar(set, fetch, previous);
+    } finally {
+      _enVuelo--;
+      if (_enVuelo == 0 && _alTerminar.isNotEmpty) {
+        for (final listo in _alTerminar) {
+          if (!listo.isCompleted) listo.complete();
+        }
+        _alTerminar.clear();
+      }
+    }
+  }
+
+  Future<void> _loadSinContar<T>(
     void Function(AsyncValue<T>) set,
     Future<T> Function() fetch,
     T? previous,

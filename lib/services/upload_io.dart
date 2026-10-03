@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// Subida a S3 **fuera del navegador**, con progreso real por bytes.
@@ -57,7 +58,15 @@ Future<int> putWithProgress({
   } on TimeoutException {
     throw const UploadTimeoutException();
   } on http.ClientException catch (e) {
-    throw UploadTransportException('No se pudo subir el archivo: ${e.message}');
+    debugPrint('Subida interrumpida (${e.message}).');
+    throw const UploadTransportException(
+        'No se pudo subir el archivo: la conexión se interrumpió.');
+  } on Exception catch (e) {
+    // Certificado que no valida (wifi con portal de acceso) u otro fallo de
+    // red que `package:http` no envuelve: mismo mensaje, en español.
+    debugPrint('Subida interrumpida ($e).');
+    throw const UploadTransportException(
+        'No se pudo subir el archivo: la conexión se interrumpió.');
   } finally {
     client.close();
   }

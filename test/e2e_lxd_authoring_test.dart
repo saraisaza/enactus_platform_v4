@@ -21,7 +21,6 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/models/authoring.dart';
 import 'package:enactus_platform/models/models.dart';
@@ -30,6 +29,8 @@ import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
 import 'package:enactus_platform/utils/constants.dart';
+
+import 'helpers/fake_api.dart' show useFakeTokenStorage;
 
 const _lxd = 'lxd.ia@enactus.co';
 const _clave = 'Lxd123';
@@ -99,7 +100,7 @@ void main() {
     }
   });
 
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() => useFakeTokenStorage());
 
   tearDownAll(() async {
     if (!up || cursoId == null) return;

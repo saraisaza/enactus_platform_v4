@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -92,19 +93,50 @@ class _FileUploadFieldState extends State<FileUploadField> {
     };
   }
 
-  Future<void> _pick() async {
-    final result = await FilePicker.pickFiles(withData: true);
-    final file = result?.files.singleOrNull;
-    final bytes = file?.bytes;
-    if (bytes == null || !mounted) return;
+  /// Lo que acepta el servidor (`ALLOWED_DOCUMENT_TYPES`). Se filtra en el
+  /// selector: antes se podía elegir cualquier cosa y recién después llegaba
+  /// el "no permitido".
+  static const _extensiones = [
+    'pdf', 'png', 'jpg', 'jpeg', 'svg', 'doc', 'docx', 'zip', //
+  ];
 
-    final contentType = _contentTypeOf(file!.name);
+  /// El máximo del servidor (`MAX_DOCUMENT_BYTES`).
+  static const _maxBytes = 25 * 1024 * 1024;
+
+  /// [foto]: el selector de fotos del teléfono en vez del de archivos. En
+  /// iPhone, "Archivo" abre la app Archivos, donde no están las fotos.
+  Future<void> _pick({bool foto = false}) async {
+    final result = await FilePicker.pickFiles(
+      type: foto ? FileType.image : FileType.custom,
+      allowedExtensions: foto ? null : _extensiones,
+      // En iOS, cualquier valor mayor que 0 hace que el selector de fotos
+      // entregue JPEG ("compatible") en vez del HEIC original del iPhone, que
+      // el servidor rechaza.
+      compressionQuality: foto ? 80 : 0,
+      // En la web no hay ruta de archivo: los bytes llegan con la selección.
+      // En el teléfono se leen DESPUÉS de comprobar el tamaño: antes se
+      // cargaba el archivo entero en memoria para recién ahí rechazarlo, y un
+      // video de 1 GB elegido por error podía cerrar la app.
+      withData: kIsWeb,
+    );
+    final file = result?.files.singleOrNull;
+    if (file == null || !mounted) return;
+
+    final contentType = _contentTypeOf(file.name);
     if (contentType.isEmpty) {
       setState(() => _error = const ValidationError(
           'Tipo de archivo no permitido. Se aceptan PDF, imágenes, '
           'documentos de Word y ZIP.'));
       return;
     }
+    if (file.size > _maxBytes) {
+      setState(() => _error = ValidationError(
+          'El archivo pesa ${(file.size / 1024 / 1024).toStringAsFixed(1)} MB '
+          'y el máximo son 25 MB.'));
+      return;
+    }
+    final bytes = file.bytes ?? await file.xFile.readAsBytes();
+    if (!mounted) return;
 
     setState(() {
       _uploading = true;
@@ -146,14 +178,24 @@ class _FileUploadFieldState extends State<FileUploadField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // `Wrap` y no `Row`: a 360 dp, con el texto del contador, la fila
+        // desbordaba.
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
+            if (!kIsWeb)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.photo_library_outlined, size: 16),
+                label: const Text('Foto'),
+                onPressed: full || busy ? null : () => _pick(foto: true),
+              ),
             OutlinedButton.icon(
               icon: const Icon(Icons.attach_file, size: 16),
-              label: const Text('Adjuntar archivo'),
+              label: Text(kIsWeb ? 'Adjuntar archivo' : 'Archivo'),
               onPressed: full || busy ? null : _pick,
             ),
-            const SizedBox(width: 10),
             Text('${widget.files.length}/${widget.maxFiles}',
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 12)),

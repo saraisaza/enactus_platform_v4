@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo de la marca (#0B0B0D): el del cuadrado del logo. Lo usan el
+         ícono adaptable y la pantalla de arranque, para que abrir la app no
+         dé un destello blanco antes del primer cuadro oscuro. -->
+    <color name="marca_fondo">#0B0B0D</color>
+</resources>

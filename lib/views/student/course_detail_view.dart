@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
 import '../../models/progress.dart';
@@ -20,6 +19,7 @@ import '../../widgets/file_viewer.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/youtube_lesson_player.dart';
+import '../../widgets/visor_pdf.dart';
 
 /// Detalle de un curso: módulos y lecciones de todos los tipos, avance y
 /// entregas.
@@ -272,14 +272,20 @@ class _CourseBody extends StatelessWidget {
     );
   }
 
+  // `Flexible`: un dato largo (el nombre del laboratorio, quién creó el
+  // curso) se salía hasta 189 px a 360 dp.
   Widget _meta(IconData icon, String text) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13, color: AppColors.gold),
           const SizedBox(width: 4),
-          Text(text,
-              style:
-                  const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Flexible(
+            child: Text(text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          ),
         ],
       );
 }
@@ -393,7 +399,7 @@ class _LessonTile extends StatelessWidget {
       final impact = await data.toggleLesson(lesson.id, course.id);
       if (!context.mounted) return;
       if (impact.newlyCertifiable != null) {
-        showSuccessCheck(context, '¡Completaste la Ruta de Impacto! 🎉');
+        showSuccessCheck(context, '¡Completó la Ruta de Impacto! 🎉');
       } else if (impact.completed) {
         showSuccessCheck(context, '¡Lección completada!');
       }
@@ -475,7 +481,9 @@ class _LessonTile extends StatelessWidget {
       showAppSnack(context, 'Esta lección no tiene un enlace válido.');
       return;
     }
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    // En la app: PDF en el visor propio y el resto en el navegador
+    // integrado, sin salir de la lección (ver `abrirRecurso`).
+    final ok = await abrirRecurso(context, uri.toString(), titulo: lesson.title);
     if (!ok && context.mounted) {
       showAppSnack(context, 'No se pudo abrir el enlace.');
     }
@@ -555,12 +563,20 @@ class _QuizDialogState extends State<_QuizDialog> {
     final allAnswered = quiz.every(_isAnswered);
     final result = _result;
 
-    return AlertDialog(
-      title: Text(widget.lesson.title, style: const TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 540,
-        child: SingleChildScrollView(
-          child: Column(
+    // Pantalla completa en el teléfono y confirmación antes de descartar
+    // respuestas sin calificar: antes tocar fuera del recuadro, o "atrás",
+    // las borraba sin preguntar.
+    return AdaptiveFormShell(
+      title: widget.lesson.title,
+      maxWidth: 540,
+      saving: _sending,
+      dirty: _answers.isNotEmpty && result == null,
+      onCancel: () => Navigator.pop(context),
+      cancelLabel: 'Cerrar',
+      saveLabel: 'Calificar',
+      savingLabel: 'Calificando…',
+      onSave: allAnswered && quiz.isNotEmpty && result == null ? _submit : null,
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (quiz.isEmpty)
@@ -608,19 +624,6 @@ class _QuizDialogState extends State<_QuizDialog> {
               ],
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar')),
-        ElevatedButton(
-          onPressed: allAnswered && !_sending && quiz.isNotEmpty
-              ? _submit
-              : null,
-          child: Text(_sending ? 'Calificando…' : 'Calificar'),
-        ),
-      ],
     );
   }
 
@@ -672,7 +675,7 @@ class _QuizDialogState extends State<_QuizDialog> {
             decoration: InputDecoration(
               hintText: question.kind == 'fill'
                   ? 'Complete la frase…'
-                  : 'Tu respuesta…',
+                  : 'Su respuesta…',
               isDense: true,
             ),
             onChanged: (v) => setState(() => _answers[question.id] = v),
@@ -682,7 +685,7 @@ class _QuizDialogState extends State<_QuizDialog> {
         final current =
             _order.putIfAbsent(question.id, () => [...question.options]..shuffle());
         return [
-          const Text('Usa las flechas para ordenar:',
+          const Text('Use las flechas para ordenar:',
               style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
           for (var o = 0; o < current.length; o++)
             Padding(
@@ -793,15 +796,19 @@ class _SurveyDialogState extends State<_SurveyDialog> {
   @override
   Widget build(BuildContext context) {
     final questions = widget.lesson.quiz;
-    return AlertDialog(
-      title: Text(widget.lesson.title, style: const TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 500,
-        child: SingleChildScrollView(
-          child: Column(
+    return AdaptiveFormShell(
+      title: widget.lesson.title,
+      maxWidth: 500,
+      saving: _sending,
+      dirty: _answers.values.any((v) => v.trim().isNotEmpty),
+      onCancel: () => Navigator.pop(context),
+      saveLabel: 'Enviar',
+      savingLabel: 'Enviando…',
+      onSave: _send,
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Tu opinión nos ayuda a mejorar 💛',
+              const Text('Su opinión nos ayuda a mejorar 💛',
                   style:
                       TextStyle(color: AppColors.textMuted, fontSize: 13)),
               const SizedBox(height: 12),
@@ -813,25 +820,15 @@ class _SurveyDialogState extends State<_SurveyDialog> {
                   enabled: !_sending,
                   maxLines: 2,
                   decoration: const InputDecoration(
-                      hintText: 'Tu respuesta…', isDense: true),
-                  onChanged: (v) => _answers[questions[i].id] = v,
+                      hintText: 'Su respuesta…', isDense: true),
+                  onChanged: (v) =>
+                      setState(() => _answers[questions[i].id] = v),
                 ),
                 const SizedBox(height: 12),
               ],
               if (_error != null) ErrorBanner(_error!),
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: _sending ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: _sending ? null : _send,
-          child: Text(_sending ? 'Enviando…' : 'Enviar'),
-        ),
-      ],
     );
   }
 }
@@ -921,7 +918,7 @@ class _ActivityDialog extends StatelessWidget {
                   ),
               ],
               if (mine.isNotEmpty) ...[
-                const SectionTitle('Tu entrega'),
+                const SectionTitle('Su entrega'),
                 for (final submission in mine)
                   HoverCard(
                     padding: const EdgeInsets.all(12),
@@ -1058,13 +1055,17 @@ class _SubmitDialogState extends State<_SubmitDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Entregar: ${widget.lesson.title}',
-          style: const TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 460,
-        child: SingleChildScrollView(
-          child: Column(
+    return AdaptiveFormShell(
+      title: 'Entregar: ${widget.lesson.title}',
+      maxWidth: 460,
+      saving: _sending,
+      // Lo escrito y los archivos ya subidos no se pierden por un toque.
+      dirty: _comment.text.trim().isNotEmpty || _files.isNotEmpty,
+      onCancel: () => Navigator.pop(context),
+      saveLabel: 'Enviar',
+      savingLabel: 'Enviando…',
+      onSave: _send,
+      child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1072,9 +1073,10 @@ class _SubmitDialogState extends State<_SubmitDialog> {
                 controller: _comment,
                 enabled: !_sending,
                 maxLines: 4,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: widget.config.requiresText
-                      ? 'Tu respuesta (obligatoria)'
+                      ? 'Su respuesta (obligatoria)'
                       : 'Comentario (opcional)',
                 ),
               ),
@@ -1092,17 +1094,6 @@ class _SubmitDialogState extends State<_SubmitDialog> {
               ],
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: _sending ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: _sending ? null : _send,
-          child: Text(_sending ? 'Enviando…' : 'Enviar'),
-        ),
-      ],
     );
   }
 }
@@ -1232,7 +1223,11 @@ class _AttachmentRow extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4),
       child: InkWell(
         onTap: () => _open(context),
-        child: Row(
+        // 48 dp de alto tocable: el texto de 12 px solo medía ~18 dp y había
+        // que acertarle al subrayado.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.insert_drive_file_outlined,
@@ -1247,6 +1242,7 @@ class _AttachmentRow extends StatelessWidget {
                       decoration: TextDecoration.underline)),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -1278,7 +1274,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
   Future<void> _send() async {
     if (_task.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('Ponle un nombre a la entrega.'));
+          const ValidationError('Póngale un nombre a la entrega.'));
       return;
     }
     setState(() {
@@ -1307,17 +1303,24 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Nueva entrega', style: TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 440,
-        child: SingleChildScrollView(
-          child: Column(
+    return AdaptiveFormShell(
+      title: 'Nueva entrega',
+      maxWidth: 440,
+      saving: _sending,
+      dirty: _task.text.trim().isNotEmpty ||
+          _comment.text.trim().isNotEmpty ||
+          _files.isNotEmpty,
+      onCancel: () => Navigator.pop(context),
+      saveLabel: 'Enviar',
+      savingLabel: 'Enviando…',
+      onSave: _send,
+      child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                   controller: _task,
                   enabled: !_sending,
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                       labelText: 'Nombre de la tarea')),
               const SizedBox(height: 12),
@@ -1325,6 +1328,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   controller: _comment,
                   enabled: !_sending,
                   maxLines: 3,
+                  onChanged: (_) => setState(() {}),
                   decoration:
                       const InputDecoration(labelText: 'Comentario')),
               const SizedBox(height: 12),
@@ -1341,17 +1345,6 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
               ],
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: _sending ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: _sending ? null : _send,
-          child: Text(_sending ? 'Enviando…' : 'Enviar'),
-        ),
-      ],
     );
   }
 }

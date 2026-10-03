@@ -55,10 +55,15 @@ import 'helpers/portal_harness.dart';
 ///
 /// El número sale de medir, no de estimar: recorriendo las 63 pestañas de los
 /// nueve portales, la más escueta ("Recursos Comunicaciones" del Mentor,
-/// "Certificados" del Estudiante) dibuja 9 y la más cargada 398. Una pestaña
-/// en blanco dibuja 0. Cinco queda lejos del piso real —así ninguna pestaña
-/// legítima se vuelve intermitente— y lejísimos de cero.
-const _minimoDeContenido = 5;
+/// "Certificados" del Estudiante) dibuja 3 y la más cargada cientos. Una
+/// pestaña en blanco dibuja 0.
+///
+/// Antes el umbral era 5 sobre un piso de 9, pero 6 de esos 9 eran del pie de
+/// página, que vive dentro del cuerpo de cada pestaña. En la app el pie ya no
+/// se dibuja (ver `AppFooter`), y estas pruebas corren como la app. El
+/// encabezado de `TabBody` aporta 2 (título y bajada): 3 exige al menos un
+/// texto del cuerpo propiamente dicho, que es lo que esta prueba vigila.
+const _minimoDeContenido = 3;
 
 /// El cuerpo de la pestaña dibujó algo.
 ///

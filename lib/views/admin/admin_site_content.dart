@@ -19,7 +19,11 @@ class AdminSiteContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
 
-    return TabBody(
+    // Edita el sitio público y sube imágenes: en el teléfono, primero el
+    // aviso de que conviene hacerlo desde un computador.
+    return AvisoEscritorio(
+      herramienta: 'la edición de la página principal',
+      child: TabBody(
       title: 'Contenido de la Página Principal',
       subtitle: 'Hero, banner y textos visibles para el público',
       children: [
@@ -33,6 +37,7 @@ class AdminSiteContent extends StatelessWidget {
               _Form(key: ValueKey(content.heroTitle), content: content),
         ),
       ],
+    ),
     );
   }
 }
@@ -184,6 +189,8 @@ class _FormState extends State<_Form> {
           const SizedBox(height: 14),
           TextField(
             controller: _meetingLink,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
             enabled: !_saving,
             decoration: const InputDecoration(
               labelText: 'Link de videollamada (módulos de mentoría)',
@@ -328,7 +335,12 @@ class _Galeria extends StatelessWidget {
                         height: 100,
                         // Ya viene firmada: la portada se ve sin sesión, así
                         // que el servidor la firma al construir la respuesta.
+                        // Decodificada a 100 dp, no a la resolución original
+                        // de la foto (una de 12 MP son ~48 MB en memoria).
                         child: Image.network(img.url, fit: BoxFit.cover,
+                            cacheWidth: (100 *
+                                    MediaQuery.devicePixelRatioOf(context))
+                                .round(),
                             errorBuilder: (_, _, _) => Container(
                                   color: AppColors.surfaceAlt,
                                   child: const Icon(Icons.broken_image_outlined,

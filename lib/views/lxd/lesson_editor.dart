@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -117,6 +119,15 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
 
   bool _loadingQuiz = false;
   bool _saving = false;
+
+  /// Cuántas veces se quitó una opción de cada pregunta.
+  ///
+  /// Las opciones son `String` sueltos, sin identidad propia: la llave de cada
+  /// campo combina pregunta, posición y esta generación, así que quitar una
+  /// opción rearma los campos con el texto que de verdad les toca. Sin llave,
+  /// Flutter reutilizaba el estado por posición: el texto de la opción borrada
+  /// seguía en pantalla y lo que se escribía iba a parar a la siguiente.
+  final _generacion = Expando<int>('generación de opciones');
   ApiException? _error;
 
   /// Problemas por pregunta que devolvió el servidor: `{ nº → motivo }`.
@@ -124,6 +135,39 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
 
   bool get _isNew => widget.original == null;
   bool get _isSurvey => _type == LessonType.survey;
+
+  /// Cómo estaba la lección al abrirse (o al terminar de cargar su quiz).
+  ///
+  /// Preguntas, clave de respuestas y rúbrica viven solo en memoria hasta
+  /// "Guardar": antes el botón atrás de Android, la X o tocar fuera los
+  /// descartaban sin preguntar.
+  String? _firmaInicial;
+
+  String _firma() => jsonEncode({
+        'tipo': _type.name,
+        'titulo': _title.text,
+        'descripcion': _desc.text,
+        'duracion': _duration.text,
+        'enlace': _externalUrl.text,
+        'video': _videoUrl.text,
+        'preguntas': [for (final q in _questions) q.toJson()],
+        'actividad': _activity.toJson(),
+        'recurso': [for (final r in _resource) r.s3Key],
+      });
+
+  bool get _hayCambios => _firmaInicial != null && _firma() != _firmaInicial;
+
+  Future<void> _salir() async {
+    if (_saving) return;
+    if (_hayCambios &&
+        !await confirmDialog(context, 'Descartar cambios',
+            'Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?')) {
+      return;
+    }
+    // [_cerrar] además descarta la lección que se creó para subirle un video
+    // que nunca llegó.
+    await _cerrar();
+  }
 
   @override
   void initState() {
@@ -162,6 +206,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
 
     if (o != null && (o.type == LessonType.quiz || o.type == LessonType.survey)) {
       _loadQuiz(o.id);
+    } else {
+      _firmaInicial = _firma();
     }
   }
 
@@ -202,6 +248,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         setState(() {
           _questions = questions;
           _loadingQuiz = false;
+          _firmaInicial = _firma();
         });
       }
     } on ApiException catch (e) {
@@ -475,8 +522,19 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     };
   }
 
+  /// Siempre intercepta el "atrás": la decisión se toma en [_salir], con lo
+  /// que haya en los campos en ESE momento (escribir no redibuja todo el
+  /// editor, así que un `canPop` calculado al construir quedaría viejo).
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _salir();
+        },
+        child: _construir(context),
+      );
+
+  Widget _construir(BuildContext context) {
     final title = _isNew ? 'Nueva lección' : 'Editar lección';
     final subiendo = _upload.uploading;
     final actions = [
@@ -485,7 +543,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             ? _upload.cancelUpload
             : _saving
                 ? null
-                : _cerrar,
+                : _salir,
         child: Text(subiendo ? 'Cancelar subida' : 'Cancelar'),
       ),
       ElevatedButton(
@@ -519,7 +577,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 leading: IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: 'Cerrar',
-                  onPressed: _saving ? null : _cerrar,
+                  onPressed: _saving ? null : _salir,
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
               ),
@@ -708,6 +766,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         return [
           TextField(
             controller: _externalUrl,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
             enabled: !_saving,
             decoration: const InputDecoration(
                 labelText: 'URL', hintText: 'https://…'),
@@ -773,6 +833,9 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     final q = _questions[i];
     final problem = _problems[i + 1];
     return Container(
+      // Llave por identidad de la pregunta: al quitar una, los campos de las
+      // que siguen conservan SU texto en vez de heredar el de la borrada.
+      key: ObjectKey(q),
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -859,6 +922,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         return [
           for (var o = 0; o < q.options.length; o++)
             Row(
+              key: ValueKey((q, o, _generacion[q] ?? 0)),
               children: [
                 Radio<int>(
                   // ignore: deprecated_member_use
@@ -948,6 +1012,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           const SizedBox(height: 6),
           for (var o = 0; o < q.options.length; o++)
             Row(
+              key: ValueKey((q, o, _generacion[q] ?? 0)),
               children: [
                 Text('${o + 1}. ',
                     style: const TextStyle(color: AppColors.gold)),
@@ -962,9 +1027,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),
                   tooltip: 'Quitar elemento',
-                  onPressed: _saving
-                      ? null
-                      : () => setState(() => q.options.removeAt(o)),
+                  onPressed: _saving ? null : () => _removeOption(q, o),
                 ),
               ],
             ),
@@ -984,6 +1047,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   void _removeOption(QuizQuestionDraft q, int index) {
     setState(() {
       q.options.removeAt(index);
+      _generacion[q] = (_generacion[q] ?? 0) + 1;
       final answer = q.answerIndex;
       if (answer == null) return;
       if (answer == index) {
@@ -1157,6 +1221,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         const SizedBox(height: 6),
         for (var i = 0; i < a.rubric.length; i++)
           Padding(
+            // Cada criterio es un objeto: su identidad es la llave.
+            key: ObjectKey(a.rubric[i]),
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [

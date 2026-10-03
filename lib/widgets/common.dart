@@ -55,7 +55,11 @@ class _EntranceState extends State<Entrance> {
         if (mounted) setState(() => _visible = true);
       });
     } else {
-      Future.delayed(Duration(milliseconds: widget.delayMs), () {
+      // Tope de 400 ms: las listas escalonan con `55 * i`, y sin tope la
+      // tarjeta 100 aparecía a los 5,5 s; al desplazarse rápido (en el
+      // teléfono, con el dedo) se veían huecos vacíos.
+      final retraso = widget.delayMs > 400 ? 400 : widget.delayMs;
+      Future.delayed(Duration(milliseconds: retraso), () {
         if (mounted) setState(() => _visible = true);
       });
     }
@@ -360,36 +364,45 @@ class ThinProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bar = Row(
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: value),
-              duration: const Duration(milliseconds: 700),
-              curve: Curves.easeOutCubic,
-              builder: (_, v, _) => LinearProgressIndicator(
-                value: v,
-                minHeight: 6,
-                backgroundColor: AppColors.surfaceAlt,
-                valueColor: AlwaysStoppedAnimation(color),
-              ),
-            ),
-          ),
+    final barra = ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: value),
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOutCubic,
+        builder: (_, v, _) => LinearProgressIndicator(
+          value: v,
+          minHeight: 6,
+          backgroundColor: AppColors.surfaceAlt,
+          valueColor: AlwaysStoppedAnimation(color),
         ),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 42,
-          child: Text('${(value * 100).round()}%',
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600)),
-        ),
-      ],
+      ),
     );
+    final porcentaje = Text('${(value * 100).round()}%',
+        textAlign: TextAlign.right,
+        style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600));
+    final bar = LayoutBuilder(builder: (context, caja) {
+      // En una caja muy angosta —un teléfono con la letra agrandada— el
+      // porcentaje va encima de la barra: al lado necesitaba 52 dp fijos y la
+      // fila se salía.
+      if (caja.maxWidth < 100) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [porcentaje, const SizedBox(height: 4), barra],
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: barra),
+          const SizedBox(width: 10),
+          SizedBox(width: 42, child: porcentaje),
+        ],
+      );
+    });
     return tooltip == null
         ? bar
         : Tooltip(
@@ -959,9 +972,25 @@ class AdaptiveFormShell extends StatelessWidget {
   /// trabajando. Evita el doble envío, que contra una API crea dos filas.
   final bool saving;
 
+  /// Con `true`, salir sin guardar pide confirmación: el botón atrás de
+  /// Android, el gesto de iOS, tocar fuera del diálogo, la X y "Cancelar".
+  ///
+  /// En el teléfono un toque accidental es mucho más probable que con el
+  /// mouse, y antes cualquiera de esos caminos tiraba lo escrito sin avisar.
+  final bool dirty;
+
   final VoidCallback onCancel;
-  final VoidCallback onSave;
+
+  /// `null` deshabilita "Guardar": p. ej. mientras todavía no llegaron los
+  /// datos sobre los que se va a guardar.
+  final VoidCallback? onSave;
   final String saveLabel;
+
+  /// Rótulo del botón de salir ("Cerrar" en un quiz ya calificado).
+  final String cancelLabel;
+
+  /// Lo que dice el botón principal mientras [saving] ("Enviando…").
+  final String savingLabel;
 
   const AdaptiveFormShell({
     super.key,
@@ -971,24 +1000,38 @@ class AdaptiveFormShell extends StatelessWidget {
     required this.onSave,
     this.maxWidth = 480,
     this.saving = false,
+    this.dirty = false,
     this.saveLabel = 'Guardar',
+    this.cancelLabel = 'Cancelar',
+    this.savingLabel = 'Guardando…',
   });
+
+  Future<void> _salir(BuildContext context) async {
+    if (saving) return;
+    if (dirty &&
+        !await confirmDialog(context, 'Descartar cambios',
+            'Lo que escribió en este formulario no se ha guardado. ¿Desea salir de todas formas?')) {
+      return;
+    }
+    onCancel();
+  }
 
   @override
   Widget build(BuildContext context) {
     final acciones = [
       TextButton(
-        onPressed: saving ? null : onCancel,
-        child: const Text('Cancelar'),
+        onPressed: saving ? null : () => _salir(context),
+        child: Text(cancelLabel),
       ),
       ElevatedButton(
         onPressed: saving ? null : onSave,
-        child: Text(saving ? 'Guardando…' : saveLabel),
+        child: Text(saving ? savingLabel : saveLabel),
       ),
     ];
 
+    final Widget contenido;
     if (context.isCompact) {
-      return Dialog.fullscreen(
+      contenido = Dialog.fullscreen(
         backgroundColor: AppColors.background,
         child: SafeArea(
           child: Column(
@@ -999,16 +1042,18 @@ class AdaptiveFormShell extends StatelessWidget {
                 leading: IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: 'Cerrar',
-                  onPressed: saving ? null : onCancel,
+                  onPressed: saving ? null : () => _salir(context),
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  // El teclado tapa el campo si no se le deja su espacio: un
-                  // diálogo no es un `Scaffold` y no lo hace solo.
-                  padding: EdgeInsets.fromLTRB(
-                      16, 8, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+                  // Sin sumar el teclado: `Dialog` ya se encoge por
+                  // `viewInsets`. Sumarlo otra vez dejaba un hueco del alto
+                  // del teclado al final del formulario.
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   child: child,
                 ),
               ),
@@ -1017,24 +1062,107 @@ class AdaptiveFormShell extends StatelessWidget {
                 decoration: const BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [acciones[0], const SizedBox(width: 8), acciones[1]],
+                // `Wrap` y no `Row`: con un rótulo largo («Eliminar mi
+                // cuenta») o la letra grande del sistema, los dos botones no
+                // caben en una fila de 360 dp y el principal baja de línea en
+                // vez de salirse de la pantalla.
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: acciones,
+                  ),
                 ),
               ),
             ],
           ),
         ),
       );
+    } else {
+      contenido = AlertDialog(
+        title: Text(title, style: const TextStyle(fontSize: 18)),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: SingleChildScrollView(child: child),
+        ),
+        actions: acciones,
+      );
     }
 
-    return AlertDialog(
-      title: Text(title, style: const TextStyle(fontSize: 18)),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: SingleChildScrollView(child: child),
+    return PopScope(
+      canPop: !saving && !dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _salir(context);
+      },
+      child: contenido,
+    );
+  }
+}
+
+/// Una herramienta pensada para computador, abierta en un teléfono.
+///
+/// El editor de la Ruta, el armado de la estructura de un curso y el contenido
+/// del sitio tienen tablas, arrastrar y soltar y formularios largos que a
+/// 360 dp casi no se pueden usar —y con un dedo es fácil equivocarse—. En un
+/// teléfono se muestra primero este aviso; si la persona insiste, la
+/// herramienta. En pantallas grandes no cambia nada.
+class AvisoEscritorio extends StatefulWidget {
+  /// Cómo se nombra en el aviso: "el editor de la Ruta de Impacto".
+  final String herramienta;
+  final Widget child;
+
+  const AvisoEscritorio(
+      {super.key, required this.herramienta, required this.child});
+
+  @override
+  State<AvisoEscritorio> createState() => _AvisoEscritorioState();
+}
+
+class _AvisoEscritorioState extends State<AvisoEscritorio> {
+  bool _continuar = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!context.isCompact || _continuar) return widget.child;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.desktop_windows_outlined,
+                  size: 44, color: AppColors.gold),
+              const SizedBox(height: 16),
+              const Text('Mejor desde un computador',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
+              const SizedBox(height: 10),
+              Text(
+                'Desde el teléfono, ${widget.herramienta} es difícil de usar y '
+                'es fácil equivocarse: tiene listas para ordenar, tablas y '
+                'formularios largos. Le recomendamos abrirlo en eduxaction.com '
+                'desde un computador.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14, height: 1.45),
+              ),
+              const SizedBox(height: 22),
+              OutlinedButton(
+                onPressed: () => setState(() => _continuar = true),
+                child: const Text('Continuar de todas formas'),
+              ),
+            ],
+          ),
+        ),
       ),
-      actions: acciones,
     );
   }
 }

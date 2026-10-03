@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -49,14 +50,19 @@ class StudentPortal extends StatelessWidget {
     final tabs = [
       PortalTab(
           label: 'Dashboard',
+          shortLabel: 'Inicio',
+          destacada: true,
           icon: Icons.dashboard_outlined,
           builder: (_) => const StudentDashboardView()),
       PortalTab(
           label: 'Calendario',
+          destacada: true,
           icon: Icons.calendar_month_outlined,
           builder: (_) => const StudentCalendarView()),
       PortalTab(
           label: 'Mis Cursos',
+          shortLabel: 'Cursos',
+          destacada: true,
           icon: Icons.school_outlined,
           builder: (_) => const StudentCoursesView()),
       if (isEnactus) ...[
@@ -66,10 +72,13 @@ class StudentPortal extends StatelessWidget {
             builder: (_) => const LabsView()),
         PortalTab(
             label: 'Ruta de Impacto',
+            shortLabel: 'Ruta',
+            destacada: true,
             icon: Icons.emoji_events_outlined,
             builder: (_) => const RutaImpactoShortcut()),
         PortalTab(
             label: 'Directorio de Proyectos',
+            shortLabel: 'Proyectos',
             icon: Icons.explore_outlined,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
@@ -83,6 +92,7 @@ class StudentPortal extends StatelessWidget {
           builder: (_) => const _StudentCertificates()),
       PortalTab(
           label: 'Mi Perfil',
+          shortLabel: 'Perfil',
           icon: Icons.person_outline,
           builder: (_) => const _StudentProfile()),
     ];
@@ -165,56 +175,77 @@ class _StudentCertificates extends StatelessWidget {
                               ]
                             : const [],
                       ),
-                      child: Row(
-                        children: [
-                          AnimatedScale(
-                            scale: hover ? 1.2 : 1.0,
-                            duration: const Duration(milliseconds: 180),
-                            child: const Icon(Icons.workspace_premium,
-                                color: AppColors.gold, size: 34),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    'Ruta de Impacto · ${cert.laboratoryName}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w700)),
-                                Text(
-                                  'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)} · '
-                                  'Por: ${cert.issuerName} · Código: ${cert.code}',
-                                  style: const TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 12),
-                                ),
-                              ],
+                      child: LayoutBuilder(builder: (context, caja) {
+                        final datos = Row(
+                          children: [
+                            AnimatedScale(
+                              scale: hover ? 1.2 : 1.0,
+                              duration: const Duration(milliseconds: 180),
+                              child: const Icon(Icons.workspace_premium,
+                                  color: AppColors.gold, size: 34),
                             ),
-                          ),
-                          // El botón de descarga aparece al pasar el mouse
-                          AnimatedOpacity(
-                            opacity: hover ? 1 : 0,
-                            duration: const Duration(milliseconds: 180),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.download, size: 16),
-                                label: const Text('Descargar'),
-                                onPressed: hover
-                                    ? () => PdfService.download(cert)
-                                    : null,
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      'Ruta de Impacto · ${cert.laboratoryName}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w700)),
+                                  Text(
+                                    'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)} · '
+                                    'Por: ${cert.issuerName} · Código: ${cert.code}',
+                                    style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 12),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
+                          ],
+                        );
+                        // Los dos botones, SIEMPRE visibles. "Descargar"
+                        // antes solo aparecía —y solo funcionaba— al pasar el
+                        // mouse: en un teléfono no existía. El hover queda
+                        // solo como estilo de la tarjeta.
+                        final botones = [
                           OutlinedButton.icon(
                             icon:
                                 const Icon(Icons.picture_as_pdf, size: 16),
                             label: const Text('Ver PDF'),
-                            onPressed: () => PdfService.preview(cert),
+                            onPressed: () => PdfService.ver(context, cert),
                           ),
-                        ],
-                      ),
+                          ElevatedButton.icon(
+                            icon: Icon(kIsWeb ? Icons.download : Icons.ios_share,
+                                size: 16),
+                            label: Text(kIsWeb ? 'Descargar' : 'Compartir'),
+                            onPressed: () => PdfService.download(cert),
+                          ),
+                        ];
+                        // Angosto (un teléfono): los botones debajo del texto.
+                        // En una fila, el texto quedaba con 0 dp y se partía
+                        // letra por letra.
+                        if (caja.maxWidth < 520) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              datos,
+                              const SizedBox(height: 12),
+                              Wrap(spacing: 8, runSpacing: 8, children: botones),
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            Expanded(child: datos),
+                            const SizedBox(width: 8),
+                            botones[0],
+                            const SizedBox(width: 8),
+                            botones[1],
+                          ],
+                        );
+                      }),
                     ),
                   ),
                 ),
@@ -619,9 +650,15 @@ class _CredentialChip extends StatelessWidget {
         children: [
           Icon(icon, size: 15, color: gold ? colors.goldInk : colors.text2),
           const SizedBox(width: 7),
-          Text(label,
-              style:
-                  TextStyle(fontSize: 12.5, color: gold ? colors.goldInk : colors.text2)),
+          // Nombres reales del catálogo ("Universidad Pedagógica y
+          // Tecnológica de Colombia (UPTC)") no caben en una línea de 360 dp.
+          Flexible(
+            child: Text(label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 12.5, color: gold ? colors.goldInk : colors.text2)),
+          ),
         ],
       ),
     );
@@ -679,7 +716,8 @@ class _GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+      padding: EdgeInsets.symmetric(
+          horizontal: context.isCompact ? 18 : 26, vertical: 24),
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border.all(color: colors.border),
@@ -700,8 +738,12 @@ class _GroupCard extends StatelessWidget {
                 child: Icon(icon, size: 19, color: colors.goldInk),
               ),
               const SizedBox(width: 11),
-              Text(title.toUpperCase(),
-                  style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              // "DATOS PERSONALES" en 24 px no cabe a 360 dp junto al ícono.
+              Expanded(
+                child: Text(title.toUpperCase(),
+                    style: displayHeading(
+                        fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -716,10 +758,17 @@ class _GroupCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(rows[i].$1, style: TextStyle(fontSize: 13, color: colors.text3)),
+                  // Los dos lados se pueden encoger: "Empresa patrocinadora"
+                  // con la letra agrandada ya no cabía junto a su valor.
+                  Flexible(
+                    child: Text(rows[i].$1,
+                        style: TextStyle(fontSize: 13, color: colors.text3)),
+                  ),
+                  const SizedBox(width: 12),
                   Flexible(
                     child: Text(rows[i].$2.isEmpty ? '—' : rows[i].$2,
                         textAlign: TextAlign.right,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 14, color: colors.text)),
                   ),
@@ -909,8 +958,11 @@ class _CertificatesCard extends StatelessWidget {
             children: [
               Icon(Icons.workspace_premium_outlined, size: 19, color: colors.goldInk),
               const SizedBox(width: 10),
-              Text('Certificados'.toUpperCase(),
-                  style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              Expanded(
+                child: Text('Certificados'.toUpperCase(),
+                    style: displayHeading(
+                        fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -971,7 +1023,7 @@ class _NoCertificatesYet extends StatelessWidget {
               child: Text(
                   closest == null
                       ? 'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.'
-                      : 'Te falta poco para su primer certificado: '
+                      : 'Le falta poco para su primer certificado: '
                           '"${closest.name}".',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13.5, color: colors.text2)),
@@ -1093,11 +1145,27 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     final result = await FilePicker.pickFiles(
       dialogTitle: 'Seleccione una foto',
       type: FileType.image,
-      withData: true,
+      // En iOS, cualquier valor mayor que 0 entrega JPEG en vez del HEIC
+      // original del iPhone. Antes el HEIC se subía etiquetado como JPEG y en
+      // la web se veía como imagen rota.
+      compressionQuality: 80,
+      // En el teléfono los bytes se leen después de comprobar el tamaño.
+      withData: kIsWeb,
     );
     final file = result?.files.singleOrNull;
-    final bytes = file?.bytes;
-    if (bytes == null || !mounted) return;
+    if (file == null || !mounted) return;
+    if (_contentTypeOf(file.name).isEmpty) {
+      setState(() => _error = const ValidationError(
+          'Use una foto en JPG o PNG.'));
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      setState(() => _error = const ValidationError(
+          'La foto pesa más de 25 MB. Elija una más liviana.'));
+      return;
+    }
+    final bytes = file.bytes ?? await file.xFile.readAsBytes();
+    if (!mounted) return;
 
     setState(() {
       _uploading = true;
@@ -1107,7 +1175,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     try {
       final uploaded = await context.read<DataProvider>().uploadFile(
             purpose: 'avatar',
-            fileName: file!.name,
+            fileName: file.name,
             contentType: _contentTypeOf(file.name),
             bytes: bytes,
             onProgress: (p) {
@@ -1127,12 +1195,19 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   /// Los formatos de imagen que acepta el servidor. Se manda el correcto en
   /// vez de `application/octet-stream`: la URL firmada se emite PARA un
   /// content-type y la subida falla si no coincide.
+  ///
+  /// Vacío = formato que el servidor no acepta (HEIC, WebP, GIF…). Antes todo
+  /// lo desconocido se etiquetaba `image/jpeg`, y un HEIC subido así se veía
+  /// como imagen rota. Un nombre SIN extensión —Android a veces los entrega
+  /// así— se sigue tratando como JPEG, que es lo que produce la cámara.
   String _contentTypeOf(String fileName) {
+    if (!fileName.contains('.')) return 'image/jpeg';
     final ext = fileName.split('.').last.toLowerCase();
     return switch (ext) {
       'png' => 'image/png',
       'svg' => 'image/svg+xml',
-      _ => 'image/jpeg',
+      'jpg' || 'jpeg' => 'image/jpeg',
+      _ => '',
     };
   }
 
@@ -1171,18 +1246,31 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final busy = _saving || _uploading;
+    final cambiado = _phone.text.trim() != widget.student.phone ||
+        _career.text.trim() != widget.student.career ||
+        _avatarKey != widget.student.avatarS3Key;
 
-    return AlertDialog(
-      title: const Text('Editar perfil', style: TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-          child: Column(
+    return AdaptiveFormShell(
+      title: 'Editar perfil',
+      maxWidth: 420,
+      saving: busy,
+      dirty: cambiado,
+      onCancel: () => Navigator.pop(context),
+      savingLabel: _uploading ? 'Subiendo foto…' : 'Guardando…',
+      onSave: _save,
+      child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Stack(
+                // Toda la foto es tocable, no solo el botón de la cámara (que
+                // medía 28 dp: con el dedo había que acertarle).
+                child: Semantics(
+                  button: true,
+                  label: 'Cambiar foto de perfil',
+                  child: GestureDetector(
+                    onTap: busy ? null : _pickAvatar,
+                    child: Stack(
                   children: [
                     CircleAvatar(
                       radius: 42,
@@ -1209,7 +1297,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                           customBorder: const CircleBorder(),
                           onTap: busy ? null : _pickAvatar,
                           child: Padding(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(10),
                             child: _uploading
                                 ? SizedBox(
                                     width: 16,
@@ -1223,12 +1311,14 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                                             : _uploadProgress),
                                   )
                                 : const Icon(Icons.camera_alt,
-                                    size: 16, color: Colors.white),
+                                    size: 20, color: Colors.white),
                           ),
                         ),
                       ),
                     ),
                   ],
+                ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -1236,12 +1326,17 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 controller: _phone,
                 enabled: !busy,
                 keyboardType: TextInputType.phone,
+                autofillHints: const [AutofillHints.telephoneNumber],
+                textInputAction: TextInputAction.next,
+                onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(labelText: 'Teléfono'),
               ),
               const SizedBox(height: 14),
               TextField(
                 controller: _career,
                 enabled: !busy,
+                textInputAction: TextInputAction.done,
+                onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(labelText: 'Carrera'),
               ),
               const SizedBox(height: 6),
@@ -1255,17 +1350,6 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               ],
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: busy ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: busy ? null : _save,
-          child: Text(_saving ? 'Guardando…' : 'Guardar'),
-        ),
-      ],
     );
   }
 }

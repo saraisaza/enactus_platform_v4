@@ -2773,7 +2773,7 @@
     "/files/download-url": {
       "error": {
         "code": "storage_unavailable",
-        "message": "No pudimos preparar el archivo: el almacenamiento no está disponible en este momento. Si el problema sigue, avisá al equipo técnico.",
+        "message": "No pudimos preparar el archivo: el almacenamiento no está disponible en este momento. Si el problema sigue, avise al equipo técnico.",
         "details": {
           "detail": "Your session has expired. Please reauthenticate."
         }

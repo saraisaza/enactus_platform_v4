@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { env } from '../env';
@@ -16,8 +21,13 @@ import { AppError, badRequest, payloadTooLarge } from './errors';
 /** Tope por archivo de video. */
 export const MAX_VIDEO_BYTES = 500 * 1024 * 1024; // 500 MB
 
-/** Los dos formatos que reproducen nativamente todos los navegadores. */
-export const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'] as const;
+/**
+ * Solo MP4 (H.264/AAC): es el único formato que reproducen TODOS los clientes.
+ * WebM se aceptaba antes y en Chrome funciona, pero el reproductor de iPhone y
+ * iPad (AVPlayer) no lo abre: la lección quedaba sin video en la app de iOS.
+ * Los WebM ya subidos se convierten con ffmpeg (ver docs/movil/PUBLICACION.md).
+ */
+export const ALLOWED_VIDEO_TYPES = ['video/mp4'] as const;
 
 /** Vigencia de la URL de subida: corta, es un permiso puntual. */
 const UPLOAD_URL_TTL_SECONDS = 900; // 15 min
@@ -88,7 +98,7 @@ export function assertValidVideoUpload(input: {
 
 /** Key determinística y sin colisiones para un archivo de video de lección. */
 export function videoKeyFor(lessonId: string, contentType: string): string {
-  const ext = contentType === 'video/webm' ? 'webm' : 'mp4';
+  const ext = contentType === 'video/mp4' ? 'mp4' : 'bin';
   return `lessons/${lessonId}/${randomUUID()}.${ext}`;
 }
 
@@ -169,6 +179,26 @@ export async function createDownloadUrl(input: {
 }
 
 /**
+ * Borra un archivo del bucket. Devuelve `false` si no se pudo —sin
+ * almacenamiento configurado, o S3 falló—, sin lanzar: quien llama decide si
+ * eso detiene lo que estaba haciendo o solo se anota para borrarlo a mano.
+ *
+ * Hoy lo usa solo el borrado de datos de una cuenta (`POST /users/:id/purge`),
+ * para la foto de perfil: es un dato personal, y dejarla en el bucket sin nada
+ * que la referencie sería decir «borrado» sin que lo esté.
+ */
+export async function deleteObject(key: string): Promise<boolean> {
+  if (!isStorageConfigured()) return false;
+  try {
+    await s3().send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }));
+    return true;
+  } catch (error) {
+    console.error('No se pudo borrar de S3', key, error);
+    return false;
+  }
+}
+
+/**
  * Traduce un fallo de FIRMA a un 503 con causa clara.
  *
  * Sin esto, unas credenciales de AWS vencidas —el caso más común: las
@@ -189,7 +219,7 @@ async function signOrFail<T>(sign: () => Promise<T>): Promise<T> {
       503,
       'storage_unavailable',
       'No pudimos preparar el archivo: el almacenamiento no está disponible ' +
-        'en este momento. Si el problema sigue, avisá al equipo técnico.',
+        'en este momento. Si el problema sigue, avise al equipo técnico.',
       { detail },
     );
   }

@@ -2,11 +2,20 @@ import { and, asc, count, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { auditLog, refreshTokens, users } from '../db/schema';
+import {
+  auditLog,
+  certificates,
+  notifications,
+  refreshTokens,
+  staffNotes,
+  userBlocks,
+  users,
+} from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
 import { resolverUniversidad } from '../services/universidad';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
+import { deleteObject } from '../lib/s3';
 import { paginated, paginationSchema, parseInclude } from '../lib/pagination';
 import {
   ADMIN_ROLES,
@@ -340,6 +349,35 @@ userRoutes.get('/', async (c) => {
   return c.json(paginated(data, total?.value ?? 0, query));
 });
 
+/**
+ * Cuentas que pidieron eliminarse y cuyos datos personales todavía no se
+ * borraron (`POST /auth/me/deletion-request`). Es la cola que el equipo tiene
+ * que vaciar dentro del plazo que se le prometió a cada persona.
+ *
+ * Va antes de `/:id`: si no, "deletion-requests" se tomaría por un id.
+ */
+userRoutes.get('/deletion-requests', requireRole(...ADMIN_ROLES), async (c) => {
+  const db = c.get('db');
+  const filas = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      requestedAt: auditLog.createdAt,
+    })
+    .from(auditLog)
+    .innerJoin(users, eq(users.id, auditLog.entityId))
+    .where(
+      and(
+        eq(auditLog.action, 'user.deletion_requested'),
+        sql`not exists (select 1 from audit_log p where p.action = 'user.purged' and p.entity_id = ${auditLog.entityId})`,
+      ),
+    )
+    .orderBy(asc(auditLog.createdAt));
+  return c.json({ data: filas });
+});
+
 userRoutes.get('/:id', async (c) => {
   const user = currentUser(c);
   const id = c.req.param('id');
@@ -588,6 +626,94 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
   });
 
   return c.json(publicUser(updated!));
+});
+
+/**
+ * Borra los datos personales de una cuenta YA eliminada: nombre, correo,
+ * teléfono, cédula, ciudad, carrera, foto y perfil. Es el paso que completa una
+ * solicitud de eliminación.
+ *
+ * La fila queda —anónima— porque otras tablas la referencian (entregas,
+ * avance, certificados ya emitidos): borrarla rompería esos registros. Lo que
+ * se conserva de cada uno lo define la política de datos de la organización.
+ *
+ * Fuera de `users` también se va lo que la nombra o habla de ella: el nombre
+ * impreso en sus certificados (que desde ahí dejan de acreditarla, por eso la
+ * app le pide descargarlos antes), las notas del equipo sobre ella, sus
+ * notificaciones, sus sesiones y sus bloqueos en el foro.
+ *
+ * La foto de perfil se borra también del bucket. Si S3 no responde, la purga
+ * sigue —no puede quedar a medias por un archivo— y la key queda anotada en
+ * `audit_log` (`avatarPendiente`) para borrarla a mano. Los adjuntos de sus
+ * entregas se conservan, igual que las entregas. Ver
+ * `docs/movil/DATOS_Y_PRIVACIDAD.md`.
+ *
+ * Solo sobre cuentas eliminadas: hacerlo con una activa sería borrar a alguien
+ * por error, sin vuelta atrás.
+ */
+userRoutes.post('/:id/purge', requireRole(...ADMIN_ROLES), async (c) => {
+  const admin = currentUser(c);
+  const id = c.req.param('id');
+  const db = c.get('db');
+
+  const [cuenta] = await db
+    .select({ id: users.id, deletedAt: users.deletedAt, avatar: users.avatarS3Key })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  if (!cuenta) throw notFound('No encontramos esa persona.');
+  if (!cuenta.deletedAt) {
+    throw conflict(
+      'Solo se pueden borrar los datos de una cuenta ya eliminada o que pidió eliminarse.',
+    );
+  }
+
+  // Antes de la transacción: si S3 borra y la base falla, la foto ya no está,
+  // que es justo lo que se pidió. Al revés quedaría una foto sin referencia.
+  const avatarPendiente =
+    cuenta.avatar && !(await deleteObject(cuenta.avatar)) ? cuenta.avatar : null;
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({
+        name: 'Cuenta eliminada',
+        // Único por cuenta (la columna lo exige) y en un dominio reservado que
+        // nunca recibe correo.
+        email: `eliminada-${id}@cuenta-eliminada.invalid`,
+        // Un hash inválido: con él nadie puede volver a entrar.
+        passwordHash: '$2b$10$cuentaeliminadacuentaeliminadacuentaeliminadacuentae',
+        phone: '',
+        cedula: '',
+        city: '',
+        career: '',
+        companyName: '',
+        avatarS3Key: null,
+        profile: {},
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+    await tx
+      .update(certificates)
+      .set({ studentNameSnapshot: 'Cuenta eliminada', updatedAt: new Date() })
+      .where(eq(certificates.studentId, id));
+    await tx.delete(staffNotes).where(eq(staffNotes.studentId, id));
+    await tx.delete(notifications).where(eq(notifications.userId, id));
+    await tx.delete(refreshTokens).where(eq(refreshTokens.userId, id));
+    await tx
+      .delete(userBlocks)
+      .where(or(eq(userBlocks.blockerId, id), eq(userBlocks.blockedId, id)));
+    await tx.insert(auditLog).values({
+      actorId: admin.id,
+      action: 'user.purged',
+      entityType: 'user',
+      entityId: id,
+      ...(avatarPendiente ? { newValue: { avatarPendiente } } : {}),
+      ip: c.get('requestIp'),
+    });
+  });
+
+  return c.json({ id, purged: true });
 });
 
 userRoutes.delete('/:id', requireRole(...ADMIN_ROLES), async (c) => {

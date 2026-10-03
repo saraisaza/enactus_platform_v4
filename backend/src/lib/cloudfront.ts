@@ -170,7 +170,7 @@ export function createVideoUrl(input: {
       503,
       'cdn_unavailable',
       'No pudimos preparar el video: la llave de firma de CloudFront no es ' +
-        'válida. Avisá al equipo técnico.',
+        'válida. Avise al equipo técnico.',
       { detail },
     );
   }

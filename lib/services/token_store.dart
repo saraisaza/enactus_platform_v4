@@ -1,15 +1,24 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-/// Guarda el par de tokens entre recargas de la página.
+import 'session_storage_io.dart'
+    if (dart.library.js_interop) 'session_storage_web.dart';
+
+/// Guarda el par de tokens entre recargas de la página y entre aperturas de
+/// la app.
 ///
-/// Usa `shared_preferences` (en web, `localStorage`) en vez de la caja
-/// `session` de Hive que había antes: es lo único que necesitaba persistir del
-/// lado del cliente, y arrastrar Hive entero por dos strings no tiene sentido.
+/// Dónde, depende de la plataforma (se elige al compilar, ver
+/// `session_storage_*.dart`):
 ///
-/// Ojo con lo que esto NO es: `localStorage` es legible por cualquier script
-/// que corra en la página, así que no protege contra XSS. La defensa real es
-/// que el access token dura 12 h y el refresh se rota en cada uso — un token
+/// - **En el teléfono**, el Llavero de iOS y el Keystore de Android, cifrados
+///   por el sistema y fuera de los respaldos.
+/// - **En el navegador**, `localStorage` vía `shared_preferences`, en vez de la
+///   caja `session` de Hive que había antes: es lo único que necesitaba
+///   persistir del lado del cliente, y arrastrar Hive entero por dos strings
+///   no tiene sentido.
+///
+/// Ojo con lo que `localStorage` NO es: es legible por cualquier script que
+/// corra en la página, así que no protege contra XSS. La defensa real es que
+/// el access token dura 12 h y el refresh se rota en cada uso — un token
 /// robado tiene ventana, no vida eterna.
 ///
 /// **Por qué no una cookie `HttpOnly`, hoy.** La razón que decía este
@@ -30,11 +39,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// pero con cookie sí aplicaría.
 /// Guardar la sesión NUNCA puede tumbar la app.
 ///
-/// El almacenamiento del navegador no siempre está: una ventana privada, un
-/// navegador con los datos de sitio bloqueados, o —como pasó de verdad en el
-/// recorrido de prueba— un registrante de plugins desactualizado. En todos
-/// esos casos leer o escribir lanza, y si eso se propaga, la PORTADA PÚBLICA
-/// se cae: no necesita sesión, pero igual pasaba por acá.
+/// El almacenamiento no siempre está: una ventana privada, un navegador con
+/// los datos de sitio bloqueados, un Llavero que el sistema no deja leer o
+/// —como pasó de verdad en el recorrido de prueba— un registrante de plugins
+/// desactualizado. En todos esos casos leer o escribir lanza, y si eso se
+/// propaga, la PORTADA PÚBLICA se cae: no necesita sesión, pero igual pasaba
+/// por acá.
 ///
 /// Así que se degrada en silencio a "no hay sesión guardada". La consecuencia
 /// para quien usa la app es que tiene que volver a entrar al recargar, que es
@@ -43,35 +53,35 @@ class TokenStore {
   static const _accessKey = 'enactus.accessToken';
   static const _refreshKey = 'enactus.refreshToken';
 
-  SharedPreferences? _prefs;
+  final SessionStorage _storage;
+
+  TokenStore({SessionStorage? storage})
+      : _storage = storage ?? SessionStorage();
 
   /// Se recuerda que el almacenamiento falló para no reintentar —y volver a
   /// registrar el mismo error— en cada petición.
   bool _unavailable = false;
 
   /// Copia en memoria. Cubre el caso de una sesión que empieza con el
-  /// almacenamiento roto: mientras la pestaña siga abierta, la sesión sirve.
+  /// almacenamiento roto: mientras la app siga abierta, la sesión sirve.
   String? _access;
   String? _refresh;
 
-  Future<SharedPreferences?> get _store async {
+  Future<String?> _read(String key) async {
     if (_unavailable) return null;
     try {
-      return _prefs ??= await SharedPreferences.getInstance();
+      return await _storage.read(key);
     } catch (e) {
-      debugPrint(
-          'TokenStore: el navegador no permite guardar la sesión ($e). '
-          'La sesión durará solo mientras esta pestaña esté abierta.');
+      debugPrint('TokenStore: no se puede leer la sesión guardada ($e). '
+          'La sesión durará solo mientras la app siga abierta.');
       _unavailable = true;
       return null;
     }
   }
 
-  Future<String?> readAccess() async =>
-      (await _store)?.getString(_accessKey) ?? _access;
+  Future<String?> readAccess() async => await _read(_accessKey) ?? _access;
 
-  Future<String?> readRefresh() async =>
-      (await _store)?.getString(_refreshKey) ?? _refresh;
+  Future<String?> readRefresh() async => await _read(_refreshKey) ?? _refresh;
 
   Future<void> save({
     required String accessToken,
@@ -79,11 +89,10 @@ class TokenStore {
   }) async {
     _access = accessToken;
     _refresh = refreshToken;
-    final store = await _store;
-    if (store == null) return;
+    if (_unavailable) return;
     try {
-      await store.setString(_accessKey, accessToken);
-      await store.setString(_refreshKey, refreshToken);
+      await _storage.write(_accessKey, accessToken);
+      await _storage.write(_refreshKey, refreshToken);
     } catch (e) {
       debugPrint('TokenStore: no se pudo guardar la sesión ($e).');
       _unavailable = true;
@@ -93,11 +102,10 @@ class TokenStore {
   Future<void> clear() async {
     _access = null;
     _refresh = null;
-    final store = await _store;
-    if (store == null) return;
+    if (_unavailable) return;
     try {
-      await store.remove(_accessKey);
-      await store.remove(_refreshKey);
+      await _storage.delete(_accessKey);
+      await _storage.delete(_refreshKey);
     } catch (e) {
       debugPrint('TokenStore: no se pudo limpiar la sesión ($e).');
     }

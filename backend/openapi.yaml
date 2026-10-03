@@ -190,6 +190,50 @@ paths:
         '200': { description: Perfil actualizado }
         '400': { $ref: '#/components/responses/ValidationError' }
 
+  /auth/me/deletion-request:
+    post:
+      tags: [auth]
+      summary: Pedir que se elimine la propia cuenta
+      description: |
+        Lo exigen App Store (guía 5.1.1(v)) y Google Play: cualquier persona
+        tiene que poder pedir, desde la app, que se borre su cuenta.
+
+        Pide la contraseña, para que un teléfono prestado o desbloqueado no
+        baste. Con la contraseña correcta la cuenta deja de funcionar **en el
+        acto**: queda con borrado lógico, se revocan todas sus sesiones y la
+        solicitud queda en `audit_log` (`user.deletion_requested`), donde la ve
+        el equipo en `GET /users/deletion-requests`.
+
+        Los datos personales se borran después, dentro del plazo que devuelve
+        la respuesta (`days`), con `POST /users/{id}/purge`. El plazo existe
+        para atender un arrepentimiento o una suplantación antes de que el
+        borrado sea irreversible.
+
+        No se puede eliminar el último superadministrador: la plataforma
+        quedaría sin quien la administre.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties: { password: { type: string } }
+      responses:
+        '202':
+          description: Solicitud recibida; la cuenta ya no funciona
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [pending] }
+                  days: { type: integer, description: Plazo para borrar los datos }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: La contraseña no es correcta }
+        '409': { description: Es el último superadministrador }
+
   /site-content:
     get:
       tags: [content]
@@ -328,6 +372,62 @@ paths:
         '201': { description: Cuenta creada }
         '403': { description: Sin permiso, o un admin intentando crear un superadmin }
         '409': { description: Correo repetido, o tipo de estudiante incoherente con el rol }
+
+  /users/deletion-requests:
+    get:
+      tags: [users]
+      summary: Solicitudes de eliminación pendientes (solo admin/superadmin)
+      description: |
+        Las cuentas cuya dueña pidió eliminarlas (`POST
+        /auth/me/deletion-request`) y cuyos datos todavía no se borraron. Es
+        la cola que el equipo atiende con `POST /users/{id}/purge`, de la más
+        antigua a la más reciente.
+      responses:
+        '200':
+          description: Solicitudes pendientes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        name: { type: string }
+                        email: { type: string }
+                        role: { type: string }
+                        requestedAt: { type: string, format: date-time }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /users/{id}/purge:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [users]
+      summary: Borrar los datos personales de una cuenta eliminada (solo admin/superadmin)
+      description: |
+        Completa una solicitud de eliminación: deja la fila sin nombre, correo,
+        teléfono, cédula, ciudad, foto ni perfil. La fila sigue existiendo para
+        que no se rompan las entregas, calificaciones y mensajes que la
+        referencian; esos quedan a nombre de «Cuenta eliminada».
+
+        Fuera de `users` también se va lo que la nombra o habla de ella: el
+        nombre impreso en sus certificados, las notas del equipo sobre ella,
+        sus notificaciones, sus sesiones y sus bloqueos en el foro. Los
+        archivos que subió quedan en S3 sin referencia (este endpoint no borra
+        objetos).
+
+        Solo funciona sobre una cuenta ya eliminada: borrar los datos de una
+        cuenta activa sería destruir la información de alguien que no lo pidió.
+        Queda en `audit_log` (`user.purged`), y con eso la solicitud sale de la
+        cola.
+      responses:
+        '200': { description: Datos borrados }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: La cuenta no está eliminada }
 
   /users/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -2221,10 +2321,22 @@ paths:
       description: |
         Solo Admin, Super Admin, Asesores y estudiantes/alumni **Enactus**.
         Los de Open Learning, LXD, Mentor, Empresa y Donante reciben 403.
+
+        No incluye lo que publicaron las personas que quien pregunta bloqueó
+        (ver `/forum-posts/blocks`), ni cuenta sus respuestas.
       responses:
         '200': { description: Página de publicaciones }
         '403': { $ref: '#/components/responses/Forbidden' }
-    post: { tags: [forum], summary: Publicar, responses: { '201': { description: Creada } } }
+    post:
+      tags: [forum]
+      summary: Publicar
+      description: |
+        El texto pasa antes por un filtro de lenguaje (App Store, guía 1.2:
+        filtrar lo ofensivo antes de que se publique). Una lista corta de
+        insultos y expresiones de odio inequívocas; ver `src/lib/moderacion.ts`.
+      responses:
+        '201': { description: Creada }
+        '400': { description: Vacía, o con lenguaje que no está permitido }
 
   /forum-posts/stats:
     get:
@@ -2238,9 +2350,108 @@ paths:
         '200': { description: Cifras }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /forum-posts/blocks:
+    get:
+      tags: [forum]
+      summary: Personas que bloqueó quien pregunta
+      description: Para poder desbloquearlas. Cada quien ve solo su propia lista.
+      responses:
+        '200':
+          description: Bloqueos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId: { type: string, format: uuid }
+                        name: { type: string }
+                        createdAt: { type: string, format: date-time }
+    post:
+      tags: [forum]
+      summary: Bloquear a una persona en el foro
+      description: |
+        App Store, guía 1.2. Quien bloquea deja de ver lo que la otra persona
+        publica y responde; la otra persona no se entera ni pierde nada.
+        Bloquear dos veces no es un error.
+
+        Al equipo que modera (admin, superadmin) no se le puede bloquear: sus
+        anuncios son del foro entero, y lo que publique se puede reportar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties: { userId: { type: string, format: uuid } }
+      responses:
+        '201': { description: Bloqueada }
+        '400': { description: Es la propia cuenta }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Es del equipo que modera el foro }
+
+  /forum-posts/blocks/{userId}:
+    parameters:
+      - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [forum]
+      summary: Desbloquear
+      responses: { '204': { description: Desbloqueada (o no estaba bloqueada) } }
+
+  /forum-posts/reports:
+    get:
+      tags: [forum]
+      summary: Cola de reportes sin atender (solo admin/superadmin)
+      description: |
+        Del más antiguo al más reciente, con el texto reportado, su autor y
+        quién lo reportó, para decidir sin ir a buscarlo. `contentRemoved`
+        indica que el contenido ya no se ve (lo borró su autor, o se borró la
+        publicación de una respuesta).
+      responses:
+        '200': { description: Reportes pendientes }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /forum-posts/reports/{reportId}/resolve:
+    parameters:
+      - { name: reportId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [forum]
+      summary: Atender un reporte (solo admin/superadmin)
+      description: |
+        `remove` quita el contenido; `dismiss` lo deja. La decisión es sobre el
+        contenido: cierra todos los reportes pendientes de lo mismo, y quitar
+        una publicación cierra también los de sus respuestas. Queda en
+        `audit_log` (`forum.content_removed` o `forum.report_dismissed`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties: { action: { type: string, enum: [remove, dismiss] } }
+      responses:
+        '200': { description: Atendido }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Ya estaba atendido }
+
   /forum-posts/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    get: { tags: [forum], summary: Publicación con sus respuestas, responses: { '200': { description: OK } } }
+    get:
+      tags: [forum]
+      summary: Publicación con sus respuestas
+      description: |
+        Sin las respuestas de las personas que quien pregunta bloqueó. Si
+        bloqueó a quien publicó, responde 404, igual que si no existiera.
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
     delete:
       tags: [forum]
       summary: Borrar
@@ -2249,7 +2460,52 @@ paths:
 
   /forum-posts/{id}/replies:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    post: { tags: [forum], summary: Responder, responses: { '201': { description: Creada } } }
+    post:
+      tags: [forum]
+      summary: Responder
+      description: Pasa por el mismo filtro de lenguaje que publicar.
+      responses:
+        '201': { description: Creada }
+        '400': { description: Vacía, o con lenguaje que no está permitido }
+
+  /forum-posts/{id}/replies/{replyId}:
+    parameters:
+      - { $ref: '#/components/parameters/id' }
+      - { name: replyId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [forum]
+      summary: Borrar una respuesta
+      description: El autor borra la suya; Admin y Super Admin, cualquiera.
+      responses:
+        '204': { description: Borrada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /forum-posts/{id}/report:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [forum]
+      summary: Reportar una publicación o una respuesta
+      description: |
+        App Store, guía 1.2. Sin `replyId` se reporta la publicación; con él,
+        esa respuesta. Al equipo que modera le llega una notificación.
+
+        Reportar dos veces lo mismo no suma ni falla: responde 200 con
+        `duplicate: true`. Lo propio no se reporta: se borra.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replyId: { type: string, format: uuid }
+                reason: { type: string, maxLength: 500 }
+      responses:
+        '200': { description: Ya lo había reportado }
+        '201': { description: Reportado }
+        '400': { description: Es contenido propio }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /forum-posts/{id}/like:
     parameters: [{ $ref: '#/components/parameters/id' }]

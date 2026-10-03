@@ -100,7 +100,7 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
             title: 'Sin cursos asignados',
             message: allCourses.isEmpty
                 ? 'Aún no tiene cursos asignados por su administrador.'
-                : 'Ningún curso coincide con su búsqueda. Prueba con otro término.',
+                : 'Ningún curso coincide con su búsqueda. Pruebe con otro término.',
             primaryLabel: allCourses.isEmpty ? null : 'Limpiar búsqueda',
             onPrimary:
                 allCourses.isEmpty ? null : () => setState(() => _query = ''),

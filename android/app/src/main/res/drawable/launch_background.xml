@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pantalla de arranque hasta Android 11: fondo de la marca y la X al centro.
+     Desde Android 12 la dibuja el sistema (ver values-v31/styles.xml). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/marca_fondo" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/splash_x" />
+    </item>
+</layer-list>

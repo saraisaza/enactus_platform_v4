@@ -3,9 +3,15 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import type { Database } from '../db/client';
-import { refreshTokens, users } from '../db/schema';
+import { auditLog, refreshTokens, users } from '../db/schema';
 import { publicUser } from '../lib/dto';
-import { badRequest, tooManyRequests, unauthorized } from '../lib/errors';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  tooManyRequests,
+  unauthorized,
+} from '../lib/errors';
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -327,6 +333,87 @@ authRoutes.patch('/me', requireAuth, async (c) => {
     .returning();
 
   return c.json(await meResponse(db, updated!));
+});
+
+const deletionSchema = z.object({
+  password: z.string().min(1, 'Escriba su contraseña para confirmar.'),
+});
+
+/** Días que la organización se da para borrar los datos de una cuenta. */
+export const DELETION_DAYS = 30;
+
+/**
+ * Pedir la eliminación de la PROPIA cuenta.
+ *
+ * Lo exigen las dos tiendas: App Store (guía 5.1.1(v)) y Google Play. Una cuenta
+ * que se puede crear tiene que poder borrarse desde la app, sin llamar ni
+ * escribir un correo.
+ *
+ * Desactiva la cuenta en el acto —ya no deja entrar, y el middleware rechaza
+ * cualquier token suyo desde la siguiente petición— y cierra todas sus
+ * sesiones. El borrado de los datos personales lo completa un administrador
+ * (`POST /users/:id/purge`) dentro de [DELETION_DAYS] días: así la
+ * organización decide qué conservar como registro académico (un certificado
+ * ya emitido) en vez de que lo decida esta ruta.
+ *
+ * Pide la contraseña: es irreversible para quien lo pide, y no puede bastar un
+ * toque en una sesión que quedó abierta en un teléfono prestado.
+ */
+authRoutes.post('/me/deletion-request', requireAuth, async (c) => {
+  const user = currentUser(c);
+  const { password } = deletionSchema.parse(await c.req.json());
+  const db = c.get('db');
+
+  const [cuenta] = await db
+    .select({ passwordHash: users.passwordHash, role: users.role })
+    .from(users)
+    .where(and(eq(users.id, user.id), isNull(users.deletedAt)))
+    .limit(1);
+  if (!cuenta) throw unauthorized();
+  if (!(await verifyPassword(password, cuenta.passwordHash))) {
+    throw forbidden('La contraseña no es correcta.');
+  }
+
+  // La plataforma no puede quedar sin nadie que la administre.
+  if (cuenta.role === 'superadmin') {
+    const [otros] = await db
+      .select({ total: raw<number>`count(*)::int` })
+      .from(users)
+      .where(
+        and(
+          eq(users.role, 'superadmin'),
+          isNull(users.deletedAt),
+          raw`${users.id} <> ${user.id}`,
+        ),
+      );
+    if (!otros || otros.total === 0) {
+      throw conflict(
+        'Es la única cuenta de Super Admin: asigne otra antes de eliminar la suya.',
+      );
+    }
+  }
+
+  const ahora = new Date();
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ deletedAt: ahora, updatedAt: ahora })
+      .where(eq(users.id, user.id));
+    await tx
+      .update(refreshTokens)
+      .set({ revokedAt: ahora })
+      .where(and(eq(refreshTokens.userId, user.id), isNull(refreshTokens.revokedAt)));
+    await tx.insert(auditLog).values({
+      actorId: user.id,
+      action: 'user.deletion_requested',
+      entityType: 'user',
+      entityId: user.id,
+      newValue: { via: 'app' },
+      ip: c.get('requestIp'),
+    });
+  });
+
+  return c.json({ status: 'pending', days: DELETION_DAYS }, 202);
 });
 
 /** Emite el par de tokens y guarda el refresh hasheado. */

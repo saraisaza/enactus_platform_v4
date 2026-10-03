@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
@@ -11,6 +10,7 @@ import '../../widgets/calendar_view.dart'
     show calendarEventColor, calendarEventIcon, calendarEventTypeLabel;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../../widgets/visor_pdf.dart';
 
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
@@ -104,8 +104,10 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                       color: calendarEventColor(t), borderRadius: BorderRadius.circular(3)),
                 ),
                 const SizedBox(width: 8),
-                Text(calendarEventTypeLabel(t),
-                    style: TextStyle(fontSize: 12.5, color: colors.text2)),
+                Flexible(
+                  child: Text(calendarEventTypeLabel(t),
+                      style: TextStyle(fontSize: 12.5, color: colors.text2)),
+                ),
               ],
             ),
         ],
@@ -497,7 +499,9 @@ class _EventDetailTile extends StatelessWidget {
           ElevatedButton.icon(
             icon: const Icon(Icons.videocam_outlined, size: 16),
             label: const Text('Unirse a la reunión'),
-            onPressed: hasLink ? () => launchUrl(Uri.parse(event.meetLink)) : null,
+            // En la app de Meet o Zoom si está instalada, no en un
+            // navegador dentro de eduXaction.
+            onPressed: hasLink ? () => abrirReunion(context, event.meetLink) : null,
           ),
         ],
       ),

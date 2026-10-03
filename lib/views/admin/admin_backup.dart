@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/responsive.dart';
 import '../../utils/constants.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
@@ -169,17 +170,24 @@ class _BackupCardState extends State<_BackupCard> {
                     : 'Descargar copia de seguridad'),
                 onPressed: _working ? null : _export,
               ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.upload, size: 18),
-                label: const Text('Restaurar desde archivo'),
-                onPressed:
-                    _working || !widget.esSuperAdmin ? null : _import,
-              ),
+              // Restaurar reemplaza la base ENTERA y no se puede deshacer:
+              // en un teléfono no se ofrece (un toque equivocado sobra, y el
+              // selector de archivos de Android filtra mal los .json).
+              if (!context.isCompact)
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.upload, size: 18),
+                  label: const Text('Restaurar desde archivo'),
+                  onPressed:
+                      _working || !widget.esSuperAdmin ? null : _import,
+                ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            widget.esSuperAdmin
+            context.isCompact
+                ? 'Restaurar una copia reemplaza la base entera: solo se puede '
+                    'hacer desde un computador.'
+                : widget.esSuperAdmin
                 ? 'Restaurar reemplaza la base entera por la del archivo. No '
                     'se puede deshacer.'
                 : 'Restaurar reemplaza la base entera, así que solo lo puede '

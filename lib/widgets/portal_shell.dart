@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/models.dart';
+import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import '../utils/responsive.dart';
@@ -15,10 +18,21 @@ class PortalTab {
   final String label;
   final IconData icon;
   final Widget Function(BuildContext) builder;
+
+  /// Rótulo para la barra inferior del teléfono, donde cada destino tiene
+  /// ~72 dp ("Ruta" en vez de "Ruta de Impacto"). Si es `null`, [label].
+  final String? shortLabel;
+
+  /// Va en la barra inferior del teléfono. Caben 4; el resto queda en "Más".
+  /// La barra lateral de la web no cambia.
+  final bool destacada;
+
   const PortalTab({
     required this.label,
     required this.icon,
     required this.builder,
+    this.shortLabel,
+    this.destacada = false,
   });
 }
 
@@ -61,6 +75,47 @@ class _PortalShellState extends State<PortalShell> {
   /// cualquier pestaña nueva, dejando la barra lateral sin efecto.
   late bool _overrideDismissed = widget.contentOverride == null;
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _drawerOpen = false;
+
+  bool get _overrideActivo =>
+      widget.contentOverride != null && !_overrideDismissed;
+
+  /// Destinos principales para la barra inferior del teléfono: los marcados
+  /// como [PortalTab.destacada] (o los primeros, si ninguno lo está). Material
+  /// 3 recomienda entre 3 y 5; con más pestañas, 4 y "Más".
+  List<int> get _enBarra {
+    final tabs = widget.tabs;
+    if (tabs.length <= 5) return [for (var i = 0; i < tabs.length; i++) i];
+    final marcadas = [
+      for (var i = 0; i < tabs.length; i++)
+        if (tabs[i].destacada) i,
+    ];
+    return (marcadas.isEmpty ? [0, 1, 2, 3] : marcadas).take(4).toList();
+  }
+
+  bool get _hayMas => widget.tabs.length > _enBarra.length;
+
+  /// Atrás de Android dentro de un portal: primero cierra el menú, después
+  /// cierra un detalle abierto dentro de la pestaña, después vuelve a la
+  /// primera pestaña (la convención de Android para los destinos
+  /// principales) y recién ahí sale de la app. Antes salía de la app de una.
+  ///
+  /// En la web no se intercepta nada: el botón del navegador sigue igual.
+  bool get _puedeSalir =>
+      kIsWeb || (!_drawerOpen && !_overrideActivo && _selected == 0);
+
+  void _alPedirAtras(bool didPop, Object? _) {
+    if (didPop) return;
+    if (_drawerOpen) {
+      _scaffoldKey.currentState?.closeDrawer();
+    } else if (_overrideActivo) {
+      setState(() => _overrideDismissed = true);
+    } else if (_selected != 0) {
+      _selectTab(0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final breakpoint = context.breakpoint;
@@ -98,14 +153,20 @@ class _PortalShellState extends State<PortalShell> {
       ),
     );
 
-    return Scaffold(
+    return PopScope(
+      canPop: _puedeSalir,
+      onPopInvokedWithResult: _alPedirAtras,
+      child: Scaffold(
+      key: _scaffoldKey,
+      onDrawerChanged: (abierto) => setState(() => _drawerOpen = abierto),
       // Compact no tiene espacio para una barra lateral permanente (ni
-      // siquiera de 64px solo-íconos) — la navegación pasa a un Drawer
-      // activado desde el ícono de menú de AppHeader.
-      drawer: compact ? _buildDrawer() : null,
+      // siquiera de 64px solo-íconos): los destinos principales van en una
+      // barra inferior y el resto en un Drawer que abre "Más".
+      drawer: compact && _hayMas ? _buildDrawer() : null,
+      bottomNavigationBar: compact ? _barraInferior() : null,
       body: Column(
         children: [
-          AppHeader(portalTitle: widget.portalTitle, showMenuButton: compact),
+          AppHeader(portalTitle: widget.portalTitle),
           Expanded(
             child: compact
                 ? content
@@ -133,6 +194,58 @@ class _PortalShellState extends State<PortalShell> {
                     ],
                   ),
           ),
+        ],
+      ),
+    ),
+    );
+  }
+
+  Widget _barraInferior() {
+    final enBarra = _enBarra;
+    final posicion = enBarra.indexOf(_selected);
+    return NavigationBarTheme(
+      data: NavigationBarThemeData(
+        backgroundColor: AppColors.slate,
+        indicatorColor: AppColors.gold,
+        labelTextStyle: WidgetStateProperty.resolveWith((estados) => TextStyle(
+              fontSize: 11.5,
+              fontWeight: estados.contains(WidgetState.selected)
+                  ? FontWeight.w700
+                  : FontWeight.w500,
+              color: estados.contains(WidgetState.selected)
+                  ? AppColors.gold
+                  : AppColors.textSecondary,
+            )),
+        iconTheme: WidgetStateProperty.resolveWith((estados) => IconThemeData(
+              color: estados.contains(WidgetState.selected)
+                  ? AppColors.ink
+                  : AppColors.textSecondary,
+            )),
+      ),
+      child: NavigationBar(
+        // Una pestaña que no está en la barra (vive en "Más") marca "Más".
+        selectedIndex: posicion >= 0 ? posicion : enBarra.length,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        onDestinationSelected: (i) {
+          if (i == enBarra.length) {
+            _scaffoldKey.currentState?.openDrawer();
+          } else {
+            _selectTab(enBarra[i]);
+          }
+        },
+        destinations: [
+          for (final i in enBarra)
+            NavigationDestination(
+              icon: Icon(widget.tabs[i].icon),
+              label: widget.tabs[i].shortLabel ?? widget.tabs[i].label,
+              tooltip: widget.tabs[i].label,
+            ),
+          if (_hayMas)
+            const NavigationDestination(
+              icon: Icon(Icons.menu),
+              label: 'Más',
+              tooltip: 'Más opciones',
+            ),
         ],
       ),
     );
@@ -336,7 +449,15 @@ class TabBody extends StatelessWidget {
     // El footer va al final del scroll: no ocupa pantalla hasta que el
     // usuario baja del todo. Si el contenido es corto, SliverFillRemaining
     // lo ancla al borde inferior del viewport.
-    return CustomScrollView(
+    //
+    // Deslizar hacia abajo vuelve a pedir lo que muestra la pestaña: en el
+    // teléfono es el gesto que todos esperan, y antes no había ninguna forma
+    // de actualizar sin cerrar sesión. `AlwaysScrollable` para que funcione
+    // también cuando el contenido es más corto que la pantalla.
+    return RefreshIndicator.adaptive(
+      onRefresh: () => context.read<DataProvider>().refreshAll(),
+      child: CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
@@ -352,6 +473,7 @@ class TabBody extends StatelessWidget {
           child: Align(alignment: Alignment.bottomCenter, child: AppFooter()),
         ),
       ],
+    ),
     );
   }
 }
@@ -408,7 +530,12 @@ class _ContentScreenShellState extends State<ContentScreenShell>
   late final AnimationController _glow = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2400),
-  )..repeat();
+  )..repeat(
+      // En la app el punto pulsa dos veces y se queda quieto: una animación
+      // sin fin en cada pantalla de contenido gasta batería sin decir nada
+      // nuevo. En la web, como siempre.
+      count: kIsWeb ? null : 2,
+    );
 
   ContentColors get _colors =>
       _isDark ? ContentColors.dark : ContentColors.light;
@@ -425,7 +552,11 @@ class _ContentScreenShellState extends State<ContentScreenShell>
     final colors = _colors;
     return DecoratedBox(
       decoration: BoxDecoration(color: colors.bg),
-      child: CustomScrollView(
+      // Deslizar para actualizar, igual que en [TabBody].
+      child: RefreshIndicator.adaptive(
+        onRefresh: () => context.read<DataProvider>().refreshAll(),
+        child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
@@ -453,6 +584,7 @@ class _ContentScreenShellState extends State<ContentScreenShell>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -464,14 +596,19 @@ class _ContentScreenShellState extends State<ContentScreenShell>
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (widget.searchHint != null) ...[
+        // En el teléfono, un buscador que no filtra nada solo ocupa espacio
+        // y abre el teclado en vano: se muestra únicamente si busca. En
+        // escritorio se conserva por consistencia del diseño de la cabecera.
+        if (widget.searchHint != null &&
+            (widget.onSearchChanged != null || !context.isCompact)) ...[
           Flexible(
             child: ConstrainedBox(
               // Antes 320px fijos: con el relleno lateral no entraba en un
               // teléfono y desbordaba la fila entera.
               constraints: const BoxConstraints(maxWidth: 320),
+              // 48 dp: la altura mínima tocable en el teléfono.
               child: Container(
-                height: 44,
+                height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   color: colors.surface,
@@ -486,9 +623,14 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                       child: TextField(
                         controller: _searchCtrl,
                         onChanged: widget.onSearchChanged,
+                        textInputAction: TextInputAction.search,
                         style: TextStyle(fontSize: 14, color: colors.text),
                         decoration: InputDecoration(
                           isDense: true,
+                          // El campo ocupa todo el alto de la caja: antes
+                          // medía 29 dp y había que acertarle al texto.
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 14),
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -633,8 +775,8 @@ class _ContentThemeToggleButton extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: colors.surface,
             border: Border.all(color: hover ? AppColors.gold : colors.border),

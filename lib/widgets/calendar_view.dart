@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/models.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
 import 'async_states.dart';
 import 'common.dart';
+import 'visor_pdf.dart';
 
 /// Paleta semántica por tipo de evento del calendario. Elegida (y medida)
 /// para leerse con claridad como relleno/barra sobre fondo casi negro
@@ -99,18 +99,37 @@ class _CalendarViewState extends State<CalendarView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        // `Wrap`: en un teléfono el mes y "Agregar evento" no caben en una
+        // sola fila (se salía hasta 423 px con la letra agrandada); el botón
+        // baja a la línea siguiente en vez de salirse de la pantalla.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              onPressed: () => _changeMonth(-1),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: 'Mes anterior',
+                  onPressed: () => _changeMonth(-1),
+                ),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(monthLabel.toUpperCase(),
+                        style: displayHeading(fontSize: 20)),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  tooltip: 'Mes siguiente',
+                  onPressed: () => _changeMonth(1),
+                ),
+              ],
             ),
-            Text(monthLabel.toUpperCase(), style: displayHeading(fontSize: 20)),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              onPressed: () => _changeMonth(1),
-            ),
-            const Spacer(),
             if (widget.canManage)
               ElevatedButton.icon(
                 icon: const Icon(Icons.add, size: 18),
@@ -123,7 +142,10 @@ class _CalendarViewState extends State<CalendarView> {
         _buildLegend(),
         const SizedBox(height: 12),
         LayoutBuilder(builder: (context, constraints) {
-          final cellSize = (constraints.maxWidth / 7).clamp(36.0, 96.0);
+          // Cada celda suma 2 dp de margen por lado: sin restarlos, siete
+          // celdas medían el ancho MÁS 28 dp, y en un teléfono el domingo
+          // quedaba cortado y desalineado con su encabezado.
+          final cellSize = (constraints.maxWidth / 7 - 4).clamp(32.0, 92.0);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -131,7 +153,7 @@ class _CalendarViewState extends State<CalendarView> {
                 children: [
                   for (final w in const ['L', 'M', 'M', 'J', 'V', 'S', 'D'])
                     SizedBox(
-                      width: cellSize,
+                      width: cellSize + 4,
                       child: Text(w,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
@@ -179,9 +201,11 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(calendarEventTypeLabel(t),
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11.5)),
+              Flexible(
+                child: Text(calendarEventTypeLabel(t),
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 11.5)),
+              ),
             ],
           ),
       ],
@@ -408,7 +432,7 @@ class _EventCard extends StatelessWidget {
                 label: const Text('Unirse a la reunión'),
                 onPressed: event.meetLink.trim().isEmpty
                     ? null
-                    : () => launchUrl(Uri.parse(event.meetLink)),
+                    : () => abrirReunion(context, event.meetLink),
               ),
               if (canManage) ...[
                 const Spacer(),
@@ -516,7 +540,7 @@ Future<void> showCalendarEventDialog(
                   courses.isEmpty
                       ? const Text(
                           'Todavía no tiene cursos de Open Learning '
-                          'propios. Crea uno en "Mis Cursos" antes de '
+                          'propios. Cree uno en "Mis Cursos" antes de '
                           'agendar una sesión.',
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))
@@ -605,6 +629,8 @@ Future<void> showCalendarEventDialog(
                 const SizedBox(height: 14),
                 TextField(
                   controller: meetLink,
+                  keyboardType: TextInputType.url,
+                  autocorrect: false,
                   decoration: const InputDecoration(
                       labelText: 'Link de la reunión'),
                 ),

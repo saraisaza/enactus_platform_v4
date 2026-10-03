@@ -65,6 +65,7 @@ class _AdminUsersState extends State<AdminUsers> {
         ),
       ],
       children: [
+        const _ColaDeEliminacion(),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -108,6 +109,133 @@ class _AdminUsersState extends State<AdminUsers> {
       isSuperAdmin: widget.isSuperAdmin,
     );
     if (guardado && mounted) setState(() {});
+  }
+}
+
+/// Cuentas que pidieron eliminarse y cuyos datos falta borrar.
+///
+/// La persona lo pide desde la app (Mi cuenta › Eliminar mi cuenta) y la cuenta
+/// deja de funcionar en el acto; borrar los datos es este segundo paso, que
+/// el equipo tiene que dar dentro del plazo que se le prometió (30 días). No
+/// aparece nada mientras no haya solicitudes.
+class _ColaDeEliminacion extends StatelessWidget {
+  const _ColaDeEliminacion();
+
+  static const _plazoDias = 30;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    final solicitudes = data.deletionRequests.valueOrNull ?? const [];
+    if (solicitudes.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.statusCritical),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            solicitudes.length == 1
+                ? '1 solicitud de eliminación de cuenta'
+                : '${solicitudes.length} solicitudes de eliminación de cuenta',
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Estas cuentas ya no funcionan. Falta borrar sus datos personales '
+            'dentro del plazo de $_plazoDias días que se les prometió.',
+            style: TextStyle(color: AppColors.textMuted, height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          for (final s in solicitudes) _FilaDeSolicitud(solicitud: s),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilaDeSolicitud extends StatefulWidget {
+  final DeletionRequest solicitud;
+  const _FilaDeSolicitud({required this.solicitud});
+
+  @override
+  State<_FilaDeSolicitud> createState() => _FilaDeSolicitudState();
+}
+
+class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
+  bool _borrando = false;
+
+  Future<void> _borrar() async {
+    final s = widget.solicitud;
+    if (!await confirmDialog(
+      context,
+      'Borrar los datos de ${s.name}',
+      'Se borran su nombre, correo, teléfono, cédula, ciudad, foto y perfil, '
+          'el nombre en sus certificados y las notas sobre esta persona. No se '
+          'puede deshacer.',
+    )) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _borrando = true);
+    try {
+      await context.read<DataProvider>().purgeUser(s.id);
+      if (mounted) showAppSnack(context, 'Datos borrados.');
+    } on ApiException catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
+    } finally {
+      if (mounted) setState(() => _borrando = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.solicitud;
+    final transcurridos = DateTime.now().difference(s.requestedAt).inDays;
+    final quedan = _ColaDeEliminacion._plazoDias - transcurridos;
+    final fecha =
+        MaterialLocalizations.of(context).formatShortDate(s.requestedAt);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 6,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: WrapAlignment.spaceBetween,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${s.name} · ${Roles.label(s.role)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  '${s.email} · pidió el $fecha · '
+                  '${quedan > 0 ? 'quedan $quedan días' : 'plazo vencido'}',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: quedan > 0
+                        ? AppColors.textMuted
+                        : AppColors.statusCritical,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          OutlinedButton(
+            onPressed: _borrando ? null : _borrar,
+            child: Text(_borrando ? 'Borrando…' : 'Borrar datos'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -261,10 +389,14 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              StatusChip(
-                label: Roles.label(user.role),
-                color: AppColors.gold,
-                icon: Icons.badge_outlined,
+              // Se puede encoger: "Asesor Académico" con la letra agrandada
+              // no cabía junto al nombre a 360 dp.
+              Flexible(
+                child: StatusChip(
+                  label: Roles.label(user.role),
+                  color: AppColors.gold,
+                  icon: Icons.badge_outlined,
+                ),
               ),
             ],
           ),
@@ -336,7 +468,7 @@ class _Acciones extends StatelessWidget {
                   final ok = await confirmDoubleDialog(
                     context,
                     'Eliminar usuario',
-                    'Vas a eliminar a ${user.name} (${Roles.label(user.role)}).',
+                    'Va a eliminar a ${user.name} (${Roles.label(user.role)}).',
                   );
                   if (!ok || !context.mounted) return;
                   try {
@@ -689,7 +821,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
             labelText: _isNew ? 'Contraseña' : 'Contraseña nueva (opcional)',
             helperText: _isNew
                 ? 'Mínimo 6 caracteres.'
-                : 'Dejala en blanco para no cambiarla. Cambiarla cierra las '
+                : 'Déjela en blanco para no cambiarla. Cambiarla cierra las '
                     'sesiones abiertas de esa persona.',
           ),
         ),
@@ -748,7 +880,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         const SizedBox(height: 4),
         Text(
           _studentType == StudentType.openLearning
-              ? 'Solo ve los cursos que le asignes. Sin laboratorios ni Ruta '
+              ? 'Solo ve los cursos que le asigne. Sin laboratorios ni Ruta '
                   'de Impacto.'
               : 'Ve Laboratorios y su Ruta de Impacto (se asignan desde el '
                   'laboratorio).',

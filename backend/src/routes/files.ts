@@ -68,7 +68,7 @@ fileRoutes.post('/upload-url', async (c) => {
 
   const allowed = ALLOWED_ROLES[body.purpose] ?? [];
   if (!allowed.includes(user.role)) {
-    throw forbidden(`Tu rol no puede subir archivos de tipo ${body.purpose}.`);
+    throw forbidden(`Su rol no puede subir archivos de tipo ${body.purpose}.`);
   }
 
   assertValidDocumentUpload(body);

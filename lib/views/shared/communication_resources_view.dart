@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
@@ -14,6 +13,7 @@ import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
 import '../../widgets/file_viewer.dart';
 import '../../widgets/portal_shell.dart';
+import '../../widgets/visor_pdf.dart';
 
 /// Recursos de comunicaciones: plantillas, guías de marca y material que el
 /// equipo de Admin publica para Asesores, Mentores y LXD.
@@ -146,8 +146,9 @@ class _ResourceCard extends StatelessWidget {
       if (resource.isLink) {
         final destino = resource.url;
         if (destino == null) return;
-        await launchUrl(Uri.parse(destino),
-            mode: LaunchMode.externalApplication);
+        // En la web, pestaña nueva; en la app, el navegador integrado, para
+        // no sacar a la persona de eduXaction (ver `abrirRecurso`).
+        await abrirRecurso(context, destino, titulo: resource.title);
         return;
       }
       final url = await data.resolveFileUrl(clave!);
@@ -289,6 +290,8 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
           else
             TextField(
               controller: _url,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
               enabled: !_saving,
               decoration: const InputDecoration(
                   labelText: 'URL', hintText: 'https://…'),

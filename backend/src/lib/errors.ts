@@ -22,7 +22,7 @@ export class AppError extends Error {
 export const badRequest = (message: string, details?: unknown) =>
   new AppError(400, 'bad_request', message, details);
 
-export const unauthorized = (message = 'Necesitás iniciar sesión.') =>
+export const unauthorized = (message = 'Necesita iniciar sesión.') =>
   new AppError(401, 'unauthorized', message);
 
 export const forbidden = (message = 'No tiene permiso para esto.') =>

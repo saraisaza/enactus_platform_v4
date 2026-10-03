@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../models/models.dart';
 import '../providers/data_provider.dart';
@@ -10,6 +13,7 @@ import '../services/api_errors.dart';
 import '../services/video_source_io.dart'
     if (dart.library.js_interop) '../services/video_source_web.dart';
 import '../utils/app_theme.dart';
+import '../utils/orientacion.dart';
 import '../utils/responsive.dart';
 import '../utils/youtube.dart';
 import 'uploaded_lesson_player.dart';
@@ -68,20 +72,45 @@ class VideoPlayerDialog extends StatelessWidget {
     this.trackProgress = false,
   });
 
+  /// En la app, mientras el video está abierto el teléfono puede girarse a
+  /// horizontal —el resto de la app es vertical en teléfonos, ver
+  /// `utils/orientacion.dart`— y la pantalla no se apaga. Al cerrarlo, todo
+  /// vuelve a como estaba.
   static Future<void> show(
     BuildContext context,
     Lesson lesson, {
     String? courseId,
     bool trackProgress = false,
-  }) {
-    return showDialog(
-      context: context,
-      builder: (_) => VideoPlayerDialog(
-        lesson: lesson,
-        courseId: courseId,
-        trackProgress: trackProgress,
-      ),
-    );
+  }) async {
+    // Sin esperar ninguna de las dos: el video no depende de que el sistema
+    // conteste, y si un complemento no responde, igual tiene que abrirse.
+    if (!kIsWeb) {
+      unawaited(permitirCualquierOrientacion());
+      unawaited(_pantallaEncendida(true));
+    }
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => VideoPlayerDialog(
+          lesson: lesson,
+          courseId: courseId,
+          trackProgress: trackProgress,
+        ),
+      );
+    } finally {
+      if (!kIsWeb) {
+        unawaited(_pantallaEncendida(false));
+        unawaited(fijarOrientacionDeLaApp());
+      }
+    }
+  }
+
+  /// Sin el complemento (pruebas, escritorio sin soporte) simplemente no hace
+  /// nada: no vale la pena impedir que se vea el video por esto.
+  static Future<void> _pantallaEncendida(bool encendida) async {
+    try {
+      await WakelockPlus.toggle(enable: encendida);
+    } catch (_) {}
   }
 
   /// Ancho máximo del video en pantallas grandes. Más allá de esto el

@@ -188,6 +188,8 @@ const BACKUP_TABLES = [
   'forum_posts',
   'forum_replies',
   'forum_likes',
+  'forum_reports',
+  'user_blocks',
   'calendar_events',
   'site_content',
   'site_gallery_images',

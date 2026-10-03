@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono adaptable (Android 8+): el sistema recorta la forma (círculo,
+     cuadrado redondeado…) según el teléfono. Monocromo: ícono temático de
+     Android 13+. Las imágenes las genera tool/generar_iconos.py. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/marca_fondo" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

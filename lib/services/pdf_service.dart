@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show BuildContext, MaterialPageRoute, Navigator;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../models/models.dart';
+import '../widgets/visor_pdf.dart';
 
 /// Genera certificados en PDF con el logo institucional.
 class PdfService {
@@ -148,6 +151,24 @@ class PdfService {
       ),
     );
     return doc;
+  }
+
+  /// Muestra el certificado.
+  ///
+  /// En la app, en el visor propio, con "Compartir" e "Imprimir": antes abría
+  /// directo el diálogo de impresión del sistema, que no es un visor. En el
+  /// navegador sigue siendo el diálogo de impresión de siempre ([preview]).
+  static Future<void> ver(BuildContext context, Certificate cert) async {
+    if (kIsWeb) return preview(cert);
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        builder: (_) => VisorPdf(
+          titulo: 'Certificado · ${cert.laboratoryName}',
+          nombreArchivo: 'certificado_${cert.code}.pdf',
+          cargar: () async => (await buildCertificate(cert)).save(),
+        ),
+      ),
+    );
   }
 
   /// Abre la vista previa de impresión del certificado

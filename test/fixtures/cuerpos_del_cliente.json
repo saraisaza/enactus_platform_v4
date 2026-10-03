@@ -20,6 +20,9 @@
   "email": "admin@enactus.co",
   "password": "Admin123"
  },
+ "POST /auth/me/deletion-request": {
+  "password": "clave-equivocada"
+ },
  "POST /calendar-events": {
   "title": "Encuentro de Ruta",
   "description": "",
@@ -32,6 +35,19 @@
  },
  "POST /files/download-url": {
   "key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"
+ },
+ "POST /forum-posts": {
+  "body": "Primera publicación",
+  "category": "question"
+ },
+ "POST /forum-posts/:id/report": {
+  "reason": "Es spam o publicidad"
+ },
+ "POST /forum-posts/blocks": {
+  "userId": "a7a99d8d-ff58-55fc-a4ff-7b6c5eb0d054"
+ },
+ "POST /forum-posts/reports/:id/resolve": {
+  "action": "remove"
  },
  "POST /lessons/:id/video-external": {
   "url": "https://vimeo.com/76979871"
@@ -71,6 +87,19 @@
   "type": "video",
   "description": "",
   "durationMin": 0
+ },
+ "PUT /groups/:id/members": {
+  "members": [
+   {
+    "userId": "bbbbbbbb-0000-4000-8000-000000000003",
+    "roleInProject": "leader"
+   }
+  ]
+ },
+ "PUT /laboratories/:id/students": {
+  "ids": [
+   "bbbbbbbb-0000-4000-8000-000000000003"
+  ]
  },
  "PUT /progress/lessons/:id/video": {
   "positionSec": 30,

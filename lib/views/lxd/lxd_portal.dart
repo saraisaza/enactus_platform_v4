@@ -35,6 +35,8 @@ class LxdPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Mis Estudiantes',
+            shortLabel: 'Estudiantes',
+            destacada: true,
             icon: Icons.groups_outlined,
             builder: (_) => const _LxdStudents()),
         PortalTab(
@@ -43,14 +45,19 @@ class LxdPortal extends StatelessWidget {
             builder: (_) => const _LxdProjects()),
         PortalTab(
             label: 'Calendario',
+            destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _LxdCalendar()),
         PortalTab(
             label: 'Mis Cursos',
+            shortLabel: 'Cursos',
+            destacada: true,
             icon: Icons.video_library_outlined,
             builder: (_) => const _LxdCourses()),
         PortalTab(
             label: 'Calificaciones',
+            shortLabel: 'Calificar',
+            destacada: true,
             icon: Icons.grading_outlined,
             builder: (_) => const _LxdGrading()),
         PortalTab(
@@ -59,6 +66,7 @@ class LxdPortal extends StatelessWidget {
             builder: (_) => const _LxdCertificates()),
         PortalTab(
             label: 'Mi Perfil',
+            shortLabel: 'Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _LxdProfile()),
       ],
@@ -374,7 +382,7 @@ class _LxdCalendar extends StatelessWidget {
 
     return TabBody(
       title: 'Calendario',
-      subtitle: 'Agenda las sesiones sincrónicas de sus cursos Open Learning',
+      subtitle: 'Agende las sesiones sincrónicas de sus cursos Open Learning',
       children: [
         combine2(data.calendarEvents, data.coursesWithStats).when(
           loading: () => const CardSkeleton(height: 320),
@@ -466,7 +474,7 @@ class _LxdCourses extends StatelessWidget {
             if (mine.isEmpty) {
               return const EmptyState(
                   icon: Icons.video_library_outlined,
-                  message: 'Aún no has creado ningún curso. Crea el primero.');
+                  message: 'Aún no ha creado ningún curso. Cree el primero.');
             }
             return Column(
               children: [
@@ -507,7 +515,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
   Future<void> _create() async {
     if (_name.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('Ponle un nombre al curso.'));
+          _error = const ValidationError('Póngale un nombre al curso.'));
       return;
     }
     setState(() {
@@ -640,42 +648,54 @@ class _CourseAdminCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
+          LayoutBuilder(builder: (context, caja) {
+            final titulo = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(course.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 16)),
+                if (course.subtitle.isNotEmpty)
+                  Text(course.subtitle,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 12.5)),
+              ],
+            );
+            final fichas = Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                StatusChip(
+                    label: course.statusLabel,
+                    color: statusColor,
+                    icon: statusIcon),
+                StatusChip(
+                    label: course.levelLabel,
+                    color: AppColors.slateLight,
+                    icon: Icons.signal_cellular_alt),
+              ],
+            );
+            final fila = [
               const Icon(Icons.auto_stories_outlined,
                   color: AppColors.gold, size: 26),
               const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(course.name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 16)),
-                    if (course.subtitle.isNotEmpty)
-                      Text(course.subtitle,
-                          style: const TextStyle(
-                              color: AppColors.textMuted, fontSize: 12.5)),
-                  ],
-                ),
-              ),
-              // En un `Wrap`, no en la fila: dos chips y un título largo
-              // desbordan en cuanto la ventana se angosta.
-              Wrap(
-                spacing: 8,
+              Expanded(child: titulo),
+            ];
+            // Angosto (un teléfono): las fichas debajo del nombre. Al lado,
+            // un `Wrap` dentro de la fila no baja nunca de línea y al nombre
+            // le quedaban 3 o 4 letras por renglón.
+            if (caja.maxWidth < 520) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StatusChip(
-                      label: course.statusLabel,
-                      color: statusColor,
-                      icon: statusIcon),
-                  StatusChip(
-                      label: course.levelLabel,
-                      color: AppColors.slateLight,
-                      icon: Icons.signal_cellular_alt),
+                  Row(children: fila),
+                  const SizedBox(height: 8),
+                  fichas,
                 ],
-              ),
-            ],
-          ),
+              );
+            }
+            return Row(children: [...fila, fichas]);
+          }),
           if (course.description.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(course.description,
@@ -773,7 +793,7 @@ class _CourseAdminCard extends StatelessWidget {
     final confirmed = await confirmDoubleDialog(
       context,
       'Eliminar curso',
-      'Vas a eliminar "${course.name}" con todos sus módulos, lecciones y '
+      'Va a eliminar "${course.name}" con todos sus módulos, lecciones y '
           'configuración.',
     );
     if (!confirmed || !context.mounted) return;
@@ -869,10 +889,11 @@ class _SubmissionRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
+          // Angosto (un teléfono): el texto ocupa todo el ancho y el estado y
+          // el botón van debajo. En una sola fila, a 360 dp le quedaban ~50 dp
+          // a la tarea, el autor y la fecha: una palabra por línea.
+          LayoutBuilder(builder: (context, caja) {
+            final info = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.taskName,
@@ -889,10 +910,8 @@ class _SubmissionRow extends StatelessWidget {
                           color: AppColors.textMuted, fontSize: 12),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              StatusChip(
+                );
+            final estado = StatusChip(
                 label: s.gradeLabel,
                 color: s.isGraded
                     ? (GradingMode.isPassing(s.grade, s.gradingMode)
@@ -900,9 +919,8 @@ class _SubmissionRow extends StatelessWidget {
                         : AppColors.statusCritical)
                     : AppColors.statusWarning,
                 icon: s.isGraded ? Icons.grade : Icons.hourglass_empty,
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
+              );
+            final boton = ElevatedButton(
                 onPressed: () => showDialog<void>(
                   context: context,
                   builder: (_) => _GradeDialog(submission: s),
@@ -912,9 +930,32 @@ class _SubmissionRow extends StatelessWidget {
                         ? 'Revisar'
                         : 'Calificar')
                     : 'Editar'),
-              ),
-            ],
-          ),
+              );
+            if (caja.maxWidth < 520) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  info,
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [estado, boton],
+                  ),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: info),
+                const SizedBox(width: 10),
+                estado,
+                const SizedBox(width: 10),
+                boton,
+              ],
+            );
+          }),
           if (s.comment.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(s.comment,
@@ -960,6 +1001,11 @@ class _GradeDialogState extends State<_GradeDialog> {
     super.dispose();
   }
 
+  /// Acepta coma o punto: en un teclado en español la tecla decimal suele ser
+  /// la coma, y "4,5" es tan válido como "4.5".
+  static double? _numero(String texto) =>
+      double.tryParse(texto.trim().replaceAll(',', '.'));
+
   /// Traduce lo que se escribió a la nota que espera el servidor, o devuelve
   /// el motivo por el que no se puede.
   (double?, String?) _resolveGrade() {
@@ -970,13 +1016,13 @@ class _GradeDialogState extends State<_GradeDialog> {
       case GradingMode.review:
         return (null, null);
       case GradingMode.points100:
-        final g = double.tryParse(_grade.text.trim());
+        final g = _numero(_grade.text);
         if (g == null || g < 0 || g > 100) {
           return (null, 'El puntaje va de 0 a 100.');
         }
         return (g, null);
       default:
-        final g = double.tryParse(_grade.text.trim());
+        final g = _numero(_grade.text);
         if (g == null || g < 0 || g > 5) {
           return (null, 'La nota va de 0.0 a 5.0.');
         }
@@ -1085,14 +1131,18 @@ class _GradeDialogState extends State<_GradeDialog> {
                 GradingMode.points100 => TextField(
                     controller: _grade,
                     enabled: !_saving,
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration:
                         const InputDecoration(labelText: 'Puntaje (0 - 100)'),
                   ),
                 _ => TextField(
                     controller: _grade,
                     enabled: !_saving,
-                    keyboardType: TextInputType.number,
+                    // Con `number` a secas, el iPhone abre un teclado SIN
+                    // punto decimal: no se podía escribir 4.5.
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration:
                         const InputDecoration(labelText: 'Nota (0.0 - 5.0)'),
                   ),
@@ -1200,7 +1250,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
         _available = const [];
       });
       showSuccessCheck(context, 'Certificado ${cert.code} emitido 🏆');
-      await PdfService.preview(cert);
+      if (mounted) await PdfService.ver(context, cert);
     } on ApiException catch (e) {
       // El servidor responde 409 con el detalle de QUÉ falta si la Ruta no
       // está completa. Ese detalle es lo que hay que mostrar.
@@ -1372,7 +1422,7 @@ class _CertificateRow extends StatelessWidget {
           OutlinedButton.icon(
             icon: const Icon(Icons.picture_as_pdf, size: 16),
             label: const Text('PDF'),
-            onPressed: () => PdfService.preview(cert),
+            onPressed: () => PdfService.ver(context, cert),
           ),
         ],
       ),

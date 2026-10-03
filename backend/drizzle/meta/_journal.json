@@ -64,6 +64,13 @@
       "when": 1791037202030,
       "tag": "0008_video_subido",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791071010503,
+      "tag": "0009_moderacion_foro",
+      "breakpoints": true
     }
   ]
 }

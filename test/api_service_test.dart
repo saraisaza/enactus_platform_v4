@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
 import 'package:enactus_platform/services/token_store.dart';
+
+import 'helpers/fake_api.dart' show useFakeTokenStorage;
 
 /// Pruebas del cliente HTTP.
 ///
@@ -27,7 +28,7 @@ http.Response _json(Object body, [int status = 200]) => http.Response(
 void main() {
   setUp(() {
     // `shared_preferences` necesita un almacén simulado en tests.
-    SharedPreferences.setMockInitialValues({});
+    useFakeTokenStorage();
   });
 
   group('inyección del token', () {

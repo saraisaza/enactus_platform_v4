@@ -27,6 +27,7 @@ import '../../widgets/video_player_dialog.dart';
 import '../../widgets/lesson_visuals.dart';
 import '../shared/lab_detail_view.dart';
 import 'course_detail_view.dart';
+import '../../widgets/visor_pdf.dart';
 
 /// Flujo completo de la Ruta de Impacto del estudiante:
 /// Laboratorios → Laboratorio (fases) → Fase (objetivos + módulos) →
@@ -1047,7 +1048,7 @@ class _PhaseDetailCard extends StatelessWidget {
     final showModules = state != _PhaseUiState.locked;
 
     String lockedReason() => !phase.isUnlocked
-        ? 'Se abre cuando completes la Fase $index'
+        ? 'Se abre cuando complete la Fase $index'
         : 'Su LXD publicará el contenido de esta fase.';
 
     return Container(
@@ -1500,7 +1501,7 @@ class _ScheduleMentoriaButton extends StatelessWidget {
               const SizedBox(height: 6),
               Text(availability, style: const TextStyle(fontSize: 13.5, height: 1.5)),
               const SizedBox(height: 16),
-              Text('Escríbele para coordinar el horario exacto de ${lab.name}.',
+              Text('Escríbale para coordinar el horario exacto de ${lab.name}.',
                   style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             ],
           ),
@@ -1663,6 +1664,8 @@ class _LabChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           transform: Matrix4.translationValues(0, hover ? -1 : 0, 0),
+          // 48 dp de alto mínimo tocable (antes 43).
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
           decoration: BoxDecoration(
             color: active ? colors.goldSoft : colors.surface,
@@ -1678,11 +1681,17 @@ class _LabChip extends StatelessWidget {
                 decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(3)),
               ),
               const SizedBox(width: 10),
-              Text(lab.laboratoryName,
-                  style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
-                      color: active ? colors.goldInk : colors.text2)),
+              // Nombres de laboratorio largos: elipsis en vez de salirse de la
+              // pantalla (llegaba a 210 px de más a 360 dp).
+              Flexible(
+                child: Text(lab.laboratoryName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: active ? colors.goldInk : colors.text2)),
+              ),
             ],
           ),
         ),
@@ -1737,6 +1746,11 @@ class _PhaseRow extends StatelessWidget {
     // Token de alerta (README `design_handoff_portal_estudiante`, sección
     // "Tokens de diseño"): nunca un literal hex suelto por tema.
     final alertColor = colors.alertInk;
+    // En el teléfono: número más chico, menos relleno y el chip debajo del
+    // título. Con las medidas de escritorio al título le quedaban ~125 dp y
+    // "DIAGNÓSTICO" se partía a la mitad de la palabra.
+    final compacto = context.isCompact;
+    final circulo = compacto ? 34.0 : 46.0;
 
     final (chipBg, chipColor, chipIcon, chipLabel) = complete
         ? (AppColors.statusGood.withValues(alpha: 0.15), AppColors.statusGood, Icons.check_circle,
@@ -1752,12 +1766,12 @@ class _PhaseRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 46,
+          width: circulo,
           child: Column(
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: circulo,
+                height: circulo,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -1766,7 +1780,7 @@ class _PhaseRow extends StatelessWidget {
                 ),
                 child: Text('${index + 1}',
                     style: displayHeading(
-                        fontSize: 22,
+                        fontSize: compacto ? 17 : 22,
                         fontWeight: AppWeights.display,
                         color: unlocked ? Colors.white : colors.text3)),
               ),
@@ -1775,12 +1789,14 @@ class _PhaseRow extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 20),
+        SizedBox(width: compacto ? 12 : 20),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(bottom: 22),
             child: Container(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+              padding: compacto
+                  ? const EdgeInsets.fromLTRB(16, 16, 16, 18)
+                  : const EdgeInsets.fromLTRB(22, 20, 22, 22),
               decoration: BoxDecoration(
                 color: colors.surface,
                 border: Border.all(color: complete || unlocked ? accent : colors.border),
@@ -1790,13 +1806,16 @@ class _PhaseRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Expanded(
-                        child: Text(title.toUpperCase(),
-                            style: displayHeading(
-                                fontSize: 27, fontWeight: AppWeights.display, color: colors.text)),
-                      ),
+                      Text(title.toUpperCase(),
+                          style: displayHeading(
+                              fontSize: compacto ? 22 : 27,
+                              fontWeight: AppWeights.display,
+                              color: colors.text)),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration:
@@ -1880,15 +1899,17 @@ class _PhaseRow extends StatelessWidget {
                       children: [
                         Icon(Icons.event, size: 17, color: colors.text3),
                         const SizedBox(width: 8),
-                        Text(
-                            deadlineStatus == DeadlineStatus.overdue
-                                ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
-                                : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}',
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                color: deadlineStatus == DeadlineStatus.overdue
-                                    ? alertColor
-                                    : colors.text3)),
+                        Expanded(
+                          child: Text(
+                              deadlineStatus == DeadlineStatus.overdue
+                                  ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
+                                  : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}',
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: deadlineStatus == DeadlineStatus.overdue
+                                      ? alertColor
+                                      : colors.text3)),
+                        ),
                       ],
                     ),
                   ],
@@ -2061,7 +2082,7 @@ class _ExpoCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
             child: group == null
-                ? Text('Aún no perteneces a un equipo.',
+                ? Text('Aún no pertenece a un equipo.',
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2070,8 +2091,10 @@ class _ExpoCard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Checklist del equipo',
-                              style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                          Flexible(
+                            child: Text('Checklist del equipo',
+                                style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                          ),
                           Text('$done/$total',
                               style: displayHeading(
                                   fontSize: 22, fontWeight: AppWeights.display, color: colors.goldInk)),
@@ -2299,7 +2322,7 @@ class _MeetingCard extends StatelessWidget {
                       style:
                           TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 4),
-                  Text('Reúnete con su Mentor para cerrar $title.',
+                  Text('Reúnase con su mentor para cerrar $title.',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
                   // Sin enlace configurado el botón queda apagado y se dice
@@ -2320,8 +2343,7 @@ class _MeetingCard extends StatelessWidget {
               label: const Text('Unirse a la reunión'),
               onPressed: link.isEmpty
                   ? null
-                  : () => launchUrl(Uri.parse(link),
-                      mode: LaunchMode.externalApplication),
+                  : () => abrirReunion(context, link),
             ),
           ],
         ),
@@ -2454,10 +2476,7 @@ class _OwnLessonRow extends StatelessWidget {
           return;
         }
       } else if (url != null && url.isNotEmpty) {
-        final uri = Uri.tryParse(url);
-        if (uri != null) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
+        await abrirRecurso(context, url, titulo: lesson.title);
       } else {
         if (context.mounted) {
           showAppSnack(context, 'Esta lectura todavía no tiene material.');
@@ -2535,12 +2554,18 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.lesson.title, style: const TextStyle(fontSize: 18)),
-      content: SizedBox(
-        width: 440,
-        child: SingleChildScrollView(
-          child: Column(
+    // Pantalla completa en el teléfono, y confirmación antes de descartar lo
+    // escrito o los archivos ya subidos (antes tocar fuera los perdía).
+    return AdaptiveFormShell(
+      title: widget.lesson.title,
+      maxWidth: 440,
+      saving: _sending,
+      dirty: _comment.text.trim().isNotEmpty || _files.isNotEmpty,
+      onCancel: () => Navigator.pop(context),
+      saveLabel: 'Enviar',
+      savingLabel: 'Enviando…',
+      onSave: _send,
+      child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2555,6 +2580,7 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
                   controller: _comment,
                   enabled: !_sending,
                   maxLines: 3,
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(labelText: 'Comentario')),
               const SizedBox(height: 12),
               FileUploadField(
@@ -2570,17 +2596,6 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
               ],
             ],
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-            onPressed: _sending ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
-        ElevatedButton(
-          onPressed: _sending ? null : _send,
-          child: Text(_sending ? 'Enviando…' : 'Enviar'),
-        ),
-      ],
     );
   }
 }

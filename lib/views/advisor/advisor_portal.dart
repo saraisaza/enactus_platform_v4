@@ -33,14 +33,19 @@ class AdvisorPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Dashboard Universidad',
+            shortLabel: 'Inicio',
+            destacada: true,
             icon: Icons.dashboard_outlined,
             builder: (_) => const _AdvisorDashboard()),
         PortalTab(
             label: 'Calendario',
+            destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _AdvisorCalendar()),
         PortalTab(
             label: 'Seguimiento Estudiantes',
+            shortLabel: 'Estudiantes',
+            destacada: true,
             icon: Icons.school_outlined,
             builder: (_) => const _AdvisorStudents()),
         PortalTab(
@@ -49,14 +54,17 @@ class AdvisorPortal extends StatelessWidget {
             builder: (_) => const _AdvisorProjects()),
         PortalTab(
             label: 'Directorio de Proyectos',
+            shortLabel: 'Directorio',
             icon: Icons.explore_outlined,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
             label: 'Foro',
+            destacada: true,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
         PortalTab(
             label: 'Recursos Comunicaciones',
+            shortLabel: 'Recursos',
             icon: Icons.perm_media_outlined,
             builder: (_) => const CommunicationResourcesView()),
       ],
@@ -79,7 +87,7 @@ class _AdvisorDashboard extends StatelessWidget {
 
     return TabBody(
       title: universidad.isEmpty ? 'Su universidad' : universidad,
-      subtitle: 'Los equipos y estudiantes que acompañás',
+      subtitle: 'Los equipos y estudiantes que acompaña',
       children: [
         combine2(
           data.users(role: '${Roles.student},${Roles.alumni}',
@@ -300,10 +308,12 @@ class _StudentCard extends StatelessWidget {
             children: [
               SizedBox(width: 110, child: ThinProgressBar(value: avance?.ratio ?? 0)),
               const SizedBox(width: 10),
-              Text(
-                '${avance?.coursesDone ?? 0}/${avance?.coursesTotal ?? 0} cursos',
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.textMuted),
+              Flexible(
+                child: Text(
+                  '${avance?.coursesDone ?? 0}/${avance?.coursesTotal ?? 0} cursos',
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.textMuted),
+                ),
               ),
             ],
           );
@@ -341,7 +351,7 @@ class _AdvisorProjects extends StatelessWidget {
 
     return TabBody(
       title: 'Proyectos',
-      subtitle: 'Los proyectos de los equipos que asesorás',
+      subtitle: 'Los proyectos de los equipos que asesora',
       children: [
         data.projects.when(
           loading: () => const CardListSkeleton(count: 3, height: 110),

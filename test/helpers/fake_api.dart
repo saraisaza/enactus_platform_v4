@@ -5,6 +5,7 @@ import 'package:enactus_platform/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Una API falsa para los tests de widget.
@@ -77,14 +78,14 @@ class FakeApi {
       if (delay > Duration.zero) await Future<void>.delayed(delay);
 
       if (notFound.contains(path)) {
-        return _error(404, 'not_found', 'No encontramos lo que buscabas.');
+        return _error(404, 'not_found', 'No encontramos lo que busca.');
       }
 
       final body = routes[path] ?? fallback?.call(path);
       if (body == null) {
         // Falta una ruta en el fake: se falla ruidosamente en vez de devolver
         // vacío, que haría pasar una prueba por la razón equivocada.
-        fail('El fake no tiene respuesta para $path. Agregala en `routes`.');
+        fail('El fake no tiene respuesta para $path. Agréguela en `routes`.');
       }
       return http.Response(jsonEncode(body), statuses[path] ?? 200,
           headers: {'content-type': 'application/json'});
@@ -101,8 +102,21 @@ class FakeApi {
 
 /// `TokenStore` usa `shared_preferences`, que en un test necesita valores
 /// simulados o lanza al primer acceso.
-void useFakeTokenStorage() {
-  SharedPreferences.setMockInitialValues({});
+void useFakeTokenStorage() => sembrarAlmacenamiento();
+
+/// Siembra el almacenamiento de la sesión, vacío o con tokens.
+///
+/// Fuera del navegador —el teléfono, y también estas pruebas— la sesión vive
+/// en el almacenamiento seguro (Llavero / Keystore), no en
+/// `shared_preferences`. La marca `enactus.instalada` dice que la app ya se
+/// abrió antes: sin ella, el primer acceso borraría los tokens sembrados,
+/// como hace la app recién instalada.
+void sembrarAlmacenamiento({String? access, String? refresh}) {
+  SharedPreferences.setMockInitialValues({'enactus.instalada': true});
+  FlutterSecureStorage.setMockInitialValues({
+    'enactus.accessToken': ?access,
+    'enactus.refreshToken': ?refresh,
+  });
 }
 
 

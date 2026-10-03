@@ -112,6 +112,24 @@ class SocialLinks {
   static const linkedin = 'https://www.linkedin.com/company/enactuscolombia/';
 }
 
+/// Páginas públicas que App Store y Google Play exigen enlazar desde la app
+/// y desde la ficha de la tienda. Se sirven con el sitio (carpeta `web/`).
+class LegalLinks {
+  static const privacidad = 'https://eduxaction.com/privacidad.html';
+  static const eliminarCuenta = 'https://eduxaction.com/eliminar-cuenta.html';
+}
+
+class ContactInfo {
+  /// Correo de soporte que la app publica (App Store, guía 1.2: quien usa el
+  /// foro tiene que poder escribirle a alguien).
+  ///
+  /// Se pasa al compilar (`--dart-define=CORREO_SOPORTE=...`) en vez de
+  /// escribirse acá porque todavía no está decidido cuál es, y un correo
+  /// inventado que nadie lee es peor que ninguno. `tool/build_movil.sh` no
+  /// compila sin él; vacío, la app simplemente no muestra la fila de contacto.
+  static const correoSoporte = String.fromEnvironment('CORREO_SOPORTE');
+}
+
 class InstitutionalInfo {
   static const footerText =
       'Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.';

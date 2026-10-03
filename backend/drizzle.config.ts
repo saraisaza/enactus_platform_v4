@@ -4,7 +4,7 @@ import { defineConfig } from 'drizzle-kit';
 const url = process.env.DATABASE_URL;
 if (!url) {
   throw new Error(
-    'Falta DATABASE_URL. Copiá backend/.env.example a backend/.env y completala.',
+    'Falta DATABASE_URL. Copie backend/.env.example a backend/.env y complétela.',
   );
 }
 

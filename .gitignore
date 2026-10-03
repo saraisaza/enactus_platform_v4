@@ -54,7 +54,9 @@ app.*.map.json
 # graphify knowledge-graph cache (generated, regenerate with `graphify update .`)
 /graphify-out/
 
-echo ".dev.vars" >> .gitignore
+# Variables locales de desarrollo (antes esta línea era un comando de terminal
+# pegado por error y no ignoraba nada).
+.dev.vars
 
 # Identidades reales de los super admins para seed:prod. Nunca al repo.
 admins.json
@@ -67,3 +69,19 @@ backend/infra/lambda-admin/*.zip
 backend/dist-lambda/
 backend/dist-tareas/
 backend/infra/*.zip
+
+# Firma y credenciales de las apps móviles: nunca al repositorio.
+# La llave de subida de Android y su contraseña (android/key.properties), los
+# certificados y perfiles de Apple y las llaves de App Store Connect viven solo
+# en la máquina que compila y en el gestor de contraseñas.
+*.jks
+*.keystore
+key.properties
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
+!.env.example

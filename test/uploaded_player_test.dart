@@ -129,6 +129,9 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    // La sesión vive en el almacenamiento seguro del teléfono: sin
+    // simularlo, el primer pedido a la API espera una respuesta que no llega.
+    useFakeTokenStorage();
     video = FakeVideoPlayer.install();
   });
 

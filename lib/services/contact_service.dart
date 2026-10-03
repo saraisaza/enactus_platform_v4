@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-/// Envía los mensajes del formulario "Contáctanos" del landing (botón
+/// Envía los mensajes del formulario "Contáctenos" del landing (botón
 /// "Quiero unirme").
 ///
 /// Todavía no hay una API de correo conectada. Para activarla:

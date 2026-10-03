@@ -33,7 +33,7 @@ class TalentSearchView extends StatelessWidget {
     return TabBody(
       title: 'BuscaTalento',
       subtitle: 'Estudiantes eduXaction que ya demostraron sus habilidades en '
-          'la Ruta de Impacto — contáctalos para oportunidades futuras 💛',
+          'la Ruta de Impacto — contáctelos para oportunidades futuras 💛',
       children: [
         data.talent.when(
           loading: () => const CardListSkeleton(count: 4, height: 140),
@@ -186,9 +186,15 @@ class _MiniStat extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: AppColors.gold),
         const SizedBox(width: 5),
-        Text(label,
-            style: const TextStyle(
-                fontSize: 12, color: AppColors.textSecondary)),
+        // `Flexible` + elipsis: una universidad de nombre largo ("Universidad
+        // Pedagógica y Tecnológica de Colombia") se salía de la tarjeta.
+        Flexible(
+          child: Text(label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.textSecondary)),
+        ),
       ],
     );
   }

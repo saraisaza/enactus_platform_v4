@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 BUCKET="${1:-enactus-web-158151706149}"
 DIST="${2:-E1KLNF0TNH6TPX}"
 
-[ -d build/web ] || { echo "Falta build/web. Corré primero:"; \
+[ -d build/web ] || { echo "Falta build/web. Corra primero:"; \
   echo "  flutter build web --release --dart-define=API_BASE_URL=https://api.eduxaction.com"; exit 1; }
 
 # 1. Medios: caché larga. Van primero para que el resto los pise si hace falta.

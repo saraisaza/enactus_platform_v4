@@ -35,26 +35,33 @@ class MentorPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Mis Laboratorios',
+            shortLabel: 'Laboratorios',
+            destacada: true,
             icon: Icons.science_outlined,
             builder: (_) => const _MentorLabs()),
         PortalTab(
             label: 'Proyectos',
+            destacada: true,
             icon: Icons.lightbulb_outline,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
             label: 'Calendario',
+            destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _MentorCalendar()),
         PortalTab(
             label: 'Entregas',
+            destacada: true,
             icon: Icons.assignment_turned_in_outlined,
             builder: (_) => const _MentorSubmissions()),
         PortalTab(
             label: 'Mi Perfil',
+            shortLabel: 'Perfil',
             icon: Icons.person_outline,
             builder: (_) => const _MentorProfile()),
         PortalTab(
             label: 'Recursos Comunicaciones',
+            shortLabel: 'Recursos',
             icon: Icons.perm_media_outlined,
             builder: (_) => const CommunicationResourcesView()),
       ],
@@ -75,7 +82,7 @@ class _MentorLabs extends StatelessWidget {
 
     return TabBody(
       title: 'Mis Laboratorios',
-      subtitle: 'Los laboratorios que acompañás y quiénes los cursan',
+      subtitle: 'Los laboratorios que acompaña y quiénes los cursan',
       children: [
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 3, height: 140),
@@ -128,10 +135,14 @@ class _LabCard extends StatelessWidget {
                         fontWeight: FontWeight.w700, fontSize: 15),
                     overflow: TextOverflow.ellipsis),
               ),
-              StatusChip(
+              // Flexible: con la letra agrandada la ficha no cabía junto al
+              // nombre del laboratorio.
+              Flexible(
+                child: StatusChip(
                   label: '${lab.studentsAssigned} estudiantes',
                   color: AppColors.textSecondary,
                   icon: Icons.people_outline),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -194,7 +205,10 @@ class _StudentRow extends StatelessWidget {
           MaterialPageRoute(
               builder: (_) => UserDetailView(userId: student.id)),
         ),
-        child: Padding(
+        // 48 dp de alto mínimo: la fila medía 40 y en el teléfono es el
+        // único camino al perfil de cada estudiante.
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           child: Row(
             children: [
@@ -551,7 +565,7 @@ class _MentorProfile extends StatelessWidget {
 
     return TabBody(
       title: 'Mi Perfil',
-      subtitle: 'Sus datos y el material que compartís con los estudiantes',
+      subtitle: 'Sus datos y el material que comparte con los estudiantes',
       children: [
         HoverCard(
           padding: const EdgeInsets.all(20),

@@ -4,7 +4,7 @@ import '../services/contact_service.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
 
-/// Formulario "Contáctanos" del botón "Quiero unirme" en el landing.
+/// Formulario "Contáctenos" del botón "Quiero unirme" en el landing.
 /// El envío real lo resuelve [ContactService.sendMessage].
 Future<void> showContactDialog(BuildContext context) {
   return showDialog<void>(
@@ -47,7 +47,7 @@ class _ContactDialogState extends State<_ContactDialog> {
     setState(() => _sending = false);
     if (ok) {
       Navigator.pop(context);
-      showSuccessCheck(context, '¡Mensaje enviado! Te contactaremos pronto.');
+      showSuccessCheck(context, '¡Mensaje enviado! Nos pondremos en contacto pronto.');
     } else {
       showAppSnack(context,
           'No pudimos enviar su mensaje. Intente de nuevo en un momento.',
@@ -58,7 +58,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Contáctanos', style: TextStyle(fontSize: 18)),
+      title: const Text('Contáctenos', style: TextStyle(fontSize: 18)),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -81,6 +81,9 @@ class _ContactDialogState extends State<_ContactDialog> {
               const SizedBox(height: 14),
               TextFormField(
                 controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                autofillHints: const [AutofillHints.email],
                 decoration:
                     const InputDecoration(labelText: 'Correo electrónico'),
                 validator: (v) {

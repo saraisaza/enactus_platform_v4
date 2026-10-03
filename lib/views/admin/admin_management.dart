@@ -95,10 +95,14 @@ class _ProjectCard extends StatelessWidget {
                         fontWeight: FontWeight.w700, fontSize: 15),
                     overflow: TextOverflow.ellipsis),
               ),
-              StatusChip(
-                label: project.stageLabel,
-                color: AppColors.gold,
-                icon: Icons.timeline_outlined,
+              // La etapa se puede encoger (con elipsis): con la letra
+              // agrandada, junto a los dos botones no cabía.
+              Flexible(
+                child: StatusChip(
+                  label: project.stageLabel,
+                  color: AppColors.gold,
+                  icon: Icons.timeline_outlined,
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
@@ -114,7 +118,7 @@ class _ProjectCard extends StatelessWidget {
                   final ok = await confirmDoubleDialog(
                     context,
                     'Eliminar proyecto',
-                    'Vas a eliminar "${project.name}".',
+                    'Va a eliminar "${project.name}".',
                   );
                   if (!ok || !context.mounted) return;
                   try {
@@ -518,7 +522,7 @@ class _GroupCard extends StatelessWidget {
                 tooltip: 'Eliminar',
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(context,
-                      'Eliminar equipo', 'Vas a eliminar "${group.name}".');
+                      'Eliminar equipo', 'Va a eliminar "${group.name}".');
                   if (!ok || !context.mounted) return;
                   try {
                     await data.deleteGroup(group.id);
@@ -741,22 +745,18 @@ class _GroupMembersDialog extends StatefulWidget {
 
 class _GroupMembersDialogState extends State<_GroupMembersDialog> {
   /// `userId -> rol en el proyecto`.
-  late Map<String, String> _members;
+  ///
+  /// `null` hasta que llega el detalle del equipo, que es el que trae los
+  /// integrantes (la tarjeta de la lista, no). Antes se llenaba en `initState`:
+  /// si el detalle aún no había llegado quedaba vacío para siempre, y como
+  /// guardar REEMPLAZA la lista, quitaba a todos los integrantes.
+  Map<String, String>? _members;
   bool _saving = false;
   ApiException? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _members = {};
-    // El detalle del equipo trae los integrantes; la tarjeta de la lista, no.
-    final detalle = context.read<DataProvider>().groupById(widget.group.id);
-    for (final m in detalle.valueOrNull?.members ?? const <ProjectMember>[]) {
-      _members[m.userId] = m.roleInProject;
-    }
-  }
-
   Future<void> _save() async {
+    final members = _members;
+    if (members == null) return;
     setState(() {
       _saving = true;
       _error = null;
@@ -765,7 +765,7 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
       await context.read<DataProvider>().setGroupMembers(
             widget.group.id,
             [
-              for (final e in _members.entries)
+              for (final e in members.entries)
                 {'userId': e.key, 'roleInProject': e.value},
             ],
           );
@@ -784,13 +784,21 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    if (_members == null) {
+      if (data.groupById(widget.group.id).valueOrNull case final detalle?) {
+        _members = {
+          for (final m in detalle.members) m.userId: m.roleInProject,
+        };
+      }
+    }
+    final members = _members;
 
     return AdaptiveFormShell(
       title: 'Integrantes de ${widget.group.name}',
       maxWidth: 520,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
-      onSave: _save,
+      onSave: members == null ? null : _save,
       child: data.groupById(widget.group.id).when(
             loading: () => const CardListSkeleton(count: 3, height: 56),
             error: (e) => ErrorBanner(e),
@@ -825,13 +833,14 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
                     for (final e in estudiantes)
                       _MemberRow(
                         user: e,
-                        role: _members[e.id],
-                        enabled: !_saving,
+                        role: members?[e.id],
+                        enabled: !_saving && members != null,
                         onChanged: (rol) => setState(() {
+                          if (members == null) return;
                           if (rol == null) {
-                            _members.remove(e.id);
+                            members.remove(e.id);
                           } else {
-                            _members[e.id] = rol;
+                            members[e.id] = rol;
                           }
                         }),
                       ),
@@ -988,7 +997,7 @@ class _LabCard extends StatelessWidget {
                   final ok = await confirmDoubleDialog(
                     context,
                     'Eliminar laboratorio',
-                    'Vas a eliminar "${lab.name}" con toda su Ruta.',
+                    'Va a eliminar "${lab.name}" con toda su Ruta.',
                   );
                   if (!ok || !context.mounted) return;
                   try {
@@ -1338,7 +1347,7 @@ class _CourseCard extends StatelessWidget {
                 label: const Text('Eliminar'),
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(context,
-                      'Eliminar curso', 'Vas a eliminar "${course.name}".');
+                      'Eliminar curso', 'Va a eliminar "${course.name}".');
                   if (!ok || !context.mounted) return;
                   try {
                     await data.deleteCourse(course.id);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
@@ -219,7 +220,10 @@ class _SweepingXState extends State<_SweepingX>
     if (reduceMotion) {
       if (_controller.isAnimating) _controller.stop();
     } else if (!_controller.isAnimating) {
-      _controller.repeat();
+      // En la app, dos barridos y queda quieto: el logo está en el encabezado
+      // de TODAS las pantallas, y animarlo sin fin obliga al teléfono a
+      // redibujar todo el tiempo (batería y calor). En la web, como siempre.
+      _controller.repeat(count: kIsWeb ? null : 2);
     }
   }
 

@@ -6,6 +6,7 @@ import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -41,7 +42,10 @@ class LabRutaEditorView extends StatelessWidget {
                   loading: () => const Center(child: BrandLoader()),
                   error: (e) =>
                       ErrorState(e, onRetry: () => data.reloadLab(labId)),
-                  data: (lab) => _Body(lab: lab),
+                  data: (lab) => AvisoEscritorio(
+                    herramienta: 'el editor de la Ruta de Impacto',
+                    child: _Body(lab: lab),
+                  ),
                 ),
           ),
         ],
@@ -152,7 +156,8 @@ class _StaffSection extends StatelessWidget {
                   context,
                   titulo: 'Mentores de ${lab.name}',
                   role: Roles.mentor,
-                  actuales: lab.mentors.map((m) => m.id).toSet(),
+                  actuales: (_) =>
+                      AsyncValue.data(lab.mentors.map((m) => m.id).toSet()),
                   ayuda: 'Un laboratorio puede tener varios mentores, y todos '
                       'ven a sus estudiantes.',
                   onGuardar: (ids) => context
@@ -172,18 +177,18 @@ class _StaffSection extends StatelessWidget {
     );
   }
 
-  Future<void> _asignarEstudiantes(BuildContext context) async {
+  Future<void> _asignarEstudiantes(BuildContext context) {
     final data = context.read<DataProvider>();
-    // El detalle no trae la lista de estudiantes, solo cuántos son: se piden
-    // filtrados por laboratorio, que es una consulta del servidor.
-    final asignados = data.users(laboratoryId: lab.id).valueOrNull;
-    if (!context.mounted) return;
-
-    await _asignar(
+    return _asignar(
       context,
       titulo: 'Estudiantes de ${lab.name}',
       role: '${Roles.student},${Roles.alumni}',
-      actuales: (asignados ?? const <AppUser>[]).map((u) => u.id).toSet(),
+      // El detalle no trae la lista de estudiantes, solo cuántos son: se
+      // piden filtrados por laboratorio, que es una consulta del servidor. El
+      // diálogo espera esa respuesta antes de dejar marcar o guardar.
+      actuales: (d) => d
+          .users(laboratoryId: lab.id)
+          .map((us) => us.map((u) => u.id).toSet()),
       ayuda: 'Asignar a alguien acá le da acceso a los CURSOS del '
           'laboratorio. Quitarlo se lo quita: su avance no se borra, pero '
           'deja de verlo. Solo estudiantes eduXaction.',
@@ -192,11 +197,17 @@ class _StaffSection extends StatelessWidget {
   }
 }
 
+/// [actuales] es una consulta y no un conjunto ya resuelto a propósito.
+///
+/// Antes se leía una sola vez, al abrir: si la lista del laboratorio todavía
+/// no había llegado del servidor, el diálogo empezaba con todo desmarcado. Y
+/// como guardar REEMPLAZA la lista completa, marcar a una persona y guardar
+/// dejaba el laboratorio solo con ella: quitaba a todos los demás.
 Future<void> _asignar(
   BuildContext context, {
   required String titulo,
   required String role,
-  required Set<String> actuales,
+  required AsyncValue<Set<String>> Function(DataProvider data) actuales,
   required String ayuda,
   required Future<void> Function(List<String>) onGuardar,
 }) =>
@@ -215,7 +226,7 @@ Future<void> _asignar(
 class _AssignDialog extends StatefulWidget {
   final String titulo;
   final String role;
-  final Set<String> actuales;
+  final AsyncValue<Set<String>> Function(DataProvider data) actuales;
   final String ayuda;
   final Future<void> Function(List<String>) onGuardar;
 
@@ -232,23 +243,21 @@ class _AssignDialog extends StatefulWidget {
 }
 
 class _AssignDialogState extends State<_AssignDialog> {
-  late Set<String> _seleccion;
+  /// `null` hasta que llegan las personas Y quiénes están asignadas hoy. Ver
+  /// [_asignar] para lo que pasaba cuando se llenaba antes de tiempo.
+  Set<String>? _seleccion;
   bool _saving = false;
   ApiException? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _seleccion = {...widget.actuales};
-  }
-
   Future<void> _save() async {
+    final seleccion = _seleccion;
+    if (seleccion == null) return;
     setState(() {
       _saving = true;
       _error = null;
     });
     try {
-      await widget.onGuardar(_seleccion.toList());
+      await widget.onGuardar(seleccion.toList());
       if (!mounted) return;
       Navigator.pop(context);
     } on ApiException catch (e) {
@@ -264,17 +273,27 @@ class _AssignDialogState extends State<_AssignDialog> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    final estado =
+        combine2(data.users(role: widget.role), widget.actuales(data));
+    // Se fija una sola vez, recién con los dos datos: lo que la persona marque
+    // después no se pisa con cada notificación del provider.
+    if (_seleccion == null) {
+      if (estado.valueOrNull case (_, final asignados)) {
+        _seleccion = {...asignados};
+      }
+    }
+    final seleccion = _seleccion;
 
     return AdaptiveFormShell(
       title: widget.titulo,
       maxWidth: 480,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
-      onSave: _save,
-      child: data.users(role: widget.role).when(
+      onSave: seleccion == null ? null : _save,
+      child: estado.when(
             loading: () => const CardListSkeleton(count: 4, height: 48),
             error: (e) => ErrorBanner(e),
-            data: (personas) => Column(
+            data: (valores) => Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -286,12 +305,12 @@ class _AssignDialogState extends State<_AssignDialog> {
                     style: const TextStyle(
                         fontSize: 12.5, color: AppColors.textMuted)),
                 const SizedBox(height: 12),
-                if (personas.isEmpty)
+                if (valores.$1.isEmpty)
                   const Text('No hay cuentas disponibles.',
                       style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted))
                 else
-                  for (final p in personas)
+                  for (final p in valores.$1)
                     CheckboxListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
@@ -303,12 +322,12 @@ class _AssignDialogState extends State<_AssignDialog> {
                           ? null
                           : Text(p.university,
                               style: const TextStyle(fontSize: 11.5)),
-                      value: _seleccion.contains(p.id),
-                      onChanged: _saving
+                      value: seleccion?.contains(p.id) ?? false,
+                      onChanged: _saving || seleccion == null
                           ? null
                           : (v) => setState(() => v == true
-                              ? _seleccion.add(p.id)
-                              : _seleccion.remove(p.id)),
+                              ? seleccion.add(p.id)
+                              : seleccion.remove(p.id)),
                     ),
               ],
             ),
@@ -1084,7 +1103,7 @@ class _ModuleRow extends StatelessWidget {
                   final ok = await confirmDoubleDialog(
                     context,
                     'Eliminar módulo',
-                    'Vas a eliminar "${module.title}" con sus '
+                    'Va a eliminar "${module.title}" con sus '
                         '${module.ownLessons.length} lecciones propias.',
                   );
                   if (!ok || !context.mounted) return;

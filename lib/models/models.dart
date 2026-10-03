@@ -2139,6 +2139,100 @@ class ForumPost {
       );
 }
 
+/// Alguien que la persona de la sesión bloqueó en el foro (App Store, guía
+/// 1.2). Solo sirve para poder desbloquearlo: nadie más ve esta lista.
+class ForumBlock {
+  final String userId;
+  final String name;
+  final DateTime createdAt;
+
+  const ForumBlock({
+    required this.userId,
+    required this.name,
+    required this.createdAt,
+  });
+
+  factory ForumBlock.fromJson(Map<String, dynamic> j) => ForumBlock(
+        userId: j['userId'] as String,
+        name: (j['name'] as String?) ?? '',
+        createdAt: _date(j['createdAt']) ?? DateTime.now(),
+      );
+}
+
+/// Un reporte sin atender, en la cola del equipo que modera el foro.
+///
+/// Trae el texto reportado y su autor para decidir sin ir a buscarlo.
+/// [replyId] nulo es la publicación; con valor, esa respuesta.
+class ForumReport {
+  final String id;
+  final String postId;
+  final String? replyId;
+  final String reason;
+  final DateTime createdAt;
+  final String reporterName;
+  final String body;
+  final String authorId;
+  final String authorName;
+
+  /// El contenido ya no se ve: lo borró su autor, o se borró la publicación
+  /// de la respuesta reportada.
+  final bool contentRemoved;
+
+  const ForumReport({
+    required this.id,
+    required this.postId,
+    this.replyId,
+    this.reason = '',
+    required this.createdAt,
+    this.reporterName = '',
+    this.body = '',
+    this.authorId = '',
+    this.authorName = '',
+    this.contentRemoved = false,
+  });
+
+  bool get isReply => replyId != null;
+
+  factory ForumReport.fromJson(Map<String, dynamic> j) => ForumReport(
+        id: j['id'] as String,
+        postId: j['postId'] as String,
+        replyId: j['replyId'] as String?,
+        reason: (j['reason'] as String?) ?? '',
+        createdAt: _date(j['createdAt']) ?? DateTime.now(),
+        reporterName: (j['reporterName'] as String?) ?? '',
+        body: (j['body'] as String?) ?? '',
+        authorId: (j['authorId'] as String?) ?? '',
+        authorName: (j['authorName'] as String?) ?? '',
+        contentRemoved: (j['contentRemoved'] as bool?) ?? false,
+      );
+}
+
+/// Una cuenta cuya dueña pidió eliminarla y cuyos datos personales todavía
+/// no se borraron. La cuenta ya no funciona; falta borrar los datos.
+class DeletionRequest {
+  final String id;
+  final String name;
+  final String email;
+  final String role;
+  final DateTime requestedAt;
+
+  const DeletionRequest({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.requestedAt,
+  });
+
+  factory DeletionRequest.fromJson(Map<String, dynamic> j) => DeletionRequest(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        email: (j['email'] as String?) ?? '',
+        role: (j['role'] as String?) ?? '',
+        requestedAt: _date(j['requestedAt']) ?? DateTime.now(),
+      );
+}
+
 enum CalendarEventType {
   openLearningSync,
   rutaImpacto,

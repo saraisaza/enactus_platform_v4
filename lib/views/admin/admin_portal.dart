@@ -29,14 +29,18 @@ class AdminPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Dashboard',
+            shortLabel: 'Inicio',
+            destacada: true,
             icon: Icons.dashboard_outlined,
             builder: (_) => const AdminDashboard()),
         PortalTab(
             label: 'Calendario',
+            destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const AdminCalendar()),
         PortalTab(
             label: 'Usuarios',
+            destacada: true,
             icon: Icons.manage_accounts_outlined,
             builder: (_) => AdminUsers(isSuperAdmin: isSuperAdmin)),
         PortalTab(
@@ -57,18 +61,22 @@ class AdminPortal extends StatelessWidget {
             builder: (_) => const AdminCourses()),
         PortalTab(
             label: 'Evidencias donantes',
+            shortLabel: 'Evidencias',
             icon: Icons.volunteer_activism_outlined,
             builder: (_) => const AdminEvidences()),
         PortalTab(
             label: 'Foro',
+            destacada: true,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
         PortalTab(
             label: 'Contenido página',
+            shortLabel: 'Contenido',
             icon: Icons.web_outlined,
             builder: (_) => const AdminSiteContent()),
         PortalTab(
             label: 'Datos y respaldos',
+            shortLabel: 'Respaldos',
             icon: Icons.storage_outlined,
             builder: (_) => const AdminBackup()),
       ],
@@ -254,7 +262,7 @@ class _ImpactMetricsPanel extends StatelessWidget {
     if (metrics.hasNoCharts) {
       return const EmptyState(
         icon: Icons.insights_outlined,
-        message: 'Configura competencias, ODS y horas en los cursos '
+        message: 'Configure competencias, ODS y horas en los cursos '
             '(constructor del LXD) para ver métricas de impacto formativo.',
       );
     }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_errors.dart';
@@ -206,7 +207,19 @@ class ApiService {
     } on TimeoutException {
       throw const NetworkError('El servidor tardó demasiado en responder.');
     } on http.ClientException catch (e) {
-      throw NetworkError('No pudimos conectar con el servidor: ${e.message}');
+      // El detalle ("Failed host lookup…", "Connection refused") sirve para
+      // depurar, no para quien usa la app: antes se le mostraba tal cual, en
+      // inglés técnico.
+      debugPrint('ApiService: $method $path sin conexión (${e.message}).');
+      throw const NetworkError();
+    } on Exception catch (e) {
+      // Fuera del navegador hay fallos de conexión que `package:http` no
+      // envuelve en `ClientException`. El típico es `HandshakeException`: un
+      // certificado que no valida porque el wifi de un campus u hotel
+      // intercepta la conexión para pedir inicio de sesión. Antes se escapaba
+      // y la pantalla decía "respuesta inesperada", o nada.
+      debugPrint('ApiService: $method $path falló la conexión ($e).');
+      throw const NetworkError();
     }
 
     // 401: se intenta renovar UNA vez y se repite la petición original.

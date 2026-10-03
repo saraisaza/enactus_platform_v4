@@ -69,9 +69,16 @@ const ESTUDIANTE_PUEDE = [
   // nuevo no entró por defecto, hubo que decidirlo.
   /^GET \/(health|site-content|catalogs|universities)/,
   /^(GET|PATCH) \/auth\/me$/,
+  // Pedir que se elimine SU cuenta. App Store y Google Play exigen que
+  // cualquier persona pueda hacerlo desde la app; solo actúa sobre quien
+  // tiene la sesión, y pide la contraseña.
+  /^POST \/auth\/me\/deletion-request$/,
   /^POST \/auth\/(login|refresh|logout)$/,
   /^GET \/(courses|laboratories|projects|groups|certificates|evidences)/,
-  /^GET \/(calendar-events|communication-resources|notifications|forum-posts)/,
+  /^GET \/(calendar-events|communication-resources|notifications)/,
+  // El foro, MENOS la cola de reportes: esa es del equipo que modera, y con el
+  // comodín ancho de antes este barrido no habría notado si quedaba abierta.
+  /^GET \/forum-posts(?!\/reports)/,
   // Ojo con el alcance de estos comodines: `GET /lessons/…` a secas dejaba
   // pasar `GET /lessons/:id/quiz`, que devuelve el cuestionario **con las
   // respuestas** y por eso está reservado a CONTENT_ROLES. Un estudiante que
@@ -83,7 +90,8 @@ const ESTUDIANTE_PUEDE = [
   // Ve las suyas: el alcance del handler ya lo acota a su propia persona.
   /^GET \/submissions/,
   /^GET \/talent/,
-  /^(POST|PATCH|PUT|DELETE) \/(progress|submissions|forum-posts|notifications)/,
+  /^(POST|PATCH|PUT|DELETE) \/(progress|submissions|notifications)/,
+  /^(POST|PATCH|PUT|DELETE) \/forum-posts(?!\/reports)/,
   /^POST \/lessons\/[^/]+\/(quiz-attempt|survey|activity-submission)/,
   /^POST \/files\/upload-url$/,
   /^GET \/files\//,

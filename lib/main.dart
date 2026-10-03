@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
@@ -8,6 +12,7 @@ import 'services/api_service.dart';
 import 'utils/url_strategy.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
+import 'utils/orientacion.dart';
 import 'views/auth/login_view.dart';
 import 'views/admin/admin_portal.dart';
 import 'views/advisor/advisor_portal.dart';
@@ -17,6 +22,7 @@ import 'views/mentor/mentor_portal.dart';
 import 'views/lxd/lxd_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
+import 'views/public/sin_conexion_view.dart';
 import 'views/shared/lab_detail_view.dart';
 import 'views/shared/user_detail_view.dart';
 import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
@@ -33,6 +39,19 @@ Future<void> main() async {
   configurarRutas();
 
   await initializeDateFormatting('es');
+  // Toda fecha sin idioma explícito sale en español. Había una veintena de
+  // `DateFormat('d MMM yyyy')` sin `'es'` que mostraban "30 Sep 2026" y
+  // "10:00 AM" en medio de una interfaz en español.
+  Intl.defaultLocale = 'es';
+
+  // Una versión de tienda móvil compilada sin `--dart-define=API_BASE_URL`
+  // apuntaría a `http://localhost:3000`: abriría vacía, sin explicar por qué,
+  // y así llegaría al revisor de la tienda. Mejor detenerse con un mensaje.
+  // La web no entra acá: el CI siempre la compila con su URL https.
+  if (kReleaseMode && !kIsWeb && !ApiService.baseUrl.startsWith('https://')) {
+    runApp(const _ConfiguracionIncompleta());
+    return;
+  }
 
   // Ya no hay base local que abrir, ni migraciones, ni seed: los datos viven
   // en la API. El arranque es inmediato y la sesión se restaura en segundo
@@ -68,9 +87,16 @@ class EnactusApp extends StatefulWidget {
 }
 
 class _EnactusAppState extends State<EnactusApp> {
+  late final AppLifecycleListener _ciclo;
+  DateTime? _ocultaDesde;
+
   @override
   void initState() {
     super.initState();
+    _ciclo = AppLifecycleListener(
+      onHide: () => _ocultaDesde = DateTime.now(),
+      onShow: _alVolver,
+    );
     // La sesión se recupera acá, en la raíz, y NO en la pantalla de arranque.
     //
     // Con `initialRoute` puesto —una URL profunda— `_Bootstrap` nunca se
@@ -83,7 +109,39 @@ class _EnactusAppState extends State<EnactusApp> {
     // `initState` dispara el error de "setState during build".
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) widget.auth.restoreSession();
+      // Vertical en teléfonos, libre en tablets. Recién después del primer
+      // frame: antes, en Android el tamaño de la pantalla puede ser cero.
+      fijarOrientacionDeLaApp();
     });
+  }
+
+  @override
+  void dispose() {
+    _ciclo.dispose();
+    super.dispose();
+  }
+
+  /// La app vuelve a primer plano (o la pestaña vuelve a verse, en la web).
+  ///
+  /// - Si al abrir no hubo conexión, reintenta sola: la persona no tiene que
+  ///   adivinar que debe tocar "Reintentar" cuando vuelve la señal.
+  /// - Si estuvo un rato largo afuera, lo que ve puede estar viejo (notas,
+  ///   eventos, el foro). Un cambio rápido de app no recarga nada.
+  void _alVolver() {
+    final auth = widget.auth;
+    final desde = _ocultaDesde;
+    _ocultaDesde = null;
+    if (auth.isRestoring) return;
+    if (auth.isOffline) {
+      auth.restoreSession();
+      return;
+    }
+    if (auth.isLoggedIn &&
+        desde != null &&
+        DateTime.now().difference(desde) > const Duration(minutes: 5)) {
+      widget.data.refreshAll();
+      auth.refresh();
+    }
   }
 
   @override
@@ -103,6 +161,18 @@ class _EnactusAppState extends State<EnactusApp> {
         title: 'eduXaction Colombia',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
+        // Los textos propios de Material (selector de fecha y hora, menú de
+        // copiar y pegar, "Atrás") en español de Colombia.
+        locale: const Locale('es', 'CO'),
+        supportedLocales: const [Locale('es', 'CO'), Locale('es')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        // Hora y batería en claro sobre el gris de la marca en todas las
+        // pantallas (el encabezado y el video también lo fijan). Sin esto,
+        // en un iPhone en modo claro salían oscuras sobre fondo oscuro.
+        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle.light,
+          child: child ?? const SizedBox.shrink(),
+        ),
         home: initialRoute == null ? const _Bootstrap() : null,
         initialRoute: initialRoute,
         onGenerateRoute: _generateRoute,
@@ -111,6 +181,44 @@ class _EnactusAppState extends State<EnactusApp> {
   }
 
 }
+
+/// Lo que ve una versión de tienda compilada sin la URL https de la API.
+///
+/// Nunca debería llegar a nadie: `tool/build_movil.sh` siempre pasa la URL.
+/// Existe para que el error se note en la primera prueba y no en la revisión.
+class _ConfiguracionIncompleta extends StatelessWidget {
+  const _ConfiguracionIncompleta();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(
+              child: Text(
+                'Esta compilación no tiene configurada la dirección del '
+                'servidor. Compílela con tool/build_movil.sh.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Qué muestra la raíz "/": en la web, la portada; en la app instalada, el
+/// ingreso o el portal de quien tenga sesión.
+///
+/// Es una variable y no `kIsWeb` a secas solo para que las pruebas —que corren
+/// fuera del navegador, como la app— puedan seguir probando la portada, que
+/// sigue existiendo en eduxaction.com.
+@visibleForTesting
+bool raizEsPortada = kIsWeb;
 
 /// Todas las rutas con nombre de la app, en un solo lugar.
 ///
@@ -121,7 +229,10 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
   Widget page = const NotFoundView();
   switch (settings.name) {
     case AppRoutes.landing:
-      page = const LandingView();
+      // En la app, "/" —el logo, cerrar sesión, "Volver al inicio"— lleva al
+      // ingreso o al portal de quien tenga sesión, nunca a la portada de
+      // marketing de la web.
+      page = raizEsPortada ? const LandingView() : const _Bootstrap();
     case AppRoutes.login:
       page = const LoginView();
     case AppRoutes.student:
@@ -194,6 +305,8 @@ class _Bootstrap extends StatefulWidget {
 }
 
 class _BootstrapState extends State<_Bootstrap> {
+  final _portal = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -205,15 +318,34 @@ class _BootstrapState extends State<_Bootstrap> {
       );
     }
 
-    final user = auth.currentUser;
-    if (user == null) return const LandingView();
+    // Hay sesión guardada pero no se pudo comprobar: no es "sin sesión".
+    if (auth.isOffline) return const SinConexionView();
 
-    // Con sesión activa, directo a su portal.
-    return Navigator(
-      onGenerateRoute: (settings) => _generateRoute(
-        settings.name == null || settings.name == '/'
-            ? RouteSettings(name: AppRoutes.forRole(user.role))
-            : settings,
+    final user = auth.currentUser;
+    // En el teléfono se entra directo al ingreso: la portada es el sitio de
+    // presentación de la web, y abrir la app en una página de marketing es lo
+    // que App Store describe como "un sitio web empaquetado" (guía 4.2).
+    if (user == null) {
+      return raizEsPortada ? const LandingView() : const LoginView();
+    }
+
+    // Con sesión activa, directo a su portal, en un Navigator propio.
+    //
+    // El botón atrás de Android le habla al Navigator RAÍZ, que acá tiene una
+    // sola ruta: sin [NavigatorPopHandler], "atrás" con un detalle abierto
+    // —o con el menú abierto— cerraba la app en vez de volver. El manejador
+    // le pasa el gesto a este Navigator. En la web no se intercepta: el botón
+    // del navegador sigue como siempre.
+    return NavigatorPopHandler<Object?>(
+      enabled: !kIsWeb,
+      onPopWithResult: (_) => _portal.currentState?.maybePop(),
+      child: Navigator(
+        key: _portal,
+        onGenerateRoute: (settings) => _generateRoute(
+          settings.name == null || settings.name == '/'
+              ? RouteSettings(name: AppRoutes.forRole(user.role))
+              : settings,
+        ),
       ),
     );
   }
@@ -237,6 +369,7 @@ class _RoleGuard extends StatelessWidget {
         body: Center(child: BrandLoader()),
       );
     }
+    if (auth.isOffline) return const SinConexionView();
     final user = auth.currentUser;
     if (user == null || user.role != role) return const LoginView();
     return child;
@@ -258,6 +391,7 @@ class _AuthGuard extends StatelessWidget {
         body: Center(child: BrandLoader()),
       );
     }
+    if (auth.isOffline) return const SinConexionView();
     if (!auth.isLoggedIn) return const LoginView();
     return child;
   }

@@ -283,7 +283,7 @@ class _PhaseCard extends StatelessWidget {
           Icons.check_circle
         ),
       PhaseProgress(isUnlocked: false) => (
-          'Bloqueada — completa la fase anterior',
+          'Bloqueada — complete la fase anterior',
           AppColors.textMuted,
           Icons.lock_outline
         ),

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/main.dart';
 import 'package:enactus_platform/providers/auth_provider.dart';
@@ -38,7 +38,7 @@ const rolesDePortal = [
 void cargarFixtures() {
   final archivo = File('test/fixtures/api_payloads.json');
   if (!archivo.existsSync()) {
-    fail('Faltan los fixtures. Generalos con:\n'
+    fail('Faltan los fixtures. Genérelos con:\n'
         '  cd backend && npm run db:reset && npm run dev\n'
         '  python3 tool/capturar_payloads.py');
   }
@@ -49,10 +49,10 @@ Map<String, dynamic> usuarioDe(String role) =>
     Map<String, dynamic>.from(_fixtures['me'][role] as Map);
 
 /// Sesión ya iniciada: `EnactusApp` la restaura desde el token guardado.
-void conSesionGuardada() => SharedPreferences.setMockInitialValues({
-      'enactus.accessToken': 'token-de-prueba',
-      'enactus.refreshToken': 'refresh-de-prueba',
-    });
+void conSesionGuardada() => sembrarAlmacenamiento(
+      access: 'token-de-prueba',
+      refresh: 'refresh-de-prueba',
+    );
 
 FakeApi fakeDe(String role) {
   final rutas = <String, Object?>{
@@ -86,7 +86,7 @@ Widget appDe(String role) {
 }
 
 /// Sin sesión guardada: el caso de quien todavía no entró.
-void sinSesionGuardada() => SharedPreferences.setMockInitialValues({});
+void sinSesionGuardada() => sembrarAlmacenamiento();
 
 /// Una pantalla pública (portada, ingreso): sin sesión y sin rol.
 ///
@@ -102,6 +102,11 @@ Widget appPublica(
   void Function(FakeApi api)? conApi,
 }) {
   sinSesionGuardada();
+  // La portada es de la web; en la app la raíz lleva al ingreso. Las pruebas
+  // corren como la app, así que para probar la portada se pide la variante
+  // web de la raíz (ver `raizEsPortada`).
+  raizEsPortada = ruta == AppRoutes.landing;
+  addTearDown(() => raizEsPortada = kIsWeb);
   final rutas = Map<String, Object?>.from(_fixtures['compartidas'] as Map);
   // [contenidoDelSitio] reemplaza `/site-content`. Los fixtures traen todos
   // los campos llenos —son una captura del sembrado— así que sin esto no hay

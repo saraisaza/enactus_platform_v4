@@ -32,10 +32,12 @@ class DonorPortal extends StatelessWidget {
       tabs: [
         PortalTab(
             label: 'Mi Impacto',
+            shortLabel: 'Impacto',
             icon: Icons.volunteer_activism_outlined,
             builder: (_) => const _DonorDashboard()),
         PortalTab(
             label: 'Mapa de Estudiantes',
+            shortLabel: 'Mapa',
             icon: Icons.public,
             builder: (_) => const StudentsMapView()),
         PortalTab(
@@ -44,6 +46,7 @@ class DonorPortal extends StatelessWidget {
             builder: (_) => const _DonorEvidences()),
         PortalTab(
             label: 'BuscaTalento',
+            shortLabel: 'Talento',
             icon: Icons.search,
             builder: (_) => const TalentSearchView()),
       ],
@@ -61,7 +64,7 @@ class _DonorDashboard extends StatelessWidget {
 
     return TabBody(
       title: 'Mi Impacto',
-      subtitle: 'A quiénes apoyás y cómo van',
+      subtitle: 'A quiénes apoya y cómo van',
       children: [
         if ((donante?.impactCode ?? '').isNotEmpty) ...[
           HoverCard(
@@ -110,7 +113,7 @@ class _DonorDashboard extends StatelessWidget {
                       label: 'Evidencias recibidas',
                       icon: Icons.photo_library_outlined),
                 ]),
-                const SectionTitle('Estudiantes que apoyás'),
+                const SectionTitle('Estudiantes que apoya'),
                 if (estudiantes.isEmpty)
                   const EmptyState(
                     icon: Icons.people_outline,

@@ -22,13 +22,14 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:enactus_platform/providers/auth_provider.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
 import 'package:enactus_platform/services/api_service.dart';
 import 'package:enactus_platform/utils/constants.dart';
+
+import 'helpers/fake_api.dart' show useFakeTokenStorage;
 
 bool up = false;
 
@@ -120,7 +121,7 @@ void main() {
     }
   });
 
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() => useFakeTokenStorage());
 
   /// Los getters de lista/objeto que no necesitan un id.
   Map<String, dynamic Function()> gettersDe(DataProvider d) => {

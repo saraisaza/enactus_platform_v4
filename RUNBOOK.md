@@ -1002,7 +1002,9 @@ img-src     … https://i.ytimg.com
 **Nunca `'unsafe-inline'` en `script-src`**: es lo que protege el token de
 sesión. El hash es uno por origen y cambia al actualizar
 `youtube_player_iframe`; cómo obtenerlo está en MIGRACION_FRONT.md,
-«Reproductor de YouTube».
+«Reproductor de YouTube». Nada más: ni `connect-src` ni otros hosts de
+YouTube — comprobado en Chromium: con esas tres líneas, el reproductor no
+deja ni una violación de CSP.
 
 ### Staging no debe ser público
 

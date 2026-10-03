@@ -366,14 +366,33 @@ justamente que `script-src` no tenga `'unsafe-inline'` (ver
 sería cambiar esa protección por comodidad. El hash autoriza ese script exacto
 y nada más.
 
-**El hash es estable por origen** porque la clave del reproductor es fija
-(`YoutubeLessonPlayer.playerKey`): con una clave por video, el script cambiaría
-con cada lección. Lleva adentro el origen del sitio, así que hay un hash por
-origen (`eduxaction.com`, `www.eduxaction.com`, `staging.eduxaction.com`).
-Cómo obtenerlo: abrir una lección de YouTube, darle play y leer la consola de
-Chrome — el error de CSP trae el `'sha256-…'` exacto que hay que agregar.
-**Cambia si se actualiza `youtube_player_iframe`** (cambia su `player.html`):
-al subir de versión hay que volver a leerlo.
+**El hash es estable por origen** porque el id del reproductor es fijo
+(`YoutubeLessonPlayer.playerId`, `youtube_leccion`): el paquete arma uno por
+instancia, y el script cambiaría con cada apertura. Lleva adentro el origen del
+sitio, así que hay un hash por origen (`eduxaction.com`, `www.eduxaction.com`,
+`staging.eduxaction.com`). Cómo obtenerlo: abrir una lección de YouTube, darle
+play y leer la consola de Chrome — el error de CSP trae el `'sha256-…'` exacto
+que hay que agregar. **Cambia si se actualiza `youtube_player_iframe`** (cambia
+su `player.html`): al subir de versión hay que volver a leerlo.
+
+No hace falta nada más: ni `connect-src` ni `i3.ytimg.com`. La miniatura es un
+`<img>` (solo `img-src`), y la capa de carga del paquete no pide la suya
+porque el controlador no lleva `key` (ver abajo, «Tres cosas que las pruebas
+encontraron»).
+
+**Comprobado en Chromium**, con la web compilada en release y la API local.
+Donde se probó no había salida a YouTube, así que `iframe_api`, el iframe de
+`youtube-nocookie.com` y la miniatura se respondieron con dobles locales; la
+CSP la aplica el navegador antes de ir a la red, así que lo que se observa de
+la CSP es real:
+
+| CSP | Resultado |
+|---|---|
+| La de hoy | Se bloquean la miniatura y el script en línea; a los 20 s, «No se pudo cargar el reproductor» con «Reintentar» y «Ver en YouTube». El hash que reporta Chrome es idéntico al calculado del script del reproductor |
+| La de hoy + las cuatro entradas | Cero violaciones de YouTube. Reproduce, guarda el avance, al pasar el 90% marca «Lección completada» y la lista muestra «Visto 100%». En un teléfono (390×844), también cero violaciones y reproduce de borde a borde |
+
+Lo que esto NO comprueba es el reproductor de YouTube de verdad: eso se ve en
+staging, con las entradas ya puestas.
 
 ### Versión del paquete
 
@@ -392,15 +411,16 @@ se generó con 3.44.3, la del proyecto, para no arrastrar cambios ajenos.
   WebView falso que habla su mismo protocolo de mensajes
   (`helpers/fake_youtube_webview.dart`): miniatura sin reproductor, retomar,
   guardar al pausar y al cerrar, completar una sola vez, errores de YouTube,
-  el timeout, y el tamaño 16:9 en teléfono, teléfono acostado, laptop y
-  escritorio.
+  el timeout, el tamaño 16:9 en teléfono, teléfono acostado, laptop y
+  escritorio, y que el id del reproductor sea el fijo sin que el paquete pida
+  otra miniatura.
 - `test/lesson_editor_youtube_test.dart` — que viaje `{videoId}` y nada más,
   y que un enlace inválido no cree la lección.
 - Backend: `video-youtube.test.ts`, `video-progreso.test.ts` y
   `migracion-video-youtube.test.ts`, que corre 0007 **como se despliega**:
   sola, sobre una base que ya estaba en 0006.
 
-Dos cosas que las pruebas encontraron:
+Tres cosas que las pruebas encontraron:
 
 1. **El editor se rompía al pegar el enlace.** El `AlertDialog` pide medidas
    intrínsecas a todo su contenido y el reproductor usa `LayoutBuilder`, que no
@@ -411,6 +431,15 @@ Dos cosas que las pruebas encontraron:
    tipo nace en la misma transacción— y falla sobre una existente con «unsafe
    use of new value». El CHECK compara `video_type::text`; la prueba de
    migración lo fija (comprobado por mutación).
+3. **Una miniatura fantasma en cada reproducción** (en el navegador, no en las
+   pruebas de widgets). El paquete usa la `key` del controlador para armar el
+   id del reproductor, pero su capa de carga TAMBIÉN la usa como id del video:
+   con `key: 'leccion'` pedía `i3.ytimg.com/vi_webp/leccion/…`, que no existe,
+   y la CSP lo bloqueaba con un error en la consola. Ahora el controlador va
+   sin `key` y con el id fijado aparte (`_ControladorLeccion`); el hash no
+   cambió. La prueba del reproductor fija las dos cosas (comprobado por
+   mutación: con la `key` vuelve la miniatura fantasma; sin el id fijo, el id
+   cambia con cada instancia).
 
 ---
 

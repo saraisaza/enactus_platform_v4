@@ -63,6 +63,10 @@ class FakeYoutubePage extends PlatformWebViewController {
   /// El HTML que el paquete cargó (su `player.html`, ya completado).
   String? html;
 
+  /// El canal de mensajes que abrió el controlador; se llama como su
+  /// `playerId`.
+  String? get channelName => _channel?.name;
+
   /// Cada orden que el controlador le dio al reproductor (`player.cueVideoById(…)`).
   final List<String> commands = [];
 

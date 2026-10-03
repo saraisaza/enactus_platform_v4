@@ -63,17 +63,18 @@ class YoutubeLessonPlayer extends StatefulWidget {
   /// contra el borde de la pantalla se ven como un error.
   final double borderRadius;
 
-  /// Clave fija del reproductor, y no una por video.
+  /// Id fijo del reproductor, y no uno por video.
   ///
   /// En el navegador el paquete arma la página del reproductor con un
-  /// `<script>` en línea que lleva esta clave adentro. Con una clave fija ese
-  /// script es SIEMPRE el mismo texto (por origen), así que la CSP lo puede
-  /// autorizar por su hash, sin abrir `'unsafe-inline'` para todo el sitio.
-  /// Con una clave por video o por instancia, el hash cambiaría cada vez.
+  /// `<script>` en línea que lleva este id adentro. Con un id fijo ese script
+  /// es SIEMPRE el mismo texto (por origen), así que la CSP lo puede autorizar
+  /// por su hash, sin abrir `'unsafe-inline'` para todo el sitio. Con uno por
+  /// video o por instancia —lo que hace el paquete solo— el hash cambiaría
+  /// cada vez.
   ///
   /// Solo hay un reproductor a la vez (el diálogo de la lección), así que
-  /// compartirla no mezcla mensajes entre dos reproductores vivos.
-  static const playerKey = 'leccion';
+  /// compartirlo no mezcla mensajes entre dos reproductores vivos.
+  static const playerId = 'youtube_leccion';
 
   @override
   State<YoutubeLessonPlayer> createState() => _YoutubeLessonPlayerState();
@@ -121,10 +122,7 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
     final intento = ++_intento;
     _soltarReproductor();
 
-    final controller = YoutubePlayerController(
-      key: YoutubeLessonPlayer.playerKey,
-      params: _params,
-    );
+    final controller = _ControladorLeccion(params: _params);
     if (_sigueAvance) {
       _tracker = VideoWatchTracker(
         onSave: (p, d) => widget.onProgress?.call(p, d),
@@ -289,6 +287,25 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
       ),
     );
   }
+}
+
+/// El controlador del paquete con el id fijo y sin `key`.
+///
+/// El paquete arma el id del reproductor a partir de `key`, pero también usa
+/// `key` como id del VIDEO: su capa de carga pide la miniatura
+/// `i3.ytimg.com/vi_webp/<key>/…`. Con `key: 'leccion'` pedía una imagen que
+/// no existe, y en el sitio la CSP la bloqueaba con un error en la consola en
+/// cada reproducción. Sin `key` esa capa no pide nada —la miniatura ya la
+/// pone [_Caratula]— y el id se fija acá.
+class _ControladorLeccion extends YoutubePlayerController {
+  _ControladorLeccion({super.params});
+
+  // El paquete lo marca @internal, pero lo lee siempre por este getter: el
+  // canal de mensajes, la página del reproductor, el filtro de eventos y el
+  // cierre. Si una versión nueva dejara de hacerlo, el reproductor no
+  // arrancaría y lo atrapan las pruebas de `youtube_player_test.dart`.
+  @override
+  String get playerId => YoutubeLessonPlayer.playerId;
 }
 
 /// 16:9 que responde sus medidas intrínsecas con la proporción, sin

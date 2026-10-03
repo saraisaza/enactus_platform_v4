@@ -238,6 +238,30 @@ void main() {
       expect(page.commands.where((c) => c.contains('playVideo')).length, 1);
     });
 
+    testWidgets('el id del reproductor es fijo, y el paquete no pide otra miniatura',
+        (tester) async {
+      await _abrir(tester, _api());
+      final page = await _reproducir(tester, web);
+
+      // El id va adentro del script en línea de la página del reproductor.
+      // Fijo, la CSP del sitio lo autoriza por su hash (MIGRACION_FRONT.md,
+      // «La CSP»); el paquete solo arma uno por instancia, y cambiaría.
+      expect(page.channelName, YoutubeLessonPlayer.playerId);
+      expect(page.html, contains('new YT.Player("${YoutubeLessonPlayer.playerId}"'));
+
+      // La única imagen de YouTube es nuestra miniatura. Con una `key` en el
+      // controlador, la capa de carga del paquete la usaba como id del video
+      // y pedía `i3.ytimg.com/vi_webp/<key>/…`, que no existe.
+      final urls = tester
+          .widgetList<Image>(find.byType(Image))
+          .map((i) => i.image)
+          .whereType<NetworkImage>()
+          .map((n) => n.url)
+          .toList();
+      expect(urls, isNotEmpty);
+      expect(urls, everyElement('https://i.ytimg.com/vi/$_id/hqdefault.jpg'));
+    });
+
     testWidgets('pausar guarda la posición, con la duración del video',
         (tester) async {
       final fake = _api();

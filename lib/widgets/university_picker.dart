@@ -19,6 +19,12 @@ import '../utils/app_theme.dart';
 /// Solo muestra universidades activas: el catálogo no manda las inactivas
 /// —«Sin asignar» es una— porque estar en la lista es una invitación a
 /// elegirlas, y el servidor las rechaza de todas formas.
+///
+/// **«Otra (¿cuál?)».** Con [otraController], la última opción es «Otra», y al
+/// elegirla aparece un campo para escribir el nombre. Eso NO reabre el texto
+/// libre: quien guarda el formulario convierte lo escrito en una fila del
+/// catálogo (`DataProvider.createUniversity`) y la persona apunta a esa fila,
+/// como a cualquier otra. Así nadie se queda sin poder inscribirse.
 class UniversityPicker extends StatelessWidget {
   const UniversityPicker({
     super.key,
@@ -29,7 +35,12 @@ class UniversityPicker extends StatelessWidget {
     this.allowEmpty = true,
     this.emptyLabel = 'Sin universidad',
     this.helperText,
+    this.otraController,
   });
+
+  /// El valor que significa «Otra (¿cuál?)». No es un id: quien guarda lo
+  /// cambia por el de la fila que se crea con el nombre escrito.
+  static const otra = '__otra__';
 
   /// El id seleccionado, o `null`.
   final String? value;
@@ -42,6 +53,9 @@ class UniversityPicker extends StatelessWidget {
   final bool allowEmpty;
   final String emptyLabel;
   final String? helperText;
+
+  /// Con valor, se ofrece «Otra (¿cuál?)» y aquí queda lo que se escriba.
+  final TextEditingController? otraController;
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +88,16 @@ class UniversityPicker extends StatelessWidget {
     // que llegó de datos viejos— NO se descarta en silencio: se agrega como
     // opción marcada, para que quien edita vea qué hay puesto en vez de
     // encontrarse el campo vacío y guardar sin querer un cambio que no hizo.
-    final seleccionadaFalta =
-        value != null && value!.isNotEmpty && !lista.any((u) => u.id == value);
+    final eligioOtra = otraController != null && value == otra;
+    final seleccionadaFalta = value != null &&
+        value!.isNotEmpty &&
+        !eligioOtra &&
+        !lista.any((u) => u.id == value);
 
-    return DropdownButtonFormField<String?>(
+    final desplegable = DropdownButtonFormField<String?>(
+      // La llave cambia con el valor: si quien guarda reemplaza «Otra» por la
+      // fila que acaba de crear, el campo tiene que mostrarla elegida.
+      key: ValueKey('universidad-$value'),
       initialValue: value == null || value!.isEmpty ? null : value,
       isExpanded: true,
       decoration: InputDecoration(labelText: label, helperText: helperText),
@@ -99,6 +119,32 @@ class UniversityPicker extends StatelessWidget {
             value: u.id,
             child: Text(u.name, overflow: TextOverflow.ellipsis),
           ),
+        if (otraController != null)
+          const DropdownMenuItem<String?>(
+            value: otra,
+            child: Text('Otra (¿cuál?)'),
+          ),
+      ],
+    );
+
+    if (!eligioOtra) return desplegable;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        desplegable,
+        const SizedBox(height: 8),
+        TextField(
+          controller: otraController,
+          enabled: enabled,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            labelText: '¿Cuál institución?',
+            helperText: 'El nombre oficial completo. Queda en la lista para '
+                'las próximas inscripciones.',
+            helperMaxLines: 2,
+          ),
+        ),
       ],
     );
   }

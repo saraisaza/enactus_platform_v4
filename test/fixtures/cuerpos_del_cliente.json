@@ -112,6 +112,24 @@
   "description": "",
   "durationMin": 0
  },
+ "POST /universities": {
+  "name": "Institución Universitaria de Prueba"
+ },
+ "POST /users": {
+  "name": "Estudiante Nueva",
+  "email": "nueva@prueba.co",
+  "phone": "",
+  "cedula": "",
+  "city": "",
+  "universityId": "dddddddd-0000-4000-8000-0000000000b1",
+  "career": "",
+  "companyName": "",
+  "impactCode": null,
+  "studentType": "enactus",
+  "companyId": null,
+  "role": "student",
+  "password": "Clave123"
+ },
  "PUT /glossary-terms/:id/review": {
   "status": "review"
  },

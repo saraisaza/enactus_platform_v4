@@ -20,6 +20,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FakeApi {
   /// Respuestas por ruta, sin el prefijo de la URL base. La clave incluye la
   /// query cuando importa (`/courses?...` se normaliza al camino solo).
+  ///
+  /// Una clave con el método delante (`'POST /universities'`) gana sobre la
+  /// del camino solo: sirve cuando el mismo camino lista con GET y crea con
+  /// POST, y las dos respuestas no tienen nada que ver.
   final Map<String, Object?> routes;
 
   /// Rutas que deben responder 404, para probar los estados de error.
@@ -81,13 +85,15 @@ class FakeApi {
         return _error(404, 'not_found', 'No encontramos lo que busca.');
       }
 
-      final body = routes[path] ?? fallback?.call(path);
+      final conMetodo = '${request.method} $path';
+      final body = routes[conMetodo] ?? routes[path] ?? fallback?.call(path);
       if (body == null) {
         // Falta una ruta en el fake: se falla ruidosamente en vez de devolver
         // vacío, que haría pasar una prueba por la razón equivocada.
         fail('El fake no tiene respuesta para $path. Agréguela en `routes`.');
       }
-      return http.Response(jsonEncode(body), statuses[path] ?? 200,
+      return http.Response(
+          jsonEncode(body), statuses[conMetodo] ?? statuses[path] ?? 200,
           headers: {'content-type': 'application/json'});
     });
 

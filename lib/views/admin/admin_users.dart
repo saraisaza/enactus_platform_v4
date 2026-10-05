@@ -536,6 +536,10 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   /// El id de la universidad. Ya NO es un campo de texto: ver
   /// `UniversityPicker` y por qué no se puede escribir a mano.
   String? _universityId;
+
+  /// Lo escrito en «Otra (¿cuál?)». Al guardar se vuelve una universidad del
+  /// catálogo; nunca viaja como texto en la persona.
+  final _otraUniversidad = TextEditingController();
   late final TextEditingController _career;
   late final TextEditingController _companyName;
   late final TextEditingController _impactCode;
@@ -610,6 +614,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       _career,
       _companyName,
       _impactCode,
+      _otraUniversidad,
       ..._profile.values,
     ]) {
       c.dispose();
@@ -630,6 +635,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     if ((_isNew || _password.text.isNotEmpty) && _password.text.length < 6) {
       setState(() => _error = const ValidationError(
           'La contraseña necesita al menos 6 caracteres.'));
+      return;
+    }
+    final eligioOtra = _universityId == UniversityPicker.otra;
+    if (eligioOtra && _otraUniversidad.text.trim().length < 3) {
+      setState(() => _error = const ValidationError(
+          'Escriba el nombre de la institución en «¿Cuál institución?».'));
       return;
     }
 
@@ -667,6 +678,14 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     };
 
     try {
+      // «Otra»: primero se agrega al catálogo —o se toma la que ya estaba,
+      // si existía escrita de otra forma— y la persona apunta a esa fila.
+      if (eligioOtra) {
+        final otra = await data.createUniversity(_otraUniversidad.text.trim());
+        campos['universityId'] = otra.id;
+        if (mounted) setState(() => _universityId = otra.id);
+      }
+
       final AppUser guardado;
       if (_isNew) {
         guardado = await data.createUser({
@@ -839,6 +858,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           UniversityPicker(
             value: _universityId,
             onChanged: (v) => setState(() => _universityId = v),
+            otraController: _otraUniversidad,
             // Un asesor sin universidad no ve a NADIE, así que la ausencia no
             // es un estado neutro: se avisa acá y no al guardar.
             allowEmpty: true,
@@ -892,6 +912,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         UniversityPicker(
           value: _universityId,
           onChanged: (v) => setState(() => _universityId = v),
+          otraController: _otraUniversidad,
           // Un estudiante Enactus DEBE tener universidad (INV-2); un Open
           // Learning no lleva, y eso es correcto, no un campo sin llenar.
           allowEmpty: _studentType != 'enactus',

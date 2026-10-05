@@ -368,6 +368,24 @@ class DataProvider extends ChangeNotifier {
     return _universities;
   }
 
+  /// «Otra (¿cuál?)»: agrega la institución al catálogo —o devuelve la que ya
+  /// estaba, si existía escrita de otra forma— y la deja en el desplegable.
+  ///
+  /// Lo escrito no se guarda como texto en la persona: eso reabriría el texto
+  /// libre que dejaba a los asesores sin ver a su gente. Se vuelve una fila del
+  /// catálogo y la persona apunta a ella como a cualquier otra.
+  Future<University> createUniversity(String name) async {
+    final json = await api.post('/universities', body: {'name': name});
+    final creada = University.fromJson(Map<String, dynamic>.from(json as Map));
+    final actual = _universities.valueOrNull;
+    if (actual != null && !actual.any((u) => u.id == creada.id)) {
+      _universities = AsyncValue.data([...actual, creada]
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())));
+      notifyListeners();
+    }
+    return creada;
+  }
+
   /// La universidad por su id, o `null` si no está en el catálogo cargado.
   ///
   /// Devuelve `null` en vez de inventar un nombre: una universidad que no está

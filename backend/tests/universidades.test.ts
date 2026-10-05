@@ -21,6 +21,16 @@ import { makeTestClient, resetTestDatabase } from './helpers/db';
 const MIGRACION = resolve(__dirname, '../drizzle/0005_universidades.sql');
 const REPORTE = resolve(__dirname, '../scripts/reporte-universidades.sql');
 const CATALOGO = resolve(__dirname, '../drizzle/0006_catalogo_universidades.sql');
+const MENU_2027 = resolve(__dirname, '../drizzle/0011_universidades_2027.sql');
+const MENU_2027_REVERSO = resolve(__dirname, '../drizzle/down/0011_universidades_2027.down.sql');
+
+/** Corre un archivo de SQL entero, sentencia por sentencia. */
+async function correrArchivo(ruta: string): Promise<void> {
+  for (const s of readFileSync(ruta, 'utf8').split('--> statement-breakpoint')) {
+    const q = s.trim();
+    if (q && !/^(--[^\n]*\n?)*$/.test(q)) await sql.unsafe(q);
+  }
+}
 
 let sql: Sql;
 
@@ -373,5 +383,99 @@ describe('el catálogo de las 33 universidades de la red', () => {
       'universidad nacional abierta y a distancia (unad)',
       'universidad nacional de colombia',
     ]);
+  });
+});
+
+describe('el menú de inscripción 2027: 81 instituciones', () => {
+  const COSTA_VIEJA = 'Corporación Universitaria de la Costa (CUC)';
+  const COSTA_NUEVA = 'Universidad de la Costa (CUC)';
+
+  async function idDe(nombre: string): Promise<string | undefined> {
+    const [fila] = await sql<{ id: string }[]>`
+      select id from universities where name = ${nombre} and deleted_at is null`;
+    return fila?.id;
+  }
+
+  it('sobre el catálogo de 0006 quedan exactamente las 81, sin duplicar ninguna', async () => {
+    await correrArchivo(CATALOGO);
+    await correrArchivo(MENU_2027);
+    const [n] = await sql<{ n: number }[]>`
+      select count(*)::int as n from universities where slug <> 'sin asignar'`;
+    expect(n!.n).toBe(81);
+    const desalineadas = await sql`
+      select name from universities where slug <> enactus_normalizar_universidad(name)`;
+    expect(desalineadas).toEqual([]);
+    // Incluye las que no estuvieron en el National Expo.
+    for (const nombre of [
+      'Servicio Nacional de Aprendizaje (SENA)',
+      'Universidad EAFIT',
+      'Universidad del Valle',
+    ]) {
+      expect(await idDe(nombre), nombre).toBeDefined();
+    }
+  });
+
+  it('correrlo dos veces no cambia nada', async () => {
+    await correrArchivo(CATALOGO);
+    await correrArchivo(MENU_2027);
+    const antes = await sql`select id, name, slug from universities order by id`;
+    await correrArchivo(MENU_2027);
+    const despues = await sql`select id, name, slug from universities order by id`;
+    expect(despues).toEqual(antes);
+  });
+
+  it('una universidad que cambió de nombre se RENOMBRA, con su gente y su asesor', async () => {
+    await correrArchivo(CATALOGO);
+    const id = (await idDe(COSTA_VIEJA))!;
+    const estudiante = await crearUsuario('Est Costa', 'student', COSTA_VIEJA, 'enactus');
+    const asesor = await crearUsuario('Asesor Costa', 'advisor', COSTA_VIEJA);
+    await sql`update users set university_id = ${id} where id in (${estudiante}, ${asesor})`;
+    const [proyecto] = await sql<{ id: string }[]>`
+      insert into projects (name) values ('Proyecto Costa') returning id`;
+    await sql`insert into groups (name, project_id, university)
+              values ('Equipo Costa', ${proyecto!.id}, ${COSTA_VIEJA})`;
+
+    await correrArchivo(MENU_2027);
+
+    // La MISMA fila, con el nombre nuevo: nadie pierde su universidad.
+    expect(await idDe(COSTA_NUEVA)).toBe(id);
+    expect(await idDe(COSTA_VIEJA)).toBeUndefined();
+    // Y el texto de las personas dice lo mismo que el catálogo. Si el asesor
+    // quedara con el nombre viejo y un estudiante nuevo con el nuevo, el asesor
+    // dejaría de verlo: la visibilidad todavía compara texto.
+    const personas = await sql<{ university: string }[]>`
+      select university from users where id in (${estudiante}, ${asesor})`;
+    expect(personas.map((p) => p.university)).toEqual([COSTA_NUEVA, COSTA_NUEVA]);
+    const [equipo] = await sql<{ university: string }[]>`
+      select university from groups where name = 'Equipo Costa'`;
+    expect(equipo!.university).toBe(COSTA_NUEVA);
+  });
+
+  it('si el nombre nuevo ya existía, no fusiona: eso lo decide una persona', async () => {
+    await correrArchivo(CATALOGO);
+    await sql`insert into universities (name, slug)
+              values (${COSTA_NUEVA}, enactus_normalizar_universidad(${COSTA_NUEVA}))`;
+    await correrArchivo(MENU_2027);
+    expect(await idDe(COSTA_VIEJA)).toBeDefined();
+    expect(await idDe(COSTA_NUEVA)).toBeDefined();
+  });
+
+  it('el reverso devuelve los nombres y no borra a quien ya tiene gente', async () => {
+    await correrArchivo(CATALOGO);
+    await correrArchivo(MENU_2027);
+    const valle = (await idDe('Universidad del Valle'))!;
+    const est = await crearUsuario('Est Valle', 'student', 'Universidad del Valle', 'enactus');
+    await sql`update users set university_id = ${valle} where id = ${est}`;
+
+    await correrArchivo(MENU_2027_REVERSO);
+
+    expect(await idDe(COSTA_VIEJA)).toBeDefined();
+    expect(await idDe(COSTA_NUEVA)).toBeUndefined();
+    // EAFIT no tenía a nadie: se va. Univalle sí: se queda.
+    expect(await idDe('Universidad EAFIT')).toBeUndefined();
+    expect(await idDe('Universidad del Valle')).toBe(valle);
+    const [n] = await sql<{ n: number }[]>`
+      select count(*)::int as n from universities where slug <> 'sin asignar'`;
+    expect(n!.n).toBe(34);
   });
 });

@@ -765,6 +765,33 @@ paths:
                         country: { type: string }
                         active: { type: boolean }
         '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [users]
+      summary: Agregar una institución al catálogo (solo admin/superadmin)
+      description: |
+        Es la opción «Otra (¿cuál?)» del desplegable: lo que se escribe ahí no
+        se guarda como texto en la persona —eso reabriría el defecto del texto
+        libre—, sino que se vuelve una fila del catálogo y la persona apunta a
+        ella como a cualquier otra.
+
+        Si ya existe una con el mismo nombre normalizado (minúsculas, sin
+        tildes ni espacios de más), se devuelve esa con `existente: true` y
+        200, en vez de crear otra. Si existe pero está inactiva, 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 3, maxLength: 150 }
+      responses:
+        '200': { description: Ya estaba en el catálogo (`existente` es true) }
+        '201': { description: Agregada }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Existe, pero está inactiva }
 
   /catalogs:
     get:

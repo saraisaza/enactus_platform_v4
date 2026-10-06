@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/cuenta.dart';
+import '../../widgets/selector_idioma.dart';
 
 /// Login único: identifica el rol del usuario y lo lleva a su portal.
 class LoginView extends StatefulWidget {
@@ -47,7 +49,7 @@ class _LoginViewState extends State<LoginView> {
       // "demasiados intentos" o "sin conexión", que para quien lo usa son tres
       // problemas distintos con tres soluciones distintas.
       setState(() => _error =
-          auth.loginError?.message ?? 'Correo o contraseña incorrectos.');
+          auth.loginError?.message ?? tr.ingresoCredencialesIncorrectas);
       return;
     }
     // El Llavero de iOS y Google ofrecen guardar la contraseña recién cuando
@@ -69,6 +71,7 @@ class _LoginViewState extends State<LoginView> {
             hasScrollBody: false,
             child: Column(
               children: [
+                const BarraIdioma(),
                 Expanded(
                   child: Center(
                     child: ConstrainedBox(
@@ -91,12 +94,12 @@ class _LoginViewState extends State<LoginView> {
                       children: [
                         const Center(child: AnimatedLogo(height: 84)),
                         const SizedBox(height: 20),
-                        Text('Bienvenido de nuevo'.toUpperCase(),
+                        Text(tr.ingresoBienvenida.toUpperCase(),
                             textAlign: TextAlign.center,
                             style: displayHeading(fontSize: 26)),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Ingrese con la cuenta creada por su administrador',
+                        Text(
+                          tr.ingresoSubtitulo,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 13),
@@ -120,8 +123,8 @@ class _LoginViewState extends State<LoginView> {
                                 autocorrect: false,
                                 enableSuggestions: false,
                                 textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  labelText: 'Correo electrónico',
+                                decoration: InputDecoration(
+                                  labelText: tr.ingresoCorreo,
                                   prefixIcon:
                                       Icon(Icons.mail_outline, size: 20),
                                 ),
@@ -140,7 +143,7 @@ class _LoginViewState extends State<LoginView> {
                                 autofillHints: const [AutofillHints.password],
                                 textInputAction: TextInputAction.done,
                                 decoration: InputDecoration(
-                                  labelText: 'Contraseña',
+                                  labelText: tr.ingresoContrasena,
                                   prefixIcon:
                                       const Icon(Icons.lock_outline, size: 20),
                                   suffixIcon: IconButton(
@@ -150,8 +153,8 @@ class _LoginViewState extends State<LoginView> {
                                             : Icons.visibility_off_outlined,
                                         size: 20),
                                     tooltip: _obscure
-                                        ? 'Mostrar contraseña'
-                                        : 'Ocultar contraseña',
+                                        ? tr.ingresoMostrarContrasena
+                                        : tr.ingresoOcultarContrasena,
                                     onPressed: () =>
                                         setState(() => _obscure = !_obscure),
                                   ),
@@ -187,7 +190,7 @@ class _LoginViewState extends State<LoginView> {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2),
                                 )
-                              : const Text('Ingresar'),
+                              : Text(tr.ingresoIngresar),
                         ),
                         // La portada es el sitio de presentación de la web:
                         // en la app no hay "inicio" al cual volver.
@@ -196,7 +199,7 @@ class _LoginViewState extends State<LoginView> {
                           TextButton(
                             onPressed: () => Navigator.pushNamedAndRemoveUntil(
                                 context, AppRoutes.landing, (_) => false),
-                            child: const Text('← Volver al inicio'),
+                            child: Text(tr.ingresoVolverAlInicio),
                           ),
                         ],
                         // Las tiendas piden la política de privacidad a la
@@ -207,7 +210,7 @@ class _LoginViewState extends State<LoginView> {
                           const SizedBox(height: 12),
                           TextButton(
                             onPressed: () => abrirPoliticaDePrivacidad(context),
-                            child: const Text('Política de privacidad'),
+                            child: Text(tr.comunPoliticaPrivacidad),
                           ),
                         ],
                       ],

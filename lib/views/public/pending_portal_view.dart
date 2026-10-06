@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
@@ -60,8 +61,8 @@ class PendingPortalView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Disponible próximamente',
+                    Text(
+                      tr.pendienteTitulo,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.gold,
@@ -70,11 +71,8 @@ class PendingPortalView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Estamos conectando este portal con el nuevo sistema. '
-                      'Preferimos tenerlo bien hecho antes que a medias: '
-                      'mientras tanto, no vas a ver información que pueda '
-                      'estar desactualizada.',
+                    Text(
+                      tr.pendienteTexto,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -100,8 +98,7 @@ class PendingPortalView extends StatelessWidget {
                             const SizedBox(width: 10),
                             Flexible(
                               child: Text(
-                                'Tu sesión sigue activa como '
-                                '${user.name} · ${Roles.label(user.role)}',
+                                tr.pendienteSesionActiva(user.name, Roles.label(user.role)),
                                 style: const TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 13,
@@ -120,14 +117,14 @@ class PendingPortalView extends StatelessWidget {
                       children: [
                         OutlinedButton.icon(
                           icon: const Icon(Icons.home_outlined, size: 18),
-                          label: const Text('Ir al inicio'),
+                          label: Text(tr.comunIrAlInicio),
                           onPressed: () => Navigator.of(context)
                               .pushNamedAndRemoveUntil(
                                   AppRoutes.landing, (_) => false),
                         ),
                         TextButton.icon(
                           icon: const Icon(Icons.logout, size: 18),
-                          label: const Text('Cerrar sesión'),
+                          label: Text(tr.comunCerrarSesion),
                           onPressed: () async {
                             await context.read<AuthProvider>().logout();
                             if (context.mounted) {

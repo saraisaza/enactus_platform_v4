@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/textos.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
+import '../../widgets/selector_idioma.dart';
 
 /// Página 404: se muestra cuando la ruta no existe.
 class NotFoundView extends StatelessWidget {
@@ -20,6 +22,7 @@ class NotFoundView extends StatelessWidget {
             hasScrollBody: false,
             child: Column(
               children: [
+                const SafeArea(bottom: false, child: BarraIdioma()),
                 Expanded(
                   child: Center(
               child: Entrance(
@@ -38,23 +41,23 @@ class NotFoundView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Página no encontrada',
+                    Text(
+                      tr.noEncontradaTitulo,
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'La página que busca no existe o fue movida.',
+                    Text(
+                      tr.noEncontradaTexto,
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 14),
                     ),
                     const SizedBox(height: 28),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.home_outlined, size: 18),
-                      label: const Text('Volver al inicio'),
+                      label: Text(tr.comunVolverAlInicio),
                       onPressed: () => Navigator.of(context)
                           .pushNamedAndRemoveUntil(
                               AppRoutes.landing, (_) => false),

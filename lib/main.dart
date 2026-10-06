@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/textos.dart';
 import 'providers/auth_provider.dart';
 import 'providers/data_provider.dart';
 import 'services/api_service.dart';
@@ -39,10 +38,12 @@ Future<void> main() async {
   configurarRutas();
 
   await initializeDateFormatting('es');
-  // Toda fecha sin idioma explícito sale en español. Había una veintena de
-  // `DateFormat('d MMM yyyy')` sin `'es'` que mostraban "30 Sep 2026" y
-  // "10:00 AM" en medio de una interfaz en español.
-  Intl.defaultLocale = 'es';
+  await initializeDateFormatting('en');
+  // El idioma guardado o, la primera vez, el del navegador o el teléfono.
+  // También fija `Intl.defaultLocale`: toda fecha sin idioma explícito sigue
+  // al de la interfaz. (Antes había una veintena de `DateFormat` sin `'es'`
+  // que mostraban "30 Sep 2026" en medio de una interfaz en español.)
+  await Idioma.instancia.cargar();
 
   // Una versión de tienda móvil compilada sin `--dart-define=API_BASE_URL`
   // apuntaría a `http://localhost:3000`: abriría vacía, sin explicar por qué,
@@ -157,15 +158,18 @@ class _EnactusAppState extends State<EnactusApp> {
         ChangeNotifierProvider.value(value: data),
         ChangeNotifierProvider.value(value: auth),
       ],
-      child: MaterialApp(
+      // Al cambiar de idioma, `MaterialApp` se reconstruye con el nuevo
+      // `locale`: los textos propios de Material (selector de fecha y hora,
+      // copiar y pegar, "Atrás") cambian con los de la app.
+      child: ListenableBuilder(
+        listenable: Idioma.instancia,
+        builder: (context, _) => MaterialApp(
         title: 'eduXaction Colombia',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        // Los textos propios de Material (selector de fecha y hora, menú de
-        // copiar y pegar, "Atrás") en español de Colombia.
-        locale: const Locale('es', 'CO'),
-        supportedLocales: const [Locale('es', 'CO'), Locale('es')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        locale: Idioma.instancia.locale,
+        supportedLocales: Idioma.locales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         // Hora y batería en claro sobre el gris de la marca en todas las
         // pantallas (el encabezado y el video también lo fijan). Sin esto,
         // en un iPhone en modo claro salían oscuras sobre fondo oscuro.
@@ -176,6 +180,7 @@ class _EnactusAppState extends State<EnactusApp> {
         home: initialRoute == null ? const _Bootstrap() : null,
         initialRoute: initialRoute,
         onGenerateRoute: _generateRoute,
+        ),
       ),
     );
   }
@@ -191,7 +196,7 @@ class _ConfiguracionIncompleta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: SafeArea(
@@ -199,8 +204,7 @@ class _ConfiguracionIncompleta extends StatelessWidget {
             padding: EdgeInsets.all(24),
             child: Center(
               child: Text(
-                'Esta compilación no tiene configurada la dirección del '
-                'servidor. Compílela con tool/build_movil.sh.',
+                tr.arranqueSinServidor,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -252,11 +256,13 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
     case '${AppRoutes.student}/laboratorios':
       page = const _RoleGuard(
           role: Roles.student,
-          child: StudentPortal(initialTabLabel: 'Laboratorios'));
+          child: StudentPortal(
+              initialTabId: StudentPortal.tabLaboratorios));
     case '${AppRoutes.alumni}/laboratorios':
       page = const _RoleGuard(
           role: Roles.alumni,
-          child: StudentPortal(initialTabLabel: 'Laboratorios'));
+          child: StudentPortal(
+              initialTabId: StudentPortal.tabLaboratorios));
     case AppRoutes.lxd:
       page = const _RoleGuard(role: Roles.lxd, child: LxdPortal());
     case AppRoutes.mentor:
@@ -312,9 +318,9 @@ class _BootstrapState extends State<_Bootstrap> {
     final auth = context.watch<AuthProvider>();
 
     if (auth.isRestoring) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(child: BrandLoader(message: 'Abriendo su sesión…')),
+        body: Center(child: BrandLoader(message: tr.arranqueAbriendoSesion)),
       );
     }
 

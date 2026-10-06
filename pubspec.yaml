@@ -34,8 +34,9 @@ dependencies:
   # direcciones en vez de `/#/ruta`. Viene con el SDK, no agrega descarga.
   flutter_web_plugins:
     sdk: flutter
-  # Textos de Material en español: selector de fecha y hora, copiar/pegar,
-  # "Atrás". Sin esto salían en inglés, en la web y en el teléfono.
+  # Textos de Material en el idioma elegido: selector de fecha y hora,
+  # copiar/pegar, "Atrás". Y la base de los textos propios de la app
+  # (`lib/l10n/`).
   flutter_localizations:
     sdk: flutter
 
@@ -100,6 +101,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # Genera `lib/l10n/app_localizations*.dart` a partir de los archivos de
+  # textos (`lib/l10n/app_es.arb` y `app_en.arb`). Ver `l10n.yaml`.
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

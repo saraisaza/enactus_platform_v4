@@ -11,6 +11,7 @@ import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
 import '../../widgets/contact_dialog.dart';
+import '../../widgets/selector_idioma.dart';
 
 /// Página principal pública: hero editable por el admin, laboratorios,
 /// contadores animados de impacto y acceso al login.
@@ -57,6 +58,8 @@ class LandingView extends StatelessWidget {
               children: [
                 AnimatedLogo(height: isCompact ? 36 : 135, compact: isCompact),
                 const Spacer(),
+                SelectorIdioma(compacto: isCompact),
+                SizedBox(width: isCompact ? 8 : 16),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.login, size: 18),
                   label: const Text('Iniciar sesión'),

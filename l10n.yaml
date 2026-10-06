@@ -1,0 +1,11 @@
+# Textos de la interfaz: un archivo por idioma en lib/l10n/.
+# El español es la plantilla; `flutter gen-l10n` (o cualquier `flutter run`,
+# `test` o `build`) genera `app_localizations*.dart` en la misma carpeta.
+arb-dir: lib/l10n
+template-arb-file: app_es.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+# Si falta una traducción al inglés, la lista queda acá en vez de fallar en
+# silencio. La prueba `idiomas_test.dart` exige que esté vacía.
+untranslated-messages-file: build/l10n_sin_traducir.json

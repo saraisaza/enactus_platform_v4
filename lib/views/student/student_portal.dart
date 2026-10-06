@@ -39,8 +39,11 @@ class StudentPortal extends StatelessWidget {
   /// "Todos los laboratorios" al volver de un detalle sin historial de
   /// navegación que hacer pop (p. ej. se entró por URL directa): en vez de
   /// caer al Dashboard, reabre el portal ya en "Laboratorios".
-  final String? initialTabLabel;
-  const StudentPortal({super.key, this.openLabId, this.initialTabLabel});
+  final String? initialTabId;
+  const StudentPortal({super.key, this.openLabId, this.initialTabId});
+
+  /// [PortalTab.id] de la pestaña de laboratorios.
+  static const tabLaboratorios = 'laboratorios';
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +70,7 @@ class StudentPortal extends StatelessWidget {
           builder: (_) => const StudentCoursesView()),
       if (isEnactus) ...[
         PortalTab(
+            id: tabLaboratorios,
             label: 'Laboratorios',
             icon: Icons.science_outlined,
             builder: (_) => const LabsView()),
@@ -96,11 +100,11 @@ class StudentPortal extends StatelessWidget {
           icon: Icons.person_outline,
           builder: (_) => const _StudentProfile()),
     ];
-    final labTabIndex = tabs.indexWhere((t) => t.label == 'Laboratorios');
+    final labTabIndex = tabs.indexWhere((t) => t.id == tabLaboratorios);
     final showLabDetail = openLabId != null && labTabIndex >= 0;
     final wantedTabIndex = showLabDetail
         ? labTabIndex
-        : (initialTabLabel == null ? -1 : tabs.indexWhere((t) => t.label == initialTabLabel));
+        : (initialTabId == null ? -1 : tabs.indexWhere((t) => t.id == initialTabId));
 
     return PortalShell(
       // Mismo portal para estudiante y alumni (ver Roles.isStudentLike):

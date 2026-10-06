@@ -1,0 +1,46 @@
+{
+  "@@locale": "es",
+  "idiomaEspanol": "Español",
+  "@idiomaEspanol": {
+    "description": "Nombre del idioma en el selector. Va siempre en su propio idioma."
+  },
+  "idiomaIngles": "English",
+  "@idiomaIngles": {
+    "description": "Nombre del idioma en el selector. Va siempre en su propio idioma."
+  },
+  "idiomaSelector": "Idioma",
+  "@idiomaSelector": {
+    "description": "Etiqueta para lectores de pantalla del selector de idioma."
+  },
+  "arranqueSinServidor": "Esta compilación no tiene configurada la dirección del servidor. Compílela con tool/build_movil.sh.",
+  "arranqueAbriendoSesion": "Abriendo su sesión…",
+  "ingresoCredencialesIncorrectas": "Correo o contraseña incorrectos.",
+  "ingresoBienvenida": "Bienvenido de nuevo",
+  "ingresoSubtitulo": "Ingrese con la cuenta creada por su administrador",
+  "ingresoCorreo": "Correo electrónico",
+  "ingresoContrasena": "Contraseña",
+  "ingresoMostrarContrasena": "Mostrar contraseña",
+  "ingresoOcultarContrasena": "Ocultar contraseña",
+  "ingresoIngresar": "Ingresar",
+  "ingresoVolverAlInicio": "← Volver al inicio",
+  "comunPoliticaPrivacidad": "Política de privacidad",
+  "noEncontradaTitulo": "Página no encontrada",
+  "noEncontradaTexto": "La página que busca no existe o fue movida.",
+  "comunVolverAlInicio": "Volver al inicio",
+  "sinConexionTitulo": "Sin conexión",
+  "sinConexionTexto": "No pudimos comunicarnos con eduXaction para abrir su sesión. Revise su conexión a internet e intente de nuevo: su sesión sigue guardada.",
+  "sinConexionComprobando": "Comprobando su sesión…",
+  "comunReintentar": "Reintentar",
+  "sinConexionOtraCuenta": "Entrar con otra cuenta",
+  "pendienteTitulo": "Disponible próximamente",
+  "pendienteTexto": "Estamos conectando este portal con el nuevo sistema. Preferimos tenerlo bien hecho antes que a medias: mientras tanto, no verá información que pueda estar desactualizada.",
+  "pendienteSesionActiva": "Su sesión sigue activa como {nombre} · {rol}",
+  "@pendienteSesionActiva": {
+    "placeholders": {
+      "nombre": {},
+      "rol": {}
+    }
+  },
+  "comunIrAlInicio": "Ir al inicio",
+  "comunCerrarSesion": "Cerrar sesión"
+}

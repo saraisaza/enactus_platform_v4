@@ -13,6 +13,7 @@ import '../utils/responsive.dart';
 import 'animated_logo.dart';
 import 'common.dart';
 import 'cuenta.dart';
+import 'selector_idioma.dart';
 
 /// Header con logo, buscador global, campana de notificaciones y avatar
 /// con menú desplegable. En compact (<600dp) se reduce de alto, oculta el
@@ -146,6 +147,11 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
               ],
               const Spacer(),
+              // En todos los portales y detalles, con o sin sesión. En el
+              // teléfono y en medium solo dice "ES"/"EN": el nombre completo
+              // aparece al abrirlo.
+              SelectorIdioma(compacto: !roomy),
+              SizedBox(width: compact ? 4 : 12),
               if (user != null) ...[
                 if (roomy) ...[
                   const _GlobalSearch(),

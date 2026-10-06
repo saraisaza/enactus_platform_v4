@@ -15,6 +15,11 @@ import 'common.dart';
 
 /// Ítem del menú lateral de un portal.
 class PortalTab {
+  /// Identificador fijo, para abrir esta pestaña desde una ruta
+  /// (`/estudiante/laboratorios`). No se usa [label] porque el rótulo cambia
+  /// con el idioma.
+  final String? id;
+
   final String label;
   final IconData icon;
   final Widget Function(BuildContext) builder;
@@ -28,6 +33,7 @@ class PortalTab {
   final bool destacada;
 
   const PortalTab({
+    this.id,
     required this.label,
     required this.icon,
     required this.builder,

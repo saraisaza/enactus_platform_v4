@@ -21,7 +21,7 @@ class BrandLoader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(
+        SizedBox(
           width: 34,
           height: 34,
           child: CircularProgressIndicator(

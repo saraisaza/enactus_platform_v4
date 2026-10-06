@@ -139,7 +139,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     child: Text(
                       portalTitle!,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.gold,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
@@ -609,7 +609,7 @@ class _AvatarMenu extends StatelessWidget {
               backgroundColor: AppColors.gold,
               child: Text(
                 user.name[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.ink,
                   fontWeight: FontWeight.w700,
                 ),
@@ -684,7 +684,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                     widget.user.name.isNotEmpty
                         ? widget.user.name[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.ink,
                       fontWeight: FontWeight.w700,
                     ),
@@ -774,13 +774,13 @@ class _NotificationBell extends StatelessWidget {
               builder: (_, v, child) => Transform.scale(scale: v, child: child),
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.gold,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '$unread',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.ink,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -884,7 +884,7 @@ class _NotificationListBody extends StatelessWidget {
         itemBuilder: (_, i) {
           final n = notifications[i];
           return ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.notifications,
               color: AppColors.gold,
               size: 20,

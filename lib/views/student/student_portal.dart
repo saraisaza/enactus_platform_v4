@@ -186,7 +186,7 @@ class _StudentCertificates extends StatelessWidget {
                             AnimatedScale(
                               scale: hover ? 1.2 : 1.0,
                               duration: const Duration(milliseconds: 180),
-                              child: const Icon(Icons.workspace_premium,
+                              child: Icon(Icons.workspace_premium,
                                   color: AppColors.gold, size: 34),
                             ),
                             const SizedBox(width: 14),
@@ -1287,7 +1287,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                               widget.student.name.isEmpty
                                   ? '?'
                                   : widget.student.name[0].toUpperCase(),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.ink,
                                   fontWeight: FontWeight.w700,
                                   fontSize: 26)),

@@ -305,7 +305,7 @@ class _Elegido extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            const Icon(Icons.movie_outlined, size: 18, color: AppColors.gold),
+            Icon(Icons.movie_outlined, size: 18, color: AppColors.gold),
             const SizedBox(width: 8),
             Expanded(
               child: Text.rich(
@@ -536,7 +536,7 @@ class _Subida extends StatelessWidget {
                 value: p?.ratio,
                 minHeight: 8,
                 backgroundColor: AppColors.border,
-                valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                valueColor: AlwaysStoppedAnimation(AppColors.gold),
               ),
             ),
           ),
@@ -565,11 +565,13 @@ class _Subida extends StatelessWidget {
 class _Aviso extends StatelessWidget {
   final IconData icon;
   final String text;
-  final Color color;
-  const _Aviso({required this.icon, required this.text, this.color = AppColors.gold});
+  /// Sin color, el acento de la marca (se resuelve al dibujar).
+  final Color? color;
+  const _Aviso({required this.icon, required this.text, this.color});
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? AppColors.gold;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

@@ -282,7 +282,7 @@ class _PortalShellState extends State<PortalShell> {
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
                 child: Text(
                   widget.portalTitle.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.gold,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,

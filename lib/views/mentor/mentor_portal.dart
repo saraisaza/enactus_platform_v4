@@ -130,7 +130,7 @@ class _LabCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.science_outlined, color: AppColors.gold),
+              Icon(Icons.science_outlined, color: AppColors.gold),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(lab.name,

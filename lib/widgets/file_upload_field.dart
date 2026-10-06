@@ -221,7 +221,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
             padding: const EdgeInsets.only(top: 4),
             child: Row(
               children: [
-                const Icon(Icons.insert_drive_file_outlined,
+                Icon(Icons.insert_drive_file_outlined,
                     size: 14, color: AppColors.gold),
                 const SizedBox(width: 6),
                 Expanded(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'marca.dart';
+
 /// Sistema de color de la plataforma.
 ///
 /// UI: tema oscuro gris con un único acento ámbar de marca.
@@ -9,18 +11,23 @@ import 'package:flutter/material.dart';
 /// [AppColors.chartSeries] en orden fijo.
 class AppColors {
   // Marca / UI
-  /// Acento de marca eduXaction: ámbar (identidad
+  /// Acento de marca: el ámbar de eduXaction (identidad
   /// `assets/design_handoff_branding_eduxaction/brand-tokens.css`, token
-  /// `--exa-accent`).
+  /// `--exa-accent`) o el color primario del cliente de quien inició sesión.
   ///
-  /// Único sitio donde vive este valor — todo lo demás lo referencia por acá
-  /// en vez de repetir el hex (certificados PDF y `ContentColors.dark` son
-  /// las dos excepciones documentadas, por no poder referenciar esta
-  /// constante desde su contexto).
-  static const gold = Color(0xFFFFC107);
+  /// No es una constante: lo resuelve [Marca] (ver `marca.dart`), y por eso
+  /// no puede ir dentro de una expresión `const`. Los valores de eduXaction
+  /// viven en `PaletaMarca.eduXaction`; los certificados PDF son la única
+  /// copia aparte, porque `PdfColor` no acepta un `Color`.
+  static Color get gold => Marca.instancia.paleta.primario;
 
-  /// Hover del acento (`--exa-accent-bright`).
-  static const goldBright = Color(0xFFFFCF3D);
+  /// Hover del acento (`--exa-accent-bright` en la marca de eduXaction).
+  static Color get goldBright => Marca.instancia.paleta.primarioBrillante;
+
+  /// El ámbar de eduXaction, FIJO: lo que tiene que seguir siendo ámbar con
+  /// la marca de cualquier cliente. Hoy, el logo animado — el logo de
+  /// eduXaction nunca cambia de color.
+  static const ambarEduXaction = Color(0xFFFFC107);
 
   /// Grises neutros. Reemplazan la rampa cálida marrón anterior
   /// (#453027 / #573D31 / #392720), que era el otro origen del aire de
@@ -33,11 +40,19 @@ class AppColors {
   /// footer.
   static const slateDark = Color(0xFF17171A);
 
-  /// "Tinta sobre acento": texto/íconos oscuros sobre fondos [gold]/
-  /// [goldBright] (iniciales de avatar, banner, contador de notificaciones,
-  /// botones). Mismo valor que el onPrimary del ColorScheme — reunido acá
-  /// para que ningún widget lo hardcodee suelto.
-  static const ink = Color(0xFF21120A);
+  /// "Tinta sobre acento": texto/íconos sobre fondos [gold]/[goldBright]
+  /// (iniciales de avatar, banner, contador de notificaciones, botones).
+  /// Mismo valor que el onPrimary del ColorScheme — reunido acá para que
+  /// ningún widget lo hardcodee suelto.
+  ///
+  /// Sigue a la marca: oscura (#21120A) sobre el ámbar, blanca si el acento
+  /// de un cliente es oscuro. Por eso NO sirve como "tinta oscura" genérica:
+  /// esa es [tintaOscura].
+  static Color get ink => Marca.instancia.paleta.sobrePrimario;
+
+  /// La tinta oscura de la plataforma, fija. La que [inkSobre] compara contra
+  /// el blanco para los colores de dato (laboratorios, ODS).
+  static const tintaOscura = PaletaMarca.tintaOscura;
 
   // Superficies (tema oscuro) — página / tarjetas / paneles, identidad
   // eduXaction (ver `brand-tokens.css` del handoff de branding).
@@ -196,8 +211,8 @@ Color labColorFor(String labId) {
   return AppColors.labPalette[huella % AppColors.labPalette.length];
 }
 
-/// Tinta legible sobre un fondo de color: [AppColors.ink] o blanco, el que
-/// contraste más.
+/// Tinta legible sobre un fondo de color: [AppColors.tintaOscura] o blanco,
+/// el que contraste más.
 ///
 /// Existe porque el rebranding a ámbar dejó ilegible todo lo que ponía texto
 /// blanco sobre el acento. Los números: blanco sobre el naranja anterior daba
@@ -214,8 +229,10 @@ Color inkSobre(Color fondo) {
   final l = fondo.computeLuminance();
   final contrasteConBlanco = 1.05 / (l + 0.05);
   final contrasteConInk =
-      (l + 0.05) / (AppColors.ink.computeLuminance() + 0.05);
-  return contrasteConInk >= contrasteConBlanco ? AppColors.ink : Colors.white;
+      (l + 0.05) / (AppColors.tintaOscura.computeLuminance() + 0.05);
+  return contrasteConInk >= contrasteConBlanco
+      ? AppColors.tintaOscura
+      : Colors.white;
 }
 
 /// Extrae el número de un rótulo de ODS ("ODS 6: Agua limpia..." -> 6).
@@ -278,7 +295,48 @@ class ContentColors {
     required this.veil,
   });
 
-  static const dark = ContentColors(
+  /// Paleta oscura, con el acento de la marca activa (ver [Marca]).
+  ///
+  /// Es un getter y no una constante porque `goldInk` y `goldSoft` siguen a
+  /// la marca. Devuelve siempre la MISMA instancia mientras la marca no
+  /// cambie: quien compare dos paletas con `==` sigue obteniendo lo de antes.
+  static ContentColors get dark => _deMarca().$1;
+
+  /// Paleta clara, con el acento de la marca activa. Ver [dark].
+  static ContentColors get light => _deMarca().$2;
+
+  static PaletaMarca? _paletaEnCache;
+  static (ContentColors, ContentColors)? _enCache;
+
+  static (ContentColors, ContentColors) _deMarca() {
+    final paleta = Marca.instancia.paleta;
+    if (_enCache == null || _paletaEnCache != paleta) {
+      _paletaEnCache = paleta;
+      _enCache = (
+        _oscura._conMarca(paleta.tintaSobreOscuro, paleta.suaveSobreOscuro),
+        _clara._conMarca(paleta.tintaSobreClaro, paleta.suaveSobreClaro),
+      );
+    }
+    return _enCache!;
+  }
+
+  ContentColors _conMarca(Color goldInk, Color goldSoft) => ContentColors(
+        bg: bg,
+        surface: surface,
+        surface2: surface2,
+        border: border,
+        text: text,
+        text2: text2,
+        text3: text3,
+        goldInk: goldInk,
+        goldSoft: goldSoft,
+        alertInk: alertInk,
+        shadow: shadow,
+        veil: veil,
+      );
+
+  /// Los neutros de la paleta oscura. El acento lo pone [_conMarca].
+  static const _oscura = ContentColors(
     bg: Color(0xFF35343A),
     surface: Color(0xFF17171A),
     surface2: Color(0xFF26262A),
@@ -286,8 +344,8 @@ class ContentColors {
     text: Color(0xFFF2F2F5),
     text2: Color(0xFFAEABB0),
     text3: Color(0xFF8F8C92),
-    goldInk: AppColors.gold,
-    goldSoft: Color(0x29FFC107), // rgba(255,193,7,.16)
+    goldInk: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
+    goldSoft: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
     alertInk: Color(0xFFFF8A9B),
     shadow: [
       BoxShadow(
@@ -296,15 +354,17 @@ class ContentColors {
     veil: Color(0x47000000), // rgba(0,0,0,.28)
   );
 
+  /// Los neutros de la paleta clara. El acento lo pone [_conMarca].
+  ///
   /// El ámbar de marca (#FFC107) sobre blanco da ~1.7:1 — peor todavía que
   /// el naranja anterior, que ya no pasaba. En tema claro el texto/ink se
-  /// oscurece a #8A6A00: **nunca usar [AppColors.gold] como color de texto
-  /// sobre fondo claro.**
+  /// oscurece a #8A6A00 (`PaletaMarca.tintaSobreClaro`): **nunca usar
+  /// [AppColors.gold] como color de texto sobre fondo claro.**
   ///
   /// Los neutros también dejan de ser cálidos: el fondo era #F7F1EC, un
   /// crema rosado que acompañaba a la paleta marrón y desentona con el gris
   /// nuevo.
-  static const light = ContentColors(
+  static const _clara = ContentColors(
     bg: Color(0xFFF4F2EF),
     surface: Color(0xFFFFFFFF),
     surface2: Color(0xFFE9E7E3),
@@ -312,8 +372,8 @@ class ContentColors {
     text: Color(0xFF1B1A1E),
     text2: Color(0xFF55535A),
     text3: Color(0xFF8C817C),
-    goldInk: Color(0xFF8A6A00),
-    goldSoft: Color(0x3DFFC107), // rgba(255,193,7,.24)
+    goldInk: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
+    goldSoft: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
     alertInk: Color(0xFFA8101C),
     shadow: [
       BoxShadow(
@@ -388,9 +448,9 @@ class AppWeights {
 
 ThemeData buildAppTheme() {
   final base = ThemeData.dark(useMaterial3: true);
-  const scheme = ColorScheme.dark(
+  final scheme = ColorScheme.dark(
     primary: AppColors.gold,
-    onPrimary: Color(0xFF21120A),
+    onPrimary: AppColors.ink,
     secondary: AppColors.slateLight,
     onSecondary: Colors.white,
     surface: AppColors.surface,
@@ -429,8 +489,7 @@ ThemeData buildAppTheme() {
                     states.contains(WidgetState.focused)
                 ? AppColors.goldBright
                 : AppColors.gold),
-        foregroundColor:
-            const WidgetStatePropertyAll(Color(0xFF21120A)),
+        foregroundColor: WidgetStatePropertyAll(AppColors.ink),
         elevation: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) return 1;
           if (states.contains(WidgetState.hovered)) return 8;
@@ -519,7 +578,7 @@ ThemeData buildAppTheme() {
     ),
     listTileTheme: const ListTileThemeData(iconColor: AppColors.textSecondary),
     dataTableTheme: DataTableThemeData(
-      headingTextStyle: const TextStyle(
+      headingTextStyle: TextStyle(
           fontFamily: AppFonts.ui,
           color: AppColors.gold,
           fontWeight: AppWeights.uiSemibold,
@@ -536,7 +595,7 @@ ThemeData buildAppTheme() {
       dividerThickness: 0.5,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
     ),
-    tabBarTheme: const TabBarThemeData(
+    tabBarTheme: TabBarThemeData(
       labelColor: AppColors.gold,
       unselectedLabelColor: AppColors.textMuted,
       indicatorColor: AppColors.gold,

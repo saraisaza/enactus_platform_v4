@@ -239,7 +239,7 @@ class InitialsAvatar extends StatelessWidget {
                 fontSize: fontSize ?? 19,
                 fontWeight: FontWeight.w700,
                 color: AppColors.ink)
-            : const TextStyle(
+            : TextStyle(
                 color: AppColors.gold, fontWeight: FontWeight.w700),
       ),
     );
@@ -355,12 +355,15 @@ class StatRow extends StatelessWidget {
 /// [tooltip] muestra el detalle (p. ej. "17 de 25 lecciones") en hover.
 class ThinProgressBar extends StatelessWidget {
   final double value; // 0..1
-  final Color color;
+
+  /// Sin color, el acento de la marca. No puede ser el valor por defecto del
+  /// parámetro: el acento se resuelve al dibujar (ver `Marca`).
+  final Color? color;
   final String? tooltip;
   const ThinProgressBar(
       {super.key,
       required this.value,
-      this.color = AppColors.gold,
+      this.color,
       this.tooltip});
 
   @override
@@ -375,7 +378,7 @@ class ThinProgressBar extends StatelessWidget {
           value: v,
           minHeight: 6,
           backgroundColor: AppColors.surfaceAlt,
-          valueColor: AlwaysStoppedAnimation(color),
+          valueColor: AlwaysStoppedAnimation(color ?? AppColors.gold),
         ),
       ),
     );
@@ -587,7 +590,7 @@ class ColombiaFlagBar extends StatelessWidget {
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: const ColoredBox(color: AppColors.gold),
+      child: ColoredBox(color: AppColors.gold),
     );
   }
 }
@@ -1139,7 +1142,7 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.desktop_windows_outlined,
+              Icon(Icons.desktop_windows_outlined,
                   size: 44, color: AppColors.gold),
               const SizedBox(height: 16),
               Text(tr.escritorioTitulo,

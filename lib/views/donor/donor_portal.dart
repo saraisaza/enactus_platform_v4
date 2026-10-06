@@ -72,7 +72,7 @@ class _DonorDashboard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.qr_code_2, color: AppColors.gold),
+                Icon(Icons.qr_code_2, color: AppColors.gold),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(tr.usuarioCodigoImpacto(donante!.impactCode ?? ''),
@@ -224,7 +224,7 @@ class _EvidenceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.volunteer_activism_outlined,
+              Icon(Icons.volunteer_activism_outlined,
                   color: AppColors.gold),
               const SizedBox(width: 10),
               Expanded(

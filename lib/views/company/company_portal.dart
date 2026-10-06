@@ -141,7 +141,7 @@ class _CompanyDashboard extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        const Icon(Icons.business_outlined,
+                        Icon(Icons.business_outlined,
                             color: AppColors.gold),
                         const SizedBox(width: 12),
                         Expanded(
@@ -210,7 +210,7 @@ class _CompanyLabs extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.science_outlined,
+                              Icon(Icons.science_outlined,
                                   color: AppColors.gold),
                               const SizedBox(width: 10),
                               Expanded(

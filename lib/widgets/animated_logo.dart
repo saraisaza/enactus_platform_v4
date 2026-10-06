@@ -7,7 +7,8 @@ import '../utils/app_theme.dart';
 /// 700, con "edu" y "action" en blanco.
 ///
 /// **La X va blanca, y el destello que la recorre va en ámbar**
-/// ([AppColors.gold]). Es la regla de marca vigente, y reemplaza a la
+/// ([AppColors.ambarEduXaction]: fijo, no sigue la marca de un cliente).
+/// Es la regla de marca vigente, y reemplaza a la
 /// anterior —"la X siempre en el acento, nunca cambia de tono"— que valía
 /// cuando el acento era naranja. El motivo del cambio no es estético sino
 /// mecánico: con la X ya en color, el barrido claro apenas se notaba; con la
@@ -271,9 +272,9 @@ class _SweepingXState extends State<_SweepingX>
                   stops: const [0.38, 0.5, 0.62],
                   // `--exa-shine`: el destello es lo único ámbar de la X.
                   colors: [
-                    AppColors.gold.withValues(alpha: 0),
-                    AppColors.gold.withValues(alpha: 0.95),
-                    AppColors.gold.withValues(alpha: 0),
+                    AppColors.ambarEduXaction.withValues(alpha: 0),
+                    AppColors.ambarEduXaction.withValues(alpha: 0.95),
+                    AppColors.ambarEduXaction.withValues(alpha: 0),
                   ],
                 ).createShader(bounds),
                 child: Text('X', style: baseStyle.copyWith(shadows: const [])),

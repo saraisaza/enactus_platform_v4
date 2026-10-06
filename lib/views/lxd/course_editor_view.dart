@@ -631,7 +631,7 @@ class _CategorySectionState extends State<_CategorySection> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Icon(Icons.science_outlined, color: AppColors.gold),
+              Icon(Icons.science_outlined, color: AppColors.gold),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(lab ?? tr.constructorSinLab),
@@ -917,7 +917,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
                     ),
                   ),
                 ),
-                const Icon(Icons.folder_outlined,
+                Icon(Icons.folder_outlined,
                     color: AppColors.gold, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1504,7 +1504,7 @@ class _EditableList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_outline,
+                Icon(Icons.check_circle_outline,
                     size: 16, color: AppColors.gold),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1557,7 +1557,7 @@ class _StringList extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_outline,
+                Icon(Icons.check_circle_outline,
                     size: 16, color: AppColors.gold),
                 const SizedBox(width: 8),
                 Expanded(

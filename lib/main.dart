@@ -11,6 +11,7 @@ import 'services/api_service.dart';
 import 'utils/url_strategy.dart';
 import 'utils/app_theme.dart';
 import 'utils/constants.dart';
+import 'utils/marca.dart';
 import 'utils/orientacion.dart';
 import 'views/auth/login_view.dart';
 import 'views/admin/admin_portal.dart';
@@ -160,9 +161,11 @@ class _EnactusAppState extends State<EnactusApp> {
       ],
       // Al cambiar de idioma, `MaterialApp` se reconstruye con el nuevo
       // `locale`: los textos propios de Material (selector de fecha y hora,
-      // copiar y pegar, "Atrás") cambian con los de la app.
+      // copiar y pegar, "Atrás") cambian con los de la app. Al cambiar la
+      // marca, con el tema nuevo: botones, pestañas y campos toman el acento
+      // del cliente.
       child: ListenableBuilder(
-        listenable: Idioma.instancia,
+        listenable: Listenable.merge([Idioma.instancia, Marca.instancia]),
         builder: (context, _) => MaterialApp(
         title: 'eduXaction Colombia',
         debugShowCheckedModeBanner: false,

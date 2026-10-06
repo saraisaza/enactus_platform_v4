@@ -275,7 +275,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(
+                            SizedBox(
                               height: 22,
                               width: 4,
                               child: ColoredBox(color: AppColors.gold),

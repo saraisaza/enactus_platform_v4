@@ -176,7 +176,7 @@ class _StudentBody extends StatelessWidget {
           HoverCard(
             child: Row(
               children: [
-                const Icon(Icons.groups_outlined, color: AppColors.gold),
+                Icon(Icons.groups_outlined, color: AppColors.gold),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -227,7 +227,7 @@ class _StudentBody extends StatelessWidget {
                     child: HoverCard(
                       child: Row(
                         children: [
-                          const Icon(Icons.workspace_premium_outlined,
+                          Icon(Icons.workspace_premium_outlined,
                               color: AppColors.gold, size: 20),
                           const SizedBox(width: 10),
                           Expanded(
@@ -298,7 +298,7 @@ class _RutaProgress extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.science_outlined,
+                          Icon(Icons.science_outlined,
                               color: AppColors.gold, size: 18),
                           const SizedBox(width: 8),
                           Expanded(
@@ -308,7 +308,7 @@ class _RutaProgress extends StatelessWidget {
                                     fontSize: 13.5)),
                           ),
                           Text('${(lab.ratio * 100).round()}%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12, color: AppColors.gold)),
                         ],
                       ),
@@ -508,7 +508,7 @@ class _MentorBody extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.science_outlined,
+                          Icon(Icons.science_outlined,
                               color: AppColors.gold, size: 18),
                           const SizedBox(width: 10),
                           Expanded(child: Text(lab.name)),

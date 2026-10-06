@@ -46,7 +46,7 @@ class PendingPortalView extends StatelessWidget {
                         color: AppColors.gold.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.construction_outlined,
+                      child: Icon(Icons.construction_outlined,
                           size: 40, color: AppColors.gold),
                     ),
                     const SizedBox(height: 24),

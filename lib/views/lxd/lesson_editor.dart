@@ -740,7 +740,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.attach_file,
+                  Icon(Icons.attach_file,
                       size: 16, color: AppColors.gold),
                   const SizedBox(width: 8),
                   Expanded(
@@ -847,7 +847,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           Row(
             children: [
               Text(tr.leccionPreguntaNumero(i + 1),
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.gold,
                       fontWeight: FontWeight.w700,
                       fontSize: 13)),
@@ -1012,7 +1012,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               key: ValueKey((q, o, _generacion[q] ?? 0)),
               children: [
                 Text('${o + 1}. ',
-                    style: const TextStyle(color: AppColors.gold)),
+                    style: TextStyle(color: AppColors.gold)),
                 Expanded(
                   child: TextFormField(
                     initialValue: q.options[o],
@@ -1077,7 +1077,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           onTap: _saving ? null : _pickDeadline,
           child: Row(
             children: [
-              const Icon(Icons.schedule, color: AppColors.gold, size: 18),
+              Icon(Icons.schedule, color: AppColors.gold, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1257,7 +1257,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         if (a.rubric.isNotEmpty)
           Text(
             tr.leccionTotalPuntos(a.totalPoints),
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.gold,
                 fontWeight: FontWeight.w700,
                 fontSize: 13),

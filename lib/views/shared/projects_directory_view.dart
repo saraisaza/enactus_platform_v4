@@ -566,7 +566,7 @@ class ProjectSummaryCard extends StatelessWidget {
             decoration: BoxDecoration(
                 color: AppColors.gold.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 22),
+            child: Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -600,7 +600,7 @@ class ProjectSummaryCard extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward, size: 18, color: AppColors.gold),
+          Icon(Icons.arrow_forward, size: 18, color: AppColors.gold),
         ],
       ),
     );

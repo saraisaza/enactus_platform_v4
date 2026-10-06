@@ -345,7 +345,7 @@ class _ProjectRow extends StatelessWidget {
     return HoverCard(
       child: Row(
         children: [
-          const Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 24),
+          Icon(Icons.lightbulb_outline, color: AppColors.gold, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -675,7 +675,7 @@ class _CourseAdminCard extends StatelessWidget {
               ],
             );
             final fila = [
-              const Icon(Icons.auto_stories_outlined,
+              Icon(Icons.auto_stories_outlined,
                   color: AppColors.gold, size: 26),
               const SizedBox(width: 12),
               Expanded(child: titulo),
@@ -1405,7 +1405,7 @@ class _CertificateRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.workspace_premium, color: AppColors.gold),
+          Icon(Icons.workspace_premium, color: AppColors.gold),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

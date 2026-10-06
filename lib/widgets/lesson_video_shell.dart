@@ -116,7 +116,7 @@ class LessonVideoCover extends StatelessWidget {
               ),
               Center(
                 child: loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 44,
                         height: 44,
                         child: CircularProgressIndicator(
@@ -177,7 +177,7 @@ class LessonVideoCover extends StatelessWidget {
                     value: watchedRatio,
                     minHeight: 4,
                     backgroundColor: const Color(0x55FFFFFF),
-                    valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                    valueColor: AlwaysStoppedAnimation(AppColors.gold),
                   ),
                 ),
             ],

@@ -324,7 +324,7 @@ class _ImpactMetricsPanel extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.business_outlined,
+                        Icon(Icons.business_outlined,
                             color: AppColors.gold, size: 20),
                         const SizedBox(width: 10),
                         Flexible(

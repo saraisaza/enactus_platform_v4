@@ -85,7 +85,7 @@ class _Body extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(course.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: AppColors.gold)),

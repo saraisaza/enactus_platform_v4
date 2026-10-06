@@ -95,7 +95,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(
                   children: [
-                    const Icon(Icons.menu_book_outlined,
+                    Icon(Icons.menu_book_outlined,
                         size: 17, color: AppColors.gold),
                     const SizedBox(width: 8),
                     Expanded(
@@ -127,7 +127,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                 : Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: glossary.when(
-                      loading: () => const Padding(
+                      loading: () => Padding(
                         padding: EdgeInsets.all(12),
                         child: LinearProgressIndicator(color: AppColors.gold),
                       ),

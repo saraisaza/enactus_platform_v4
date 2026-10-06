@@ -84,7 +84,7 @@ class LandingView extends StatelessWidget {
                       child: Text(
                         content.bannerVisible,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.ink,
                             fontWeight: AppWeights.uiSemibold,
                             fontSize: 13),
@@ -391,7 +391,7 @@ class _Eyebrow extends StatelessWidget {
     return Text(
       texto.toUpperCase(),
       textAlign: TextAlign.center,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11.5,
         fontWeight: AppWeights.uiSemibold,
         // .14em a 11.5 px. El tracking abierto es lo que distingue un
@@ -536,7 +536,7 @@ class _ExpoPhoto extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.emoji_events, color: AppColors.gold, size: 15),
+                    Icon(Icons.emoji_events, color: AppColors.gold, size: 15),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(caption!,

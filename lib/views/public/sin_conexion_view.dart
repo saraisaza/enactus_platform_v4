@@ -41,7 +41,7 @@ class SinConexionView extends StatelessWidget {
                       children: [
                         const AnimatedLogo(height: 64),
                         const SizedBox(height: 32),
-                        const Icon(Icons.wifi_off_rounded,
+                        Icon(Icons.wifi_off_rounded,
                             size: 44, color: AppColors.gold),
                         const SizedBox(height: 16),
                         Text(

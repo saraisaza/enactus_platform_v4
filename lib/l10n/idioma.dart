@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/redibujar.dart';
 import 'app_localizations.dart';
 import 'documento.dart';
 
@@ -101,17 +102,7 @@ class Idioma extends ChangeNotifier {
   }
 
   /// `MaterialApp` se reconstruye al notificar, pero un widget `const` o uno
-  /// que no depende de `Localizations` no se enteraría: [tr] es global. Se
-  /// marca todo el árbol para reconstruir —sin perder estado: la pestaña
-  /// abierta, el formulario a medio llenar y el desplazamiento quedan igual—.
-  void _redibujarTodo() {
-    final raiz = WidgetsBinding.instance.rootElement;
-    if (raiz == null) return;
-    void marcar(Element e) {
-      e.markNeedsBuild();
-      e.visitChildren(marcar);
-    }
-
-    raiz.visitChildren(marcar);
-  }
+  /// que no depende de `Localizations` no se enteraría: [tr] es global. Ver
+  /// [redibujarTodaLaApp], que comparte con la marca (`Marca`).
+  void _redibujarTodo() => redibujarTodaLaApp();
 }

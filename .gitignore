@@ -85,3 +85,8 @@ key.properties
 .env
 .env.*
 !.env.example
+
+# Capturas de pantalla para comparar el aspecto antes y después de un cambio
+# (test/capturas/capturas_test.dart). Dependen de la máquina que las genera.
+test/capturas/goldens/
+test/capturas/failures/

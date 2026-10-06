@@ -270,7 +270,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.play_circle_outline, color: AppColors.gold),
+        Icon(Icons.play_circle_outline, color: AppColors.gold),
         const SizedBox(width: 10),
         Expanded(
           child: Text(title,
@@ -466,7 +466,7 @@ class _Footer extends StatelessWidget {
                     : watched != null && watched > 0
                         ? Text(tr.videoVisto((watched * 100).round()),
                             key: const ValueKey('visto'),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.gold,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700))

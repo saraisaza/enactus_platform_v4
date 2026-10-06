@@ -31,7 +31,7 @@ class NotFoundView extends StatelessWidget {
                   children: [
                     const AnimatedLogo(height: 130),
                     const SizedBox(height: 32),
-                    const Text(
+                    Text(
                       '404',
                       style: TextStyle(
                         fontSize: 72,

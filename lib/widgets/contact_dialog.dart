@@ -119,7 +119,7 @@ class _ContactDialogState extends State<_ContactDialog> {
         ElevatedButton.icon(
           onPressed: _sending ? null : _submit,
           icon: _sending
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(

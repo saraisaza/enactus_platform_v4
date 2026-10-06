@@ -528,7 +528,7 @@ class _PhaseFormDialogState extends State<_PhaseFormDialog> {
             onTap: _saving ? null : _pickDeadline,
             child: Row(
               children: [
-                const Icon(Icons.schedule, color: AppColors.gold, size: 18),
+                Icon(Icons.schedule, color: AppColors.gold, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

@@ -41,13 +41,13 @@ class SubmissionAttachmentRow extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.insert_drive_file_outlined,
+              Icon(Icons.insert_drive_file_outlined,
                   size: 14, color: AppColors.gold),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(file.fileName,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.gold,
                         fontSize: 12,
                         decoration: TextDecoration.underline)),

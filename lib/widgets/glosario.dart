@@ -111,7 +111,7 @@ class _PalabraDelGlosarioState extends State<_PalabraDelGlosario> {
       richMessage: TextSpan(children: [
         TextSpan(
             text: t.word,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w700, color: AppColors.gold)),
         TextSpan(text: '\n${t.shortDefinition}'),
       ]),
@@ -227,7 +227,7 @@ class _LeccionDesplegableState extends State<LeccionDesplegable> {
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: const Border(
+                    border: Border(
                       left: BorderSide(color: AppColors.gold, width: 2),
                     ),
                   ),
@@ -337,7 +337,7 @@ class _GlosarioDelModuloState extends State<GlosarioDelModulo> {
               onTap: () => setState(() => _abierto = !_abierto),
               child: Row(
                 children: [
-                  const Icon(Icons.menu_book_outlined,
+                  Icon(Icons.menu_book_outlined,
                       color: AppColors.gold, size: 22),
                   const SizedBox(width: 12),
                   Expanded(
@@ -902,7 +902,7 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                             children: [
                               for (final r in relacionados)
                                 ActionChip(
-                                  avatar: const Icon(Icons.north_east,
+                                  avatar: Icon(Icons.north_east,
                                       size: 14, color: AppColors.gold),
                                   label: Text(r.word,
                                       style: const TextStyle(fontSize: 12.5)),
@@ -934,7 +934,7 @@ class _Ejemplo extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.gold.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: const Border(left: BorderSide(color: AppColors.gold, width: 3)),
+        border: Border(left: BorderSide(color: AppColors.gold, width: 3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

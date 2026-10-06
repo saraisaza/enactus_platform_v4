@@ -215,7 +215,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                       child: Semantics(
                         container: true,
                         label: tr.videoCargandoCorto,
-                        child: const SizedBox(
+                        child: SizedBox(
                           width: 44,
                           height: 44,
                           child: CircularProgressIndicator(
@@ -484,7 +484,7 @@ class _BotonGrande extends StatelessWidget {
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.all(14),
             // Tinta oscura sobre el ámbar: blanco ahí da 1.6:1.
             child: Icon(

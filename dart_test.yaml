@@ -9,3 +9,9 @@
 tags:
   e2e:
     timeout: 2x
+  # `capturas` toma una imagen de cada pantalla para comparar el aspecto
+  # antes y después de un cambio (ver `test/capturas/capturas_test.dart`).
+  # Las imágenes dependen de cómo dibuja las letras cada sistema, así que no
+  # corre sola: se pide con `--run-skipped`.
+  capturas:
+    skip: "Solo a mano: flutter test test/capturas --run-skipped"

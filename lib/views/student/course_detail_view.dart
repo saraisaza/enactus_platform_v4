@@ -121,7 +121,7 @@ class _CourseBody extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(course.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.gold)),
@@ -179,7 +179,7 @@ class _CourseBody extends StatelessWidget {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.check_circle_outline,
+                                Icon(Icons.check_circle_outline,
                                     size: 15, color: AppColors.gold),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -407,7 +407,7 @@ class _LessonTile extends StatelessWidget {
                           minHeight: 3,
                           backgroundColor: AppColors.surfaceAlt,
                           valueColor:
-                              const AlwaysStoppedAnimation(AppColors.gold),
+                              AlwaysStoppedAnimation(AppColors.gold),
                         ),
                       ),
                     ),
@@ -742,7 +742,7 @@ class _QuizDialogState extends State<_QuizDialog> {
                     width: 24,
                     child: Text('${o + 1}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.gold,
                             fontWeight: FontWeight.w700)),
                   ),
@@ -951,7 +951,7 @@ class _ActivityDialog extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.rule, size: 14, color: AppColors.gold),
+                        Icon(Icons.rule, size: 14, color: AppColors.gold),
                         const SizedBox(width: 8),
                         Expanded(
                             child: Text(item.criterion,
@@ -999,7 +999,7 @@ class _ActivityDialog extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                                 tr.actividadRetroalimentacion(submission.feedback),
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.gold, fontSize: 13)),
                           ),
                       ],
@@ -1234,7 +1234,7 @@ class _SubmissionCard extends StatelessWidget {
           if (submission.feedback.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(tr.actividadRetroalimentacion(submission.feedback),
-                style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+                style: TextStyle(color: AppColors.gold, fontSize: 13)),
           ],
           Text(fechaCorta(submission.submittedAt),
               style: const TextStyle(

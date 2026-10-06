@@ -2103,7 +2103,7 @@ class _ExpoCard extends StatelessWidget {
                           value: total == 0 ? 0 : done / total,
                           minHeight: 7,
                           backgroundColor: colors.surface2,
-                          valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                          valueColor: AlwaysStoppedAnimation(AppColors.gold),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -2307,7 +2307,7 @@ class _MeetingCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            const Icon(Icons.video_camera_front_outlined,
+            Icon(Icons.video_camera_front_outlined,
                 color: AppColors.gold, size: 32),
             const SizedBox(width: 16),
             Expanded(

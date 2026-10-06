@@ -361,7 +361,7 @@ class ProgressRing extends StatelessWidget {
                   strokeWidth: strokeWidth,
                   strokeCap: StrokeCap.round,
                   backgroundColor: track,
-                  valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                  valueColor: AlwaysStoppedAnimation(AppColors.gold),
                 ),
               ),
               Center(

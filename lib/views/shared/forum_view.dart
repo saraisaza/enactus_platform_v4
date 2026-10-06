@@ -306,7 +306,7 @@ class _Composer extends StatelessWidget {
             radius: 22,
             backgroundColor: AppColors.gold,
             child: Text(me.name.isEmpty ? '?' : me.name[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
           ),
           const SizedBox(width: 14),
@@ -642,7 +642,7 @@ class _PostCardState extends State<_PostCard> {
                   radius: 22,
                   backgroundColor: AppColors.gold,
                   child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
                 ),
                 const SizedBox(width: 14),
@@ -1039,7 +1039,7 @@ class _ReplyTile extends StatelessWidget {
             radius: 16,
             backgroundColor: AppColors.gold,
             child: Text(authorName.isEmpty ? '?' : authorName[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 12)),
           ),
           const SizedBox(width: 10),

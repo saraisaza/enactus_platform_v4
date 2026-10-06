@@ -377,7 +377,7 @@ class _TarjetaDeReporteState extends State<_TarjetaDeReporte> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(r.isReply ? tr.reporteTipoRespuesta : tr.reporteTipoPublicacion,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11,
                       letterSpacing: 1,
                       fontWeight: FontWeight.w700,

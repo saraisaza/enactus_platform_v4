@@ -208,7 +208,7 @@ class _Explicacion extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, size: 15, color: AppColors.gold),
+          Icon(Icons.info_outline, size: 15, color: AppColors.gold),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -338,7 +338,7 @@ class _Subtitulo extends StatelessWidget {
     return Row(
       children: [
         if (curso.isOpenLearning)
-          const _Etiqueta('Open Learning', color: AppColors.gold),
+          _Etiqueta('Open Learning', color: AppColors.gold),
         if (!visible)
           _Etiqueta(
             curso.status == 'published' ? tr.constructorOculto : tr.estadoBorrador,

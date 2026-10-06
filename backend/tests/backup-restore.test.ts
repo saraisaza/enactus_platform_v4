@@ -89,6 +89,45 @@ describe('respaldo → destrucción → restauración', () => {
     expect(await conteos()).toEqual(antes);
   });
 
+  it('cada cuenta vuelve con TODAS sus columnas, no solo con las que había al escribir el respaldo', async () => {
+    // El respaldo exportaba `users` con una lista de columnas escrita a mano,
+    // anterior a `university_id` y `advisor_id`. Restaurar dejaba a todos sin
+    // universidad y sin asesor: el asesor dejaba de ver a su gente, sin error.
+    // Contar filas no lo veía — las filas estaban todas.
+    const { accessToken } = await login(app, 'superadmin1@enactus.co', 'Super123');
+
+    // El sembrado no le pone universidad ni asesor a nadie (en una base real
+    // los pone el relleno de la migración 0005), y por eso el hueco nunca se
+    // vio: se le ponen acá a los estudiantes.
+    await sql`
+      update users
+         set university_id = (select id from universities
+                               where active and deleted_at is null
+                               order by name limit 1),
+             advisor_id = (select id from users where role = 'advisor'
+                            and deleted_at is null order by email limit 1)
+       where role = 'student'`;
+
+    const foto = () => sql`
+      select to_jsonb(u) - 'password_hash' as fila from users u order by id`;
+    const antes = await foto();
+    const conUniversidadYAsesor = antes.filter((f) => {
+      const fila = f.fila as Record<string, unknown>;
+      return fila.university_id !== null && fila.advisor_id !== null;
+    });
+    expect(conUniversidadYAsesor.length, 'sin cuentas con universidad y asesor esto no prueba nada')
+      .toBeGreaterThan(0);
+
+    const respaldo = await respaldar(accessToken);
+    const res = await app.request('/admin/restore', {
+      ...json({ version: respaldo.version, data: respaldo.data, confirm: CONFIRM }),
+      headers: { 'content-type': 'application/json', ...auth(accessToken) },
+    });
+    expect(res.status, `la restauración falló: ${await res.clone().text()}`).toBe(200);
+
+    expect(await foto()).toEqual(antes);
+  });
+
   it('después de restaurar, la gente puede ENTRAR', async () => {
     // El corazón del bug: las contraseñas no viajan en el archivo. Si la
     // restauración no las conserva, la base queda "restaurada" y nadie puede

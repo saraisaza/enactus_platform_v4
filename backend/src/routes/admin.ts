@@ -222,16 +222,24 @@ adminRoutes.get('/backup', async (c) => {
   const db = c.get('db');
   const data: Record<string, unknown[]> = {};
 
+  // De `users` sale todo MENOS la contraseña. La lista de columnas se lee de
+  // la base y no se escribe a mano: escrita a mano, quedó de antes de
+  // `university_id` y `advisor_id`, y restaurar dejaba a todos sin universidad
+  // y sin asesor. Una columna que se agregue mañana entra sola.
+  const columnasDeUsers = (
+    await db.execute<{ column_name: string }>(
+      sql`select column_name from information_schema.columns
+           where table_schema = 'public' and table_name = 'users'
+             and column_name <> 'password_hash'
+           order by ordinal_position`,
+    )
+  ).map((fila) => sql.identifier(fila.column_name));
+
   for (const table of BACKUP_TABLES) {
     const rows =
       table === 'users'
         ? await db.execute(
-            sql`select id, name, email, role, phone, cedula, city, university,
-                       career, company_name, impact_code, student_type,
-                       can_grade_open_learning, can_grade_enactus, company_id,
-                       donor_id, avatar_s3_key, joined_at, profile,
-                       created_at, updated_at, deleted_at
-                  from users`,
+            sql`select ${sql.join(columnasDeUsers, sql`, `)} from users`,
           )
         : await db.execute(sql`select * from ${sql.identifier(table)}`);
     data[table] = rows;

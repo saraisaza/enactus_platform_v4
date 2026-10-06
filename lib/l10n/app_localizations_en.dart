@@ -5189,4 +5189,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get donanteVerArchivo => 'View file';
+
+  @override
+  String get comunPalabraEliminar => 'DELETE';
+
+  @override
+  String get rutaLaboratorioMayus => 'LABORATORY';
+
+  @override
+  String get rutaObjetivosMayus => 'OBJECTIVES';
+
+  @override
+  String get proyectosEquipoMayus => 'TEAM';
+
+  @override
+  String get visorNombreArchivo => 'document.pdf';
+
+  @override
+  String odsNumero(Object numero) {
+    return 'SDG $numero';
+  }
+
+  @override
+  String get odsSigla => 'SDGs';
+
+  @override
+  String get foroFijado => 'PINNED';
 }

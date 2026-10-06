@@ -1440,5 +1440,13 @@
   "donanteEvidenciasTitulo": "Impact Evidence",
   "donanteEvidenciasSubtitulo": "Photos, stories and reports of what your contribution made possible",
   "donanteSinEvidencias": "There is no evidence for your contribution yet.",
-  "donanteVerArchivo": "View file"
+  "donanteVerArchivo": "View file",
+  "comunPalabraEliminar": "DELETE",
+  "rutaLaboratorioMayus": "LABORATORY",
+  "rutaObjetivosMayus": "OBJECTIVES",
+  "proyectosEquipoMayus": "TEAM",
+  "visorNombreArchivo": "document.pdf",
+  "odsNumero": "SDG {numero}",
+  "odsSigla": "SDGs",
+  "foroFijado": "PINNED"
 }

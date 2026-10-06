@@ -740,7 +740,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                               ..._detailSection(tr.foroComunidad, project.community, colors),
                             if (project.ods.isNotEmpty) ...[
                               const SizedBox(height: 16),
-                              Text('ODS',
+                              Text(tr.odsSigla,
                                   style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -756,7 +756,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                               ),
                             ],
                             const SizedBox(height: 16),
-                            Text('EQUIPO',
+                            Text(tr.proyectosEquipoMayus,
                                 style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -867,7 +867,7 @@ class _GroupBlock extends StatelessWidget {
             Expanded(
               child: Text(
                   '${team.groupName} · '
-                  '${team.university.isEmpty ? "Universidad sin definir" : team.university}',
+                  '${team.university.isEmpty ? tr.proyectosUniversidadSinDefinir : team.university}',
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

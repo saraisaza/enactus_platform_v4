@@ -396,7 +396,7 @@ class _OdsPicker extends StatelessWidget {
             children: [
               for (final o in catalogs.ods)
                 FilterChip(
-                  label: Text('ODS ${o.number}',
+                  label: Text(tr.odsNumero(o.number),
                       style: const TextStyle(fontSize: 12)),
                   tooltip: o.title,
                   selected: selected.contains(o.code),

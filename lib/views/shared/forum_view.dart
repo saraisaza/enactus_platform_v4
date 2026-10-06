@@ -625,7 +625,7 @@ class _PostCardState extends State<_PostCard> {
                 children: [
                   Icon(Icons.push_pin, size: 14, color: colors.goldInk),
                   const SizedBox(width: 6),
-                  Text('FIJADO',
+                  Text(tr.foroFijado,
                       style: TextStyle(
                           fontSize: 11,
                           letterSpacing: 1,

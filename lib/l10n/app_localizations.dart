@@ -8747,6 +8747,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver archivo'**
   String get donanteVerArchivo;
+
+  /// No description provided for @comunPalabraEliminar.
+  ///
+  /// In es, this message translates to:
+  /// **'ELIMINAR'**
+  String get comunPalabraEliminar;
+
+  /// No description provided for @rutaLaboratorioMayus.
+  ///
+  /// In es, this message translates to:
+  /// **'LABORATORIO'**
+  String get rutaLaboratorioMayus;
+
+  /// No description provided for @rutaObjetivosMayus.
+  ///
+  /// In es, this message translates to:
+  /// **'OBJETIVOS'**
+  String get rutaObjetivosMayus;
+
+  /// No description provided for @proyectosEquipoMayus.
+  ///
+  /// In es, this message translates to:
+  /// **'EQUIPO'**
+  String get proyectosEquipoMayus;
+
+  /// No description provided for @visorNombreArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'documento.pdf'**
+  String get visorNombreArchivo;
+
+  /// No description provided for @odsNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'ODS {numero}'**
+  String odsNumero(Object numero);
+
+  /// No description provided for @odsSigla.
+  ///
+  /// In es, this message translates to:
+  /// **'ODS'**
+  String get odsSigla;
+
+  /// No description provided for @foroFijado.
+  ///
+  /// In es, this message translates to:
+  /// **'FIJADO'**
+  String get foroFijado;
 }
 
 class _AppLocalizationsDelegate

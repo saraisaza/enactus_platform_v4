@@ -1315,14 +1315,17 @@ class PlatformCounts {
 
 class CompetencyHours {
   final String code;
-  final String name;
+  final String _name;
   final double hours;
 
   const CompetencyHours({
     required this.code,
-    this.name = '',
+    this._name = '',
     this.hours = 0,
   });
+
+  /// El nombre en el idioma activo (ver `nombreCompetencia`).
+  String get name => nombreCompetencia(code, _name);
 
   factory CompetencyHours.fromJson(Map<String, dynamic> j) => CompetencyHours(
         code: j['code'] as String,

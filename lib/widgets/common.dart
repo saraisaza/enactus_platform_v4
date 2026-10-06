@@ -886,10 +886,11 @@ Future<T?> showAdaptiveFormDialog<T>({
 }
 
 /// Doble verificación para acciones destructivas (eliminar usuarios,
-/// mentores o cursos): además de confirmar, hay que escribir ELIMINAR.
+/// mentores o cursos): además de confirmar, hay que escribir ELIMINAR (DELETE
+/// en inglés).
 Future<bool> confirmDoubleDialog(
     BuildContext context, String title, String message) async {
-  const keyword = 'ELIMINAR';
+  final keyword = tr.comunPalabraEliminar;
   final ctrl = TextEditingController();
   final result = await showDialog<bool>(
     context: context,

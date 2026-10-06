@@ -2649,5 +2649,18 @@
   "donanteEvidenciasTitulo": "Evidencias de Impacto",
   "donanteEvidenciasSubtitulo": "Fotos, historias y reportes de lo que su aporte hizo posible",
   "donanteSinEvidencias": "Todavía no hay evidencias para su aporte.",
-  "donanteVerArchivo": "Ver archivo"
+  "donanteVerArchivo": "Ver archivo",
+  "comunPalabraEliminar": "ELIMINAR",
+  "rutaLaboratorioMayus": "LABORATORIO",
+  "rutaObjetivosMayus": "OBJETIVOS",
+  "proyectosEquipoMayus": "EQUIPO",
+  "visorNombreArchivo": "documento.pdf",
+  "odsNumero": "ODS {numero}",
+  "@odsNumero": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "odsSigla": "ODS",
+  "foroFijado": "FIJADO"
 }

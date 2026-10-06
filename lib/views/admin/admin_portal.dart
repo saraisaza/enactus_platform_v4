@@ -379,7 +379,7 @@ class _OdsCard extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: 60,
-                      child: Text('ODS ${o.number}',
+                      child: Text(tr.odsNumero(o.number),
                           style: const TextStyle(
                               fontSize: 12, color: AppColors.textSecondary)),
                     ),

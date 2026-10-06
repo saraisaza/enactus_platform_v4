@@ -108,7 +108,7 @@ Future<void> abrirPdf(
 }) async {
   final tituloVisible = titulo ?? tr.visorDocumento;
   final uri = Uri.parse(url);
-  final nombre = uri.pathSegments.isEmpty ? 'documento.pdf' : uri.pathSegments.last;
+  final nombre = uri.pathSegments.isEmpty ? tr.visorNombreArchivo : uri.pathSegments.last;
   await Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
       builder: (_) => VisorPdf(

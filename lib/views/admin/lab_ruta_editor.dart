@@ -1092,7 +1092,7 @@ class _ModuleRow extends StatelessWidget {
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(
                     context,
-                    'Eliminar módulo',
+                    tr.constructorEliminarModulo,
                     tr.rutaEditorEliminarModuloTexto(module.title, module.ownLessons.length),
                   );
                   if (!ok || !context.mounted) return;

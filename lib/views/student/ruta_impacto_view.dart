@@ -811,7 +811,7 @@ class _LabIdentityBand extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('LABORATORIO',
+                      Text(tr.rutaLaboratorioMayus,
                           style: TextStyle(
                               fontSize: 11.5,
                               letterSpacing: 11.5 * 0.16,
@@ -1834,7 +1834,7 @@ class _PhaseRow extends StatelessWidget {
                   ],
                   if (phase.objectives.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text('OBJETIVOS',
+                    Text(tr.rutaObjetivosMayus,
                         style: TextStyle(
                             fontSize: 11.5,
                             letterSpacing: 11.5 * 0.14,

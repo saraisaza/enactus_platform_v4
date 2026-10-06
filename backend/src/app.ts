@@ -79,7 +79,11 @@ export function createApp(database: Database = defaultDb) {
       // sus logs. `tests/cors.test.ts` compara esta lista contra los métodos
       // realmente registrados para que no pueda volver a desfasarse.
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Authorization', 'Content-Type'],
+      // `Accept-Language` es la que elige el idioma de los mensajes (ver
+      // `src/i18n`). El navegador la deja pasar sin preguntar —es de las
+      // cabeceras «simples» de CORS—, pero se declara igual: quitarla de acá
+      // no debe ser la forma de descubrir que alguien la necesitaba.
+      allowHeaders: ['Authorization', 'Content-Type', 'Accept-Language'],
       maxAge: 600,
       credentials: false,
     }),

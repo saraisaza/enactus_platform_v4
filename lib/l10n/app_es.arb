@@ -1272,5 +1272,369 @@
     "placeholders": {
       "laboratorio": {}
     }
-  }
+  },
+  "foroHaceMin": "hace {minutos} min",
+  "@foroHaceMin": {
+    "placeholders": {
+      "minutos": {}
+    }
+  },
+  "foroHaceHoras": "hace {horas} h",
+  "@foroHaceHoras": {
+    "placeholders": {
+      "horas": {}
+    }
+  },
+  "foroHaceDias": "hace {dias} días",
+  "@foroHaceDias": {
+    "placeholders": {
+      "dias": {}
+    }
+  },
+  "foroComunidad": "Comunidad",
+  "foroTitulo": "Foro de la Comunidad",
+  "foroNoAbre": "No pudimos abrir el foro.",
+  "foroCargando": "Cargando publicaciones…",
+  "foroSubtitulo": "Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.",
+  "foroBuscar": "Buscar autor, organización o contenido",
+  "foroNadie": "Nadie ha escrito aún",
+  "foroVacio": "El foro está vacío. Puede ser la primera persona en abrir la conversación de la comunidad.",
+  "foroSinCoincidencias": "Ninguna publicación coincide con este filtro. Pruebe con otra categoría o limpie la búsqueda.",
+  "foroVerTodo": "Ver todo el foro",
+  "foroTodo": "Todo",
+  "foroQueCompartir": "¿Qué quiere compartir con la comunidad?",
+  "foroPublicando": "Publicando…",
+  "foroPublicar": "Publicar",
+  "foroUsuarioEliminado": "Usuario eliminado",
+  "foroMasAcciones": "Más acciones",
+  "foroEliminarPublicacion": "Eliminar publicación",
+  "foroEliminarPublicacionTexto": "¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.",
+  "foroDesfijar": "Desfijar",
+  "foroFijar": "Fijar anuncio",
+  "foroReportar": "Reportar",
+  "foroBloquearA": "Bloquear a {nombre}",
+  "@foroBloquearA": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "foroResponder": "Responder…",
+  "foroVerRespuestas": "Ver las {total} respuestas",
+  "@foroVerRespuestas": {
+    "placeholders": {
+      "total": {}
+    }
+  },
+  "foroEliminarRespuesta": "Eliminar respuesta",
+  "foroEliminarRespuestaTexto": "¿Eliminar esta respuesta del foro? Esta acción no se puede deshacer.",
+  "foroRegla1": "Respete a los demás equipos y comparta con la misma apertura con la que le gustaría recibir ayuda.",
+  "foroRegla2": "Publique contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.",
+  "foroRegla3": "Es un espacio de toda la red: preguntas de cualquier laboratorio o universidad son bienvenidas.",
+  "foroNormas": "Normas del foro",
+  "foroNormasCompletas": "Normas completas",
+  "foroPersonasBloqueadas": "Personas bloqueadas",
+  "foroReportes": "Reportes del foro",
+  "foroRevisar": "Revisar",
+  "foroEquiposActivos": "Equipos más activos",
+  "reporteMotivoOfensivo": "Es ofensivo o irrespetuoso",
+  "reporteMotivoAcoso": "Es acoso o intimidación",
+  "reporteMotivoDiscrimina": "Discrimina a alguien",
+  "reporteMotivoSpam": "Es spam o publicidad",
+  "reporteMotivoDatos": "Comparte datos personales",
+  "reporteMotivoOtro": "Otro motivo",
+  "reporteGracias": "Gracias. El equipo de Enactus revisará este contenido.",
+  "reporteYaReportado": "Ya lo había reportado; el equipo lo tiene en su lista.",
+  "reporteRespuesta": "Reportar respuesta",
+  "reportePublicacion": "Reportar publicación",
+  "reportePorQue": "¿Por qué lo reporta? Solo el equipo de Enactus verá quién lo reportó.",
+  "reporteBloquearTambien": "Bloquear también a {nombre}",
+  "@reporteBloquearTambien": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "reporteDejaraDeVer": "Dejará de ver lo que publica.",
+  "bloqueoTexto": "Dejará de ver lo que {nombre} publica y responde en el foro. No se le avisará. Puede desbloquearle cuando quiera desde «Personas bloqueadas», en las normas del foro.",
+  "@bloqueoTexto": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "bloqueoHecho": "Bloqueó a {nombre}.",
+  "@bloqueoHecho": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "bloqueoNadie": "No ha bloqueado a nadie.",
+  "bloqueoDesbloquear": "Desbloquear",
+  "reportesNinguno": "No hay reportes pendientes.",
+  "reporteQuitarRespuesta": "Quitar respuesta",
+  "reporteQuitarPublicacion": "Quitar publicación",
+  "reporteQuitarTexto": "Se quitará del foro para todas las personas. No se puede deshacer.",
+  "reporteTipoPublicacion": "PUBLICACIÓN",
+  "reporteYaNoSeVe": "· ya no se ve en el foro",
+  "reporteSinMotivo": "Sin motivo",
+  "reporteReporto": "Reportó {nombre} · {fecha}",
+  "@reporteReporto": {
+    "placeholders": {
+      "nombre": {},
+      "fecha": {}
+    }
+  },
+  "reporteCerrar": "Cerrar reporte",
+  "reporteDejarlo": "Dejarlo",
+  "reporteQuitarDelForo": "Quitar del foro",
+  "foroAhora": "ahora",
+  "foroAyer": "ayer",
+  "foroPersonasActivas": "{cantidad, plural, =1{1 persona activa esta semana} other{{cantidad} personas activas esta semana}}",
+  "@foroPersonasActivas": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "foroRespuestas": "{cantidad, plural, =1{1 respuesta} other{{cantidad} respuestas}}",
+  "@foroRespuestas": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "foroReportesSinAtender": "{cantidad, plural, =1{Hay 1 reporte sin atender.} other{Hay {cantidad} reportes sin atender.}}",
+  "@foroReportesSinAtender": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "foroPublicaciones": "{cantidad, plural, =1{1 publicación} other{{cantidad} publicaciones}}",
+  "@foroPublicaciones": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "reporteTipoRespuesta": "RESPUESTA",
+  "proyectosComunidad": "Comunidad eduXaction Colombia",
+  "proyectosSubtitulo": "Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.",
+  "proyectosBuscar": "Buscar proyecto, comunidad u ODS",
+  "proyectosTodasEtapas": "Todas las etapas",
+  "proyectosVacio": "Aún no hay proyectos aquí",
+  "proyectosVacioTexto": "Todavía no se ha publicado ningún proyecto en la comunidad. Cuando su equipo registre el suyo, aparecerá aquí para toda la red.",
+  "proyectosSinCoincidencias": "Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.",
+  "proyectosVerTodasEtapas": "Ver todas las etapas",
+  "proyectosProponer": "Proponer un proyecto",
+  "proyectosSinEquipo": "Sin equipo asignado todavía.",
+  "proyectosFechaNoRegistrada": "Fecha no registrada",
+  "proyectosProblema": "Problema",
+  "proyectosSolucion": "Solución",
+  "proyectosIndicadores": "Indicadores de impacto",
+  "temaClaro": "Claro",
+  "temaOscuro": "Oscuro",
+  "proyectosAsesor": "Asesor académico: {nombre}",
+  "@proyectosAsesor": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "proyectosSinIntegrantes": "Sin integrantes asignados.",
+  "proyectosUniversidadSinDefinir": "Universidad sin definir",
+  "proyectosActivos": "Proyectos activos",
+  "proyectosUniversidades": "Universidades",
+  "proyectosOdsCubiertos": "ODS cubiertos",
+  "proyectosEnExpo": "En National Expo",
+  "labEstudiantesAsignados": "{cantidad} estudiante(s) asignado(s)",
+  "@labEstudiantesAsignados": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "labMentores": "Mentores",
+  "labSinModulos": "Sin módulos publicados todavía.",
+  "labBloqueadaAnterior": "Bloqueada — complete la fase anterior",
+  "labPorVencer": "Por vencer",
+  "labSinEstudiantes": "Sin estudiantes",
+  "labCompletaron": "{hechos}/{total} completaron",
+  "@labCompletaron": {
+    "placeholders": {
+      "hechos": {},
+      "total": {}
+    }
+  },
+  "usuarioEquipoProyecto": "Equipo y proyecto",
+  "usuarioAvanceRuta": "Avance en la Ruta de Impacto",
+  "usuarioSinCertificados": "Todavía sin certificados.",
+  "usuarioSinLaboratorios": "Sin laboratorios asignados.",
+  "usuarioEmpresaTexto": "Sus LXD y mentores aparecen en su propio portal.",
+  "usuarioCodigoImpacto": "Código de impacto: {codigo}",
+  "@usuarioCodigoImpacto": {
+    "placeholders": {
+      "codigo": {}
+    }
+  },
+  "usuarioDonanteTexto": "Sus estudiantes y evidencias aparecen en su propio portal.",
+  "usuarioAsesor": "Asesor académico",
+  "usuarioAcompana": "Acompaña a los equipos de {universidad}.",
+  "@usuarioAcompana": {
+    "placeholders": {
+      "universidad": {}
+    }
+  },
+  "usuarioCursosCreados": "Cursos creados",
+  "usuarioSinCursos": "Aún no ha creado ningún curso.",
+  "usuarioLabsAcompana": "Laboratorios que acompaña",
+  "usuarioSinLab": "Todavía sin laboratorio asignado.",
+  "usuarioEstudiantes": "{cantidad} estudiantes",
+  "@usuarioEstudiantes": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "usuarioEntregasRevisadas": "{cantidad} entregas revisadas.",
+  "@usuarioEntregasRevisadas": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "comunEstudiantes": "{cantidad, plural, =1{1 estudiante} other{{cantidad} estudiantes}}",
+  "@comunEstudiantes": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "proyectosEstudiantesAlcance": "{cantidad, plural, =1{1 estudiante en su alcance} other{{cantidad} estudiantes en su alcance}}",
+  "@proyectosEstudiantesAlcance": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "proyectosCreadoEl": "Creado el {fecha}",
+  "@proyectosCreadoEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "labFechaLimite": "Fecha límite: {fecha}",
+  "@labFechaLimite": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "usuarioCalificaEn": "Califica en: {contextos}",
+  "@usuarioCalificaEn": {
+    "placeholders": {
+      "contextos": {}
+    }
+  },
+  "usuarioNingunContexto": "ningún contexto",
+  "mapaEstudiantesRegistrados": "Estudiantes registrados",
+  "mapaCiudades": "Ciudades",
+  "mapaDepartamentos": "Departamentos",
+  "mapaRedNacional": "Red nacional · actualizado hoy",
+  "mapaPatrocina": "Estudiantes que patrocina su organización",
+  "mapaEstudiantesPais": "Estudiantes en el país",
+  "mapaTexto": "Dónde están los estudiantes registrados en eduXaction Colombia. Cada punto es una ciudad con al menos una universidad activa en la red.",
+  "mapaSufijoPatrocina": "estudiantes que patrocina",
+  "mapaOrdenadas": "Ordenadas por número de estudiantes",
+  "mapaSoloVinculados": "Solo los estudiantes vinculados a su aporte",
+  "mapaPortalAliados": "Portal de aliados · eduXaction Colombia",
+  "mapaGeometria": "Geometría: Natural Earth (dominio público)",
+  "mapaDosOMas": "2 o más estudiantes",
+  "mapaUnEstudiante": "1 estudiante",
+  "mapaEntre": "Entre {desde} y {hasta}",
+  "@mapaEntre": {
+    "placeholders": {
+      "desde": {},
+      "hasta": {}
+    }
+  },
+  "mapaOMas": "{cantidad} o más estudiantes",
+  "@mapaOMas": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "mapaMenosDe": "Menos de {cantidad}",
+  "@mapaMenosDe": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "mapaTodaLaRed": "Toda la red",
+  "mapaLosQuePatrocino": "Los que patrocino",
+  "mapaTema": "Tema",
+  "mapaSinVinculados": "Aún no hay estudiantes vinculados",
+  "mapaSinVinculadosTexto": "Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá aquí en el mapa.",
+  "mapaEscribirAdmin": "Escribir a mi administrador",
+  "mapaSolicitudTitulo": "Solicitud de estudiantes patrocinados",
+  "mapaSolicitudTexto": "Un aliado pidió que le asignen estudiantes a su aporte.",
+  "mapaAvisamos": "Le avisamos a su administrador.",
+  "mapaSinCiudades": "Sin ciudades para este alcance todavía.",
+  "mapaCiudadExplica": "La ciudad es la que el estudiante (o su administrador) eligió en su perfil. Los estudiantes sin ciudad asignada todavía no aparecen en el mapa.",
+  "talentoTitulo": "BuscaTalento",
+  "talentoSubtitulo": "Estudiantes eduXaction que ya demostraron sus habilidades en la Ruta de Impacto — contáctelos para oportunidades futuras 💛",
+  "talentoVacio": "Todavía no hay estudiantes eduXaction en la plataforma.",
+  "talentoTop": "Top talento",
+  "talentoAvance": "{porcentaje}% de avance",
+  "@talentoAvance": {
+    "placeholders": {
+      "porcentaje": {}
+    }
+  },
+  "talentoObjetivosEmprendimiento": "{cantidad} objetivos de emprendimiento",
+  "@talentoObjetivosEmprendimiento": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "talentoObjetivosEmpresariales": "{cantidad} objetivos empresariales",
+  "@talentoObjetivosEmpresariales": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "talentoCertificados": "{cantidad} certificados",
+  "@talentoCertificados": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "talentoContactar": "Contactar",
+  "talentoOportunidad": "Una oportunidad para usted",
+  "talentoNecesitaTitulo": "El aviso necesita un título.",
+  "talentoMensajeEnviado": "Mensaje enviado ✓",
+  "talentoContactarA": "Contactar a {nombre}",
+  "@talentoContactarA": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "talentoMensajeLlega": "El mensaje llega a su bandeja dentro de la plataforma. No se entrega ningún dato de contacto.",
+  "talentoAsunto": "Asunto",
+  "recursosTitulo": "Recursos de Comunicaciones",
+  "recursosSubtitulo": "Plantillas, guías de marca y material para el equipo",
+  "recursosNuevo": "Nuevo recurso",
+  "recursosVacio": "Todavía no hay recursos publicados.",
+  "recursosEliminar": "Eliminar recurso",
+  "recursosEliminarTexto": "¿Eliminar \"{titulo}\"?",
+  "@recursosEliminarTexto": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "recursosNecesitaTitulo": "El recurso necesita un título.",
+  "recursosFaltaArchivo": "Falta subir el archivo.",
+  "recursosFaltaUrl": "Falta la URL.",
+  "recursosPublicado": "Recurso publicado ✓",
+  "comunDescripcion": "Descripción",
+  "mapaSufijoEstudiantes": "estudiantes"
 }

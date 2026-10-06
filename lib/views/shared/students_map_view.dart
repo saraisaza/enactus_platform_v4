@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../widgets/async_states.dart';
@@ -114,10 +115,10 @@ class _StudentsMapViewState extends State<StudentsMapView> {
     final totalDepartments = <String>{for (final p in points) p.city.department}.length;
 
     final tiles = [
-      (value: totalStudents, label: 'Estudiantes registrados', primary: true),
-      (value: points.length, label: 'Ciudades', primary: false),
-      (value: totalUniversities, label: 'Universidades', primary: false),
-      (value: totalDepartments, label: 'Departamentos', primary: false),
+      (value: totalStudents, label: tr.mapaEstudiantesRegistrados, primary: true),
+      (value: points.length, label: tr.mapaCiudades, primary: false),
+      (value: totalUniversities, label: tr.proyectosUniversidades, primary: false),
+      (value: totalDepartments, label: tr.mapaDepartamentos, primary: false),
     ];
 
     final emptyMine = _scope == 'mine' && propiosVacios;
@@ -158,8 +159,8 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                                 Flexible(
                                   child: Text(
                                       (_scope == 'all'
-                                              ? 'Red nacional · actualizado hoy'
-                                              : 'Estudiantes que patrocina su organización')
+                                              ? tr.mapaRedNacional
+                                              : tr.mapaPatrocina)
                                           .toUpperCase(),
                                       style: TextStyle(
                                           fontSize: 12,
@@ -170,7 +171,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            Text('Estudiantes en el país'.toUpperCase(),
+                            Text(tr.mapaEstudiantesPais.toUpperCase(),
                                 style: displayHeading(
                                     fontSize: compacto ? 38 : 58,
                                     fontWeight: AppWeights.display,
@@ -178,8 +179,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                                     height: 0.94)),
                             const SizedBox(height: 12),
                             Text(
-                                'Dónde están los estudiantes registrados en eduXaction Colombia. '
-                                'Cada punto es una ciudad con al menos una universidad activa en la red.',
+                                tr.mapaTexto,
                                 style: TextStyle(fontSize: 15.5, color: colors.text2, height: 1.4)),
                           ],
                         ),
@@ -236,15 +236,15 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                               isDark: _isDark,
                               hoveredCity: _hoveredCity,
                               onHoverCity: (v) => setState(() => _hoveredCity = v),
-                              tooltipSuffix: _scope == 'mine' ? 'estudiantes que patrocina' : 'estudiantes',
+                              tooltipSuffix: _scope == 'mine' ? tr.mapaSufijoPatrocina : tr.mapaSufijoEstudiantes,
                             ),
                     );
                     final listCard = _CityListCard(
                       points: points,
                       maxValue: maxValue,
                       hint: _scope == 'all'
-                          ? 'Ordenadas por número de estudiantes'
-                          : 'Solo los estudiantes vinculados a su aporte',
+                          ? tr.mapaOrdenadas
+                          : tr.mapaSoloVinculados,
                       hoveredCity: _hoveredCity,
                       onHoverCity: (v) => setState(() => _hoveredCity = v),
                       colors: colors,
@@ -281,12 +281,12 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                             ),
                             const SizedBox(width: 14),
                             Flexible(
-                              child: Text('Portal de aliados · eduXaction Colombia',
+                              child: Text(tr.mapaPortalAliados,
                                   style: TextStyle(fontSize: 12.5, color: colors.text3)),
                             ),
                           ],
                         ),
-                        Text('Geometría: Natural Earth (dominio público)',
+                        Text(tr.mapaGeometria,
                             style: TextStyle(fontSize: 12.5, color: colors.text3)),
                       ],
                     ),
@@ -329,10 +329,10 @@ List<StudentCountTier> studentCountTiers(int maxValue) {
   if (maxValue <= 1) {
     return [
       StudentCountTier(
-          min: 2, color: AppColors.chartSeries[2], label: '2 o más estudiantes'),
-      const StudentCountTier(min: 1, color: AppColors.gold, label: '1 estudiante'),
+          min: 2, color: AppColors.chartSeries[2], label: tr.mapaDosOMas),
+      StudentCountTier(min: 1, color: AppColors.gold, label: tr.mapaUnEstudiante),
       StudentCountTier(
-          min: 0, color: AppColors.chartSeries[1], label: 'Sin estudiantes'),
+          min: 0, color: AppColors.chartSeries[1], label: tr.labSinEstudiantes),
     ];
   }
   final high = (maxValue * 0.417).round().clamp(2, maxValue);
@@ -340,13 +340,13 @@ List<StudentCountTier> studentCountTiers(int maxValue) {
   // Con pocos datos "high" y "mid" pueden quedar pegados (p. ej. 2 y 1):
   // "Entre 1 y 1" lee mal, mejor el número exacto en singular/plural.
   final midLabel = mid == high - 1
-      ? '$mid estudiante${mid == 1 ? '' : 's'}'
-      : 'Entre $mid y ${high - 1}';
+      ? tr.comunEstudiantes(mid)
+      : tr.mapaEntre(mid, high - 1);
   return [
     StudentCountTier(
-        min: high, color: AppColors.chartSeries[2], label: '$high o más estudiantes'),
+        min: high, color: AppColors.chartSeries[2], label: tr.mapaOMas(high)),
     StudentCountTier(min: mid, color: AppColors.gold, label: midLabel),
-    StudentCountTier(min: 0, color: AppColors.chartSeries[1], label: 'Menos de $mid'),
+    StudentCountTier(min: 0, color: AppColors.chartSeries[1], label: tr.mapaMenosDe(mid)),
   ];
 }
 
@@ -470,9 +470,9 @@ class _ScopeSegment extends StatelessWidget {
       // Cada segmento se puede encoger: en un teléfono angosto los dos
       // rótulos juntos no siempre caben.
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Flexible(child: seg('all', 'Toda la red')),
+        Flexible(child: seg('all', tr.mapaTodaLaRed)),
         const SizedBox(width: 4),
-        Flexible(child: seg('mine', 'Los que patrocino')),
+        Flexible(child: seg('mine', tr.mapaLosQuePatrocino)),
       ]),
     );
   }
@@ -504,7 +504,7 @@ class _ThemeGhostButton extends StatelessWidget {
               Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   size: 18, color: hover ? colors.goldInk : colors.text2),
               const SizedBox(width: 9),
-              Text('Tema', style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
+              Text(tr.mapaTema, style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
             ],
           ),
         ),
@@ -525,10 +525,9 @@ class _MineEmptyState extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: EmptyState(
           icon: Icons.public_off,
-          title: 'Aún no hay estudiantes vinculados',
-          message: 'Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador '
-              'asigne alguno, aparecerá aquí en el mapa.',
-          secondaryLabel: 'Escribir a mi administrador',
+          title: tr.mapaSinVinculados,
+          message: tr.mapaSinVinculadosTexto,
+          secondaryLabel: tr.mapaEscribirAdmin,
           secondaryIcon: Icons.mail_outline,
           onSecondary: () => _contactAdmin(context),
           colors: colors,
@@ -546,11 +545,11 @@ class _MineEmptyState extends StatelessWidget {
   Future<void> _contactAdmin(BuildContext context) async {
     try {
       await data.notifyAdmins(
-        title: 'Solicitud de estudiantes patrocinados',
-        body: 'Un aliado pidió que le asignen estudiantes a su aporte.',
+        title: tr.mapaSolicitudTitulo,
+        body: tr.mapaSolicitudTexto,
       );
       if (context.mounted) {
-        showAppSnack(context, 'Le avisamos a su administrador.');
+        showAppSnack(context, tr.mapaAvisamos);
       }
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message, error: true);
@@ -584,7 +583,7 @@ class _CityListCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Ciudades'.toUpperCase(),
+          Text(tr.mapaCiudades.toUpperCase(),
               style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 4),
           Text(hint, style: TextStyle(fontSize: 12.5, color: colors.text3)),
@@ -592,7 +591,7 @@ class _CityListCard extends StatelessWidget {
           if (points.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Text('Sin ciudades para este alcance todavía.',
+              child: Text(tr.mapaSinCiudades,
                   style: TextStyle(fontSize: 13, color: colors.text3)),
             )
           else
@@ -625,8 +624,7 @@ class _CityListCard extends StatelessWidget {
                 const SizedBox(width: 11),
                 Expanded(
                   child: Text(
-                      'La ciudad es la que el estudiante (o su administrador) eligió en su perfil. '
-                      'Los estudiantes sin ciudad asignada todavía no aparecen en el mapa.',
+                      tr.mapaCiudadExplica,
                       style: TextStyle(fontSize: 12.5, height: 1.5, color: colors.text3)),
                 ),
               ],

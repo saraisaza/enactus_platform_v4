@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -31,13 +32,13 @@ class CommunicationResourcesView extends StatelessWidget {
     final puedePublicar = rol == Roles.admin || rol == Roles.superAdmin;
 
     return TabBody(
-      title: 'Recursos de Comunicaciones',
-      subtitle: 'Plantillas, guías de marca y material para el equipo',
+      title: tr.recursosTitulo,
+      subtitle: tr.recursosSubtitulo,
       actions: [
         if (puedePublicar)
           ElevatedButton.icon(
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('Nuevo recurso'),
+            label: Text(tr.recursosNuevo),
             onPressed: () => _publicar(context),
           ),
       ],
@@ -47,9 +48,9 @@ class CommunicationResourcesView extends StatelessWidget {
           error: (e) =>
               ErrorState(e, onRetry: data.reloadCommunicationResources),
           data: (recursos) => recursos.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.perm_media_outlined,
-                  message: 'Todavía no hay recursos publicados.')
+                  message: tr.recursosVacio)
               : Column(
                   children: [
                     for (final r in recursos)
@@ -117,10 +118,10 @@ class _ResourceCard extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.delete_outline, size: 18),
               color: AppColors.statusCritical,
-              tooltip: 'Eliminar',
+              tooltip: tr.comunEliminar,
               onPressed: () async {
-                final ok = await confirmDialog(context, 'Eliminar recurso',
-                    '¿Eliminar "${resource.title}"?');
+                final ok = await confirmDialog(context, tr.recursosEliminar,
+                    tr.recursosEliminarTexto(resource.title));
                 if (!ok || !context.mounted) return;
                 try {
                   await data.deleteCommunicationResource(resource.id);
@@ -190,16 +191,16 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
     final esArchivo = _type == 'file';
     if (_title.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('El recurso necesita un título.'));
+          _error = ValidationError(tr.recursosNecesitaTitulo));
       return;
     }
     if (esArchivo && _archivo.isEmpty) {
       setState(() =>
-          _error = const ValidationError('Falta subir el archivo.'));
+          _error = ValidationError(tr.recursosFaltaArchivo));
       return;
     }
     if (!esArchivo && _url.text.trim().isEmpty) {
-      setState(() => _error = const ValidationError('Falta la URL.'));
+      setState(() => _error = ValidationError(tr.recursosFaltaUrl));
       return;
     }
 
@@ -223,7 +224,7 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
       });
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Recurso publicado ✓');
+      showSuccessCheck(context, tr.recursosPublicado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -237,7 +238,7 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Nuevo recurso',
+      title: tr.recursosNuevo,
       maxWidth: 480,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -253,22 +254,22 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Título'),
+            decoration: InputDecoration(labelText: tr.comunTitulo),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Descripción'),
+            decoration: InputDecoration(labelText: tr.comunDescripcion),
           ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             children: [
-              for (final (valor, etiqueta) in const [
-                ('file', 'Archivo'),
-                ('link', 'Enlace'),
+              for (final (valor, etiqueta) in [
+                ('file', tr.archivoArchivo),
+                ('link', tr.leccionTipoEnlace),
               ])
                 ChoiceChip(
                   label: Text(etiqueta),

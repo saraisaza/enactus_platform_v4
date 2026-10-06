@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/data_provider.dart';
@@ -36,7 +37,7 @@ class UserDetailView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Perfil'),
+          AppHeader(portalTitle: tr.tabPerfilCorto),
           Expanded(
             child: data.userById(userId).when(
                   loading: () => const Center(child: BrandLoader()),
@@ -171,7 +172,7 @@ class _StudentBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (user.team != null) ...[
-          const SectionTitle('Equipo y proyecto'),
+          SectionTitle(tr.usuarioEquipoProyecto),
           HoverCard(
             child: Row(
               children: [
@@ -201,12 +202,12 @@ class _StudentBody extends StatelessWidget {
             ),
           ),
         ],
-        const SectionTitle('Avance en la Ruta de Impacto'),
+        SectionTitle(tr.usuarioAvanceRuta),
         // El avance de OTRA persona sale de su propio endpoint: el servidor
         // comprueba que quien mira pueda verlo. Un estudiante que intente
         // leer el de otro recibe 403.
         _RutaProgress(studentId: user.id),
-        const SectionTitle('Certificados'),
+        SectionTitle(tr.tabCertificados),
         data.certificates.when(
           loading: () => const CardListSkeleton(count: 1, height: 56),
           error: (e) => ErrorBanner(e),
@@ -214,7 +215,7 @@ class _StudentBody extends StatelessWidget {
             final suyos =
                 certs.where((c) => c.studentId == user.id).toList();
             if (suyos.isEmpty) {
-              return const Text('Todavía sin certificados.',
+              return Text(tr.usuarioSinCertificados,
                   style:
                       TextStyle(fontSize: 13, color: AppColors.textMuted));
             }
@@ -274,7 +275,7 @@ class _RutaProgress extends StatelessWidget {
           return const CardListSkeleton(count: 2, height: 64);
         }
         if (progress.laboratories.isEmpty) {
-          return const Text('Sin laboratorios asignados.',
+          return Text(tr.usuarioSinLaboratorios,
               style: TextStyle(fontSize: 13, color: AppColors.textMuted));
         }
         return Column(
@@ -337,25 +338,25 @@ class _StaffBody extends StatelessWidget {
       Roles.lxd => _LxdBody(user: user),
       Roles.mentor => _MentorBody(user: user),
       Roles.company => _SimpleBody(
-          titulo: 'Empresa',
+          titulo: tr.rolEmpresa,
           lineas: [
             if (user.companyName.isNotEmpty) user.companyName,
-            'Sus LXD y mentores aparecen en su propio portal.',
+            tr.usuarioEmpresaTexto,
           ],
         ),
       Roles.donor => _SimpleBody(
-          titulo: 'Donante',
+          titulo: tr.rolDonante,
           lineas: [
             if ((user.impactCode ?? '').isNotEmpty)
-              'Código de impacto: ${user.impactCode}',
-            'Sus estudiantes y evidencias aparecen en su propio portal.',
+              tr.usuarioCodigoImpacto(user.impactCode!),
+            tr.usuarioDonanteTexto,
           ],
         ),
       Roles.advisor => _SimpleBody(
-          titulo: 'Asesor académico',
+          titulo: tr.usuarioAsesor,
           lineas: [
             if (user.university.isNotEmpty)
-              'Acompaña a los equipos de ${user.university}.',
+              tr.usuarioAcompana(user.university),
           ],
         ),
       _ => data.courses.when(
@@ -402,7 +403,7 @@ class _LxdBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle('Cursos creados'),
+        SectionTitle(tr.usuarioCursosCreados),
         data.courses.when(
           loading: () => const CardListSkeleton(count: 2, height: 56),
           error: (e) => ErrorBanner(e),
@@ -410,7 +411,7 @@ class _LxdBody extends StatelessWidget {
             final suyos =
                 courses.where((c) => c.creatorId == user.id).toList();
             if (suyos.isEmpty) {
-              return const Text('Aún no ha creado ningún curso.',
+              return Text(tr.usuarioSinCursos,
                   style:
                       TextStyle(fontSize: 13, color: AppColors.textMuted));
             }
@@ -453,10 +454,10 @@ class _LxdBody extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          'Califica en: ${[
+          tr.usuarioCalificaEn([
             if (user.canGradeOpenLearning) 'Open Learning',
             if (user.canGradeEnactus) 'eduXaction',
-          ].join(', ').ifEmpty('ningún contexto')}',
+          ].join(', ').ifEmpty(tr.usuarioNingunContexto)),
           style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
         ),
       ],
@@ -475,7 +476,7 @@ class _MentorBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle('Laboratorios que acompaña'),
+        SectionTitle(tr.usuarioLabsAcompana),
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 2, height: 56),
           error: (e) => ErrorBanner(e),
@@ -487,7 +488,7 @@ class _MentorBody extends StatelessWidget {
                 .where((l) => l.mentors.any((m) => m.id == user.id))
                 .toList();
             if (suyos.isEmpty) {
-              return const Text('Todavía sin laboratorio asignado.',
+              return Text(tr.usuarioSinLab,
                   style:
                       TextStyle(fontSize: 13, color: AppColors.textMuted));
             }
@@ -511,7 +512,7 @@ class _MentorBody extends StatelessWidget {
                               color: AppColors.gold, size: 18),
                           const SizedBox(width: 10),
                           Expanded(child: Text(lab.name)),
-                          Text('${lab.studentsAssigned} estudiantes',
+                          Text(tr.usuarioEstudiantes(lab.studentsAssigned),
                               style: const TextStyle(
                                   fontSize: 12, color: AppColors.textMuted)),
                         ],
@@ -524,7 +525,7 @@ class _MentorBody extends StatelessWidget {
         ),
         if (user.reviewsCount != null) ...[
           const SizedBox(height: 10),
-          Text('${user.reviewsCount} entregas revisadas.',
+          Text(tr.usuarioEntregasRevisadas(user.reviewsCount!),
               style: const TextStyle(
                   fontSize: 13, color: AppColors.textMuted)),
         ],

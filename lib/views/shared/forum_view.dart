@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/async_value.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
@@ -38,12 +39,12 @@ IconData forumCategoryIcon(String category) => switch (category) {
 /// semana — el tiempo relativo que pide el README para cada publicación.
 String relativeTime(DateTime date) {
   final diff = DateTime.now().difference(date);
-  if (diff.inMinutes < 1) return 'ahora';
-  if (diff.inMinutes < 60) return 'hace ${diff.inMinutes} min';
-  if (diff.inHours < 24) return 'hace ${diff.inHours} h';
-  if (diff.inDays == 1) return 'ayer';
-  if (diff.inDays < 7) return 'hace ${diff.inDays} días';
-  return DateFormat('d MMM yyyy', 'es').format(date);
+  if (diff.inMinutes < 1) return tr.foroAhora;
+  if (diff.inMinutes < 60) return tr.foroHaceMin(diff.inMinutes);
+  if (diff.inHours < 24) return tr.foroHaceHoras(diff.inHours);
+  if (diff.inDays == 1) return tr.foroAyer;
+  if (diff.inDays < 7) return tr.foroHaceDias(diff.inDays);
+  return fechaCorta(date);
 }
 
 /// Organización de un usuario para mostrar junto a su nombre en el foro:
@@ -112,9 +113,9 @@ class _ForumViewState extends State<ForumView> {
     final error = postsState.errorOrNull;
     if (error != null) {
       return ContentScreenShell(
-        eyebrow: 'Comunidad',
-        title: 'Foro de la Comunidad',
-        subtitle: 'No pudimos abrir el foro.',
+        eyebrow: tr.foroComunidad,
+        title: tr.foroTitulo,
+        subtitle: tr.foroNoAbre,
         bodyBuilder: (context, colors, isDark) =>
             ErrorState(error, onRetry: data.reloadForumPosts),
       );
@@ -122,10 +123,10 @@ class _ForumViewState extends State<ForumView> {
 
     final allPosts = postsState.valueOrNull;
     if (allPosts == null) {
-      return const ContentScreenShell(
-        eyebrow: 'Comunidad',
-        title: 'Foro de la Comunidad',
-        subtitle: 'Cargando publicaciones…',
+      return ContentScreenShell(
+        eyebrow: tr.foroComunidad,
+        title: tr.foroTitulo,
+        subtitle: tr.foroCargando,
         bodyBuilder: _forumLoadingBody,
       );
     }
@@ -154,13 +155,10 @@ class _ForumViewState extends State<ForumView> {
     final topTeams = stats?.mostActiveTeams ?? const <ForumTeamActivity>[];
 
     return ContentScreenShell(
-      eyebrow: '$activeCount persona${activeCount == 1 ? '' : 's'} '
-          'activa${activeCount == 1 ? '' : 's'} esta semana',
-      title: 'Foro de la Comunidad',
-      subtitle: 'Pregunte, comparta avances y encuentre a quién ya resolvió lo '
-          'que usted está resolviendo. Escriben estudiantes, mentores y LXD de '
-          'toda la red.',
-      searchHint: 'Buscar autor, organización o contenido',
+      eyebrow: tr.foroPersonasActivas(activeCount),
+      title: tr.foroTitulo,
+      subtitle: tr.foroSubtitulo,
+      searchHint: tr.foroBuscar,
       onSearchChanged: (v) => setState(() => _query = v),
       bodyBuilder: (context, colors, isDark) {
         final left = Column(
@@ -186,13 +184,11 @@ class _ForumViewState extends State<ForumView> {
             if (posts.isEmpty)
               EmptyState(
                 icon: Icons.forum_outlined,
-                title: 'Nadie ha escrito aún',
+                title: tr.foroNadie,
                 message: allPosts.isEmpty
-                    ? 'El foro está vacío. Puede ser la primera persona en abrir la '
-                        'conversación de la comunidad.'
-                    : 'Ninguna publicación coincide con este filtro. Pruebe '
-                        'con otra categoría o limpie la búsqueda.',
-                primaryLabel: 'Ver todo el foro',
+                    ? tr.foroVacio
+                    : tr.foroSinCoincidencias,
+                primaryLabel: tr.foroVerTodo,
                 onPrimary: () => setState(() {
                   _categoryFilter = 'todas';
                   _query = '';
@@ -254,7 +250,7 @@ class _ForumViewState extends State<ForumView> {
       runSpacing: 9,
       children: [
         _CategoryFilterChip(
-          label: 'Todo',
+          label: tr.foroTodo,
           count: countFor('todas'),
           active: _categoryFilter == 'todas',
           colors: colors,
@@ -327,7 +323,7 @@ class _Composer extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: colors.surface2,
-                    hintText: '¿Qué quiere compartir con la comunidad?',
+                    hintText: tr.foroQueCompartir,
                     hintStyle: TextStyle(color: colors.text3),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
                     border: OutlineInputBorder(
@@ -375,7 +371,7 @@ class _Composer extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: canPublish ? onPublish : null,
                           icon: const Icon(Icons.send, size: 18),
-                          label: Text(sending ? 'Publicando…' : 'Publicar'),
+                          label: Text(sending ? tr.foroPublicando : tr.foroPublicar),
                         ),
                       ),
                     ),
@@ -541,7 +537,7 @@ class _PostCardState extends State<_PostCard> {
     final colors = widget.colors;
     final post = widget.post;
     final authorName = post.authorName;
-    final name = authorName.isEmpty ? 'Usuario eliminado' : authorName;
+    final name = authorName.isEmpty ? tr.foroUsuarioEliminado : authorName;
     final isStaff = post.authorRole.isNotEmpty &&
         !Roles.isStudentLike(post.authorRole);
     // La universidad o empresa del autor ya no viaja con la publicación: era
@@ -719,8 +715,7 @@ class _PostCardState extends State<_PostCard> {
                       ),
                       _ActionButton(
                         icon: Icons.mode_comment_outlined,
-                        label: '${post.replyCount} '
-                            'respuesta${post.replyCount == 1 ? '' : 's'}',
+                        label: tr.foroRespuestas(post.replyCount),
                         active: _replyOpen,
                         colors: colors,
                         onTap: () => setState(() => _replyOpen = !_replyOpen),
@@ -730,7 +725,7 @@ class _PostCardState extends State<_PostCard> {
                 ),
                 if (widget.canModerate || canDelete || !esMia)
                   PopupMenuButton<String>(
-                    tooltip: 'Más acciones',
+                    tooltip: tr.foroMasAcciones,
                     icon: Icon(Icons.more_vert, color: colors.text2),
                     onSelected: (accion) async {
                       switch (accion) {
@@ -746,8 +741,8 @@ class _PostCardState extends State<_PostCard> {
                           await confirmarBloqueo(context,
                               autorId: post.authorId, autorNombre: name);
                         case 'eliminar':
-                          if (await confirmDialog(context, 'Eliminar publicación',
-                              '¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.')) {
+                          if (await confirmDialog(context, tr.foroEliminarPublicacion,
+                              tr.foroEliminarPublicacionTexto)) {
                             await data.deleteForumPost(post.id);
                           }
                       }
@@ -761,15 +756,15 @@ class _PostCardState extends State<_PostCard> {
                                 ? Icons.push_pin
                                 : Icons.push_pin_outlined),
                             title: Text(
-                                post.pinned ? 'Desfijar' : 'Fijar anuncio'),
+                                post.pinned ? tr.foroDesfijar : tr.foroFijar),
                           ),
                         ),
                       if (!esMia)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'reportar',
                           child: ListTile(
                             leading: Icon(Icons.flag_outlined),
-                            title: Text('Reportar'),
+                            title: Text(tr.foroReportar),
                           ),
                         ),
                       if (bloqueable)
@@ -777,16 +772,16 @@ class _PostCardState extends State<_PostCard> {
                           value: 'bloquear',
                           child: ListTile(
                             leading: const Icon(Icons.block),
-                            title: Text('Bloquear a $name'),
+                            title: Text(tr.foroBloquearA(name)),
                           ),
                         ),
                       if (canDelete)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'eliminar',
                           child: ListTile(
                             leading: Icon(Icons.delete_outline,
                                 color: AppColors.statusCritical),
-                            title: Text('Eliminar'),
+                            title: Text(tr.comunEliminar),
                           ),
                         ),
                     ],
@@ -808,7 +803,7 @@ class _PostCardState extends State<_PostCard> {
                         isDense: true,
                         filled: true,
                         fillColor: colors.surface2,
-                        hintText: 'Responder…',
+                        hintText: tr.foroResponder,
                         hintStyle: TextStyle(color: colors.text3),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -860,7 +855,7 @@ class _PostCardState extends State<_PostCard> {
                   padding: const EdgeInsets.only(top: 4),
                   child: TextButton(
                     onPressed: () => setState(() => _repliesExpanded = true),
-                    child: Text('Ver las $totalReplies respuestas'),
+                    child: Text(tr.foroVerRespuestas(totalReplies)),
                   ),
                 ),
             ],
@@ -872,7 +867,7 @@ class _PostCardState extends State<_PostCard> {
 /// El nombre lo manda la API en cada respuesta. Antes se mostraba el
 /// `authorId`: un identificador de 36 caracteres en lugar de una persona.
 String _replyAuthorName(ForumReply reply) =>
-    reply.authorName.isEmpty ? 'Usuario eliminado' : reply.authorName;
+    reply.authorName.isEmpty ? tr.foroUsuarioEliminado : reply.authorName;
 
 class _RolePill extends StatelessWidget {
   final String label;
@@ -973,7 +968,7 @@ class _ReplyTile extends StatelessWidget {
     final puedeBorrar = esMia || canModerate;
     if (esMia && !puedeBorrar) return const SizedBox.shrink();
     return PopupMenuButton<String>(
-      tooltip: 'Más acciones',
+      tooltip: tr.foroMasAcciones,
       icon: Icon(Icons.more_vert, size: 18, color: colors.text3),
       onSelected: (accion) async {
         final data = context.read<DataProvider>();
@@ -989,8 +984,8 @@ class _ReplyTile extends StatelessWidget {
             await confirmarBloqueo(context,
                 autorId: reply.authorId, autorNombre: authorName);
           case 'eliminar':
-            if (await confirmDialog(context, 'Eliminar respuesta',
-                '¿Eliminar esta respuesta del foro? Esta acción no se puede deshacer.')) {
+            if (await confirmDialog(context, tr.foroEliminarRespuesta,
+                tr.foroEliminarRespuestaTexto)) {
               try {
                 await data.deleteForumReply(postId, reply.id);
               } on ApiException catch (e) {
@@ -1003,11 +998,11 @@ class _ReplyTile extends StatelessWidget {
       },
       itemBuilder: (_) => [
         if (!esMia)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'reportar',
             child: ListTile(
               leading: Icon(Icons.flag_outlined),
-              title: Text('Reportar'),
+              title: Text(tr.foroReportar),
             ),
           ),
         if (bloqueable)
@@ -1015,16 +1010,16 @@ class _ReplyTile extends StatelessWidget {
             value: 'bloquear',
             child: ListTile(
               leading: const Icon(Icons.block),
-              title: Text('Bloquear a $authorName'),
+              title: Text(tr.foroBloquearA(authorName)),
             ),
           ),
         if (puedeBorrar)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'eliminar',
             child: ListTile(
               leading:
                   Icon(Icons.delete_outline, color: AppColors.statusCritical),
-              title: Text('Eliminar'),
+              title: Text(tr.comunEliminar),
             ),
           ),
       ],
@@ -1085,20 +1080,11 @@ class _RulesCard extends StatelessWidget {
   final bool canModerate;
   const _RulesCard({required this.colors, required this.canModerate});
 
-  static const _rules = [
-    (
-      Icons.handshake_outlined,
-      'Respete a los demás equipos y comparta con la misma apertura con la que le gustaría recibir ayuda.'
-    ),
-    (
-      Icons.verified_outlined,
-      'Publique contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'
-    ),
-    (
-      Icons.groups_outlined,
-      'Es un espacio de toda la red: preguntas de cualquier laboratorio o universidad son bienvenidas.'
-    ),
-  ];
+  static List<(IconData, String)> get _rules => [
+        (Icons.handshake_outlined, tr.foroRegla1),
+        (Icons.verified_outlined, tr.foroRegla2),
+        (Icons.groups_outlined, tr.foroRegla3),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -1113,7 +1099,7 @@ class _RulesCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Normas del foro'.toUpperCase(),
+          Text(tr.foroNormas.toUpperCase(),
               style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           for (final rule in _rules)
@@ -1137,16 +1123,16 @@ class _RulesCard extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () => mostrarNormasDeLaComunidad(context),
-                child: const Text('Normas completas'),
+                child: Text(tr.foroNormasCompletas),
               ),
               TextButton(
                 onPressed: () => mostrarPersonasBloqueadas(context),
-                child: const Text('Personas bloqueadas'),
+                child: Text(tr.foroPersonasBloqueadas),
               ),
               if (canModerate)
                 TextButton(
                   onPressed: () => ForoReportesView.abrir(context),
-                  child: const Text('Reportes del foro'),
+                  child: Text(tr.foroReportes),
                 ),
             ],
           ),
@@ -1177,15 +1163,13 @@ class _BannerReportes extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              pendientes == 1
-                  ? 'Hay 1 reporte sin atender.'
-                  : 'Hay $pendientes reportes sin atender.',
+              tr.foroReportesSinAtender(pendientes),
               style: TextStyle(color: colors.text, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
             onPressed: () => ForoReportesView.abrir(context),
-            child: const Text('Revisar'),
+            child: Text(tr.foroRevisar),
           ),
         ],
       ),
@@ -1211,7 +1195,7 @@ class _TopTeamsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Equipos más activos'.toUpperCase(),
+          Text(tr.foroEquiposActivos.toUpperCase(),
               style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
           const SizedBox(height: 14),
           for (var i = 0; i < teams.length; i++)
@@ -1247,8 +1231,7 @@ class _TopTeamsCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                      '${teams[i].count} '
-                      'publicaci${teams[i].count == 1 ? 'ón' : 'ones'}',
+                      tr.foroPublicaciones(teams[i].count),
                       style: TextStyle(fontSize: 12.5, color: colors.text3)),
                 ],
               ),

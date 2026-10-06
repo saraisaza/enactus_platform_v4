@@ -2422,4 +2422,672 @@ class AppLocalizationsEn extends AppLocalizations {
   String rutaAsuntoMentoria(Object laboratorio) {
     return 'Mentoring - $laboratorio';
   }
+
+  @override
+  String foroHaceMin(Object minutos) {
+    return '$minutos min ago';
+  }
+
+  @override
+  String foroHaceHoras(Object horas) {
+    return '$horas h ago';
+  }
+
+  @override
+  String foroHaceDias(Object dias) {
+    return '$dias days ago';
+  }
+
+  @override
+  String get foroComunidad => 'Community';
+
+  @override
+  String get foroTitulo => 'Community Forum';
+
+  @override
+  String get foroNoAbre => 'We could not open the forum.';
+
+  @override
+  String get foroCargando => 'Loading posts…';
+
+  @override
+  String get foroSubtitulo =>
+      'Ask questions, share progress and find someone who already solved what you are working on. Students, mentors and LXDs from the whole network post here.';
+
+  @override
+  String get foroBuscar => 'Search by author, organization or content';
+
+  @override
+  String get foroNadie => 'Nobody has posted yet';
+
+  @override
+  String get foroVacio =>
+      'The forum is empty. You can be the first person to start the community conversation.';
+
+  @override
+  String get foroSinCoincidencias =>
+      'No post matches this filter. Try another category or clear the search.';
+
+  @override
+  String get foroVerTodo => 'View the whole forum';
+
+  @override
+  String get foroTodo => 'All';
+
+  @override
+  String get foroQueCompartir =>
+      'What would you like to share with the community?';
+
+  @override
+  String get foroPublicando => 'Posting…';
+
+  @override
+  String get foroPublicar => 'Post';
+
+  @override
+  String get foroUsuarioEliminado => 'Deleted user';
+
+  @override
+  String get foroMasAcciones => 'More actions';
+
+  @override
+  String get foroEliminarPublicacion => 'Delete post';
+
+  @override
+  String get foroEliminarPublicacionTexto =>
+      'Delete this post from the forum? This action cannot be undone.';
+
+  @override
+  String get foroDesfijar => 'Unpin';
+
+  @override
+  String get foroFijar => 'Pin announcement';
+
+  @override
+  String get foroReportar => 'Report';
+
+  @override
+  String foroBloquearA(Object nombre) {
+    return 'Block $nombre';
+  }
+
+  @override
+  String get foroResponder => 'Reply…';
+
+  @override
+  String foroVerRespuestas(Object total) {
+    return 'View all $total replies';
+  }
+
+  @override
+  String get foroEliminarRespuesta => 'Delete reply';
+
+  @override
+  String get foroEliminarRespuestaTexto =>
+      'Delete this reply from the forum? This action cannot be undone.';
+
+  @override
+  String get foroRegla1 =>
+      'Respect the other teams and share with the same openness with which you would like to receive help.';
+
+  @override
+  String get foroRegla2 =>
+      'Post real content from your project: evidence and specific questions help more than generic messages.';
+
+  @override
+  String get foroRegla3 =>
+      'It is a space for the whole network: questions from any laboratory or university are welcome.';
+
+  @override
+  String get foroNormas => 'Forum guidelines';
+
+  @override
+  String get foroNormasCompletas => 'Full guidelines';
+
+  @override
+  String get foroPersonasBloqueadas => 'Blocked people';
+
+  @override
+  String get foroReportes => 'Forum reports';
+
+  @override
+  String get foroRevisar => 'Review';
+
+  @override
+  String get foroEquiposActivos => 'Most active teams';
+
+  @override
+  String get reporteMotivoOfensivo => 'It is offensive or disrespectful';
+
+  @override
+  String get reporteMotivoAcoso => 'It is harassment or bullying';
+
+  @override
+  String get reporteMotivoDiscrimina => 'It discriminates against someone';
+
+  @override
+  String get reporteMotivoSpam => 'It is spam or advertising';
+
+  @override
+  String get reporteMotivoDatos => 'It shares personal data';
+
+  @override
+  String get reporteMotivoOtro => 'Other reason';
+
+  @override
+  String get reporteGracias =>
+      'Thank you. The Enactus team will review this content.';
+
+  @override
+  String get reporteYaReportado =>
+      'You had already reported it; the team has it on their list.';
+
+  @override
+  String get reporteRespuesta => 'Report reply';
+
+  @override
+  String get reportePublicacion => 'Report post';
+
+  @override
+  String get reportePorQue =>
+      'Why are you reporting it? Only the Enactus team will see who reported it.';
+
+  @override
+  String reporteBloquearTambien(Object nombre) {
+    return 'Also block $nombre';
+  }
+
+  @override
+  String get reporteDejaraDeVer => 'You will no longer see what they post.';
+
+  @override
+  String bloqueoTexto(Object nombre) {
+    return 'You will no longer see what $nombre posts and replies in the forum. They will not be notified. You can unblock them whenever you want from “Blocked people”, in the forum guidelines.';
+  }
+
+  @override
+  String bloqueoHecho(Object nombre) {
+    return 'You blocked $nombre.';
+  }
+
+  @override
+  String get bloqueoNadie => 'You have not blocked anyone.';
+
+  @override
+  String get bloqueoDesbloquear => 'Unblock';
+
+  @override
+  String get reportesNinguno => 'There are no pending reports.';
+
+  @override
+  String get reporteQuitarRespuesta => 'Remove reply';
+
+  @override
+  String get reporteQuitarPublicacion => 'Remove post';
+
+  @override
+  String get reporteQuitarTexto =>
+      'It will be removed from the forum for everyone. This cannot be undone.';
+
+  @override
+  String get reporteTipoPublicacion => 'POST';
+
+  @override
+  String get reporteYaNoSeVe => '· no longer visible in the forum';
+
+  @override
+  String get reporteSinMotivo => 'No reason given';
+
+  @override
+  String reporteReporto(Object nombre, Object fecha) {
+    return 'Reported by $nombre · $fecha';
+  }
+
+  @override
+  String get reporteCerrar => 'Close report';
+
+  @override
+  String get reporteDejarlo => 'Leave it';
+
+  @override
+  String get reporteQuitarDelForo => 'Remove from the forum';
+
+  @override
+  String get foroAhora => 'just now';
+
+  @override
+  String get foroAyer => 'yesterday';
+
+  @override
+  String foroPersonasActivas(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad people active this week',
+      one: '1 person active this week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String foroRespuestas(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad replies',
+      one: '1 reply',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String foroReportesSinAtender(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: 'There are $cantidad unhandled reports.',
+      one: 'There is 1 unhandled report.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String foroPublicaciones(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad posts',
+      one: '1 post',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reporteTipoRespuesta => 'REPLY';
+
+  @override
+  String get proyectosComunidad => 'eduXaction Colombia community';
+
+  @override
+  String get proyectosSubtitulo =>
+      'All the active projects in the network. Filter by stage, explore the SDGs they address and discover what the other teams are building.';
+
+  @override
+  String get proyectosBuscar => 'Search for a project, community or SDG';
+
+  @override
+  String get proyectosTodasEtapas => 'All stages';
+
+  @override
+  String get proyectosVacio => 'There are no projects here yet';
+
+  @override
+  String get proyectosVacioTexto =>
+      'No project has been published in the community yet. When your team registers yours, it will appear here for the whole network.';
+
+  @override
+  String get proyectosSinCoincidencias =>
+      'No project matches this filter. Try another stage or clear the search.';
+
+  @override
+  String get proyectosVerTodasEtapas => 'View all stages';
+
+  @override
+  String get proyectosProponer => 'Propose a project';
+
+  @override
+  String get proyectosSinEquipo => 'No team assigned yet.';
+
+  @override
+  String get proyectosFechaNoRegistrada => 'Date not recorded';
+
+  @override
+  String get proyectosProblema => 'Problem';
+
+  @override
+  String get proyectosSolucion => 'Solution';
+
+  @override
+  String get proyectosIndicadores => 'Impact indicators';
+
+  @override
+  String get temaClaro => 'Light';
+
+  @override
+  String get temaOscuro => 'Dark';
+
+  @override
+  String proyectosAsesor(Object nombre) {
+    return 'Academic advisor: $nombre';
+  }
+
+  @override
+  String get proyectosSinIntegrantes => 'No members assigned.';
+
+  @override
+  String get proyectosUniversidadSinDefinir => 'University not defined';
+
+  @override
+  String get proyectosActivos => 'Active projects';
+
+  @override
+  String get proyectosUniversidades => 'Universities';
+
+  @override
+  String get proyectosOdsCubiertos => 'SDGs covered';
+
+  @override
+  String get proyectosEnExpo => 'At National Expo';
+
+  @override
+  String labEstudiantesAsignados(Object cantidad) {
+    return '$cantidad student(s) assigned';
+  }
+
+  @override
+  String get labMentores => 'Mentors';
+
+  @override
+  String get labSinModulos => 'No modules published yet.';
+
+  @override
+  String get labBloqueadaAnterior => 'Locked — complete the previous phase';
+
+  @override
+  String get labPorVencer => 'Due soon';
+
+  @override
+  String get labSinEstudiantes => 'No students';
+
+  @override
+  String labCompletaron(Object hechos, Object total) {
+    return '$hechos/$total completed';
+  }
+
+  @override
+  String get usuarioEquipoProyecto => 'Team and project';
+
+  @override
+  String get usuarioAvanceRuta => 'Progress in the Impact Path';
+
+  @override
+  String get usuarioSinCertificados => 'No certificates yet.';
+
+  @override
+  String get usuarioSinLaboratorios => 'No laboratories assigned.';
+
+  @override
+  String get usuarioEmpresaTexto =>
+      'Their LXDs and mentors appear in their own portal.';
+
+  @override
+  String usuarioCodigoImpacto(Object codigo) {
+    return 'Impact code: $codigo';
+  }
+
+  @override
+  String get usuarioDonanteTexto =>
+      'Their students and evidence appear in their own portal.';
+
+  @override
+  String get usuarioAsesor => 'Academic advisor';
+
+  @override
+  String usuarioAcompana(Object universidad) {
+    return 'Supports the teams of $universidad.';
+  }
+
+  @override
+  String get usuarioCursosCreados => 'Courses created';
+
+  @override
+  String get usuarioSinCursos => 'Has not created any course yet.';
+
+  @override
+  String get usuarioLabsAcompana => 'Laboratories they support';
+
+  @override
+  String get usuarioSinLab => 'No laboratory assigned yet.';
+
+  @override
+  String usuarioEstudiantes(Object cantidad) {
+    return '$cantidad students';
+  }
+
+  @override
+  String usuarioEntregasRevisadas(Object cantidad) {
+    return '$cantidad submissions reviewed.';
+  }
+
+  @override
+  String comunEstudiantes(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad students',
+      one: '1 student',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String proyectosEstudiantesAlcance(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad students within reach',
+      one: '1 student within reach',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String proyectosCreadoEl(Object fecha) {
+    return 'Created on $fecha';
+  }
+
+  @override
+  String labFechaLimite(Object fecha) {
+    return 'Deadline: $fecha';
+  }
+
+  @override
+  String usuarioCalificaEn(Object contextos) {
+    return 'Grades in: $contextos';
+  }
+
+  @override
+  String get usuarioNingunContexto => 'no context';
+
+  @override
+  String get mapaEstudiantesRegistrados => 'Registered students';
+
+  @override
+  String get mapaCiudades => 'Cities';
+
+  @override
+  String get mapaDepartamentos => 'Departments';
+
+  @override
+  String get mapaRedNacional => 'National network · updated today';
+
+  @override
+  String get mapaPatrocina => 'Students sponsored by your organization';
+
+  @override
+  String get mapaEstudiantesPais => 'Students across the country';
+
+  @override
+  String get mapaTexto =>
+      'Where the students registered in eduXaction Colombia are. Each dot is a city with at least one university active in the network.';
+
+  @override
+  String get mapaSufijoPatrocina => 'students you sponsor';
+
+  @override
+  String get mapaOrdenadas => 'Sorted by number of students';
+
+  @override
+  String get mapaSoloVinculados =>
+      'Only the students linked to your contribution';
+
+  @override
+  String get mapaPortalAliados => 'Partner portal · eduXaction Colombia';
+
+  @override
+  String get mapaGeometria => 'Geometry: Natural Earth (public domain)';
+
+  @override
+  String get mapaDosOMas => '2 or more students';
+
+  @override
+  String get mapaUnEstudiante => '1 student';
+
+  @override
+  String mapaEntre(Object desde, Object hasta) {
+    return 'Between $desde and $hasta';
+  }
+
+  @override
+  String mapaOMas(Object cantidad) {
+    return '$cantidad or more students';
+  }
+
+  @override
+  String mapaMenosDe(Object cantidad) {
+    return 'Fewer than $cantidad';
+  }
+
+  @override
+  String get mapaTodaLaRed => 'The whole network';
+
+  @override
+  String get mapaLosQuePatrocino => 'The ones I sponsor';
+
+  @override
+  String get mapaTema => 'Theme';
+
+  @override
+  String get mapaSinVinculados => 'No linked students yet';
+
+  @override
+  String get mapaSinVinculadosTexto =>
+      'There are no students linked to your contribution yet. As soon as your administrator assigns any, they will appear here on the map.';
+
+  @override
+  String get mapaEscribirAdmin => 'Write to my administrator';
+
+  @override
+  String get mapaSolicitudTitulo => 'Request for sponsored students';
+
+  @override
+  String get mapaSolicitudTexto =>
+      'A partner asked to have students assigned to their contribution.';
+
+  @override
+  String get mapaAvisamos => 'We let your administrator know.';
+
+  @override
+  String get mapaSinCiudades => 'No cities for this scope yet.';
+
+  @override
+  String get mapaCiudadExplica =>
+      'The city is the one the student (or their administrator) chose in their profile. Students without a city assigned do not appear on the map yet.';
+
+  @override
+  String get talentoTitulo => 'TalentSearch';
+
+  @override
+  String get talentoSubtitulo =>
+      'eduXaction students who have already demonstrated their skills in the Impact Path — contact them for future opportunities 💛';
+
+  @override
+  String get talentoVacio =>
+      'There are no eduXaction students on the platform yet.';
+
+  @override
+  String get talentoTop => 'Top talent';
+
+  @override
+  String talentoAvance(Object porcentaje) {
+    return '$porcentaje% progress';
+  }
+
+  @override
+  String talentoObjetivosEmprendimiento(Object cantidad) {
+    return '$cantidad entrepreneurship objectives';
+  }
+
+  @override
+  String talentoObjetivosEmpresariales(Object cantidad) {
+    return '$cantidad business objectives';
+  }
+
+  @override
+  String talentoCertificados(Object cantidad) {
+    return '$cantidad certificates';
+  }
+
+  @override
+  String get talentoContactar => 'Contact';
+
+  @override
+  String get talentoOportunidad => 'An opportunity for you';
+
+  @override
+  String get talentoNecesitaTitulo => 'The notice needs a title.';
+
+  @override
+  String get talentoMensajeEnviado => 'Message sent ✓';
+
+  @override
+  String talentoContactarA(Object nombre) {
+    return 'Contact $nombre';
+  }
+
+  @override
+  String get talentoMensajeLlega =>
+      'The message arrives in their inbox inside the platform. No contact information is shared.';
+
+  @override
+  String get talentoAsunto => 'Subject';
+
+  @override
+  String get recursosTitulo => 'Communications Resources';
+
+  @override
+  String get recursosSubtitulo =>
+      'Templates, brand guides and material for the team';
+
+  @override
+  String get recursosNuevo => 'New resource';
+
+  @override
+  String get recursosVacio => 'No resources have been published yet.';
+
+  @override
+  String get recursosEliminar => 'Delete resource';
+
+  @override
+  String recursosEliminarTexto(Object titulo) {
+    return 'Delete \"$titulo\"?';
+  }
+
+  @override
+  String get recursosNecesitaTitulo => 'The resource needs a title.';
+
+  @override
+  String get recursosFaltaArchivo => 'The file has not been uploaded yet.';
+
+  @override
+  String get recursosFaltaUrl => 'The URL is missing.';
+
+  @override
+  String get recursosPublicado => 'Resource published ✓';
+
+  @override
+  String get comunDescripcion => 'Description';
+
+  @override
+  String get mapaSufijoEstudiantes => 'students';
 }

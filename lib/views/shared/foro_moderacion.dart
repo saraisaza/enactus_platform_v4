@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -15,16 +17,31 @@ import '../../widgets/common.dart';
 /// trae las cuatro cosas: filtrar lo ofensivo (lo hace el servidor), reportar,
 /// bloquear y un equipo que atienda los reportes. Las tres últimas viven acá.
 
-/// Motivos que se ofrecen al reportar. Se guardan tal cual en el reporte, que
-/// es lo que lee el equipo.
-const motivosDeReporte = [
-  'Es ofensivo o irrespetuoso',
-  'Es acoso o intimidación',
-  'Discrimina a alguien',
-  'Es spam o publicidad',
-  'Comparte datos personales',
-  'Otro motivo',
-];
+/// Motivos que se ofrecen al reportar: `(lo que se guarda, lo que se ve)`.
+///
+/// Se guardan **siempre en español**, que es lo que lee el equipo de
+/// moderación, aunque la persona reporte con la interfaz en inglés. Cada uno
+/// los ve en su idioma (ver [motivoVisible]).
+List<(String, String)> get motivosDeReporte {
+  final es = lookupAppLocalizations(const Locale('es'));
+  return [
+    (es.reporteMotivoOfensivo, tr.reporteMotivoOfensivo),
+    (es.reporteMotivoAcoso, tr.reporteMotivoAcoso),
+    (es.reporteMotivoDiscrimina, tr.reporteMotivoDiscrimina),
+    (es.reporteMotivoSpam, tr.reporteMotivoSpam),
+    (es.reporteMotivoDatos, tr.reporteMotivoDatos),
+    (es.reporteMotivoOtro, tr.reporteMotivoOtro),
+  ];
+}
+
+/// Un motivo guardado, en el idioma de quien lo lee. Lo que no es uno de los
+/// motivos de la lista (un texto libre, uno viejo) se muestra tal cual.
+String motivoVisible(String guardado) {
+  for (final (motivo, visible) in motivosDeReporte) {
+    if (motivo == guardado) return visible;
+  }
+  return guardado;
+}
 
 /// A quién se puede bloquear: a nadie del equipo que modera (sus anuncios son
 /// del foro entero; lo suyo se reporta como lo de cualquiera), ni a uno mismo.
@@ -70,8 +87,8 @@ Future<void> mostrarReportar(
     showAppSnack(
       context,
       nuevo
-          ? 'Gracias. El equipo de Enactus revisará este contenido.'
-          : 'Ya lo había reportado; el equipo lo tiene en su lista.',
+          ? tr.reporteGracias
+          : tr.reporteYaReportado,
     );
   } on ApiException catch (e) {
     if (context.mounted) showAppSnack(context, e.message, error: true);
@@ -107,7 +124,7 @@ class _ReportarDialogState extends State<_ReportarDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        widget.esRespuesta ? 'Reportar respuesta' : 'Reportar publicación',
+        widget.esRespuesta ? tr.reporteRespuesta : tr.reportePublicacion,
         style: const TextStyle(fontSize: 18),
       ),
       contentPadding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
@@ -118,19 +135,18 @@ class _ReportarDialogState extends State<_ReportarDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  '¿Por qué lo reporta? Solo el equipo de Enactus verá quién '
-                  'lo reportó.',
+                  tr.reportePorQue,
                   style: TextStyle(color: AppColors.textMuted, height: 1.4),
                 ),
               ),
               const SizedBox(height: 4),
-              for (final motivo in motivosDeReporte)
+              for (final (motivo, visible) in motivosDeReporte)
                 RadioListTile<String>(
                   dense: true,
-                  title: Text(motivo),
+                  title: Text(visible),
                   value: motivo,
                   // ignore: deprecated_member_use
                   groupValue: _motivo,
@@ -144,8 +160,8 @@ class _ReportarDialogState extends State<_ReportarDialog> {
                   value: _bloquear,
                   activeColor: AppColors.gold,
                   controlAffinity: ListTileControlAffinity.leading,
-                  title: Text('Bloquear también a ${widget.autorNombre}'),
-                  subtitle: const Text('Dejará de ver lo que publica.'),
+                  title: Text(tr.reporteBloquearTambien(widget.autorNombre)),
+                  subtitle: Text(tr.reporteDejaraDeVer),
                   onChanged: (v) => setState(() => _bloquear = v ?? false),
                 ),
             ],
@@ -155,13 +171,13 @@ class _ReportarDialogState extends State<_ReportarDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(tr.comunCancelar),
         ),
         ElevatedButton(
           onPressed: _motivo == null
               ? null
               : () => Navigator.pop(context, _Reporte(_motivo!, _bloquear)),
-          child: const Text('Reportar'),
+          child: Text(tr.foroReportar),
         ),
       ],
     );
@@ -177,16 +193,14 @@ Future<void> confirmarBloqueo(
   final data = context.read<DataProvider>();
   if (!await confirmDialog(
     context,
-    'Bloquear a $autorNombre',
-    'Dejará de ver lo que $autorNombre publica y responde en el foro. No se '
-        'le avisará. Puede desbloquearle cuando quiera desde «Personas '
-        'bloqueadas», en las normas del foro.',
+    tr.foroBloquearA(autorNombre),
+    tr.bloqueoTexto(autorNombre),
   )) {
     return;
   }
   try {
     await data.blockForumUser(autorId);
-    if (context.mounted) showAppSnack(context, 'Bloqueó a $autorNombre.');
+    if (context.mounted) showAppSnack(context, tr.bloqueoHecho(autorNombre));
   } on ApiException catch (e) {
     if (context.mounted) showAppSnack(context, e.message, error: true);
   }
@@ -197,7 +211,7 @@ Future<void> mostrarPersonasBloqueadas(BuildContext context) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Personas bloqueadas', style: TextStyle(fontSize: 18)),
+      title: Text(tr.foroPersonasBloqueadas, style: TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420, minWidth: 260),
         child: Consumer<DataProvider>(
@@ -209,7 +223,7 @@ Future<void> mostrarPersonasBloqueadas(BuildContext context) {
             error: (e) =>
                 ErrorState(e, compact: true, onRetry: data.reloadForumBlocks),
             data: (bloqueos) => bloqueos.isEmpty
-                ? const Text('No ha bloqueado a nadie.',
+                ? Text(tr.bloqueoNadie,
                     style: TextStyle(color: AppColors.textMuted))
                 : SingleChildScrollView(
                     child: Column(
@@ -230,7 +244,7 @@ Future<void> mostrarPersonasBloqueadas(BuildContext context) {
                                   }
                                 }
                               },
-                              child: const Text('Desbloquear'),
+                              child: Text(tr.bloqueoDesbloquear),
                             ),
                           ),
                       ],
@@ -242,7 +256,7 @@ Future<void> mostrarPersonasBloqueadas(BuildContext context) {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cerrar'),
+          child: Text(tr.comunCerrar),
         ),
       ],
     ),
@@ -270,7 +284,7 @@ class ForoReportesView extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: const Text('Reportes del foro', style: TextStyle(fontSize: 17)),
+        title: Text(tr.foroReportes, style: TextStyle(fontSize: 17)),
       ),
       body: SafeArea(
         top: false,
@@ -283,12 +297,12 @@ class ForoReportesView extends StatelessWidget {
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(24),
-                    children: const [
+                    children: [
                       SizedBox(height: 40),
                       Icon(Icons.verified_user_outlined,
                           size: 40, color: AppColors.textMuted),
                       SizedBox(height: 12),
-                      Text('No hay reportes pendientes.',
+                      Text(tr.reportesNinguno,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: AppColors.textMuted)),
                     ],
@@ -325,8 +339,8 @@ class _TarjetaDeReporteState extends State<_TarjetaDeReporte> {
         !r.contentRemoved &&
         !await confirmDialog(
           context,
-          r.isReply ? 'Quitar respuesta' : 'Quitar publicación',
-          'Se quitará del foro para todas las personas. No se puede deshacer.',
+          r.isReply ? tr.reporteQuitarRespuesta : tr.reporteQuitarPublicacion,
+          tr.reporteQuitarTexto,
         )) {
       return;
     }
@@ -362,23 +376,23 @@ class _TarjetaDeReporteState extends State<_TarjetaDeReporte> {
             runSpacing: 6,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Text(r.isReply ? 'RESPUESTA' : 'PUBLICACIÓN',
+              Text(r.isReply ? tr.reporteTipoRespuesta : tr.reporteTipoPublicacion,
                   style: const TextStyle(
                       fontSize: 11,
                       letterSpacing: 1,
                       fontWeight: FontWeight.w700,
                       color: AppColors.gold)),
               if (r.contentRemoved)
-                const Text('· ya no se ve en el foro',
+                Text(tr.reporteYaNoSeVe,
                     style:
                         TextStyle(fontSize: 12, color: AppColors.textMuted)),
             ],
           ),
           const SizedBox(height: 8),
-          Text(r.reason.isEmpty ? 'Sin motivo' : r.reason,
+          Text(r.reason.isEmpty ? tr.reporteSinMotivo : motivoVisible(r.reason),
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Text('Reportó ${r.reporterName} · $fecha',
+          Text(tr.reporteReporto(r.reporterName, fecha),
               style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
           const SizedBox(height: 12),
           Container(
@@ -407,12 +421,12 @@ class _TarjetaDeReporteState extends State<_TarjetaDeReporte> {
             children: [
               OutlinedButton(
                 onPressed: _trabajando ? null : () => _resolver(quitar: false),
-                child: Text(r.contentRemoved ? 'Cerrar reporte' : 'Dejarlo'),
+                child: Text(r.contentRemoved ? tr.reporteCerrar : tr.reporteDejarlo),
               ),
               if (!r.contentRemoved)
                 ElevatedButton(
                   onPressed: _trabajando ? null : () => _resolver(quitar: true),
-                  child: const Text('Quitar del foro'),
+                  child: Text(tr.reporteQuitarDelForo),
                 ),
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -31,18 +32,17 @@ class TalentSearchView extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'BuscaTalento',
-      subtitle: 'Estudiantes eduXaction que ya demostraron sus habilidades en '
-          'la Ruta de Impacto — contáctelos para oportunidades futuras 💛',
+      title: tr.talentoTitulo,
+      subtitle: tr.talentoSubtitulo,
       children: [
         data.talent.when(
           loading: () => const CardListSkeleton(count: 4, height: 140),
           error: (e) => ErrorState(e),
           data: (perfiles) => perfiles.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.people_outline,
                   message:
-                      'Todavía no hay estudiantes eduXaction en la plataforma.')
+                      tr.talentoVacio)
               : Column(
                   children: [
                     for (final p in perfiles)
@@ -99,8 +99,8 @@ class _TalentCard extends StatelessWidget {
                 ),
               ),
               if (profile.isTopTalent)
-                const StatusChip(
-                    label: 'Top talento',
+                StatusChip(
+                    label: tr.talentoTop,
                     color: AppColors.gold,
                     icon: Icons.star_outline),
             ],
@@ -114,22 +114,21 @@ class _TalentCard extends StatelessWidget {
             children: [
               _MiniStat(
                 icon: Icons.trending_up,
-                label: '${(profile.progress.ratio * 100).round()}% de avance',
+                label: tr.talentoAvance((profile.progress.ratio * 100).round()),
               ),
               _MiniStat(
                 icon: Icons.flag_outlined,
-                label: '${profile.objectivesEntrepreneurship} objetivos de '
-                    'emprendimiento',
+                label: tr.talentoObjetivosEmprendimiento(profile.objectivesEntrepreneurship),
               ),
               _MiniStat(
                 icon: Icons.business_center_outlined,
                 label:
-                    '${profile.objectivesBusiness} objetivos empresariales',
+                    tr.talentoObjetivosEmpresariales(profile.objectivesBusiness),
               ),
               if (profile.certificates > 0)
                 _MiniStat(
                   icon: Icons.workspace_premium_outlined,
-                  label: '${profile.certificates} certificados',
+                  label: tr.talentoCertificados(profile.certificates),
                 ),
             ],
           ),
@@ -157,7 +156,7 @@ class _TalentCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.send_outlined, size: 16),
-              label: const Text('Contactar'),
+              label: Text(tr.talentoContactar),
               onPressed: () => _contactar(context),
             ),
           ),
@@ -213,7 +212,7 @@ class _ContactDialog extends StatefulWidget {
 }
 
 class _ContactDialogState extends State<_ContactDialog> {
-  final _title = TextEditingController(text: 'Una oportunidad para usted');
+  final _title = TextEditingController(text: tr.talentoOportunidad);
   final _body = TextEditingController();
   bool _saving = false;
   ApiException? _error;
@@ -228,7 +227,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('El aviso necesita un título.'));
+          _error = ValidationError(tr.talentoNecesitaTitulo));
       return;
     }
     setState(() {
@@ -243,7 +242,7 @@ class _ContactDialogState extends State<_ContactDialog> {
           );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Mensaje enviado ✓');
+      showSuccessCheck(context, tr.talentoMensajeEnviado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -257,10 +256,10 @@ class _ContactDialogState extends State<_ContactDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Contactar a ${widget.profile.name}',
+      title: tr.talentoContactarA(widget.profile.name),
       maxWidth: 460,
       saving: _saving,
-      saveLabel: 'Enviar',
+      saveLabel: tr.comunEnviar,
       onCancel: () => Navigator.pop(context),
       onSave: _save,
       child: Column(
@@ -271,23 +270,22 @@ class _ContactDialogState extends State<_ContactDialog> {
             ErrorBanner(_error!),
             const SizedBox(height: 12),
           ],
-          const Text(
-            'El mensaje llega a su bandeja dentro de la plataforma. No se '
-            'entrega ningún dato de contacto.',
+          Text(
+            tr.talentoMensajeLlega,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Asunto'),
+            decoration: InputDecoration(labelText: tr.talentoAsunto),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _body,
             enabled: !_saving,
             maxLines: 4,
-            decoration: const InputDecoration(labelText: 'Mensaje'),
+            decoration: InputDecoration(labelText: tr.contactoMensaje),
           ),
         ],
       ),

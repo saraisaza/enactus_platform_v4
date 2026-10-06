@@ -203,7 +203,8 @@ class ColombiaStudentsMap extends StatefulWidget {
   final bool isDark;
   final String? hoveredCity;
   final ValueChanged<String?> onHoverCity;
-  final String tooltipSuffix;
+  /// Por defecto, «estudiantes» en el idioma activo.
+  final String? tooltipSuffix;
 
   const ColombiaStudentsMap({
     super.key,
@@ -213,7 +214,7 @@ class ColombiaStudentsMap extends StatefulWidget {
     required this.isDark,
     required this.hoveredCity,
     required this.onHoverCity,
-    this.tooltipSuffix = 'estudiantes',
+    this.tooltipSuffix,
   });
 
   @override
@@ -382,7 +383,7 @@ class _ColombiaStudentsMapState extends State<ColombiaStudentsMap> {
                   _CityTooltip(
                     anchor: _pointerLocal!,
                     point: hoveredPoint.point,
-                    suffix: widget.tooltipSuffix,
+                    suffix: widget.tooltipSuffix ?? tr.mapaSufijoEstudiantes,
                   ),
                 Positioned(
                   left: 22,

@@ -4135,6 +4135,1080 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Mentoría - {laboratorio}'**
   String rutaAsuntoMentoria(Object laboratorio);
+
+  /// No description provided for @foroHaceMin.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {minutos} min'**
+  String foroHaceMin(Object minutos);
+
+  /// No description provided for @foroHaceHoras.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {horas} h'**
+  String foroHaceHoras(Object horas);
+
+  /// No description provided for @foroHaceDias.
+  ///
+  /// In es, this message translates to:
+  /// **'hace {dias} días'**
+  String foroHaceDias(Object dias);
+
+  /// No description provided for @foroComunidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Comunidad'**
+  String get foroComunidad;
+
+  /// No description provided for @foroTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Foro de la Comunidad'**
+  String get foroTitulo;
+
+  /// No description provided for @foroNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos abrir el foro.'**
+  String get foroNoAbre;
+
+  /// No description provided for @foroCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando publicaciones…'**
+  String get foroCargando;
+
+  /// No description provided for @foroSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.'**
+  String get foroSubtitulo;
+
+  /// No description provided for @foroBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar autor, organización o contenido'**
+  String get foroBuscar;
+
+  /// No description provided for @foroNadie.
+  ///
+  /// In es, this message translates to:
+  /// **'Nadie ha escrito aún'**
+  String get foroNadie;
+
+  /// No description provided for @foroVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'El foro está vacío. Puede ser la primera persona en abrir la conversación de la comunidad.'**
+  String get foroVacio;
+
+  /// No description provided for @foroSinCoincidencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna publicación coincide con este filtro. Pruebe con otra categoría o limpie la búsqueda.'**
+  String get foroSinCoincidencias;
+
+  /// No description provided for @foroVerTodo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todo el foro'**
+  String get foroVerTodo;
+
+  /// No description provided for @foroTodo.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo'**
+  String get foroTodo;
+
+  /// No description provided for @foroQueCompartir.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué quiere compartir con la comunidad?'**
+  String get foroQueCompartir;
+
+  /// No description provided for @foroPublicando.
+  ///
+  /// In es, this message translates to:
+  /// **'Publicando…'**
+  String get foroPublicando;
+
+  /// No description provided for @foroPublicar.
+  ///
+  /// In es, this message translates to:
+  /// **'Publicar'**
+  String get foroPublicar;
+
+  /// No description provided for @foroUsuarioEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario eliminado'**
+  String get foroUsuarioEliminado;
+
+  /// No description provided for @foroMasAcciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Más acciones'**
+  String get foroMasAcciones;
+
+  /// No description provided for @foroEliminarPublicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar publicación'**
+  String get foroEliminarPublicacion;
+
+  /// No description provided for @foroEliminarPublicacionTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.'**
+  String get foroEliminarPublicacionTexto;
+
+  /// No description provided for @foroDesfijar.
+  ///
+  /// In es, this message translates to:
+  /// **'Desfijar'**
+  String get foroDesfijar;
+
+  /// No description provided for @foroFijar.
+  ///
+  /// In es, this message translates to:
+  /// **'Fijar anuncio'**
+  String get foroFijar;
+
+  /// No description provided for @foroReportar.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar'**
+  String get foroReportar;
+
+  /// No description provided for @foroBloquearA.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear a {nombre}'**
+  String foroBloquearA(Object nombre);
+
+  /// No description provided for @foroResponder.
+  ///
+  /// In es, this message translates to:
+  /// **'Responder…'**
+  String get foroResponder;
+
+  /// No description provided for @foroVerRespuestas.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver las {total} respuestas'**
+  String foroVerRespuestas(Object total);
+
+  /// No description provided for @foroEliminarRespuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar respuesta'**
+  String get foroEliminarRespuesta;
+
+  /// No description provided for @foroEliminarRespuestaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta respuesta del foro? Esta acción no se puede deshacer.'**
+  String get foroEliminarRespuestaTexto;
+
+  /// No description provided for @foroRegla1.
+  ///
+  /// In es, this message translates to:
+  /// **'Respete a los demás equipos y comparta con la misma apertura con la que le gustaría recibir ayuda.'**
+  String get foroRegla1;
+
+  /// No description provided for @foroRegla2.
+  ///
+  /// In es, this message translates to:
+  /// **'Publique contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.'**
+  String get foroRegla2;
+
+  /// No description provided for @foroRegla3.
+  ///
+  /// In es, this message translates to:
+  /// **'Es un espacio de toda la red: preguntas de cualquier laboratorio o universidad son bienvenidas.'**
+  String get foroRegla3;
+
+  /// No description provided for @foroNormas.
+  ///
+  /// In es, this message translates to:
+  /// **'Normas del foro'**
+  String get foroNormas;
+
+  /// No description provided for @foroNormasCompletas.
+  ///
+  /// In es, this message translates to:
+  /// **'Normas completas'**
+  String get foroNormasCompletas;
+
+  /// No description provided for @foroPersonasBloqueadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas bloqueadas'**
+  String get foroPersonasBloqueadas;
+
+  /// No description provided for @foroReportes.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportes del foro'**
+  String get foroReportes;
+
+  /// No description provided for @foroRevisar.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar'**
+  String get foroRevisar;
+
+  /// No description provided for @foroEquiposActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipos más activos'**
+  String get foroEquiposActivos;
+
+  /// No description provided for @reporteMotivoOfensivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Es ofensivo o irrespetuoso'**
+  String get reporteMotivoOfensivo;
+
+  /// No description provided for @reporteMotivoAcoso.
+  ///
+  /// In es, this message translates to:
+  /// **'Es acoso o intimidación'**
+  String get reporteMotivoAcoso;
+
+  /// No description provided for @reporteMotivoDiscrimina.
+  ///
+  /// In es, this message translates to:
+  /// **'Discrimina a alguien'**
+  String get reporteMotivoDiscrimina;
+
+  /// No description provided for @reporteMotivoSpam.
+  ///
+  /// In es, this message translates to:
+  /// **'Es spam o publicidad'**
+  String get reporteMotivoSpam;
+
+  /// No description provided for @reporteMotivoDatos.
+  ///
+  /// In es, this message translates to:
+  /// **'Comparte datos personales'**
+  String get reporteMotivoDatos;
+
+  /// No description provided for @reporteMotivoOtro.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro motivo'**
+  String get reporteMotivoOtro;
+
+  /// No description provided for @reporteGracias.
+  ///
+  /// In es, this message translates to:
+  /// **'Gracias. El equipo de Enactus revisará este contenido.'**
+  String get reporteGracias;
+
+  /// No description provided for @reporteYaReportado.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya lo había reportado; el equipo lo tiene en su lista.'**
+  String get reporteYaReportado;
+
+  /// No description provided for @reporteRespuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar respuesta'**
+  String get reporteRespuesta;
+
+  /// No description provided for @reportePublicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar publicación'**
+  String get reportePublicacion;
+
+  /// No description provided for @reportePorQue.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Por qué lo reporta? Solo el equipo de Enactus verá quién lo reportó.'**
+  String get reportePorQue;
+
+  /// No description provided for @reporteBloquearTambien.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear también a {nombre}'**
+  String reporteBloquearTambien(Object nombre);
+
+  /// No description provided for @reporteDejaraDeVer.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejará de ver lo que publica.'**
+  String get reporteDejaraDeVer;
+
+  /// No description provided for @bloqueoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejará de ver lo que {nombre} publica y responde en el foro. No se le avisará. Puede desbloquearle cuando quiera desde «Personas bloqueadas», en las normas del foro.'**
+  String bloqueoTexto(Object nombre);
+
+  /// No description provided for @bloqueoHecho.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueó a {nombre}.'**
+  String bloqueoHecho(Object nombre);
+
+  /// No description provided for @bloqueoNadie.
+  ///
+  /// In es, this message translates to:
+  /// **'No ha bloqueado a nadie.'**
+  String get bloqueoNadie;
+
+  /// No description provided for @bloqueoDesbloquear.
+  ///
+  /// In es, this message translates to:
+  /// **'Desbloquear'**
+  String get bloqueoDesbloquear;
+
+  /// No description provided for @reportesNinguno.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay reportes pendientes.'**
+  String get reportesNinguno;
+
+  /// No description provided for @reporteQuitarRespuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar respuesta'**
+  String get reporteQuitarRespuesta;
+
+  /// No description provided for @reporteQuitarPublicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar publicación'**
+  String get reporteQuitarPublicacion;
+
+  /// No description provided for @reporteQuitarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quitará del foro para todas las personas. No se puede deshacer.'**
+  String get reporteQuitarTexto;
+
+  /// No description provided for @reporteTipoPublicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'PUBLICACIÓN'**
+  String get reporteTipoPublicacion;
+
+  /// No description provided for @reporteYaNoSeVe.
+  ///
+  /// In es, this message translates to:
+  /// **'· ya no se ve en el foro'**
+  String get reporteYaNoSeVe;
+
+  /// No description provided for @reporteSinMotivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin motivo'**
+  String get reporteSinMotivo;
+
+  /// No description provided for @reporteReporto.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportó {nombre} · {fecha}'**
+  String reporteReporto(Object nombre, Object fecha);
+
+  /// No description provided for @reporteCerrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar reporte'**
+  String get reporteCerrar;
+
+  /// No description provided for @reporteDejarlo.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejarlo'**
+  String get reporteDejarlo;
+
+  /// No description provided for @reporteQuitarDelForo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar del foro'**
+  String get reporteQuitarDelForo;
+
+  /// No description provided for @foroAhora.
+  ///
+  /// In es, this message translates to:
+  /// **'ahora'**
+  String get foroAhora;
+
+  /// No description provided for @foroAyer.
+  ///
+  /// In es, this message translates to:
+  /// **'ayer'**
+  String get foroAyer;
+
+  /// No description provided for @foroPersonasActivas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 persona activa esta semana} other{{cantidad} personas activas esta semana}}'**
+  String foroPersonasActivas(int cantidad);
+
+  /// No description provided for @foroRespuestas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 respuesta} other{{cantidad} respuestas}}'**
+  String foroRespuestas(int cantidad);
+
+  /// No description provided for @foroReportesSinAtender.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{Hay 1 reporte sin atender.} other{Hay {cantidad} reportes sin atender.}}'**
+  String foroReportesSinAtender(int cantidad);
+
+  /// No description provided for @foroPublicaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 publicación} other{{cantidad} publicaciones}}'**
+  String foroPublicaciones(int cantidad);
+
+  /// No description provided for @reporteTipoRespuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'RESPUESTA'**
+  String get reporteTipoRespuesta;
+
+  /// No description provided for @proyectosComunidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Comunidad eduXaction Colombia'**
+  String get proyectosComunidad;
+
+  /// No description provided for @proyectosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.'**
+  String get proyectosSubtitulo;
+
+  /// No description provided for @proyectosBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar proyecto, comunidad u ODS'**
+  String get proyectosBuscar;
+
+  /// No description provided for @proyectosTodasEtapas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las etapas'**
+  String get proyectosTodasEtapas;
+
+  /// No description provided for @proyectosVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay proyectos aquí'**
+  String get proyectosVacio;
+
+  /// No description provided for @proyectosVacioTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no se ha publicado ningún proyecto en la comunidad. Cuando su equipo registre el suyo, aparecerá aquí para toda la red.'**
+  String get proyectosVacioTexto;
+
+  /// No description provided for @proyectosSinCoincidencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.'**
+  String get proyectosSinCoincidencias;
+
+  /// No description provided for @proyectosVerTodasEtapas.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todas las etapas'**
+  String get proyectosVerTodasEtapas;
+
+  /// No description provided for @proyectosProponer.
+  ///
+  /// In es, this message translates to:
+  /// **'Proponer un proyecto'**
+  String get proyectosProponer;
+
+  /// No description provided for @proyectosSinEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin equipo asignado todavía.'**
+  String get proyectosSinEquipo;
+
+  /// No description provided for @proyectosFechaNoRegistrada.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha no registrada'**
+  String get proyectosFechaNoRegistrada;
+
+  /// No description provided for @proyectosProblema.
+  ///
+  /// In es, this message translates to:
+  /// **'Problema'**
+  String get proyectosProblema;
+
+  /// No description provided for @proyectosSolucion.
+  ///
+  /// In es, this message translates to:
+  /// **'Solución'**
+  String get proyectosSolucion;
+
+  /// No description provided for @proyectosIndicadores.
+  ///
+  /// In es, this message translates to:
+  /// **'Indicadores de impacto'**
+  String get proyectosIndicadores;
+
+  /// No description provided for @temaClaro.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro'**
+  String get temaClaro;
+
+  /// No description provided for @temaOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro'**
+  String get temaOscuro;
+
+  /// No description provided for @proyectosAsesor.
+  ///
+  /// In es, this message translates to:
+  /// **'Asesor académico: {nombre}'**
+  String proyectosAsesor(Object nombre);
+
+  /// No description provided for @proyectosSinIntegrantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin integrantes asignados.'**
+  String get proyectosSinIntegrantes;
+
+  /// No description provided for @proyectosUniversidadSinDefinir.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidad sin definir'**
+  String get proyectosUniversidadSinDefinir;
+
+  /// No description provided for @proyectosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyectos activos'**
+  String get proyectosActivos;
+
+  /// No description provided for @proyectosUniversidades.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidades'**
+  String get proyectosUniversidades;
+
+  /// No description provided for @proyectosOdsCubiertos.
+  ///
+  /// In es, this message translates to:
+  /// **'ODS cubiertos'**
+  String get proyectosOdsCubiertos;
+
+  /// No description provided for @proyectosEnExpo.
+  ///
+  /// In es, this message translates to:
+  /// **'En National Expo'**
+  String get proyectosEnExpo;
+
+  /// No description provided for @labEstudiantesAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} estudiante(s) asignado(s)'**
+  String labEstudiantesAsignados(Object cantidad);
+
+  /// No description provided for @labMentores.
+  ///
+  /// In es, this message translates to:
+  /// **'Mentores'**
+  String get labMentores;
+
+  /// No description provided for @labSinModulos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin módulos publicados todavía.'**
+  String get labSinModulos;
+
+  /// No description provided for @labBloqueadaAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueada — complete la fase anterior'**
+  String get labBloqueadaAnterior;
+
+  /// No description provided for @labPorVencer.
+  ///
+  /// In es, this message translates to:
+  /// **'Por vencer'**
+  String get labPorVencer;
+
+  /// No description provided for @labSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin estudiantes'**
+  String get labSinEstudiantes;
+
+  /// No description provided for @labCompletaron.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechos}/{total} completaron'**
+  String labCompletaron(Object hechos, Object total);
+
+  /// No description provided for @usuarioEquipoProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipo y proyecto'**
+  String get usuarioEquipoProyecto;
+
+  /// No description provided for @usuarioAvanceRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance en la Ruta de Impacto'**
+  String get usuarioAvanceRuta;
+
+  /// No description provided for @usuarioSinCertificados.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía sin certificados.'**
+  String get usuarioSinCertificados;
+
+  /// No description provided for @usuarioSinLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin laboratorios asignados.'**
+  String get usuarioSinLaboratorios;
+
+  /// No description provided for @usuarioEmpresaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sus LXD y mentores aparecen en su propio portal.'**
+  String get usuarioEmpresaTexto;
+
+  /// No description provided for @usuarioCodigoImpacto.
+  ///
+  /// In es, this message translates to:
+  /// **'Código de impacto: {codigo}'**
+  String usuarioCodigoImpacto(Object codigo);
+
+  /// No description provided for @usuarioDonanteTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sus estudiantes y evidencias aparecen en su propio portal.'**
+  String get usuarioDonanteTexto;
+
+  /// No description provided for @usuarioAsesor.
+  ///
+  /// In es, this message translates to:
+  /// **'Asesor académico'**
+  String get usuarioAsesor;
+
+  /// No description provided for @usuarioAcompana.
+  ///
+  /// In es, this message translates to:
+  /// **'Acompaña a los equipos de {universidad}.'**
+  String usuarioAcompana(Object universidad);
+
+  /// No description provided for @usuarioCursosCreados.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos creados'**
+  String get usuarioCursosCreados;
+
+  /// No description provided for @usuarioSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no ha creado ningún curso.'**
+  String get usuarioSinCursos;
+
+  /// No description provided for @usuarioLabsAcompana.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorios que acompaña'**
+  String get usuarioLabsAcompana;
+
+  /// No description provided for @usuarioSinLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía sin laboratorio asignado.'**
+  String get usuarioSinLab;
+
+  /// No description provided for @usuarioEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} estudiantes'**
+  String usuarioEstudiantes(Object cantidad);
+
+  /// No description provided for @usuarioEntregasRevisadas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} entregas revisadas.'**
+  String usuarioEntregasRevisadas(Object cantidad);
+
+  /// No description provided for @comunEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 estudiante} other{{cantidad} estudiantes}}'**
+  String comunEstudiantes(int cantidad);
+
+  /// No description provided for @proyectosEstudiantesAlcance.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 estudiante en su alcance} other{{cantidad} estudiantes en su alcance}}'**
+  String proyectosEstudiantesAlcance(int cantidad);
+
+  /// No description provided for @proyectosCreadoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Creado el {fecha}'**
+  String proyectosCreadoEl(Object fecha);
+
+  /// No description provided for @labFechaLimite.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha límite: {fecha}'**
+  String labFechaLimite(Object fecha);
+
+  /// No description provided for @usuarioCalificaEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Califica en: {contextos}'**
+  String usuarioCalificaEn(Object contextos);
+
+  /// No description provided for @usuarioNingunContexto.
+  ///
+  /// In es, this message translates to:
+  /// **'ningún contexto'**
+  String get usuarioNingunContexto;
+
+  /// No description provided for @mapaEstudiantesRegistrados.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes registrados'**
+  String get mapaEstudiantesRegistrados;
+
+  /// No description provided for @mapaCiudades.
+  ///
+  /// In es, this message translates to:
+  /// **'Ciudades'**
+  String get mapaCiudades;
+
+  /// No description provided for @mapaDepartamentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Departamentos'**
+  String get mapaDepartamentos;
+
+  /// No description provided for @mapaRedNacional.
+  ///
+  /// In es, this message translates to:
+  /// **'Red nacional · actualizado hoy'**
+  String get mapaRedNacional;
+
+  /// No description provided for @mapaPatrocina.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes que patrocina su organización'**
+  String get mapaPatrocina;
+
+  /// No description provided for @mapaEstudiantesPais.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes en el país'**
+  String get mapaEstudiantesPais;
+
+  /// No description provided for @mapaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Dónde están los estudiantes registrados en eduXaction Colombia. Cada punto es una ciudad con al menos una universidad activa en la red.'**
+  String get mapaTexto;
+
+  /// No description provided for @mapaSufijoPatrocina.
+  ///
+  /// In es, this message translates to:
+  /// **'estudiantes que patrocina'**
+  String get mapaSufijoPatrocina;
+
+  /// No description provided for @mapaOrdenadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenadas por número de estudiantes'**
+  String get mapaOrdenadas;
+
+  /// No description provided for @mapaSoloVinculados.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo los estudiantes vinculados a su aporte'**
+  String get mapaSoloVinculados;
+
+  /// No description provided for @mapaPortalAliados.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal de aliados · eduXaction Colombia'**
+  String get mapaPortalAliados;
+
+  /// No description provided for @mapaGeometria.
+  ///
+  /// In es, this message translates to:
+  /// **'Geometría: Natural Earth (dominio público)'**
+  String get mapaGeometria;
+
+  /// No description provided for @mapaDosOMas.
+  ///
+  /// In es, this message translates to:
+  /// **'2 o más estudiantes'**
+  String get mapaDosOMas;
+
+  /// No description provided for @mapaUnEstudiante.
+  ///
+  /// In es, this message translates to:
+  /// **'1 estudiante'**
+  String get mapaUnEstudiante;
+
+  /// No description provided for @mapaEntre.
+  ///
+  /// In es, this message translates to:
+  /// **'Entre {desde} y {hasta}'**
+  String mapaEntre(Object desde, Object hasta);
+
+  /// No description provided for @mapaOMas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} o más estudiantes'**
+  String mapaOMas(Object cantidad);
+
+  /// No description provided for @mapaMenosDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Menos de {cantidad}'**
+  String mapaMenosDe(Object cantidad);
+
+  /// No description provided for @mapaTodaLaRed.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la red'**
+  String get mapaTodaLaRed;
+
+  /// No description provided for @mapaLosQuePatrocino.
+  ///
+  /// In es, this message translates to:
+  /// **'Los que patrocino'**
+  String get mapaLosQuePatrocino;
+
+  /// No description provided for @mapaTema.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema'**
+  String get mapaTema;
+
+  /// No description provided for @mapaSinVinculados.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay estudiantes vinculados'**
+  String get mapaSinVinculados;
+
+  /// No description provided for @mapaSinVinculadosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá aquí en el mapa.'**
+  String get mapaSinVinculadosTexto;
+
+  /// No description provided for @mapaEscribirAdmin.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir a mi administrador'**
+  String get mapaEscribirAdmin;
+
+  /// No description provided for @mapaSolicitudTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud de estudiantes patrocinados'**
+  String get mapaSolicitudTitulo;
+
+  /// No description provided for @mapaSolicitudTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Un aliado pidió que le asignen estudiantes a su aporte.'**
+  String get mapaSolicitudTexto;
+
+  /// No description provided for @mapaAvisamos.
+  ///
+  /// In es, this message translates to:
+  /// **'Le avisamos a su administrador.'**
+  String get mapaAvisamos;
+
+  /// No description provided for @mapaSinCiudades.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin ciudades para este alcance todavía.'**
+  String get mapaSinCiudades;
+
+  /// No description provided for @mapaCiudadExplica.
+  ///
+  /// In es, this message translates to:
+  /// **'La ciudad es la que el estudiante (o su administrador) eligió en su perfil. Los estudiantes sin ciudad asignada todavía no aparecen en el mapa.'**
+  String get mapaCiudadExplica;
+
+  /// No description provided for @talentoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'BuscaTalento'**
+  String get talentoTitulo;
+
+  /// No description provided for @talentoSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes eduXaction que ya demostraron sus habilidades en la Ruta de Impacto — contáctelos para oportunidades futuras 💛'**
+  String get talentoSubtitulo;
+
+  /// No description provided for @talentoVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay estudiantes eduXaction en la plataforma.'**
+  String get talentoVacio;
+
+  /// No description provided for @talentoTop.
+  ///
+  /// In es, this message translates to:
+  /// **'Top talento'**
+  String get talentoTop;
+
+  /// No description provided for @talentoAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'{porcentaje}% de avance'**
+  String talentoAvance(Object porcentaje);
+
+  /// No description provided for @talentoObjetivosEmprendimiento.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} objetivos de emprendimiento'**
+  String talentoObjetivosEmprendimiento(Object cantidad);
+
+  /// No description provided for @talentoObjetivosEmpresariales.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} objetivos empresariales'**
+  String talentoObjetivosEmpresariales(Object cantidad);
+
+  /// No description provided for @talentoCertificados.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} certificados'**
+  String talentoCertificados(Object cantidad);
+
+  /// No description provided for @talentoContactar.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactar'**
+  String get talentoContactar;
+
+  /// No description provided for @talentoOportunidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Una oportunidad para usted'**
+  String get talentoOportunidad;
+
+  /// No description provided for @talentoNecesitaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'El aviso necesita un título.'**
+  String get talentoNecesitaTitulo;
+
+  /// No description provided for @talentoMensajeEnviado.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensaje enviado ✓'**
+  String get talentoMensajeEnviado;
+
+  /// No description provided for @talentoContactarA.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactar a {nombre}'**
+  String talentoContactarA(Object nombre);
+
+  /// No description provided for @talentoMensajeLlega.
+  ///
+  /// In es, this message translates to:
+  /// **'El mensaje llega a su bandeja dentro de la plataforma. No se entrega ningún dato de contacto.'**
+  String get talentoMensajeLlega;
+
+  /// No description provided for @talentoAsunto.
+  ///
+  /// In es, this message translates to:
+  /// **'Asunto'**
+  String get talentoAsunto;
+
+  /// No description provided for @recursosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recursos de Comunicaciones'**
+  String get recursosTitulo;
+
+  /// No description provided for @recursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Plantillas, guías de marca y material para el equipo'**
+  String get recursosSubtitulo;
+
+  /// No description provided for @recursosNuevo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo recurso'**
+  String get recursosNuevo;
+
+  /// No description provided for @recursosVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay recursos publicados.'**
+  String get recursosVacio;
+
+  /// No description provided for @recursosEliminar.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar recurso'**
+  String get recursosEliminar;
+
+  /// No description provided for @recursosEliminarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar \"{titulo}\"?'**
+  String recursosEliminarTexto(Object titulo);
+
+  /// No description provided for @recursosNecesitaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'El recurso necesita un título.'**
+  String get recursosNecesitaTitulo;
+
+  /// No description provided for @recursosFaltaArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta subir el archivo.'**
+  String get recursosFaltaArchivo;
+
+  /// No description provided for @recursosFaltaUrl.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta la URL.'**
+  String get recursosFaltaUrl;
+
+  /// No description provided for @recursosPublicado.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurso publicado ✓'**
+  String get recursosPublicado;
+
+  /// No description provided for @comunDescripcion.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción'**
+  String get comunDescripcion;
+
+  /// No description provided for @mapaSufijoEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'estudiantes'**
+  String get mapaSufijoEstudiantes;
 }
 
 class _AppLocalizationsDelegate

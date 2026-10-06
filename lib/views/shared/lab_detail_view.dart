@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -36,7 +37,7 @@ class LabDetailView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Laboratorio'),
+          AppHeader(portalTitle: tr.comunLaboratorio),
           Expanded(
             child: data.labById(labId).when(
                   loading: () => const Center(child: BrandLoader()),
@@ -116,7 +117,7 @@ class _LabBody extends StatelessWidget {
                         children: [
                           StatusChip(
                               label:
-                                  '${lab.studentsAssigned} estudiante(s) asignado(s)',
+                                  tr.labEstudiantesAsignados(lab.studentsAssigned),
                               color: accent,
                               icon: Icons.groups_outlined),
                           if (lab.sponsorName != null)
@@ -128,7 +129,7 @@ class _LabBody extends StatelessWidget {
                       ),
                     ),
                     if (lab.mentors.isNotEmpty) ...[
-                      const SectionTitle('Mentores'),
+                      SectionTitle(tr.labMentores),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -159,12 +160,12 @@ class _LabBody extends StatelessWidget {
                         ],
                       ),
                     ],
-                    const SectionTitle('Ruta de Impacto'),
+                    SectionTitle(tr.rutaDeImpacto),
                     if (lab.phases.isEmpty)
-                      const EmptyState(
+                      EmptyState(
                           icon: Icons.route_outlined,
                           message:
-                              'Este laboratorio todavía no tiene fases publicadas.')
+                              tr.rutaSinFases)
                     else
                       for (var i = 0; i < lab.phases.length; i++)
                         Padding(
@@ -219,7 +220,7 @@ class _PhaseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
+    final title = phase.title.isEmpty ? tr.rutaFaseNumero(index + 1) : phase.title;
 
     return HoverCard(
       child: Column(
@@ -248,15 +249,14 @@ class _PhaseCard extends StatelessWidget {
           if (phase.deadlineDate != null) ...[
             const SizedBox(height: 6),
             Text(
-                'Fecha límite: '
-                '${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}',
+                tr.labFechaLimite(fechaCorta(phase.deadlineDate!)),
                 style: const TextStyle(
                     fontSize: 12, color: AppColors.textMuted)),
           ],
           if (phase.modules.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 10),
-              child: Text('Sin módulos publicados todavía.',
+              child: Text(tr.labSinModulos,
                   style:
                       TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             )
@@ -278,26 +278,26 @@ class _PhaseCard extends StatelessWidget {
   Widget _personalChip(PhaseProgress progress) {
     final (label, color, icon) = switch (progress) {
       PhaseProgress(isComplete: true) => (
-          'Completa',
+          tr.rutaEstadoCompleta,
           AppColors.statusGood,
           Icons.check_circle
         ),
       PhaseProgress(isUnlocked: false) => (
-          'Bloqueada — complete la fase anterior',
+          tr.labBloqueadaAnterior,
           AppColors.textMuted,
           Icons.lock_outline
         ),
       PhaseProgress(deadlineStatus: DeadlineStatus.overdue) => (
-          'Vencida',
+          tr.rutaEstadoVencida,
           AppColors.statusCritical,
           Icons.warning_amber_rounded
         ),
       PhaseProgress(deadlineStatus: DeadlineStatus.approaching) => (
-          'Por vencer',
+          tr.labPorVencer,
           AppColors.statusWarning,
           Icons.hourglass_empty
         ),
-      _ => ('Disponible', accent, Icons.hourglass_empty),
+      _ => (tr.rutaEstadoDisponible, accent, Icons.hourglass_empty),
     };
     return StatusChip(label: label, color: color, icon: icon);
   }
@@ -306,7 +306,7 @@ class _PhaseCard extends StatelessWidget {
   Widget _groupChip() {
     if (studentsAssigned == 0) {
       return StatusChip(
-          label: 'Sin estudiantes',
+          label: tr.labSinEstudiantes,
           color: AppColors.textMuted,
           icon: Icons.groups_outlined);
     }
@@ -314,7 +314,7 @@ class _PhaseCard extends StatelessWidget {
         DateTime.now().isAfter(phase.deadlineDate!) &&
         phase.completedByCount < studentsAssigned;
     return StatusChip(
-      label: '${phase.completedByCount}/$studentsAssigned completaron',
+      label: tr.labCompletaron(phase.completedByCount, studentsAssigned),
       color: overdue ? AppColors.statusCritical : accent,
       icon: overdue ? Icons.warning_amber_rounded : Icons.groups_outlined,
     );
@@ -344,7 +344,7 @@ class _ModuleRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(module.title.isEmpty ? 'Módulo' : module.title,
+                Text(module.title.isEmpty ? tr.rutaModulo : module.title,
                     style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w600)),
                 if (module.courseIds.isNotEmpty)

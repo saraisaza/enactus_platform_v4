@@ -2,13 +2,14 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
@@ -68,13 +69,11 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
     final data = context.watch<DataProvider>();
 
     return ContentScreenShell(
-      eyebrow: 'Comunidad eduXaction Colombia',
-      title: 'Directorio de Proyectos',
+      eyebrow: tr.proyectosComunidad,
+      title: tr.tabDirectorioProyectos,
       subtitle:
-          'Todos los proyectos activos de la red. Filtre por etapa, explore '
-          'los ODS que atienden y descubra qué está construyendo el resto '
-          'de los equipos.',
-      searchHint: 'Buscar proyecto, comunidad u ODS',
+          tr.proyectosSubtitulo,
+      searchHint: tr.proyectosBuscar,
       onSearchChanged: (v) => setState(() => _query = v),
       trailingBuilder: (context, colors, isDark) => data.projects.when(
         loading: () => const _StatsSkeleton(),
@@ -114,7 +113,7 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
       runSpacing: 9,
       children: [
         _StageChip(
-          label: 'Todas las etapas',
+          label: tr.proyectosTodasEtapas,
           count: countFor('todas'),
           active: _stageFilter == 'todas',
           colors: colors,
@@ -172,18 +171,16 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
   Widget _buildEmptyState(ContentColors colors, bool noProjectsAtAll) {
     return EmptyState(
       icon: Icons.lightbulb_outline,
-      title: 'Aún no hay proyectos aquí',
+      title: tr.proyectosVacio,
       message: noProjectsAtAll
-          ? 'Todavía no se ha publicado ningún proyecto en la comunidad. '
-              'Cuando su equipo registre el suyo, aparecerá aquí para toda la red.'
-          : 'Ningún proyecto coincide con este filtro. Pruebe con otra '
-              'etapa o limpie la búsqueda.',
-      primaryLabel: 'Ver todas las etapas',
+          ? tr.proyectosVacioTexto
+          : tr.proyectosSinCoincidencias,
+      primaryLabel: tr.proyectosVerTodasEtapas,
       onPrimary: () => setState(() {
         _stageFilter = 'todas';
         _query = '';
       }),
-      secondaryLabel: 'Proponer un proyecto',
+      secondaryLabel: tr.proyectosProponer,
       secondaryIcon: Icons.add,
       colors: colors,
     );
@@ -382,9 +379,8 @@ class _ProjectCard extends StatelessWidget {
       {required this.project, required this.colors, required this.onTap});
 
   String get _teamLine {
-    if (project.teamSize == 0) return 'Sin equipo asignado todavía.';
-    final people =
-        '${project.teamSize} estudiante${project.teamSize == 1 ? '' : 's'}';
+    if (project.teamSize == 0) return tr.proyectosSinEquipo;
+    final people = tr.comunEstudiantes(project.teamSize);
     if (project.universities.isEmpty) return people;
     return '${project.universities.join(' · ')} · $people';
   }
@@ -598,7 +594,7 @@ class ProjectSummaryCard extends StatelessWidget {
                 if (relevantStudentCount != null) ...[
                   const SizedBox(height: 6),
                   Text(
-                      '$relevantStudentCount estudiante${relevantStudentCount == 1 ? '' : 's'} en su alcance',
+                      tr.proyectosEstudiantesAlcance(relevantStudentCount!),
                       style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                 ],
               ],
@@ -645,9 +641,9 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
     return data.projectById(widget.projectId).when(
           loading: () => Scaffold(
             backgroundColor: colors.bg,
-            body: const Column(
+            body: Column(
               children: [
-                AppHeader(portalTitle: 'Proyecto'),
+                AppHeader(portalTitle: tr.busquedaTipoProyecto),
                 Expanded(child: Center(child: BrandLoader())),
               ],
             ),
@@ -656,7 +652,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
             backgroundColor: colors.bg,
             body: Column(
               children: [
-                const AppHeader(portalTitle: 'Proyecto'),
+                AppHeader(portalTitle: tr.busquedaTipoProyecto),
                 Expanded(
                   child: ErrorState(e,
                       onRetry: () => data.reloadProject(widget.projectId)),
@@ -681,7 +677,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
       backgroundColor: colors.bg,
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Proyecto'),
+          AppHeader(portalTitle: tr.busquedaTipoProyecto),
           Expanded(
             child: CustomScrollView(
               slivers: [
@@ -729,19 +725,19 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                             const SizedBox(height: 10),
                             Text(
                               project.createdAt == null
-                                  ? 'Fecha no registrada'
-                                  : 'Creado el ${DateFormat('d MMM yyyy', 'es').format(project.createdAt!)}',
+                                  ? tr.proyectosFechaNoRegistrada
+                                  : tr.proyectosCreadoEl(fechaCorta(project.createdAt!)),
                               style: TextStyle(fontSize: 12.5, color: colors.text3),
                             ),
                             if (project.problem.isNotEmpty)
-                              ..._detailSection('Problema', project.problem, colors),
+                              ..._detailSection(tr.proyectosProblema, project.problem, colors),
                             if (project.solution.isNotEmpty)
-                              ..._detailSection('Solución', project.solution, colors),
+                              ..._detailSection(tr.proyectosSolucion, project.solution, colors),
                             if (project.impactIndicators.isNotEmpty)
                               ..._detailSection(
-                                  'Indicadores de impacto', project.impactIndicators, colors),
+                                  tr.proyectosIndicadores, project.impactIndicators, colors),
                             if (project.community.isNotEmpty)
-                              ..._detailSection('Comunidad', project.community, colors),
+                              ..._detailSection(tr.foroComunidad, project.community, colors),
                             if (project.ods.isNotEmpty) ...[
                               const SizedBox(height: 16),
                               Text('ODS',
@@ -768,7 +764,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                                     letterSpacing: 1)),
                             const SizedBox(height: 10),
                             if (project.teams.isEmpty)
-                              Text('Sin equipo asignado todavía.',
+                              Text(tr.proyectosSinEquipo,
                                   style: TextStyle(
                                       fontSize: 13, color: colors.text3))
                             else
@@ -827,7 +823,7 @@ class _ThemeToggleButton extends StatelessWidget {
               Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   size: 16, color: colors.text2),
               const SizedBox(width: 6),
-              Text(isDark ? 'Claro' : 'Oscuro',
+              Text(isDark ? tr.temaClaro : tr.temaOscuro,
                   style: TextStyle(fontSize: 12.5, color: colors.text2)),
             ],
           ),
@@ -882,13 +878,13 @@ class _GroupBlock extends StatelessWidget {
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.only(left: 25),
-              child: Text('Asesor académico: ${team.advisorName}',
+              child: Text(tr.proyectosAsesor(team.advisorName!),
                   style: TextStyle(fontSize: 12.5, color: colors.text3)),
             ),
           ],
           const SizedBox(height: 14),
           if (members.isEmpty)
-            Text('Sin integrantes asignados.',
+            Text(tr.proyectosSinIntegrantes,
                 style: TextStyle(fontSize: 13, color: colors.text3))
           else
             for (final member in members)
@@ -929,7 +925,7 @@ class _MemberRow extends StatelessWidget {
               Text(
                   [
                     member.university.isEmpty
-                        ? 'Universidad sin definir'
+                        ? tr.proyectosUniversidadSinDefinir
                         : member.university,
                     if (member.career.isNotEmpty) member.career,
                   ].join(' · '),
@@ -980,10 +976,10 @@ class _StatsRow extends StatelessWidget {
         projects.where((p) => p.stage == 'national_expo').length;
 
     final cards = [
-      (projects.length, 'Proyectos activos', true),
-      (universities, 'Universidades', false),
-      (odsCovered, 'ODS cubiertos', false),
-      (expoCount, 'En National Expo', false),
+      (projects.length, tr.proyectosActivos, true),
+      (universities, tr.proyectosUniversidades, false),
+      (odsCovered, tr.proyectosOdsCubiertos, false),
+      (expoCount, tr.proyectosEnExpo, false),
     ];
 
     return LayoutBuilder(builder: (context, c) {

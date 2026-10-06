@@ -56,6 +56,12 @@ class _FormState extends State<_Form> {
   late final TextEditingController _subtitle;
   late final TextEditingController _banner;
   late final TextEditingController _about;
+  // Los mismos textos en inglés: vacíos, la portada en inglés usa los de
+  // español.
+  late final TextEditingController _titleEn;
+  late final TextEditingController _subtitleEn;
+  late final TextEditingController _bannerEn;
+  late final TextEditingController _aboutEn;
   late final TextEditingController _meetingLink;
   late final TextEditingController _statStudents;
   late final TextEditingController _statProjects;
@@ -76,6 +82,10 @@ class _FormState extends State<_Form> {
     _subtitle = TextEditingController(text: c.heroSubtitle);
     _banner = TextEditingController(text: c.bannerText);
     _about = TextEditingController(text: c.aboutText);
+    _titleEn = TextEditingController(text: c.heroTitleEn);
+    _subtitleEn = TextEditingController(text: c.heroSubtitleEn);
+    _bannerEn = TextEditingController(text: c.bannerTextEn);
+    _aboutEn = TextEditingController(text: c.aboutTextEn);
     _meetingLink = TextEditingController(text: c.meetingLink);
     _statStudents = TextEditingController(text: '${c.statStudents}');
     _statProjects = TextEditingController(text: '${c.statProjects}');
@@ -90,6 +100,10 @@ class _FormState extends State<_Form> {
       _subtitle,
       _banner,
       _about,
+      _titleEn,
+      _subtitleEn,
+      _bannerEn,
+      _aboutEn,
       _meetingLink,
       _statStudents,
       _statProjects,
@@ -118,6 +132,10 @@ class _FormState extends State<_Form> {
         'heroSubtitle': _subtitle.text.trim(),
         'bannerText': _banner.text.trim(),
         'aboutText': _about.text.trim(),
+        'heroTitleEn': _titleEn.text.trim(),
+        'heroSubtitleEn': _subtitleEn.text.trim(),
+        'bannerTextEn': _bannerEn.text.trim(),
+        'aboutTextEn': _aboutEn.text.trim(),
         'meetingLink': _meetingLink.text.trim(),
         'statStudents': int.tryParse(_statStudents.text.trim()) ?? 0,
         'statProjects': int.tryParse(_statProjects.text.trim()) ?? 0,
@@ -187,7 +205,22 @@ class _FormState extends State<_Form> {
           _campo(_banner, tr.contenidoBanner),
           const SizedBox(height: 14),
           _campo(_about, tr.contenidoSobreNosotros, maxLines: 3),
+          const SizedBox(height: 20),
+          Text(tr.contenidoEnIngles,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(tr.contenidoEnInglesAyuda,
+              style: const TextStyle(
+                  fontSize: 12.5, color: AppColors.textMuted)),
+          const SizedBox(height: 10),
+          _campo(_titleEn, tr.contenidoTituloHeroEn),
           const SizedBox(height: 14),
+          _campo(_subtitleEn, tr.contenidoSubtituloHeroEn, maxLines: 2),
+          const SizedBox(height: 14),
+          _campo(_bannerEn, tr.contenidoBannerEn),
+          const SizedBox(height: 14),
+          _campo(_aboutEn, tr.contenidoSobreNosotrosEn, maxLines: 3),
+          const SizedBox(height: 20),
           TextField(
             controller: _meetingLink,
             keyboardType: TextInputType.url,

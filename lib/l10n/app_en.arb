@@ -1349,5 +1349,21 @@
   "contenidoGaleriaVacia": "There are no images in the gallery yet.",
   "contenidoSacarImagen": "Remove it from the home page?",
   "contenidoPublicar": "Publish {cantidad} on the home page",
-  "respaldoNombreArchivo": "enactus_backup_{fecha}.json"
+  "respaldoNombreArchivo": "enactus_backup_{fecha}.json",
+  "avisoEntregaCalificadaTitulo": "Submission graded",
+  "avisoEntregaCalificadaCuerpo": "\"{tarea}\" has new feedback.",
+  "avisoEntregaRevisadaTitulo": "Submission reviewed",
+  "avisoEntregaRevisadaCuerpo": "\"{tarea}\" has a new comment from your Mentor.",
+  "avisoForoReporteTitulo": "New report in the forum",
+  "avisoForoReporteCuerpo": "Someone reported forum content. Review it in Forum › Reports.",
+  "avisoCertificadoTitulo": "New certificate",
+  "avisoCertificadoCuerpo": "You received the certificate for completing the Impact Path of {laboratorio}.",
+  "avisoMentorComentoCuerpo": "Your mentor commented on \"{tarea}\".",
+  "avisoFirma": "— {remitente} ({correo})",
+  "contenidoEnIngles": "Texts in English",
+  "contenidoEnInglesAyuda": "For people who view the home page in English. If a field is left empty, the Spanish text is shown.",
+  "contenidoTituloHeroEn": "Hero title (English)",
+  "contenidoSubtituloHeroEn": "Hero subtitle (English)",
+  "contenidoBannerEn": "Announcement banner (English)",
+  "contenidoSobreNosotrosEn": "\"About us\" text (English)"
 }

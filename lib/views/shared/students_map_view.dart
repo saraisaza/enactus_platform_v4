@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../l10n/textos.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -544,9 +545,13 @@ class _MineEmptyState extends StatelessWidget {
   /// lo resuelve el servidor.
   Future<void> _contactAdmin(BuildContext context) async {
     try {
+      // En español para el equipo, con su tipo para que cada admin lo lea en
+      // su idioma.
+      final es = lookupAppLocalizations(const Locale('es'));
       await data.notifyAdmins(
-        title: tr.mapaSolicitudTitulo,
-        body: tr.mapaSolicitudTexto,
+        title: es.mapaSolicitudTitulo,
+        body: es.mapaSolicitudTexto,
+        kind: 'solicitud_patrocinados',
       );
       if (context.mounted) {
         showAppSnack(context, tr.mapaAvisamos);

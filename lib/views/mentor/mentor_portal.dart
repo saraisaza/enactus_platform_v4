@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -495,10 +496,15 @@ class _ReviewDialogState extends State<_ReviewDialog> {
       // El estudiante se entera de que ya la revisaron.
       final studentId = widget.submission.studentId;
       if (studentId != null) {
+        // El texto se guarda en español —lo que ve una app vieja— y con su
+        // tipo, para que el estudiante lo lea en su idioma.
+        final es = lookupAppLocalizations(const Locale('es'));
         await data.notify(
           [studentId],
-          title: 'Entrega revisada',
-          body: 'Su mentor comentó "${widget.submission.taskName}".',
+          title: es.avisoEntregaRevisadaTitulo,
+          body: es.avisoMentorComentoCuerpo(widget.submission.taskName),
+          kind: 'mentor_comento',
+          params: {'tarea': widget.submission.taskName},
         );
       }
       if (!mounted) return;

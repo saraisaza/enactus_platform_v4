@@ -2509,5 +2509,47 @@
     "placeholders": {
       "fecha": {}
     }
-  }
+  },
+  "avisoEntregaCalificadaTitulo": "Entrega calificada",
+  "avisoEntregaCalificadaCuerpo": "\"{tarea}\" tiene nueva retroalimentación.",
+  "@avisoEntregaCalificadaCuerpo": {
+    "placeholders": {
+      "tarea": {}
+    }
+  },
+  "avisoEntregaRevisadaTitulo": "Entrega revisada",
+  "avisoEntregaRevisadaCuerpo": "\"{tarea}\" tiene un comentario nuevo de su Mentor.",
+  "@avisoEntregaRevisadaCuerpo": {
+    "placeholders": {
+      "tarea": {}
+    }
+  },
+  "avisoForoReporteTitulo": "Nuevo reporte en el foro",
+  "avisoForoReporteCuerpo": "Alguien reportó contenido del foro. Revíselo en Foro › Reportes.",
+  "avisoCertificadoTitulo": "Nuevo certificado",
+  "avisoCertificadoCuerpo": "Recibió el certificado por completar la Ruta de Impacto de {laboratorio}.",
+  "@avisoCertificadoCuerpo": {
+    "placeholders": {
+      "laboratorio": {}
+    }
+  },
+  "avisoMentorComentoCuerpo": "Su mentor comentó \"{tarea}\".",
+  "@avisoMentorComentoCuerpo": {
+    "placeholders": {
+      "tarea": {}
+    }
+  },
+  "avisoFirma": "— {remitente} ({correo})",
+  "@avisoFirma": {
+    "placeholders": {
+      "remitente": {},
+      "correo": {}
+    }
+  },
+  "contenidoEnIngles": "Textos en inglés",
+  "contenidoEnInglesAyuda": "Para quien ve la portada en inglés. Si un campo queda vacío, se muestra el texto en español.",
+  "contenidoTituloHeroEn": "Título del hero (inglés)",
+  "contenidoSubtituloHeroEn": "Subtítulo del hero (inglés)",
+  "contenidoBannerEn": "Banner de anuncio (inglés)",
+  "contenidoSobreNosotrosEn": "Texto \"Sobre nosotros\" (inglés)"
 }

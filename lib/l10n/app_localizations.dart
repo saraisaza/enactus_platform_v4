@@ -8197,6 +8197,102 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'enactus_respaldo_{fecha}.json'**
   String respaldoNombreArchivo(Object fecha);
+
+  /// No description provided for @avisoEntregaCalificadaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega calificada'**
+  String get avisoEntregaCalificadaTitulo;
+
+  /// No description provided for @avisoEntregaCalificadaCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'\"{tarea}\" tiene nueva retroalimentación.'**
+  String avisoEntregaCalificadaCuerpo(Object tarea);
+
+  /// No description provided for @avisoEntregaRevisadaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega revisada'**
+  String get avisoEntregaRevisadaTitulo;
+
+  /// No description provided for @avisoEntregaRevisadaCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'\"{tarea}\" tiene un comentario nuevo de su Mentor.'**
+  String avisoEntregaRevisadaCuerpo(Object tarea);
+
+  /// No description provided for @avisoForoReporteTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo reporte en el foro'**
+  String get avisoForoReporteTitulo;
+
+  /// No description provided for @avisoForoReporteCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Alguien reportó contenido del foro. Revíselo en Foro › Reportes.'**
+  String get avisoForoReporteCuerpo;
+
+  /// No description provided for @avisoCertificadoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo certificado'**
+  String get avisoCertificadoTitulo;
+
+  /// No description provided for @avisoCertificadoCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibió el certificado por completar la Ruta de Impacto de {laboratorio}.'**
+  String avisoCertificadoCuerpo(Object laboratorio);
+
+  /// No description provided for @avisoMentorComentoCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Su mentor comentó \"{tarea}\".'**
+  String avisoMentorComentoCuerpo(Object tarea);
+
+  /// No description provided for @avisoFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'— {remitente} ({correo})'**
+  String avisoFirma(Object remitente, Object correo);
+
+  /// No description provided for @contenidoEnIngles.
+  ///
+  /// In es, this message translates to:
+  /// **'Textos en inglés'**
+  String get contenidoEnIngles;
+
+  /// No description provided for @contenidoEnInglesAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Para quien ve la portada en inglés. Si un campo queda vacío, se muestra el texto en español.'**
+  String get contenidoEnInglesAyuda;
+
+  /// No description provided for @contenidoTituloHeroEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Título del hero (inglés)'**
+  String get contenidoTituloHeroEn;
+
+  /// No description provided for @contenidoSubtituloHeroEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Subtítulo del hero (inglés)'**
+  String get contenidoSubtituloHeroEn;
+
+  /// No description provided for @contenidoBannerEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Banner de anuncio (inglés)'**
+  String get contenidoBannerEn;
+
+  /// No description provided for @contenidoSobreNosotrosEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Texto \"Sobre nosotros\" (inglés)'**
+  String get contenidoSobreNosotrosEn;
 }
 
 class _AppLocalizationsDelegate

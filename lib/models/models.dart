@@ -1986,8 +1986,19 @@ class CommunicationResource {
 class AppNotification {
   final String id;
   final String userId;
+
+  /// Título y texto tal como se guardaron (en español para los avisos con
+  /// [kind]). Para mostrar, [tituloVisible] y [cuerpoVisible].
   final String title;
   final String body;
+
+  /// Qué aviso es (`entrega_calificada`, …). Con él, el texto se arma en el
+  /// idioma de quien lo lee. `null` en los avisos viejos y en los que escribe
+  /// una persona: esos se muestran tal cual.
+  final String? kind;
+
+  /// Lo que cambia dentro del texto (`{tarea: 'Informe final'}`).
+  final Map<String, String> params;
   final DateTime createdAt;
   final DateTime? readAt;
 
@@ -1996,17 +2007,48 @@ class AppNotification {
     required this.userId,
     required this.title,
     this.body = '',
+    this.kind,
+    this.params = const {},
     required this.createdAt,
     this.readAt,
   });
 
   bool get isRead => readAt != null;
 
+  String _p(String clave) => params[clave] ?? '';
+
+  /// El título en el idioma activo, si el aviso tiene un tipo conocido.
+  String get tituloVisible => switch (kind) {
+        'entrega_calificada' => tr.avisoEntregaCalificadaTitulo,
+        'entrega_revisada' || 'mentor_comento' => tr.avisoEntregaRevisadaTitulo,
+        'foro_reporte' => tr.avisoForoReporteTitulo,
+        'certificado_nuevo' => tr.avisoCertificadoTitulo,
+        'solicitud_patrocinados' => tr.mapaSolicitudTitulo,
+        _ => title,
+      };
+
+  /// El texto en el idioma activo, si el aviso tiene un tipo conocido.
+  String get cuerpoVisible => switch (kind) {
+        'entrega_calificada' => tr.avisoEntregaCalificadaCuerpo(_p('tarea')),
+        'entrega_revisada' => tr.avisoEntregaRevisadaCuerpo(_p('tarea')),
+        'mentor_comento' => tr.avisoMentorComentoCuerpo(_p('tarea')),
+        'foro_reporte' => tr.avisoForoReporteCuerpo,
+        'certificado_nuevo' => tr.avisoCertificadoCuerpo(_p('laboratorio')),
+        'solicitud_patrocinados' =>
+          '${tr.mapaSolicitudTexto}\n\n${tr.avisoFirma(_p('remitente'), _p('correo'))}',
+        _ => body,
+      };
+
   factory AppNotification.fromJson(Map<String, dynamic> j) => AppNotification(
         id: j['id'] as String,
         userId: (j['userId'] as String?) ?? '',
         title: (j['title'] as String?) ?? '',
         body: (j['body'] as String?) ?? '',
+        kind: j['kind'] as String?,
+        params: {
+          for (final e in (j['params'] as Map? ?? const {}).entries)
+            '${e.key}': '${e.value}',
+        },
         createdAt: _date(j['createdAt']) ?? DateTime.now(),
         readAt: _date(j['readAt']),
       );
@@ -2352,6 +2394,14 @@ class SiteContent {
   final String heroSubtitle;
   final String bannerText;
   final String aboutText;
+
+  /// Los mismos textos en inglés, escritos por el equipo. Vacíos, la portada
+  /// en inglés muestra los de español. Para mostrar: [tituloVisible] y
+  /// compañía, que eligen según el idioma activo.
+  final String heroTitleEn;
+  final String heroSubtitleEn;
+  final String bannerTextEn;
+  final String aboutTextEn;
   final String meetingLink;
   final int statStudents;
   final int statProjects;
@@ -2379,6 +2429,10 @@ class SiteContent {
     this.heroSubtitle = '',
     this.bannerText = '',
     this.aboutText = '',
+    this.heroTitleEn = '',
+    this.heroSubtitleEn = '',
+    this.bannerTextEn = '',
+    this.aboutTextEn = '',
     this.meetingLink = '',
     this.statStudents = 0,
     this.statProjects = 0,
@@ -2394,6 +2448,10 @@ class SiteContent {
         heroSubtitle: (j['heroSubtitle'] as String?) ?? '',
         bannerText: (j['bannerText'] as String?) ?? '',
         aboutText: (j['aboutText'] as String?) ?? '',
+        heroTitleEn: (j['heroTitleEn'] as String?) ?? '',
+        heroSubtitleEn: (j['heroSubtitleEn'] as String?) ?? '',
+        bannerTextEn: (j['bannerTextEn'] as String?) ?? '',
+        aboutTextEn: (j['aboutTextEn'] as String?) ?? '',
         meetingLink: (j['meetingLink'] as String?) ?? '',
         statStudents: (j['statStudents'] as num?)?.toInt() ?? 0,
         statProjects: (j['statProjects'] as num?)?.toInt() ?? 0,
@@ -2409,6 +2467,16 @@ class SiteContent {
                 GalleryImage.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
       );
+
+  /// El texto en inglés si la interfaz está en inglés y el equipo lo
+  /// escribió; si no, el de español.
+  static String _segunIdioma(String es, String en) =>
+      Idioma.instancia.codigo == 'en' && en.isNotEmpty ? en : es;
+
+  String get tituloVisible => _segunIdioma(heroTitle, heroTitleEn);
+  String get subtituloVisible => _segunIdioma(heroSubtitle, heroSubtitleEn);
+  String get bannerVisible => _segunIdioma(bannerText, bannerTextEn);
+  String get acercaVisible => _segunIdioma(aboutText, aboutTextEn);
 }
 
 /// Una imagen de la galería de la portada, con su id y su URL ya firmada.

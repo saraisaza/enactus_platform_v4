@@ -890,11 +890,11 @@ class _NotificationListBody extends StatelessWidget {
               size: 20,
             ),
             title: Text(
-              n.title,
+              n.tituloVisible,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              '${n.body}\n${fechaHora(n.createdAt)}',
+              '${n.cuerpoVisible}\n${fechaHora(n.createdAt)}',
               style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             isThreeLine: true,

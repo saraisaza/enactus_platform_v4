@@ -76,13 +76,13 @@ class LandingView extends StatelessWidget {
               child: Column(
                 children: [
                   // Banner de anuncio
-                  if (content.bannerText.isNotEmpty)
+                  if (content.bannerVisible.isNotEmpty)
                     Container(
                       width: double.infinity,
                       color: AppColors.gold,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
-                        content.bannerText,
+                        content.bannerVisible,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: AppColors.ink,
@@ -91,7 +91,9 @@ class LandingView extends StatelessWidget {
                       ),
                     ),
                   // Hero
-                  _Hero(title: content.heroTitle, subtitle: content.heroSubtitle),
+                  _Hero(
+                      title: content.tituloVisible,
+                      subtitle: content.subtituloVisible),
                   // Prueba social inmediata: los campeones reales de la última
                   // National Expo, justo debajo del hero — antes de los
                   // contadores, para que el primer impacto visual sea gente
@@ -135,7 +137,7 @@ class LandingView extends StatelessWidget {
                   // así que sin texto no quedaba invisible — se encogía a su
                   // propio relleno y dejaba una tarjeta vacía suelta entre los
                   // contadores y los laboratorios.
-                  if (content.aboutText.isNotEmpty)
+                  if (content.acercaVisible.isNotEmpty)
                     Container(
                       key: const Key('landing-sobre-nosotros'),
                       width: double.infinity,
@@ -146,7 +148,7 @@ class LandingView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(
-                        content.aboutText,
+                        content.acercaVisible,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                             color: AppColors.textPrimary,

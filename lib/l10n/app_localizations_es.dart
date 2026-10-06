@@ -4851,4 +4851,64 @@ class AppLocalizationsEs extends AppLocalizations {
   String respaldoNombreArchivo(Object fecha) {
     return 'enactus_respaldo_$fecha.json';
   }
+
+  @override
+  String get avisoEntregaCalificadaTitulo => 'Entrega calificada';
+
+  @override
+  String avisoEntregaCalificadaCuerpo(Object tarea) {
+    return '\"$tarea\" tiene nueva retroalimentación.';
+  }
+
+  @override
+  String get avisoEntregaRevisadaTitulo => 'Entrega revisada';
+
+  @override
+  String avisoEntregaRevisadaCuerpo(Object tarea) {
+    return '\"$tarea\" tiene un comentario nuevo de su Mentor.';
+  }
+
+  @override
+  String get avisoForoReporteTitulo => 'Nuevo reporte en el foro';
+
+  @override
+  String get avisoForoReporteCuerpo =>
+      'Alguien reportó contenido del foro. Revíselo en Foro › Reportes.';
+
+  @override
+  String get avisoCertificadoTitulo => 'Nuevo certificado';
+
+  @override
+  String avisoCertificadoCuerpo(Object laboratorio) {
+    return 'Recibió el certificado por completar la Ruta de Impacto de $laboratorio.';
+  }
+
+  @override
+  String avisoMentorComentoCuerpo(Object tarea) {
+    return 'Su mentor comentó \"$tarea\".';
+  }
+
+  @override
+  String avisoFirma(Object remitente, Object correo) {
+    return '— $remitente ($correo)';
+  }
+
+  @override
+  String get contenidoEnIngles => 'Textos en inglés';
+
+  @override
+  String get contenidoEnInglesAyuda =>
+      'Para quien ve la portada en inglés. Si un campo queda vacío, se muestra el texto en español.';
+
+  @override
+  String get contenidoTituloHeroEn => 'Título del hero (inglés)';
+
+  @override
+  String get contenidoSubtituloHeroEn => 'Subtítulo del hero (inglés)';
+
+  @override
+  String get contenidoBannerEn => 'Banner de anuncio (inglés)';
+
+  @override
+  String get contenidoSobreNosotrosEn => 'Texto \"Sobre nosotros\" (inglés)';
 }

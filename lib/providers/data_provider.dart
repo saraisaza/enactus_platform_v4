@@ -1107,13 +1107,24 @@ class DataProvider extends ChangeNotifier {
   /// A quién se le puede escribir lo decide el servidor con los alcances que
   /// ya existen. Nadie recibe el correo de nadie: el aviso llega a la bandeja
   /// dentro de la plataforma.
+  ///
+  /// Con [kind], quien lo recibe lo lee en su idioma (ver
+  /// `AppNotification.kind`); [title] y [body] van igual, en español, para una
+  /// versión de la app que no conozca el tipo.
   Future<int> notify(
     List<String> userIds, {
     required String title,
     String body = '',
+    String? kind,
+    Map<String, String>? params,
   }) async {
-    final json = await api.post('/notifications',
-        body: {'userIds': userIds, 'title': title, 'body': body});
+    final json = await api.post('/notifications', body: {
+      'userIds': userIds,
+      'title': title,
+      'body': body,
+      'kind': ?kind,
+      'params': ?params,
+    });
     final map = Map<String, dynamic>.from(json as Map);
     return (map['sent'] as num?)?.toInt() ?? 0;
   }
@@ -1126,9 +1137,13 @@ class DataProvider extends ChangeNotifier {
   Future<int> notifyAdmins({
     required String title,
     String body = '',
+    String? kind,
   }) async {
-    final json = await api.post('/notifications/admins',
-        body: {'title': title, 'body': body});
+    final json = await api.post('/notifications/admins', body: {
+      'title': title,
+      'body': body,
+      'kind': ?kind,
+    });
     final map = Map<String, dynamic>.from(json as Map);
     return (map['sent'] as num?)?.toInt() ?? 0;
   }

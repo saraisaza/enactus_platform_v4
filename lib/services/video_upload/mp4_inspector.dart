@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../l10n/textos.dart';
 import 'picked_video.dart';
 
 /// Tope de lo que se sube: el mismo que exige la API.
@@ -45,33 +46,28 @@ Future<Mp4Check> checkUploadableVideo(PickedVideo video) async {
   if (ext != 'mp4' && ext != 'm4v') {
     return Mp4Check.problem(
       ext.isEmpty
-          ? 'Solo se aceptan videos MP4 (H.264 con audio AAC).'
-          : 'Solo se aceptan videos MP4 (H.264 con audio AAC); este archivo '
-              'es .$ext. Expórtelo como MP4 y vuelva a intentar.',
+          ? tr.mp4SoloMp4
+          : tr.mp4SoloMp4Ext(ext),
     );
   }
   if (video.sizeBytes <= 0) {
-    return const Mp4Check.problem('El archivo está vacío.');
+    return Mp4Check.problem(tr.mp4Vacio);
   }
   if (video.sizeBytes > maxUploadedVideoBytes) {
     return Mp4Check.problem(
-      'El video pesa ${formatMegabytes(video.sizeBytes)} y el máximo es '
-      '500 MB. Comprímalo (por ejemplo con HandBrake, ajuste «Fast 1080p30») '
-      'y vuelva a intentar.',
+      tr.mp4Pesado(formatMegabytes(video.sizeBytes)),
     );
   }
   try {
     return await inspectMp4(video);
   } catch (_) {
-    return const Mp4Check.problem(_danado);
+    return Mp4Check.problem(_danado);
   }
 }
 
-const _danado = 'No se pudo leer el MP4: el archivo está incompleto o '
-    'dañado. Vuelva a exportarlo.';
+String get _danado => tr.mp4Danado;
 
-const _noEsMp4 = 'Este archivo no es un MP4 aunque se llame así. Expórtelo '
-    'como MP4 (H.264 con audio AAC).';
+String get _noEsMp4 => tr.mp4NoEsMp4;
 
 /// El índice de un video de horas pesa unos pocos MB; más que esto no es un
 /// índice razonable y no se carga en memoria.
@@ -92,16 +88,16 @@ Future<Mp4Check> inspectMp4(PickedVideo video) async {
     final type = _fourcc(h, 4);
     var header = 8;
     if (boxSize == 1) {
-      if (h.length < 16) return const Mp4Check.problem(_danado);
+      if (h.length < 16) return Mp4Check.problem(_danado);
       boxSize = _u64(h, 8);
       header = 16;
     } else if (boxSize == 0) {
       boxSize = size - offset;
     }
     if (offset == 0 && type != 'ftyp') {
-      return const Mp4Check.problem(_noEsMp4);
+      return Mp4Check.problem(_noEsMp4);
     }
-    if (boxSize < header) return const Mp4Check.problem(_danado);
+    if (boxSize < header) return Mp4Check.problem(_danado);
     if (type == 'moov') {
       moovStart = offset;
       moovEnd = offset + boxSize;
@@ -111,12 +107,11 @@ Future<Mp4Check> inspectMp4(PickedVideo video) async {
   }
 
   if (moovStart == null || moovEnd == null || moovEnd > size) {
-    return const Mp4Check.problem(
-        'No se pudo leer el MP4: le falta el índice del video, así que está '
-        'incompleto o dañado. Vuelva a exportarlo.');
+    return Mp4Check.problem(
+        tr.mp4SinIndice);
   }
   if (moovEnd - moovStart > _maxMoovBytes) {
-    return const Mp4Check.problem(_danado);
+    return Mp4Check.problem(_danado);
   }
 
   final moov = await video.readRange(moovStart, moovEnd);
@@ -134,13 +129,12 @@ Future<Mp4Check> inspectMp4(PickedVideo video) async {
   final audioCodec = audio?.$2;
 
   if (videoCodec == null) {
-    return const Mp4Check.problem(
-        'Este archivo no tiene imagen: parece ser solo audio.');
+    return Mp4Check.problem(
+        tr.mp4SoloAudio);
   }
   if (videoCodec == 'encv' || audioCodec == 'enca') {
     return Mp4Check.problem(
-        'Este video está protegido contra copia (DRM) y no se puede '
-        'reproducir en la plataforma.',
+        tr.mp4Drm,
         videoCodec: videoCodec,
         audioCodec: audioCodec);
   }
@@ -160,20 +154,16 @@ Future<Mp4Check> inspectMp4(PickedVideo video) async {
 
 String _mensajeVideo(String codec) {
   if (codec == 'hvc1' || codec == 'hev1') {
-    return 'Este MP4 está en H.265 (HEVC), el formato con el que graba el '
-        'iPhone, y muchos navegadores no lo reproducen. Expórtelo en H.264: '
-        'en el iPhone, Ajustes › Cámara › Formatos › «Más compatible»; en la '
-        'computadora, con HandBrake y el ajuste «Fast 1080p30».';
+    return tr.mp4Hevc;
   }
   final nombre = switch (codec) {
     'av01' => 'AV1',
     'vp09' || 'vp08' => 'VP9',
-    'mp4v' => 'MPEG-4 Parte 2',
+    'mp4v' => tr.mp4Mpeg4Parte2,
     'apch' || 'apcn' || 'apcs' || 'apco' || 'ap4h' || 'ap4x' => 'ProRes',
     _ => codec,
   };
-  return 'Este MP4 usa el formato de video $nombre, que no todos los '
-      'navegadores reproducen. Expórtelo en H.264 con audio AAC.';
+  return tr.mp4FormatoVideo(nombre);
 }
 
 String? _mensajeAudio(String codec, int? oti) {
@@ -188,15 +178,14 @@ String? _mensajeAudio(String codec, int? oti) {
     'ec-3' => 'E-AC-3 (Dolby)',
     'Opus' => 'Opus',
     '.mp3' => 'MP3',
-    'lpcm' || 'sowt' || 'twos' || 'ipcm' => 'PCM sin comprimir',
+    'lpcm' || 'sowt' || 'twos' || 'ipcm' => tr.mp4PcmSinComprimir,
     _ => codec,
   };
   return _audio(nombre);
 }
 
 String _audio(String nombre) =>
-    'El audio de este MP4 está en $nombre, y no todos los navegadores lo '
-    'reproducen. Expórtelo con audio AAC.';
+    tr.mp4FormatoAudio(nombre);
 
 class _Box {
   _Box(this.type, this.start, this.payload, this.end);

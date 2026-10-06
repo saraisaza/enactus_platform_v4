@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:web/web.dart' as web;
 
+import '../l10n/textos.dart';
+
 /// Subida a S3 **en el navegador**, con progreso real por bytes.
 ///
 /// `package:http` no expone el avance de una subida: su `BrowserClient` usa
@@ -64,15 +66,15 @@ Future<int> putWithProgress({
   xhr.addEventListener(
     'error',
     ((web.Event _) {
-      fallar(const UploadTransportException(
-          'No se pudo subir el archivo: la conexión se interrumpió.'));
+      fallar(UploadTransportException(
+          tr.errorSubidaInterrumpida));
     }).toJS,
   );
 
   xhr.addEventListener(
     'abort',
     ((web.Event _) {
-      fallar(const UploadTransportException('La subida se canceló.'));
+      fallar(UploadTransportException(tr.errorSubidaCancelada));
     }).toJS,
   );
 
@@ -100,5 +102,5 @@ class UploadTransportException implements Exception {
 class UploadTimeoutException implements Exception {
   const UploadTimeoutException();
   @override
-  String toString() => 'La subida tardó demasiado.';
+  String toString() => tr.errorSubidaTardo;
 }

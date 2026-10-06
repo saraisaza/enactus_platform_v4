@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../l10n/textos.dart';
 import 'api_errors.dart';
 import 'token_store.dart';
 import 'upload_io.dart' if (dart.library.js_interop) 'upload_web.dart';
@@ -162,13 +163,12 @@ class ApiService {
       if (status < 200 || status >= 300) {
         throw ServerError(
           status,
-          'No se pudo subir el archivo ($status). '
-          'Si el problema persiste, avise al equipo técnico.',
+          tr.errorSubidaFallo(status),
         );
       }
     } on UploadTimeoutException {
-      throw const NetworkError(
-        'La subida tardó demasiado. Intente con una conexión más estable.',
+      throw NetworkError(
+        tr.errorSubidaLenta,
       );
     } on UploadTransportException catch (e) {
       throw NetworkError(e.message);
@@ -191,7 +191,12 @@ class ApiService {
       queryParameters: query?.map((k, v) => MapEntry(k, '$v')),
     );
 
-    final headers = <String, String>{'Accept': 'application/json'};
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      // El servidor escribe sus mensajes (errores, validaciones) en el idioma
+      // de la interfaz. Ver `backend/src/i18n`.
+      'Accept-Language': Idioma.instancia.codigo,
+    };
     if (body != null) headers['Content-Type'] = 'application/json';
     if (authenticated) {
       final token = await tokens.readAccess();
@@ -205,13 +210,13 @@ class ApiService {
       final streamed = await _client.send(request).timeout(_timeout);
       response = await http.Response.fromStream(streamed);
     } on TimeoutException {
-      throw const NetworkError('El servidor tardó demasiado en responder.');
+      throw NetworkError(tr.errorServidorLento);
     } on http.ClientException catch (e) {
       // El detalle ("Failed host lookup…", "Connection refused") sirve para
       // depurar, no para quien usa la app: antes se le mostraba tal cual, en
       // inglés técnico.
       debugPrint('ApiService: $method $path sin conexión (${e.message}).');
-      throw const NetworkError();
+      throw NetworkError();
     } on Exception catch (e) {
       // Fuera del navegador hay fallos de conexión que `package:http` no
       // envuelve en `ClientException`. El típico es `HandshakeException`: un
@@ -219,7 +224,7 @@ class ApiService {
       // intercepta la conexión para pedir inicio de sesión. Antes se escapaba
       // y la pantalla decía "respuesta inesperada", o nada.
       debugPrint('ApiService: $method $path falló la conexión ($e).');
-      throw const NetworkError();
+      throw NetworkError();
     }
 
     // 401: se intenta renovar UNA vez y se repite la petición original.
@@ -230,7 +235,7 @@ class ApiService {
       }
       await tokens.clear();
       onSessionExpired?.call();
-      throw const AuthError();
+      throw AuthError();
     }
 
     return _decode(response);
@@ -281,7 +286,7 @@ class ApiService {
       if (response.statusCode < 400) {
         throw ServerError(
           response.statusCode,
-          'El servidor devolvió una respuesta inesperada.',
+          tr.errorRespuestaInesperadaServidor,
         );
       }
     }
@@ -306,27 +311,27 @@ class ApiService {
           }
         }
         throw ValidationError(
-          message ?? 'Los datos enviados no son válidos.',
+          message ?? tr.errorDatosNoValidos,
           fields: fields,
           code: code.isEmpty ? 'bad_request' : code,
         );
       case 401:
-        throw AuthError(message ?? 'Su sesión expiró. Inicie sesión de nuevo.');
+        throw AuthError(message ?? tr.errorSesionExpirada);
       case 403:
-        throw ForbiddenError(message ?? 'No tiene permiso para ver esto.');
+        throw ForbiddenError(message ?? tr.errorSinPermiso);
       case 404:
-        throw NotFoundError(message ?? 'No encontramos lo que busca.');
+        throw NotFoundError(message ?? tr.errorNoEncontrado);
       case 409:
         throw ConflictError(
-          message ?? 'La operación no se puede hacer en este momento.',
+          message ?? tr.errorOperacionNoPosible,
           details: details is Map ? Map<String, dynamic>.from(details) : const {},
         );
       case 413:
-        throw ValidationError(message ?? 'El archivo es demasiado grande.',
+        throw ValidationError(message ?? tr.errorArchivoGrande,
             code: 'payload_too_large');
       case 429:
         throw ValidationError(
-          message ?? 'Demasiados intentos. Espere un momento.',
+          message ?? tr.errorDemasiadosIntentos,
           code: 'too_many_requests',
         );
       default:
@@ -336,13 +341,13 @@ class ApiService {
         if (response.statusCode >= 500) {
           throw ServerError(
             response.statusCode,
-            message ?? 'El servidor tuvo un problema. Intente de nuevo.',
+            message ?? tr.errorServidorIntente,
             code.isEmpty ? 'internal_error' : code,
           );
         }
         throw ServerError(
           response.statusCode,
-          message ?? 'Respuesta inesperada del servidor.',
+          message ?? tr.errorRespuestaInesperada,
           code.isEmpty ? 'unexpected_response' : code,
         );
     }

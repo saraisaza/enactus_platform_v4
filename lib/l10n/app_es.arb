@@ -42,5 +42,202 @@
     }
   },
   "comunIrAlInicio": "Ir al inicio",
-  "comunCerrarSesion": "Cerrar sesión"
+  "comunCerrarSesion": "Cerrar sesión",
+  "etapaValidacion": "Validación",
+  "etapaPrototipo": "Prototipo",
+  "etapaPiloto": "Piloto",
+  "etapaEscalamiento": "Escalamiento",
+  "etapaIdeacion": "Ideación",
+  "rolLider": "Líder",
+  "rolInvestigacion": "Investigación",
+  "rolFinanzas": "Finanzas",
+  "rolComunicaciones": "Comunicaciones",
+  "rolDiseno": "Diseño",
+  "rolOperaciones": "Operaciones",
+  "rolIntegrante": "Integrante",
+  "categoriaEmpresarial": "Empresarial",
+  "categoriaEmprendimiento": "Emprendimiento",
+  "nivelIntermedio": "Intermedio",
+  "nivelAvanzado": "Avanzado",
+  "nivelBasico": "Básico",
+  "estadoPublicado": "Publicado",
+  "estadoArchivado": "Archivado",
+  "estadoBorrador": "Borrador",
+  "odsEtiqueta": "ODS {numero}: {titulo}",
+  "@odsEtiqueta": {
+    "placeholders": {
+      "numero": {},
+      "titulo": {}
+    }
+  },
+  "idiomaCursoIngles": "Inglés",
+  "idiomaCursoPortugues": "Portugués",
+  "idiomaCursoEspanol": "Español",
+  "tipoArchivoVideo": "Video",
+  "tipoArchivoDocumento": "Documento",
+  "tipoArchivoImagen": "Imagen",
+  "calificacionAprobadoReprobado": "Aprobado / Reprobado",
+  "calificacionSoloRevision": "Solo revisión",
+  "calificacionEscala5": "Escala 0-5",
+  "calificacionPuntaje100": "Puntaje 0-100",
+  "calificacionPendiente": "Pendiente",
+  "calificacionAprobado": "Aprobado",
+  "calificacionReprobado": "Reprobado",
+  "calificacionRevisado": "Revisado",
+  "entregaGrupal": "Entrega grupal",
+  "evidenciaFoto": "Foto",
+  "evidenciaTestimonio": "Testimonio",
+  "evidenciaReporte": "Reporte",
+  "evidenciaHistoria": "Historia",
+  "foroCategoriaAvance": "Avance",
+  "foroCategoriaRecurso": "Recurso",
+  "foroCategoriaAnuncio": "Anuncio",
+  "foroCategoriaPregunta": "Pregunta",
+  "eventoSesionOpenLearning": "Sesión Open Learning",
+  "rutaDeImpacto": "Ruta de Impacto",
+  "eventoMentoria": "Mentoría",
+  "ods1": "Fin de la pobreza",
+  "ods2": "Hambre cero",
+  "ods3": "Salud y bienestar",
+  "ods4": "Educación de calidad",
+  "ods5": "Igualdad de género",
+  "ods6": "Agua limpia y saneamiento",
+  "ods7": "Energía asequible y no contaminante",
+  "ods8": "Trabajo decente y crecimiento económico",
+  "ods9": "Industria, innovación e infraestructura",
+  "ods10": "Reducción de las desigualdades",
+  "ods11": "Ciudades y comunidades sostenibles",
+  "ods12": "Producción y consumo responsables",
+  "ods13": "Acción por el clima",
+  "ods14": "Vida submarina",
+  "ods15": "Vida de ecosistemas terrestres",
+  "ods16": "Paz, justicia e instituciones sólidas",
+  "ods17": "Alianzas para lograr los objetivos",
+  "competenciaLeadership": "Liderazgo",
+  "competenciaInnovation": "Innovación",
+  "competenciaEntrepreneurship": "Emprendimiento",
+  "competenciaFinance": "Finanzas",
+  "competenciaCommunication": "Comunicación",
+  "competenciaPitch": "Pitch",
+  "competenciaSustainability": "Sostenibilidad",
+  "competenciaArtificialIntelligence": "Inteligencia Artificial",
+  "competenciaTeamwork": "Trabajo en equipo",
+  "competenciaUserCenteredDesign": "Diseño Centrado en el Usuario",
+  "competenciaProjectManagement": "Gestión de Proyectos",
+  "competenciaImpactMeasurement": "Medición de Impacto",
+  "errorSubidaFallo": "No se pudo subir el archivo ({status}). Si el problema persiste, avise al equipo técnico.",
+  "@errorSubidaFallo": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "errorSubidaLenta": "La subida tardó demasiado. Intente con una conexión más estable.",
+  "errorServidorLento": "El servidor tardó demasiado en responder.",
+  "errorRespuestaInesperadaServidor": "El servidor devolvió una respuesta inesperada.",
+  "errorDatosNoValidos": "Los datos enviados no son válidos.",
+  "errorSesionExpirada": "Su sesión expiró. Inicie sesión de nuevo.",
+  "errorSinPermiso": "No tiene permiso para ver esto.",
+  "errorNoEncontrado": "No encontramos lo que busca.",
+  "errorOperacionNoPosible": "La operación no se puede hacer en este momento.",
+  "errorArchivoGrande": "El archivo es demasiado grande.",
+  "errorDemasiadosIntentos": "Demasiados intentos. Espere un momento.",
+  "errorServidorIntente": "El servidor tuvo un problema. Intente de nuevo.",
+  "errorRespuestaInesperada": "Respuesta inesperada del servidor.",
+  "certificadoTitulo": "CERTIFICADO DE FINALIZACIÓN",
+  "certificadoSeCertifica": "Se certifica que",
+  "certificadoCompleto": "completó la Ruta de Impacto del laboratorio",
+  "certificadoIntensidad": "Intensidad: {horas} horas certificadas",
+  "@certificadoIntensidad": {
+    "placeholders": {
+      "horas": {}
+    }
+  },
+  "certificadoEmitidoPor": "Emitido por",
+  "certificadoFechaEmision": "Fecha de emisión",
+  "certificadoCodigo": "Código de verificación: {codigo}",
+  "@certificadoCodigo": {
+    "placeholders": {
+      "codigo": {}
+    }
+  },
+  "certificadoPie": "eduXaction Colombia · Entidad sin ánimo de lucro · Bogotá D. C.",
+  "certificadoTituloVisor": "Certificado · {laboratorio}",
+  "@certificadoTituloVisor": {
+    "placeholders": {
+      "laboratorio": {}
+    }
+  },
+  "certificadoArchivo": "certificado_{codigo}.pdf",
+  "@certificadoArchivo": {
+    "placeholders": {
+      "codigo": {}
+    }
+  },
+  "errorSubidaInterrumpida": "No se pudo subir el archivo: la conexión se interrumpió.",
+  "errorSubidaTardo": "La subida tardó demasiado.",
+  "errorSubidaCancelada": "La subida se canceló.",
+  "errorVideoConexionNoResponde": "La conexión dejó de responder mientras subía el video.",
+  "errorVideoConexionCortada": "Se cortó la conexión mientras subía el video.",
+  "videoNavegadorNoAbre": "Este navegador no pudo abrir el video. Puede estar dañado; vuelva a exportarlo como MP4 (H.264 con audio AAC).",
+  "videoPortadaPesada": "La portada pesa {peso} y el máximo es 5 MB.",
+  "@videoPortadaPesada": {
+    "placeholders": {
+      "peso": {}
+    }
+  },
+  "videoParteRechazada": "El almacenamiento rechazó una parte del video ({status}).",
+  "@videoParteRechazada": {
+    "placeholders": {
+      "status": {}
+    }
+  },
+  "mp4SoloMp4": "Solo se aceptan videos MP4 (H.264 con audio AAC).",
+  "mp4SoloMp4Ext": "Solo se aceptan videos MP4 (H.264 con audio AAC); este archivo es .{ext}. Expórtelo como MP4 y vuelva a intentar.",
+  "@mp4SoloMp4Ext": {
+    "placeholders": {
+      "ext": {}
+    }
+  },
+  "mp4Vacio": "El archivo está vacío.",
+  "mp4Pesado": "El video pesa {peso} y el máximo es 500 MB. Comprímalo (por ejemplo con HandBrake, ajuste «Fast 1080p30») y vuelva a intentar.",
+  "@mp4Pesado": {
+    "placeholders": {
+      "peso": {}
+    }
+  },
+  "mp4Danado": "No se pudo leer el MP4: el archivo está incompleto o dañado. Vuelva a exportarlo.",
+  "mp4NoEsMp4": "Este archivo no es un MP4 aunque se llame así. Expórtelo como MP4 (H.264 con audio AAC).",
+  "mp4SinIndice": "No se pudo leer el MP4: le falta el índice del video, así que está incompleto o dañado. Vuelva a exportarlo.",
+  "mp4SoloAudio": "Este archivo no tiene imagen: parece ser solo audio.",
+  "mp4Drm": "Este video está protegido contra copia (DRM) y no se puede reproducir en la plataforma.",
+  "mp4Hevc": "Este MP4 está en H.265 (HEVC), el formato con el que graba el iPhone, y muchos navegadores no lo reproducen. Expórtelo en H.264: en el iPhone, Ajustes › Cámara › Formatos › «Más compatible»; en la computadora, con HandBrake y el ajuste «Fast 1080p30».",
+  "mp4Mpeg4Parte2": "MPEG-4 Parte 2",
+  "mp4FormatoVideo": "Este MP4 usa el formato de video {nombre}, que no todos los navegadores reproducen. Expórtelo en H.264 con audio AAC.",
+  "@mp4FormatoVideo": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "mp4PcmSinComprimir": "PCM sin comprimir",
+  "mp4FormatoAudio": "El audio de este MP4 está en {nombre}, y no todos los navegadores lo reproducen. Expórtelo con audio AAC.",
+  "@mp4FormatoAudio": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "errorSinSesion": "No hay una sesión activa.",
+  "errorRespuestaInesperadaRecibida": "Recibimos una respuesta inesperada del servidor.",
+  "rolSuperAdmin": "Super Admin",
+  "rolAdministrador": "Administrador",
+  "rolEstudiante": "Estudiante",
+  "rolAlumni": "Alumni",
+  "rolMentor": "Mentor",
+  "rolAsesorAcademico": "Asesor Académico",
+  "rolEmpresa": "Empresa",
+  "rolDonante": "Donante",
+  "pieInstitucional": "Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.",
+  "youtubeNoEsVideo": "Ese enlace es de YouTube, pero no de un video (parece un canal o una lista). Abra el video y copie su enlace.",
+  "youtubePegueEnlace": "Pegue el enlace de un video de YouTube, por ejemplo https://www.youtube.com/watch?v=… o https://youtu.be/…",
+  "errorSinConexion": "No pudimos conectar con el servidor. Revise su conexión.",
+  "errorServidorMomento": "El servidor tuvo un problema. Intente de nuevo en un momento."
 }

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:web/web.dart' as web;
 
+import '../../l10n/textos.dart';
 import 'picked_video.dart';
 import 'upload_types.dart';
 
@@ -108,13 +109,13 @@ Future<int> sendVideoPart(
 
   xhr.addEventListener(
     'error',
-    ((web.Event _) => fallar(const PartUploadError(
-        'Se cortó la conexión mientras subía el video.'))).toJS,
+    ((web.Event _) => fallar(PartUploadError(
+        tr.errorVideoConexionCortada))).toJS,
   );
   xhr.addEventListener(
     'timeout',
-    ((web.Event _) => fallar(const PartUploadError(
-        'La conexión dejó de responder mientras subía el video.'))).toJS,
+    ((web.Event _) => fallar(PartUploadError(
+        tr.errorVideoConexionNoResponde))).toJS,
   );
   xhr.addEventListener(
     'abort',

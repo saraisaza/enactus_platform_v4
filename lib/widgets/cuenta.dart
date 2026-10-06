@@ -227,7 +227,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Formamos líderes que transforman comunidades 💛\n'

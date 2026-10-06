@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../l10n/textos.dart';
 import 'picked_video.dart';
 
 /// Lo que el navegador sabe del video sin subirlo: duración, tamaño de la
@@ -70,7 +71,7 @@ class UploadAbort {
 class UploadCancelled implements Exception {
   const UploadCancelled();
   @override
-  String toString() => 'La subida se canceló.';
+  String toString() => tr.errorSubidaCancelada;
 }
 
 /// Una parte no llegó: se cortó la conexión o S3 la rechazó.

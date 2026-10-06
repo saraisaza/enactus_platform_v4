@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 
+import '../../l10n/textos.dart';
 import 'picked_video.dart';
 import 'upload_types.dart';
 
@@ -81,11 +82,11 @@ Future<int> sendVideoPart(
     await response.stream.drain<void>();
     return response.statusCode;
   } on TimeoutException {
-    throw const PartUploadError(
-        'La conexión dejó de responder mientras subía el video.');
+    throw PartUploadError(
+        tr.errorVideoConexionNoResponde);
   } on http.ClientException {
     if (abort.aborted) throw const UploadCancelled();
-    throw const PartUploadError('Se cortó la conexión mientras subía el video.');
+    throw PartUploadError(tr.errorVideoConexionCortada);
   } finally {
     dejar();
     client.close();

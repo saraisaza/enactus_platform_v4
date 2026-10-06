@@ -7,6 +7,8 @@
 /// (API y CHECK), así que esto es la primera de tres barreras, no la única.
 library;
 
+import '../l10n/textos.dart';
+
 /// Los 11 caracteres de un id de YouTube. Misma expresión que el CHECK
 /// `lessons_video_youtube_id_format` del backend.
 final RegExp youtubeIdPattern = RegExp(r'^[A-Za-z0-9_-]{11}$');
@@ -160,11 +162,9 @@ class VideoLink {
   /// Qué está mal, en palabras de quien lo pegó. `null` si se puede guardar.
   String? get problem => switch (kind) {
         VideoLinkKind.youtubeNotVideo =>
-          'Ese enlace es de YouTube, pero no de un video (parece un canal o '
-              'una lista). Abra el video y copie su enlace.',
+          tr.youtubeNoEsVideo,
         VideoLinkKind.unsupported =>
-          'Pegue el enlace de un video de YouTube, por ejemplo '
-              'https://www.youtube.com/watch?v=… o https://youtu.be/…',
+          tr.youtubePegueEnlace,
         _ => null,
       };
 }

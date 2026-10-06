@@ -267,7 +267,7 @@ class _RutaProgress extends StatelessWidget {
           // otra persona lo autoriza el servidor, no esta pantalla.
           return ErrorBanner(error is ApiException
               ? error
-              : const ServerError(500));
+              : ServerError(500));
         }
         final progress = snapshot.data;
         if (progress == null) {

@@ -7,6 +7,7 @@
 /// solo la muestra.
 library;
 
+import '../l10n/textos.dart';
 import 'models.dart';
 
 /// Estado del deadline de una fase para un estudiante puntual.
@@ -172,7 +173,7 @@ class ObjectiveProgress {
   bool get isBusiness => category == 'business';
 
   String get categoryLabel =>
-      isBusiness ? 'Empresarial' : 'Emprendimiento';
+      isBusiness ? tr.categoriaEmpresarial : tr.categoriaEmprendimiento;
 
   factory ObjectiveProgress.fromJson(Map<String, dynamic> j) =>
       ObjectiveProgress(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../l10n/textos.dart';
 import '../api_service.dart';
 import 'mp4_inspector.dart';
 import 'picked_video.dart';
@@ -107,8 +108,7 @@ class VideoUploadController extends ChangeNotifier {
     final muestra = await _prober(elegido);
     if (eleccion != _eleccion) return;
     if (muestra == null && elegido.previewUrl != null) {
-      problem = 'Este navegador no pudo abrir el video. Puede estar dañado; '
-          'vuelva a exportarlo como MP4 (H.264 con audio AAC).';
+      problem = tr.videoNavegadorNoAbre;
     }
     probe = muestra;
     checking = false;
@@ -146,8 +146,7 @@ class VideoUploadController extends ChangeNotifier {
     if (elegido == null || bytes == null) return;
     final ext = elegido.extension?.toLowerCase() ?? '';
     if (bytes.length > 5 * 1024 * 1024) {
-      coverProblem = 'La portada pesa ${formatMegabytes(bytes.length)} y el '
-          'máximo es 5 MB.';
+      coverProblem = tr.videoPortadaPesada(formatMegabytes(bytes.length));
     } else {
       coverProblem = null;
       customCover = bytes;

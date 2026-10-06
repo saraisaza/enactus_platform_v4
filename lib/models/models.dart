@@ -17,6 +17,9 @@
 ///    mapea lo que el servidor ya calculó.
 library;
 
+import '../l10n/catalogos.dart';
+import '../l10n/textos.dart';
+import '../utils/formatos.dart';
 import '../utils/youtube.dart';
 import 'progress.dart';
 
@@ -255,12 +258,12 @@ class ProjectStage {
   ];
 
   static String label(String stage) => switch (stage) {
-        'validation' => 'Validación',
-        'prototype' => 'Prototipo',
-        'pilot' => 'Piloto',
-        'scaling' => 'Escalamiento',
+        'validation' => tr.etapaValidacion,
+        'prototype' => tr.etapaPrototipo,
+        'pilot' => tr.etapaPiloto,
+        'scaling' => tr.etapaEscalamiento,
         'national_expo' => 'National Expo',
-        _ => 'Ideación',
+        _ => tr.etapaIdeacion,
       };
 }
 
@@ -280,13 +283,13 @@ class ProjectMemberRole {
   ];
 
   static String label(String role) => switch (role) {
-        'leader' => 'Líder',
-        'research' => 'Investigación',
-        'finance' => 'Finanzas',
-        'communications' => 'Comunicaciones',
-        'design' => 'Diseño',
-        'operations' => 'Operaciones',
-        _ => 'Integrante',
+        'leader' => tr.rolLider,
+        'research' => tr.rolInvestigacion,
+        'finance' => tr.rolFinanzas,
+        'communications' => tr.rolComunicaciones,
+        'design' => tr.rolDiseno,
+        'operations' => tr.rolOperaciones,
+        _ => tr.rolIntegrante,
       };
 }
 
@@ -680,7 +683,7 @@ class ObjectiveCategory {
   static const all = [entrepreneurship, business];
 
   static String label(String c) =>
-      c == business ? 'Empresarial' : 'Emprendimiento';
+      c == business ? tr.categoriaEmpresarial : tr.categoriaEmprendimiento;
 }
 
 class Objective {
@@ -1082,9 +1085,9 @@ class CourseModule {
 class CourseLevel {
   static const all = ['basic', 'intermediate', 'advanced'];
   static String label(String level) => switch (level) {
-        'intermediate' => 'Intermedio',
-        'advanced' => 'Avanzado',
-        _ => 'Básico',
+        'intermediate' => tr.nivelIntermedio,
+        'advanced' => tr.nivelAvanzado,
+        _ => tr.nivelBasico,
       };
 }
 
@@ -1095,9 +1098,9 @@ class CourseStatus {
   static const all = [draft, published, archived];
 
   static String label(String status) => switch (status) {
-        published => 'Publicado',
-        archived => 'Archivado',
-        _ => 'Borrador',
+        published => tr.estadoPublicado,
+        archived => tr.estadoArchivado,
+        _ => tr.estadoBorrador,
       };
 }
 
@@ -1125,7 +1128,7 @@ class Catalogs {
   /// "ODS 6: Agua limpia y saneamiento" a partir de `ods_6`.
   String odsLabel(String code) {
     final goal = ods.where((o) => o.code == code).firstOrNull;
-    return goal == null ? code : 'ODS ${goal.number}: ${goal.title}';
+    return goal == null ? code : tr.odsEtiqueta(goal.number, goal.title);
   }
 }
 
@@ -1173,9 +1176,13 @@ class University {
 
 class Competency {
   final String code;
-  final String name;
+  final String _name;
 
-  const Competency({required this.code, required this.name});
+  const Competency({required this.code, required this._name});
+
+  /// El nombre en el idioma activo: el del servidor en español, la
+  /// traducción por [code] en inglés (ver `nombreCompetencia`).
+  String get name => nombreCompetencia(code, _name);
 
   factory Competency.fromJson(Map<String, dynamic> j) => Competency(
         code: j['code'] as String,
@@ -1186,9 +1193,12 @@ class Competency {
 class OdsGoal {
   final String code;
   final int number;
-  final String title;
+  final String _title;
 
-  const OdsGoal({required this.code, this.number = 0, this.title = ''});
+  const OdsGoal({required this.code, this.number = 0, this._title = ''});
+
+  /// El título en el idioma activo (ver `tituloOds`).
+  String get title => tituloOds(code, _title);
 
   factory OdsGoal.fromJson(Map<String, dynamic> j) => OdsGoal(
         code: j['code'] as String,
@@ -1324,7 +1334,10 @@ class CompetencyHours {
 class OdsCoverage {
   final String code;
   final int number;
-  final String title;
+  final String _title;
+
+  /// El título en el idioma activo (ver `tituloOds`).
+  String get title => tituloOds(code, _title);
   final double rate;
 
   /// Los crudos, además de la tasa: un 100% sobre dos personas y otro sobre
@@ -1335,13 +1348,13 @@ class OdsCoverage {
   const OdsCoverage({
     required this.code,
     this.number = 0,
-    this.title = '',
+    this._title = '',
     this.rate = 0,
     this.completed = 0,
     this.total = 0,
   });
 
-  String get label => 'ODS $number: $title';
+  String get label => tr.odsEtiqueta(number, title);
 
   factory OdsCoverage.fromJson(Map<String, dynamic> j) => OdsCoverage(
         code: j['code'] as String,
@@ -1453,9 +1466,9 @@ class CourseLanguage {
   static const all = ['es', 'en', 'pt'];
 
   static String label(String code) => switch (code) {
-        'en' => 'Inglés',
-        'pt' => 'Portugués',
-        _ => 'Español',
+        'en' => tr.idiomaCursoIngles,
+        'pt' => tr.idiomaCursoPortugues,
+        _ => tr.idiomaCursoEspanol,
       };
 }
 
@@ -1468,9 +1481,9 @@ class DeliverableType {
   static const all = ['pdf', 'video', 'document', 'image', 'zip'];
 
   static String label(String type) => switch (type) {
-        'video' => 'Video',
-        'document' => 'Documento',
-        'image' => 'Imagen',
+        'video' => tr.tipoArchivoVideo,
+        'document' => tr.tipoArchivoDocumento,
+        'image' => tr.tipoArchivoImagen,
         'zip' => 'ZIP',
         _ => 'PDF',
       };
@@ -1691,19 +1704,19 @@ class GradingMode {
   static const scale5 = 'scale5';
 
   static String label(String mode) => switch (mode) {
-        passfail => 'Aprobado / Reprobado',
-        review => 'Solo revisión',
-        scale5 => 'Escala 0-5',
-        _ => 'Puntaje 0-100',
+        passfail => tr.calificacionAprobadoReprobado,
+        review => tr.calificacionSoloRevision,
+        scale5 => tr.calificacionEscala5,
+        _ => tr.calificacionPuntaje100,
       };
 
   /// Cómo se muestra una nota en su escala. `null` = sin calificar.
   static String display(double? grade, String? mode) {
-    if (grade == null) return 'Pendiente';
+    if (grade == null) return tr.calificacionPendiente;
     return switch (mode) {
-      passfail => grade > 0 ? 'Aprobado' : 'Reprobado',
-      scale5 => grade.toStringAsFixed(1),
-      review => 'Revisado',
+      passfail => grade > 0 ? tr.calificacionAprobado : tr.calificacionReprobado,
+      scale5 => decimal(grade),
+      review => tr.calificacionRevisado,
       _ => '${grade.round()}/100',
     };
   }
@@ -1797,7 +1810,7 @@ class Submission {
   bool get isGroup => groupId != null;
 
   /// Quién la hizo, para mostrar. Una entrega de equipo no tiene estudiante.
-  String get authorLabel => studentName ?? (isGroup ? 'Entrega grupal' : '—');
+  String get authorLabel => studentName ?? (isGroup ? tr.entregaGrupal : '—');
   bool get isGraded => gradedAt != null;
   bool get isReviewed => feedback.isNotEmpty;
 
@@ -1908,11 +1921,11 @@ class Evidence {
   });
 
   static String typeLabel(String type) => switch (type) {
-        'photo' => 'Foto',
-        'video' => 'Video',
-        'testimonial' => 'Testimonio',
-        'report' => 'Reporte',
-        _ => 'Historia',
+        'photo' => tr.evidenciaFoto,
+        'video' => tr.tipoArchivoVideo,
+        'testimonial' => tr.evidenciaTestimonio,
+        'report' => tr.evidenciaReporte,
+        _ => tr.evidenciaHistoria,
       };
 
   factory Evidence.fromJson(Map<String, dynamic> j) => Evidence(
@@ -2007,10 +2020,10 @@ class ForumCategory {
   static const all = [question, progress, resource, announcement];
 
   static String label(String c) => switch (c) {
-        progress => 'Avance',
-        resource => 'Recurso',
-        announcement => 'Anuncio',
-        _ => 'Pregunta',
+        progress => tr.foroCategoriaAvance,
+        resource => tr.foroCategoriaRecurso,
+        announcement => tr.foroCategoriaAnuncio,
+        _ => tr.foroCategoriaPregunta,
       };
 }
 
@@ -2251,9 +2264,9 @@ enum CalendarEventType {
       };
 
   String get label => switch (this) {
-        CalendarEventType.openLearningSync => 'Sesión Open Learning',
-        CalendarEventType.rutaImpacto => 'Ruta de Impacto',
-        CalendarEventType.mentoria => 'Mentoría',
+        CalendarEventType.openLearningSync => tr.eventoSesionOpenLearning,
+        CalendarEventType.rutaImpacto => tr.rutaDeImpacto,
+        CalendarEventType.mentoria => tr.eventoMentoria,
       };
 }
 

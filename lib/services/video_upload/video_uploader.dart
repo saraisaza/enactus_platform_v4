@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../l10n/textos.dart';
 import '../api_errors.dart';
 import '../api_service.dart';
 import 'picked_video.dart';
@@ -203,7 +204,7 @@ class VideoUploader {
           }
           if (intento >= maxAttempts) {
             throw PartUploadError(
-                'El almacenamiento rechazó una parte del video ($status).');
+                tr.videoParteRechazada(status));
           }
           // 403: la firma venció (o el reloj del equipo está corrido). Se
           // pide otra; cualquier otro código se reintenta igual.

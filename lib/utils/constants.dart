@@ -1,6 +1,7 @@
 /// Constantes globales de la plataforma Enactus Colombia.
 library;
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 
 class Roles {
@@ -51,15 +52,15 @@ class Roles {
   static bool isStudentLike(String role) => role == student || role == alumni;
 
   static String label(String role) => switch (role) {
-        superAdmin => 'Super Admin',
-        admin => 'Administrador',
-        student => 'Estudiante',
-        alumni => 'Alumni',
+        superAdmin => tr.rolSuperAdmin,
+        admin => tr.rolAdministrador,
+        student => tr.rolEstudiante,
+        alumni => tr.rolAlumni,
         lxd => 'LXD',
-        mentor => 'Mentor',
-        advisor => 'Asesor Académico',
-        company => 'Empresa',
-        donor => 'Donante',
+        mentor => tr.rolMentor,
+        advisor => tr.rolAsesorAcademico,
+        company => tr.rolEmpresa,
+        donor => tr.rolDonante,
         _ => role,
       };
 }
@@ -131,8 +132,7 @@ class ContactInfo {
 }
 
 class InstitutionalInfo {
-  static const footerText =
-      'Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.';
+  static String get footerText => tr.pieInstitucional;
 }
 
 // Los ODS y las competencias Enactus **ya no viven acá**: los sirve

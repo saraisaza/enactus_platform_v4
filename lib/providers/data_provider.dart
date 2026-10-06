@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../l10n/textos.dart';
 import '../models/authoring.dart';
 import '../models/glossary.dart';
 import '../models/models.dart';
@@ -2281,7 +2282,7 @@ class DataProvider extends ChangeNotifier {
   String _requireUser() {
     final id = _currentUserId;
     if (id == null) {
-      throw const AuthError('No hay una sesión activa.');
+      throw AuthError(tr.errorSinSesion);
     }
     return id;
   }
@@ -2350,7 +2351,7 @@ class DataProvider extends ChangeNotifier {
       // error de servidor, en vez de tumbar la pantalla.
       debugPrint('DataProvider: error inesperado — $e\n$stack');
       set(AsyncValue.error(
-        ServerError(0, 'Recibimos una respuesta inesperada del servidor.'),
+        ServerError(0, tr.errorRespuestaInesperadaRecibida),
         previous: previous,
       ));
     }

@@ -6,9 +6,12 @@
 /// tiene permiso" (reintentar no sirve nunca).
 library;
 
+import '../l10n/textos.dart';
+
 /// Base de todos los errores de la capa de datos.
 sealed class ApiException implements Exception {
-  /// Mensaje listo para mostrarle a una persona, en español.
+  /// Mensaje listo para mostrarle a una persona, en el idioma de la
+  /// interfaz (el servidor responde en el que le pide `Accept-Language`).
   final String message;
 
   /// Código simbólico del backend (`forbidden`, `not_found`, …). Vacío si el
@@ -24,31 +27,27 @@ sealed class ApiException implements Exception {
 /// No se pudo hablar con el servidor: sin red, DNS caído, timeout.
 /// Es el único caso donde reintentar la misma petición tiene sentido por sí solo.
 class NetworkError extends ApiException {
-  const NetworkError([
-    super.message = 'No pudimos conectar con el servidor. Revise su conexión.',
-  ]);
+  NetworkError([String? message]) : super(message ?? tr.errorSinConexion);
 }
 
 /// La sesión no vale: no hay token, expiró y el refresh también falló.
 /// La interfaz debe mandar a la pantalla de ingreso.
 class AuthError extends ApiException {
-  const AuthError([
-    super.message = 'Su sesión expiró. Inicie sesión de nuevo.',
-  ]) : super(code: 'unauthorized');
+  AuthError([String? message])
+      : super(message ?? tr.errorSesionExpirada, code: 'unauthorized');
 }
 
 /// Hay sesión, pero el rol no puede hacer eso. Reintentar nunca ayuda.
 class ForbiddenError extends ApiException {
-  const ForbiddenError([
-    super.message = 'No tiene permiso para ver esto.',
-  ]) : super(code: 'forbidden');
+  ForbiddenError([String? message])
+      : super(message ?? tr.errorSinPermiso, code: 'forbidden');
 }
 
 /// El recurso no existe — o está fuera del alcance de este rol, que el
 /// servidor deliberadamente no distingue del caso anterior.
 class NotFoundError extends ApiException {
-  const NotFoundError([super.message = 'No encontramos lo que busca.'])
-      : super(code: 'not_found');
+  NotFoundError([String? message])
+      : super(message ?? tr.errorNoEncontrado, code: 'not_found');
 }
 
 /// Los datos enviados no pasaron la validación del servidor.
@@ -85,9 +84,9 @@ class ConflictError extends ApiException {
 class ServerError extends ApiException {
   final int status;
 
-  const ServerError(
+  ServerError(
     this.status, [
-    super.message = 'El servidor tuvo un problema. Intente de nuevo en un momento.',
+    String? message,
     String code = 'internal_error',
-  ]) : super(code: code);
+  ]) : super(message ?? tr.errorServidorMomento, code: code);
 }

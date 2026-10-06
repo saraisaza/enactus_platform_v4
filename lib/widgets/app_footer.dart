@@ -85,7 +85,7 @@ class AppFooter extends StatelessWidget {
                 // por 559px— porque los dos textos exigen su ancho natural y
                 // dentro de un `Wrap` nadie los obliga a encoger.
                 _apilar(context)
-                    ? const Column(
+                    ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -124,7 +124,7 @@ class AppFooter extends StatelessWidget {
                           // ancho intrínseco y arrastran la fila entera.
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 420),
-                            child: const Column(
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

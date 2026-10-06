@@ -2421,7 +2421,7 @@ paths:
                 params:
                   type: object
                   additionalProperties: { type: string, maxLength: 300 }
-                  description: Lo que cambia dentro del texto, p. ej. `{ "tarea": "Informe final" }`.
+                  description: 'Lo que cambia dentro del texto, p. ej. `{"tarea": "Informe final"}`.'
       responses:
         '201':
           description: Enviado

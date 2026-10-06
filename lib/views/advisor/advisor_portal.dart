@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -29,42 +30,42 @@ class AdvisorPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: 'Portal Asesor Académico',
+      portalTitle: tr.asesorPortal,
       tabs: [
         PortalTab(
-            label: 'Dashboard Universidad',
-            shortLabel: 'Inicio',
+            label: tr.tabDashboardUniversidad,
+            shortLabel: tr.tabInicioCorto,
             destacada: true,
             icon: Icons.dashboard_outlined,
             builder: (_) => const _AdvisorDashboard()),
         PortalTab(
-            label: 'Calendario',
+            label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _AdvisorCalendar()),
         PortalTab(
-            label: 'Seguimiento Estudiantes',
-            shortLabel: 'Estudiantes',
+            label: tr.tabSeguimientoEstudiantes,
+            shortLabel: tr.tabEstudiantesCorto,
             destacada: true,
             icon: Icons.school_outlined,
             builder: (_) => const _AdvisorStudents()),
         PortalTab(
-            label: 'Proyectos',
+            label: tr.tabProyectosCorto,
             icon: Icons.lightbulb_outline,
             builder: (_) => const _AdvisorProjects()),
         PortalTab(
-            label: 'Directorio de Proyectos',
-            shortLabel: 'Directorio',
+            label: tr.tabDirectorioProyectos,
+            shortLabel: tr.tabDirectorioCorto,
             icon: Icons.explore_outlined,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
-            label: 'Foro',
+            label: tr.tabForo,
             destacada: true,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
         PortalTab(
-            label: 'Recursos Comunicaciones',
-            shortLabel: 'Recursos',
+            label: tr.tabRecursosComunicaciones,
+            shortLabel: tr.tabRecursosCorto,
             icon: Icons.perm_media_outlined,
             builder: (_) => const CommunicationResourcesView()),
       ],
@@ -86,8 +87,8 @@ class _AdvisorDashboard extends StatelessWidget {
         context.watch<AuthProvider>().currentUser?.university ?? '';
 
     return TabBody(
-      title: universidad.isEmpty ? 'Su universidad' : universidad,
-      subtitle: 'Los equipos y estudiantes que acompaña',
+      title: universidad.isEmpty ? tr.asesorSuUniversidad : universidad,
+      subtitle: tr.asesorSubtitulo,
       children: [
         combine2(
           data.users(role: '${Roles.student},${Roles.alumni}',
@@ -113,15 +114,15 @@ class _AdvisorDashboard extends StatelessWidget {
                 StatRow(tiles: [
                   StatTile(
                       value: '${estudiantes.length}',
-                      label: 'Estudiantes',
+                      label: tr.tabEstudiantesCorto,
                       icon: Icons.school_outlined),
                   StatTile(
                       value: '${equipos.length}',
-                      label: 'Equipos',
+                      label: tr.tabEquipos,
                       icon: Icons.groups_outlined),
                   StatTile(
                       value: '${(promedio * 100).round()}%',
-                      label: 'Avance promedio',
+                      label: tr.seguimientoAvancePromedio,
                       icon: Icons.trending_up),
                 ]),
               ],
@@ -145,9 +146,8 @@ class _AdvisorCalendar extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Calendario',
-      subtitle: 'Eventos de la Ruta de Impacto y de los laboratorios de sus '
-          'estudiantes',
+      title: tr.tabCalendario,
+      subtitle: tr.asesorCalendarioSubtitulo,
       children: [
         data.calendarEvents.when(
           loading: () => const CardListSkeleton(count: 1, height: 320),
@@ -187,8 +187,8 @@ class _AdvisorStudentsState extends State<_AdvisorStudents> {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Seguimiento de Estudiantes',
-      subtitle: 'Cómo van los estudiantes de su universidad',
+      title: tr.asesorSeguimientoTitulo,
+      subtitle: tr.asesorSeguimientoSubtitulo,
       children: [
         // `Wrap` y no `Row`: el buscador con ancho fijo más tres fichas
         // desbordaba siempre en pantallas angostas.
@@ -201,16 +201,16 @@ class _AdvisorStudentsState extends State<_AdvisorStudents> {
               constraints: const BoxConstraints(maxWidth: 300, minWidth: 180),
               child: TextField(
                 controller: _search,
-                decoration: const InputDecoration(
-                  hintText: 'Buscar por nombre…',
+                decoration: InputDecoration(
+                  hintText: tr.asesorBuscarNombre,
                   prefixIcon: Icon(Icons.search, size: 18),
                   isDense: true,
                 ),
                 onChanged: (_) => setState(() {}),
               ),
             ),
-            for (final (valor, etiqueta) in const [
-              ('todos', 'Todos'),
+            for (final (valor, etiqueta) in [
+              ('todos', tr.comunTodos),
               (StudentType.enactus, 'eduXaction'),
               (StudentType.openLearning, 'Open Learning'),
             ])
@@ -239,9 +239,9 @@ class _AdvisorStudentsState extends State<_AdvisorStudents> {
                 }).toList();
 
                 if (visibles.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                       icon: Icons.people_outline,
-                      message: 'Ningún estudiante coincide.');
+                      message: tr.asesorNingunEstudiante);
                 }
                 return Column(
                   children: [
@@ -310,7 +310,7 @@ class _StudentCard extends StatelessWidget {
               const SizedBox(width: 10),
               Flexible(
                 child: Text(
-                  '${avance?.coursesDone ?? 0}/${avance?.coursesTotal ?? 0} cursos',
+                  tr.asesorCursosFraccion(avance?.coursesDone ?? 0, avance?.coursesTotal ?? 0),
                   style: const TextStyle(
                       fontSize: 12, color: AppColors.textMuted),
                 ),
@@ -350,16 +350,16 @@ class _AdvisorProjects extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Proyectos',
-      subtitle: 'Los proyectos de los equipos que asesora',
+      title: tr.tabProyectosCorto,
+      subtitle: tr.asesorProyectosSubtitulo,
       children: [
         data.projects.when(
           loading: () => const CardListSkeleton(count: 3, height: 110),
           error: (e) => ErrorState(e, onRetry: data.reloadProjects),
           data: (projects) => projects.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.lightbulb_outline,
-                  message: 'Todavía no hay proyectos.')
+                  message: tr.asesorSinProyectos)
               : Column(
                   children: [
                     for (final p in projects)
@@ -396,7 +396,7 @@ class _AdvisorProjects extends StatelessWidget {
                               IconButton(
                                 icon: const Icon(Icons.edit_outlined, size: 18),
                                 color: AppColors.gold,
-                                tooltip: 'Editar',
+                                tooltip: tr.comunEditar,
                                 // El servidor decide si un asesor puede
                                 // editarlo: si no, responde 403 y el diálogo
                                 // lo muestra.

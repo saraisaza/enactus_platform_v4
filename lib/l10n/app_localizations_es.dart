@@ -4911,4 +4911,260 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get contenidoSobreNosotrosEn => 'Texto \"Sobre nosotros\" (inglés)';
+
+  @override
+  String get mentorPortal => 'Portal Mentor';
+
+  @override
+  String get tabMisLaboratorios => 'Mis Laboratorios';
+
+  @override
+  String get tabEntregas => 'Entregas';
+
+  @override
+  String get tabRecursosComunicaciones => 'Recursos Comunicaciones';
+
+  @override
+  String get tabRecursosCorto => 'Recursos';
+
+  @override
+  String get mentorLabsSubtitulo =>
+      'Los laboratorios que acompaña y quiénes los cursan';
+
+  @override
+  String get mentorSinLabs => 'Todavía no le han asignado ningún laboratorio.';
+
+  @override
+  String get mentorSinEstudiantes => 'Sin estudiantes asignados todavía.';
+
+  @override
+  String get mentorCalendarioSubtitulo =>
+      'Mentorías de sus laboratorios y eventos de la Ruta';
+
+  @override
+  String get mentorEntregasSubtitulo =>
+      'Revise y comente el trabajo de sus estudiantes';
+
+  @override
+  String get mentorSinEntregas => 'No hay entregas por ahora.';
+
+  @override
+  String get mentorComoMentor =>
+      'Como mentor revisa y comenta, pero no pone nota: la calificación tiene su propio autor y su propia escala. Su comentario llega igual al estudiante.';
+
+  @override
+  String get mentorRevisada => 'Revisada';
+
+  @override
+  String get mentorSinRevisar => 'Sin revisar';
+
+  @override
+  String mentorSuComentario(Object comentario) {
+    return 'Su comentario: $comentario';
+  }
+
+  @override
+  String get mentorEditarComentario => 'Editar comentario';
+
+  @override
+  String get mentorEscribaComentario =>
+      'Escriba su comentario antes de guardar.';
+
+  @override
+  String get mentorComentarioGuardado => 'Comentario guardado ✓';
+
+  @override
+  String get mentorRevisarEntrega => 'Revisar entrega';
+
+  @override
+  String get mentorReviseComente =>
+      'Revise y comente; la nota la pone quien califica el curso.';
+
+  @override
+  String get mentorSuRetro => 'Su retroalimentación';
+
+  @override
+  String get mentorPerfilSubtitulo =>
+      'Sus datos y el material que comparte con los estudiantes';
+
+  @override
+  String get asesorPortal => 'Portal Asesor Académico';
+
+  @override
+  String get tabDashboardUniversidad => 'Dashboard Universidad';
+
+  @override
+  String get tabSeguimientoEstudiantes => 'Seguimiento Estudiantes';
+
+  @override
+  String get tabDirectorioCorto => 'Directorio';
+
+  @override
+  String get asesorSuUniversidad => 'Su universidad';
+
+  @override
+  String get asesorSubtitulo => 'Los equipos y estudiantes que acompaña';
+
+  @override
+  String get asesorCalendarioSubtitulo =>
+      'Eventos de la Ruta de Impacto y de los laboratorios de sus estudiantes';
+
+  @override
+  String get asesorSeguimientoTitulo => 'Seguimiento de Estudiantes';
+
+  @override
+  String get asesorSeguimientoSubtitulo =>
+      'Cómo van los estudiantes de su universidad';
+
+  @override
+  String get asesorBuscarNombre => 'Buscar por nombre…';
+
+  @override
+  String get asesorNingunEstudiante => 'Ningún estudiante coincide.';
+
+  @override
+  String asesorCursosFraccion(Object hechos, Object total) {
+    return '$hechos/$total cursos';
+  }
+
+  @override
+  String get asesorProyectosSubtitulo =>
+      'Los proyectos de los equipos que asesora';
+
+  @override
+  String get asesorSinProyectos => 'Todavía no hay proyectos.';
+
+  @override
+  String get empresaPortal => 'Portal Empresa';
+
+  @override
+  String get tabImpacto => 'Impacto';
+
+  @override
+  String get tabMapaEstudiantes => 'Mapa de Estudiantes';
+
+  @override
+  String get tabMapaCorto => 'Mapa';
+
+  @override
+  String get tabEstudiantesPatrocinados => 'Estudiantes Patrocinados';
+
+  @override
+  String get tabPatrocinadosCorto => 'Patrocinados';
+
+  @override
+  String get tabMiEquipo => 'Mi Equipo';
+
+  @override
+  String get tabEquipoCorto => 'Equipo';
+
+  @override
+  String get tabTalentoCorto => 'Talento';
+
+  @override
+  String get empresaImpactoTitulo => 'Impacto de su aporte';
+
+  @override
+  String get empresaImpactoSubtitulo => 'Qué hizo posible su organización';
+
+  @override
+  String get empresaEstudiantesAlcanzados => 'Estudiantes alcanzados';
+
+  @override
+  String get empresaEquipoFormador => 'Su equipo formador';
+
+  @override
+  String get empresaHorasFormacion => 'Horas de formación';
+
+  @override
+  String empresaAcompana(
+    Object empresa,
+    Object estudiantes,
+    Object laboratorios,
+  ) {
+    return '$empresa acompaña a $estudiantes estudiantes en $laboratorios laboratorios.';
+  }
+
+  @override
+  String get empresaLabsSubtitulo =>
+      'Los que patrocina y aquellos donde trabaja su equipo';
+
+  @override
+  String get empresaSinLabs =>
+      'Todavía no hay laboratorios asociados a su organización.';
+
+  @override
+  String get empresaPatrocinadosSubtitulo =>
+      'A quiénes alcanza su aporte y cómo van';
+
+  @override
+  String get empresaSinEstudiantes =>
+      'Todavía no hay estudiantes vinculados a su organización.';
+
+  @override
+  String get empresaEquipoSubtitulo => 'Los LXD y mentores de su organización';
+
+  @override
+  String get empresaNuevaCuenta => 'Nueva cuenta';
+
+  @override
+  String get empresaSinCuentas => 'Todavía no ha dado de alta a nadie.';
+
+  @override
+  String get empresaCuentasAtadas =>
+      'Las cuentas que cree quedan atadas a su organización. Solo puede dar de alta LXD y mentores: los estudiantes los asigna el equipo de administración.';
+
+  @override
+  String empresaEntregasRevisadas(Object cantidad) {
+    return '$cantidad entregas revisadas';
+  }
+
+  @override
+  String get empresaCuentaCreada => 'Cuenta creada ✓';
+
+  @override
+  String get empresaNuevaCuentaEquipo => 'Nueva cuenta de su equipo';
+
+  @override
+  String get empresaContrasenaAyuda =>
+      'Mínimo 6 caracteres. Usted se la comparte.';
+
+  @override
+  String get empresaCargoOpcional => 'Cargo (opcional)';
+
+  @override
+  String get donantePortal => 'Portal Donante';
+
+  @override
+  String get tabMiImpacto => 'Mi Impacto';
+
+  @override
+  String get donanteSubtitulo => 'A quiénes apoya y cómo van';
+
+  @override
+  String get donanteEstudiantesApoyados => 'Estudiantes apoyados';
+
+  @override
+  String get donanteEvidenciasRecibidas => 'Evidencias recibidas';
+
+  @override
+  String get donanteEstudiantesQueApoya => 'Estudiantes que apoya';
+
+  @override
+  String get donanteSinEstudiantes =>
+      'Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá acá.';
+
+  @override
+  String get donanteEvidenciasTitulo => 'Evidencias de Impacto';
+
+  @override
+  String get donanteEvidenciasSubtitulo =>
+      'Fotos, historias y reportes de lo que su aporte hizo posible';
+
+  @override
+  String get donanteSinEvidencias =>
+      'Todavía no hay evidencias para su aporte.';
+
+  @override
+  String get donanteVerArchivo => 'Ver archivo';
 }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_viewer.dart';
@@ -28,25 +29,25 @@ class DonorPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: 'Portal Donante',
+      portalTitle: tr.donantePortal,
       tabs: [
         PortalTab(
-            label: 'Mi Impacto',
-            shortLabel: 'Impacto',
+            label: tr.tabMiImpacto,
+            shortLabel: tr.tabImpacto,
             icon: Icons.volunteer_activism_outlined,
             builder: (_) => const _DonorDashboard()),
         PortalTab(
-            label: 'Mapa de Estudiantes',
-            shortLabel: 'Mapa',
+            label: tr.tabMapaEstudiantes,
+            shortLabel: tr.tabMapaCorto,
             icon: Icons.public,
             builder: (_) => const StudentsMapView()),
         PortalTab(
-            label: 'Evidencias',
+            label: tr.tabEvidenciasCorto,
             icon: Icons.photo_library_outlined,
             builder: (_) => const _DonorEvidences()),
         PortalTab(
-            label: 'BuscaTalento',
-            shortLabel: 'Talento',
+            label: tr.talentoTitulo,
+            shortLabel: tr.tabTalentoCorto,
             icon: Icons.search,
             builder: (_) => const TalentSearchView()),
       ],
@@ -63,8 +64,8 @@ class _DonorDashboard extends StatelessWidget {
     final donante = context.watch<AuthProvider>().currentUser;
 
     return TabBody(
-      title: 'Mi Impacto',
-      subtitle: 'A quiénes apoya y cómo van',
+      title: tr.tabMiImpacto,
+      subtitle: tr.donanteSubtitulo,
       children: [
         if ((donante?.impactCode ?? '').isNotEmpty) ...[
           HoverCard(
@@ -74,7 +75,7 @@ class _DonorDashboard extends StatelessWidget {
                 const Icon(Icons.qr_code_2, color: AppColors.gold),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Código de impacto: ${donante!.impactCode}',
+                  child: Text(tr.usuarioCodigoImpacto(donante!.impactCode ?? ''),
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ],
@@ -102,24 +103,22 @@ class _DonorDashboard extends StatelessWidget {
                 StatRow(tiles: [
                   StatTile(
                       value: '${estudiantes.length}',
-                      label: 'Estudiantes apoyados',
+                      label: tr.donanteEstudiantesApoyados,
                       icon: Icons.school_outlined),
                   StatTile(
                       value: '${(promedio * 100).round()}%',
-                      label: 'Avance promedio',
+                      label: tr.seguimientoAvancePromedio,
                       icon: Icons.trending_up),
                   StatTile(
                       value: '${evidencias.length}',
-                      label: 'Evidencias recibidas',
+                      label: tr.donanteEvidenciasRecibidas,
                       icon: Icons.photo_library_outlined),
                 ]),
-                const SectionTitle('Estudiantes que apoya'),
+                SectionTitle(tr.donanteEstudiantesQueApoya),
                 if (estudiantes.isEmpty)
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.people_outline,
-                    message: 'Todavía no hay estudiantes vinculados a su '
-                        'aporte. En cuanto su administrador asigne alguno, '
-                        'aparecerá acá.',
+                    message: tr.donanteSinEstudiantes,
                   )
                 else
                   for (final e in estudiantes)
@@ -188,16 +187,16 @@ class _DonorEvidences extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Evidencias de Impacto',
-      subtitle: 'Fotos, historias y reportes de lo que su aporte hizo posible',
+      title: tr.donanteEvidenciasTitulo,
+      subtitle: tr.donanteEvidenciasSubtitulo,
       children: [
         data.evidences.when(
           loading: () => const CardListSkeleton(count: 3, height: 120),
           error: (e) => ErrorState(e, onRetry: data.reloadEvidences),
           data: (evidencias) => evidencias.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.photo_library_outlined,
-                  message: 'Todavía no hay evidencias para su aporte.')
+                  message: tr.donanteSinEvidencias)
               : Column(
                   children: [
                     for (final ev in evidencias)
@@ -247,7 +246,7 @@ class _EvidenceCard extends StatelessWidget {
                     fontSize: 13, color: AppColors.textSecondary)),
           ],
           const SizedBox(height: 8),
-          Text(DateFormat('d MMM yyyy').format(evidence.evidenceDate),
+          Text(fechaCorta(evidence.evidenceDate),
               style: const TextStyle(
                   fontSize: 12, color: AppColors.textMuted)),
           if (evidence.s3Key != null) ...[
@@ -258,7 +257,7 @@ class _EvidenceCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.visibility_outlined, size: 16),
-                label: const Text('Ver archivo'),
+                label: Text(tr.donanteVerArchivo),
                 onPressed: () => _abrir(context),
               ),
             ),

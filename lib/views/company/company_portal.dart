@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -29,42 +30,42 @@ class CompanyPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: 'Portal Empresa',
+      portalTitle: tr.empresaPortal,
       tabs: [
         PortalTab(
-            label: 'Impacto',
+            label: tr.tabImpacto,
             destacada: true,
             icon: Icons.insights_outlined,
             builder: (_) => const _CompanyDashboard()),
         PortalTab(
-            label: 'Mapa de Estudiantes',
-            shortLabel: 'Mapa',
+            label: tr.tabMapaEstudiantes,
+            shortLabel: tr.tabMapaCorto,
             destacada: true,
             icon: Icons.public,
             builder: (_) => const StudentsMapView()),
         PortalTab(
-            label: 'Proyectos',
+            label: tr.tabProyectosCorto,
             icon: Icons.lightbulb_outline,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
-            label: 'Mis Laboratorios',
-            shortLabel: 'Laboratorios',
+            label: tr.tabMisLaboratorios,
+            shortLabel: tr.tabLaboratorios,
             icon: Icons.science_outlined,
             builder: (_) => const _CompanyLabs()),
         PortalTab(
-            label: 'Estudiantes Patrocinados',
-            shortLabel: 'Patrocinados',
+            label: tr.tabEstudiantesPatrocinados,
+            shortLabel: tr.tabPatrocinadosCorto,
             destacada: true,
             icon: Icons.school_outlined,
             builder: (_) => const _CompanyStudents()),
         PortalTab(
-            label: 'Mi Equipo',
-            shortLabel: 'Equipo',
+            label: tr.tabMiEquipo,
+            shortLabel: tr.tabEquipoCorto,
             icon: Icons.badge_outlined,
             builder: (_) => const _CompanyTeam()),
         PortalTab(
-            label: 'BuscaTalento',
-            shortLabel: 'Talento',
+            label: tr.talentoTitulo,
+            shortLabel: tr.tabTalentoCorto,
             destacada: true,
             icon: Icons.search,
             builder: (_) => const TalentSearchView()),
@@ -86,8 +87,8 @@ class _CompanyDashboard extends StatelessWidget {
     final empresa = context.watch<AuthProvider>().currentUser;
 
     return TabBody(
-      title: 'Impacto de su aporte',
-      subtitle: 'Qué hizo posible su organización',
+      title: tr.empresaImpactoTitulo,
+      subtitle: tr.empresaImpactoSubtitulo,
       children: [
         combine3(
           data.users(include: 'progress'),
@@ -119,19 +120,19 @@ class _CompanyDashboard extends StatelessWidget {
                 StatRow(tiles: [
                   StatTile(
                       value: '${estudiantes.length}',
-                      label: 'Estudiantes alcanzados',
+                      label: tr.empresaEstudiantesAlcanzados,
                       icon: Icons.school_outlined),
                   StatTile(
                       value: '${labs.length}',
-                      label: 'Laboratorios',
+                      label: tr.tabLaboratorios,
                       icon: Icons.science_outlined),
                   StatTile(
                       value: '${equipo.length}',
-                      label: 'Su equipo formador',
+                      label: tr.empresaEquipoFormador,
                       icon: Icons.badge_outlined),
                   StatTile(
                       value: horas.round().toString(),
-                      label: 'Horas de formación',
+                      label: tr.empresaHorasFormacion,
                       icon: Icons.schedule),
                 ]),
                 if ((empresa?.companyName ?? '').isNotEmpty) ...[
@@ -145,9 +146,7 @@ class _CompanyDashboard extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${empresa!.companyName} acompaña a '
-                            '${estudiantes.length} estudiantes en '
-                            '${labs.length} laboratorios.',
+                            tr.empresaAcompana(empresa!.companyName, estudiantes.length, labs.length),
                             style: const TextStyle(fontSize: 13.5),
                           ),
                         ),
@@ -185,17 +184,16 @@ class _CompanyLabs extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Mis Laboratorios',
-      subtitle: 'Los que patrocina y aquellos donde trabaja su equipo',
+      title: tr.tabMisLaboratorios,
+      subtitle: tr.empresaLabsSubtitulo,
       children: [
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 3, height: 100),
           error: (e) => ErrorState(e, onRetry: data.reloadLaboratories),
           data: (labs) => labs.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.science_outlined,
-                  message: 'Todavía no hay laboratorios asociados a su '
-                      'organización.')
+                  message: tr.empresaSinLabs)
               : Column(
                   children: [
                     for (final lab in labs)
@@ -262,8 +260,8 @@ class _CompanyStudents extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Estudiantes Patrocinados',
-      subtitle: 'A quiénes alcanza su aporte y cómo van',
+      title: tr.tabEstudiantesPatrocinados,
+      subtitle: tr.empresaPatrocinadosSubtitulo,
       children: [
         data
             .users(
@@ -273,10 +271,9 @@ class _CompanyStudents extends StatelessWidget {
               loading: () => const CardListSkeleton(count: 4, height: 72),
               error: (e) => ErrorState(e),
               data: (estudiantes) => estudiantes.isEmpty
-                  ? const EmptyState(
+                  ? EmptyState(
                       icon: Icons.people_outline,
-                      message: 'Todavía no hay estudiantes vinculados a su '
-                          'organización.')
+                      message: tr.empresaSinEstudiantes)
                   : Column(
                       children: [
                         for (final e in estudiantes)
@@ -304,12 +301,12 @@ class _CompanyTeam extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Mi Equipo',
-      subtitle: 'Los LXD y mentores de su organización',
+      title: tr.tabMiEquipo,
+      subtitle: tr.empresaEquipoSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.person_add, size: 18),
-          label: const Text('Nueva cuenta'),
+          label: Text(tr.empresaNuevaCuenta),
           onPressed: () => _crear(context),
         ),
       ],
@@ -322,9 +319,9 @@ class _CompanyTeam extends StatelessWidget {
               loading: () => const CardListSkeleton(count: 3, height: 72),
               error: (e) => ErrorState(e),
               data: (equipo) => equipo.isEmpty
-                  ? const EmptyState(
+                  ? EmptyState(
                       icon: Icons.badge_outlined,
-                      message: 'Todavía no ha dado de alta a nadie.')
+                      message: tr.empresaSinCuentas)
                   : Column(
                       children: [
                         for (final p in equipo)
@@ -354,14 +351,12 @@ class _TeamNotice extends StatelessWidget {
     return HoverCard(
       padding: const EdgeInsets.all(14),
       child: Row(
-        children: const [
+        children: [
           Icon(Icons.info_outline, color: AppColors.gold, size: 18),
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Las cuentas que cree quedan atadas a su organización. Solo '
-              'puede dar de alta LXD y mentores: los estudiantes los asigna '
-              'el equipo de administración.',
+              tr.empresaCuentasAtadas,
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
           ),
@@ -421,7 +416,7 @@ class _PersonCard extends StatelessWidget {
               ? SizedBox(
                   width: 90, child: ThinProgressBar(value: avance?.ratio ?? 0))
               : (user.reviewsCount != null
-                  ? Text('${user.reviewsCount} entregas revisadas',
+                  ? Text(tr.empresaEntregasRevisadas(user.reviewsCount!),
                       style: const TextStyle(
                           fontSize: 12, color: AppColors.textMuted))
                   : const SizedBox.shrink());
@@ -472,13 +467,13 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
 
   Future<void> _save() async {
     if (_name.text.trim().isEmpty || _email.text.trim().isEmpty) {
-      setState(() => _error = const ValidationError(
-          'El nombre y el correo son obligatorios.'));
+      setState(() => _error = ValidationError(
+          tr.usuariosNombreCorreoObligatorios));
       return;
     }
     if (_password.text.length < 6) {
-      setState(() => _error = const ValidationError(
-          'La contraseña necesita al menos 6 caracteres.'));
+      setState(() => _error = ValidationError(
+          tr.usuariosContrasenaMinima));
       return;
     }
 
@@ -498,7 +493,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
       });
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Cuenta creada ✓');
+      showSuccessCheck(context, tr.empresaCuentaCreada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -512,7 +507,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Nueva cuenta de su equipo',
+      title: tr.empresaNuevaCuentaEquipo,
       maxWidth: 460,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -528,9 +523,9 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
           Wrap(
             spacing: 8,
             children: [
-              for (final (valor, etiqueta) in const [
+              for (final (valor, etiqueta) in [
                 (Roles.lxd, 'LXD'),
-                (Roles.mentor, 'Mentor'),
+                (Roles.mentor, tr.rolMentor),
               ])
                 ChoiceChip(
                   label: Text(etiqueta),
@@ -545,7 +540,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Nombre completo'),
+            decoration: InputDecoration(labelText: tr.usuariosNombreCompleto),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -555,23 +550,23 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
             autofillHints: const [AutofillHints.email],
             enabled: !_saving,
             decoration:
-                const InputDecoration(labelText: 'Correo electrónico'),
+                InputDecoration(labelText: tr.ingresoCorreo),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _password,
             enabled: !_saving,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Contraseña',
-              helperText: 'Mínimo 6 caracteres. Usted se la comparte.',
+            decoration: InputDecoration(
+              labelText: tr.ingresoContrasena,
+              helperText: tr.empresaContrasenaAyuda,
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _position,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Cargo (opcional)'),
+            decoration: InputDecoration(labelText: tr.empresaCargoOpcional),
           ),
         ],
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -10,6 +10,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
@@ -32,37 +33,37 @@ class MentorPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: 'Portal Mentor',
+      portalTitle: tr.mentorPortal,
       tabs: [
         PortalTab(
-            label: 'Mis Laboratorios',
-            shortLabel: 'Laboratorios',
+            label: tr.tabMisLaboratorios,
+            shortLabel: tr.tabLaboratorios,
             destacada: true,
             icon: Icons.science_outlined,
             builder: (_) => const _MentorLabs()),
         PortalTab(
-            label: 'Proyectos',
+            label: tr.tabProyectosCorto,
             destacada: true,
             icon: Icons.lightbulb_outline,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
-            label: 'Calendario',
+            label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _MentorCalendar()),
         PortalTab(
-            label: 'Entregas',
+            label: tr.tabEntregas,
             destacada: true,
             icon: Icons.assignment_turned_in_outlined,
             builder: (_) => const _MentorSubmissions()),
         PortalTab(
-            label: 'Mi Perfil',
-            shortLabel: 'Perfil',
+            label: tr.tabMiPerfil,
+            shortLabel: tr.tabPerfilCorto,
             icon: Icons.person_outline,
             builder: (_) => const _MentorProfile()),
         PortalTab(
-            label: 'Recursos Comunicaciones',
-            shortLabel: 'Recursos',
+            label: tr.tabRecursosComunicaciones,
+            shortLabel: tr.tabRecursosCorto,
             icon: Icons.perm_media_outlined,
             builder: (_) => const CommunicationResourcesView()),
       ],
@@ -82,16 +83,16 @@ class _MentorLabs extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Mis Laboratorios',
-      subtitle: 'Los laboratorios que acompaña y quiénes los cursan',
+      title: tr.tabMisLaboratorios,
+      subtitle: tr.mentorLabsSubtitulo,
       children: [
         data.laboratories.when(
           loading: () => const CardListSkeleton(count: 3, height: 140),
           error: (e) => ErrorState(e, onRetry: data.reloadLaboratories),
           data: (labs) => labs.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.science_outlined,
-                  message: 'Todavía no le han asignado ningún laboratorio.')
+                  message: tr.mentorSinLabs)
               : Column(
                   children: [
                     for (final lab in labs)
@@ -140,7 +141,7 @@ class _LabCard extends StatelessWidget {
               // nombre del laboratorio.
               Flexible(
                 child: StatusChip(
-                  label: '${lab.studentsAssigned} estudiantes',
+                  label: tr.usuarioEstudiantes(lab.studentsAssigned),
                   color: AppColors.textSecondary,
                   icon: Icons.people_outline),
               ),
@@ -160,7 +161,7 @@ class _LabCard extends StatelessWidget {
               for (final phase in lab.phases)
                 PhaseBadge(
                   label: phase.title.isEmpty
-                      ? 'Fase ${phase.orderIndex}'
+                      ? tr.rutaFaseNumero(phase.orderIndex)
                       : phase.title,
                   complete: phase.completedByCount >= lab.studentsAssigned &&
                       lab.studentsAssigned > 0,
@@ -173,7 +174,7 @@ class _LabCard extends StatelessWidget {
                 loading: () => const CardListSkeleton(count: 2, height: 44),
                 error: (e) => ErrorBanner(e),
                 data: (estudiantes) => estudiantes.isEmpty
-                    ? const Text('Sin estudiantes asignados todavía.',
+                    ? Text(tr.mentorSinEstudiantes,
                         style: TextStyle(
                             fontSize: 12.5, color: AppColors.textMuted))
                     : Column(
@@ -248,8 +249,8 @@ class _MentorCalendar extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Calendario',
-      subtitle: 'Mentorías de sus laboratorios y eventos de la Ruta',
+      title: tr.tabCalendario,
+      subtitle: tr.mentorCalendarioSubtitulo,
       children: [
         combine2(data.calendarEvents, data.laboratories).when(
           loading: () => const CardListSkeleton(count: 1, height: 320),
@@ -311,8 +312,8 @@ class _MentorSubmissions extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Entregas',
-      subtitle: 'Revise y comente el trabajo de sus estudiantes',
+      title: tr.tabEntregas,
+      subtitle: tr.mentorEntregasSubtitulo,
       children: [
         const _ReviewNotice(),
         const SizedBox(height: 12),
@@ -320,9 +321,9 @@ class _MentorSubmissions extends StatelessWidget {
           loading: () => const CardListSkeleton(count: 4, height: 110),
           error: (e) => ErrorState(e, onRetry: data.reloadSubmissions),
           data: (entregas) => entregas.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.assignment_turned_in_outlined,
-                  message: 'No hay entregas por ahora.')
+                  message: tr.mentorSinEntregas)
               : Column(
                   children: [
                     for (final s in entregas)
@@ -346,14 +347,12 @@ class _ReviewNotice extends StatelessWidget {
     return HoverCard(
       padding: const EdgeInsets.all(14),
       child: Row(
-        children: const [
+        children: [
           Icon(Icons.info_outline, color: AppColors.gold, size: 18),
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Como mentor revisa y comenta, pero no pone nota: la '
-              'calificación tiene su propio autor y su propia escala. Su '
-              'comentario llega igual al estudiante.',
+              tr.mentorComoMentor,
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
           ),
@@ -392,7 +391,7 @@ class _SubmissionCard extends StatelessWidget {
                           submission.authorLabel,
                         if (submission.courseName != null)
                           submission.courseName!,
-                        DateFormat('d MMM yyyy').format(submission.submittedAt),
+                        fechaCorta(submission.submittedAt),
                       ].join(' · '),
                       style: const TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
@@ -402,13 +401,13 @@ class _SubmissionCard extends StatelessWidget {
                 ),
               ),
               if (revisada)
-                const StatusChip(
-                    label: 'Revisada',
+                StatusChip(
+                    label: tr.mentorRevisada,
                     color: AppColors.statusGood,
                     icon: Icons.check_circle_outline)
               else
-                const StatusChip(
-                    label: 'Sin revisar',
+                StatusChip(
+                    label: tr.mentorSinRevisar,
                     color: AppColors.statusSerious,
                     icon: Icons.pending_actions_outlined),
             ],
@@ -429,7 +428,7 @@ class _SubmissionCard extends StatelessWidget {
                 color: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Su comentario: ${submission.feedback}',
+              child: Text(tr.mentorSuComentario(submission.feedback),
                   style: const TextStyle(fontSize: 12.5)),
             ),
           ],
@@ -438,7 +437,7 @@ class _SubmissionCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.rate_review_outlined, size: 16),
-              label: Text(revisada ? 'Editar comentario' : 'Revisar'),
+              label: Text(revisada ? tr.mentorEditarComentario : tr.foroRevisar),
               onPressed: () => showDialog<void>(
                 context: context,
                 barrierDismissible: false,
@@ -480,7 +479,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
   Future<void> _save() async {
     if (_feedback.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('Escriba su comentario antes de guardar.'));
+          ValidationError(tr.mentorEscribaComentario));
       return;
     }
     setState(() {
@@ -509,7 +508,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
       }
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Comentario guardado ✓');
+      showSuccessCheck(context, tr.mentorComentarioGuardado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -523,7 +522,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Revisar entrega',
+      title: tr.mentorRevisarEntrega,
       maxWidth: 460,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -539,8 +538,8 @@ class _ReviewDialogState extends State<_ReviewDialog> {
           Text(widget.submission.taskName,
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          const Text(
-            'Revise y comente; la nota la pone quien califica el curso.',
+          Text(
+            tr.mentorReviseComente,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
@@ -549,7 +548,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
             enabled: !_saving,
             maxLines: 5,
             decoration:
-                const InputDecoration(labelText: 'Su retroalimentación'),
+                InputDecoration(labelText: tr.mentorSuRetro),
           ),
         ],
       ),
@@ -570,8 +569,8 @@ class _MentorProfile extends StatelessWidget {
     if (user == null) return const SizedBox.shrink();
 
     return TabBody(
-      title: 'Mi Perfil',
-      subtitle: 'Sus datos y el material que comparte con los estudiantes',
+      title: tr.tabMiPerfil,
+      subtitle: tr.mentorPerfilSubtitulo,
       children: [
         HoverCard(
           padding: const EdgeInsets.all(20),
@@ -602,13 +601,13 @@ class _MentorProfile extends StatelessWidget {
               // etiqueta fija en 160px se comía la mitad del ancho de un
               // teléfono.
               for (final dato in [
-                ('Teléfono', user.phone),
-                ('Ciudad', user.city),
-                ('Cargo', '${user.profile['position'] ?? ''}'),
-                ('Especialidad', '${user.profile['specialty'] ?? ''}'),
-                ('Idiomas', '${user.profile['languages'] ?? ''}'),
-                ('Disponibilidad', '${user.profile['availability'] ?? ''}'),
-                ('Experiencia', '${user.profile['experience'] ?? ''}'),
+                (tr.perfilTelefonoEtiqueta, user.phone),
+                (tr.perfilCiudad, user.city),
+                (tr.perfilCargo, '${user.profile['position'] ?? ''}'),
+                (tr.perfilEspecialidad, '${user.profile['specialty'] ?? ''}'),
+                (tr.perfilIdiomas, '${user.profile['languages'] ?? ''}'),
+                (tr.perfilDisponibilidad, '${user.profile['availability'] ?? ''}'),
+                (tr.perfilExperiencia, '${user.profile['experience'] ?? ''}'),
               ])
                 if (dato.$2.isNotEmpty) _ProfileRow(label: dato.$1, value: dato.$2),
             ],

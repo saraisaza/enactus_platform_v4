@@ -4935,4 +4935,258 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contenidoSobreNosotrosEn => '\"About us\" text (English)';
+
+  @override
+  String get mentorPortal => 'Mentor Portal';
+
+  @override
+  String get tabMisLaboratorios => 'My Laboratories';
+
+  @override
+  String get tabEntregas => 'Submissions';
+
+  @override
+  String get tabRecursosComunicaciones => 'Communications Resources';
+
+  @override
+  String get tabRecursosCorto => 'Resources';
+
+  @override
+  String get mentorLabsSubtitulo =>
+      'The laboratories you support and who is taking them';
+
+  @override
+  String get mentorSinLabs => 'You have not been assigned any laboratory yet.';
+
+  @override
+  String get mentorSinEstudiantes => 'No students assigned yet.';
+
+  @override
+  String get mentorCalendarioSubtitulo =>
+      'Mentoring sessions for your laboratories and Path events';
+
+  @override
+  String get mentorEntregasSubtitulo =>
+      'Review and comment on your students\' work';
+
+  @override
+  String get mentorSinEntregas => 'There are no submissions for now.';
+
+  @override
+  String get mentorComoMentor =>
+      'As a mentor you review and comment, but you do not give a grade: grading has its own author and its own scale. Your comment still reaches the student.';
+
+  @override
+  String get mentorRevisada => 'Reviewed';
+
+  @override
+  String get mentorSinRevisar => 'Not reviewed';
+
+  @override
+  String mentorSuComentario(Object comentario) {
+    return 'Your comment: $comentario';
+  }
+
+  @override
+  String get mentorEditarComentario => 'Edit comment';
+
+  @override
+  String get mentorEscribaComentario => 'Write your comment before saving.';
+
+  @override
+  String get mentorComentarioGuardado => 'Comment saved ✓';
+
+  @override
+  String get mentorRevisarEntrega => 'Review submission';
+
+  @override
+  String get mentorReviseComente =>
+      'Review and comment; the grade is given by whoever grades the course.';
+
+  @override
+  String get mentorSuRetro => 'Your feedback';
+
+  @override
+  String get mentorPerfilSubtitulo =>
+      'Your details and the material you share with students';
+
+  @override
+  String get asesorPortal => 'Academic Advisor Portal';
+
+  @override
+  String get tabDashboardUniversidad => 'University Dashboard';
+
+  @override
+  String get tabSeguimientoEstudiantes => 'Student Tracking';
+
+  @override
+  String get tabDirectorioCorto => 'Directory';
+
+  @override
+  String get asesorSuUniversidad => 'Your university';
+
+  @override
+  String get asesorSubtitulo => 'The teams and students you support';
+
+  @override
+  String get asesorCalendarioSubtitulo =>
+      'Impact Path events and events from your students\' laboratories';
+
+  @override
+  String get asesorSeguimientoTitulo => 'Student Tracking';
+
+  @override
+  String get asesorSeguimientoSubtitulo =>
+      'How the students at your university are doing';
+
+  @override
+  String get asesorBuscarNombre => 'Search by name…';
+
+  @override
+  String get asesorNingunEstudiante => 'No student matches.';
+
+  @override
+  String asesorCursosFraccion(Object hechos, Object total) {
+    return '$hechos/$total courses';
+  }
+
+  @override
+  String get asesorProyectosSubtitulo => 'The projects of the teams you advise';
+
+  @override
+  String get asesorSinProyectos => 'There are no projects yet.';
+
+  @override
+  String get empresaPortal => 'Company Portal';
+
+  @override
+  String get tabImpacto => 'Impact';
+
+  @override
+  String get tabMapaEstudiantes => 'Student Map';
+
+  @override
+  String get tabMapaCorto => 'Map';
+
+  @override
+  String get tabEstudiantesPatrocinados => 'Sponsored Students';
+
+  @override
+  String get tabPatrocinadosCorto => 'Sponsored';
+
+  @override
+  String get tabMiEquipo => 'My Team';
+
+  @override
+  String get tabEquipoCorto => 'Team';
+
+  @override
+  String get tabTalentoCorto => 'Talent';
+
+  @override
+  String get empresaImpactoTitulo => 'Impact of your contribution';
+
+  @override
+  String get empresaImpactoSubtitulo => 'What your organization made possible';
+
+  @override
+  String get empresaEstudiantesAlcanzados => 'Students reached';
+
+  @override
+  String get empresaEquipoFormador => 'Your training team';
+
+  @override
+  String get empresaHorasFormacion => 'Training hours';
+
+  @override
+  String empresaAcompana(
+    Object empresa,
+    Object estudiantes,
+    Object laboratorios,
+  ) {
+    return '$empresa supports $estudiantes students in $laboratorios laboratories.';
+  }
+
+  @override
+  String get empresaLabsSubtitulo =>
+      'The ones you sponsor and those where your team works';
+
+  @override
+  String get empresaSinLabs =>
+      'There are no laboratories associated with your organization yet.';
+
+  @override
+  String get empresaPatrocinadosSubtitulo =>
+      'Who your contribution reaches and how they are doing';
+
+  @override
+  String get empresaSinEstudiantes =>
+      'There are no students linked to your organization yet.';
+
+  @override
+  String get empresaEquipoSubtitulo => 'Your organization\'s LXDs and mentors';
+
+  @override
+  String get empresaNuevaCuenta => 'New account';
+
+  @override
+  String get empresaSinCuentas => 'You have not created any accounts yet.';
+
+  @override
+  String get empresaCuentasAtadas =>
+      'The accounts you create are tied to your organization. You can only create LXDs and mentors: students are assigned by the administration team.';
+
+  @override
+  String empresaEntregasRevisadas(Object cantidad) {
+    return '$cantidad submissions reviewed';
+  }
+
+  @override
+  String get empresaCuentaCreada => 'Account created ✓';
+
+  @override
+  String get empresaNuevaCuentaEquipo => 'New account for your team';
+
+  @override
+  String get empresaContrasenaAyuda =>
+      'At least 6 characters. You share it with them.';
+
+  @override
+  String get empresaCargoOpcional => 'Position (optional)';
+
+  @override
+  String get donantePortal => 'Donor Portal';
+
+  @override
+  String get tabMiImpacto => 'My Impact';
+
+  @override
+  String get donanteSubtitulo => 'Who you support and how they are doing';
+
+  @override
+  String get donanteEstudiantesApoyados => 'Students supported';
+
+  @override
+  String get donanteEvidenciasRecibidas => 'Evidence received';
+
+  @override
+  String get donanteEstudiantesQueApoya => 'Students you support';
+
+  @override
+  String get donanteSinEstudiantes =>
+      'There are no students linked to your contribution yet. As soon as your administrator assigns any, they will appear here.';
+
+  @override
+  String get donanteEvidenciasTitulo => 'Impact Evidence';
+
+  @override
+  String get donanteEvidenciasSubtitulo =>
+      'Photos, stories and reports of what your contribution made possible';
+
+  @override
+  String get donanteSinEvidencias =>
+      'There is no evidence for your contribution yet.';
+
+  @override
+  String get donanteVerArchivo => 'View file';
 }

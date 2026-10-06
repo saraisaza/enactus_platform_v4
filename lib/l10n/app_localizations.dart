@@ -8293,6 +8293,460 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Texto \"Sobre nosotros\" (inglés)'**
   String get contenidoSobreNosotrosEn;
+
+  /// No description provided for @mentorPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal Mentor'**
+  String get mentorPortal;
+
+  /// No description provided for @tabMisLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Laboratorios'**
+  String get tabMisLaboratorios;
+
+  /// No description provided for @tabEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas'**
+  String get tabEntregas;
+
+  /// No description provided for @tabRecursosComunicaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Recursos Comunicaciones'**
+  String get tabRecursosComunicaciones;
+
+  /// No description provided for @tabRecursosCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Recursos'**
+  String get tabRecursosCorto;
+
+  /// No description provided for @mentorLabsSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los laboratorios que acompaña y quiénes los cursan'**
+  String get mentorLabsSubtitulo;
+
+  /// No description provided for @mentorSinLabs.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no le han asignado ningún laboratorio.'**
+  String get mentorSinLabs;
+
+  /// No description provided for @mentorSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin estudiantes asignados todavía.'**
+  String get mentorSinEstudiantes;
+
+  /// No description provided for @mentorCalendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mentorías de sus laboratorios y eventos de la Ruta'**
+  String get mentorCalendarioSubtitulo;
+
+  /// No description provided for @mentorEntregasSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Revise y comente el trabajo de sus estudiantes'**
+  String get mentorEntregasSubtitulo;
+
+  /// No description provided for @mentorSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay entregas por ahora.'**
+  String get mentorSinEntregas;
+
+  /// No description provided for @mentorComoMentor.
+  ///
+  /// In es, this message translates to:
+  /// **'Como mentor revisa y comenta, pero no pone nota: la calificación tiene su propio autor y su propia escala. Su comentario llega igual al estudiante.'**
+  String get mentorComoMentor;
+
+  /// No description provided for @mentorRevisada.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisada'**
+  String get mentorRevisada;
+
+  /// No description provided for @mentorSinRevisar.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin revisar'**
+  String get mentorSinRevisar;
+
+  /// No description provided for @mentorSuComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Su comentario: {comentario}'**
+  String mentorSuComentario(Object comentario);
+
+  /// No description provided for @mentorEditarComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar comentario'**
+  String get mentorEditarComentario;
+
+  /// No description provided for @mentorEscribaComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba su comentario antes de guardar.'**
+  String get mentorEscribaComentario;
+
+  /// No description provided for @mentorComentarioGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentario guardado ✓'**
+  String get mentorComentarioGuardado;
+
+  /// No description provided for @mentorRevisarEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar entrega'**
+  String get mentorRevisarEntrega;
+
+  /// No description provided for @mentorReviseComente.
+  ///
+  /// In es, this message translates to:
+  /// **'Revise y comente; la nota la pone quien califica el curso.'**
+  String get mentorReviseComente;
+
+  /// No description provided for @mentorSuRetro.
+  ///
+  /// In es, this message translates to:
+  /// **'Su retroalimentación'**
+  String get mentorSuRetro;
+
+  /// No description provided for @mentorPerfilSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sus datos y el material que comparte con los estudiantes'**
+  String get mentorPerfilSubtitulo;
+
+  /// No description provided for @asesorPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal Asesor Académico'**
+  String get asesorPortal;
+
+  /// No description provided for @tabDashboardUniversidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Dashboard Universidad'**
+  String get tabDashboardUniversidad;
+
+  /// No description provided for @tabSeguimientoEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento Estudiantes'**
+  String get tabSeguimientoEstudiantes;
+
+  /// No description provided for @tabDirectorioCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Directorio'**
+  String get tabDirectorioCorto;
+
+  /// No description provided for @asesorSuUniversidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Su universidad'**
+  String get asesorSuUniversidad;
+
+  /// No description provided for @asesorSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los equipos y estudiantes que acompaña'**
+  String get asesorSubtitulo;
+
+  /// No description provided for @asesorCalendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Eventos de la Ruta de Impacto y de los laboratorios de sus estudiantes'**
+  String get asesorCalendarioSubtitulo;
+
+  /// No description provided for @asesorSeguimientoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento de Estudiantes'**
+  String get asesorSeguimientoTitulo;
+
+  /// No description provided for @asesorSeguimientoSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo van los estudiantes de su universidad'**
+  String get asesorSeguimientoSubtitulo;
+
+  /// No description provided for @asesorBuscarNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre…'**
+  String get asesorBuscarNombre;
+
+  /// No description provided for @asesorNingunEstudiante.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún estudiante coincide.'**
+  String get asesorNingunEstudiante;
+
+  /// No description provided for @asesorCursosFraccion.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechos}/{total} cursos'**
+  String asesorCursosFraccion(Object hechos, Object total);
+
+  /// No description provided for @asesorProyectosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los proyectos de los equipos que asesora'**
+  String get asesorProyectosSubtitulo;
+
+  /// No description provided for @asesorSinProyectos.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay proyectos.'**
+  String get asesorSinProyectos;
+
+  /// No description provided for @empresaPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal Empresa'**
+  String get empresaPortal;
+
+  /// No description provided for @tabImpacto.
+  ///
+  /// In es, this message translates to:
+  /// **'Impacto'**
+  String get tabImpacto;
+
+  /// No description provided for @tabMapaEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa de Estudiantes'**
+  String get tabMapaEstudiantes;
+
+  /// No description provided for @tabMapaCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa'**
+  String get tabMapaCorto;
+
+  /// No description provided for @tabEstudiantesPatrocinados.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes Patrocinados'**
+  String get tabEstudiantesPatrocinados;
+
+  /// No description provided for @tabPatrocinadosCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrocinados'**
+  String get tabPatrocinadosCorto;
+
+  /// No description provided for @tabMiEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi Equipo'**
+  String get tabMiEquipo;
+
+  /// No description provided for @tabEquipoCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipo'**
+  String get tabEquipoCorto;
+
+  /// No description provided for @tabTalentoCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Talento'**
+  String get tabTalentoCorto;
+
+  /// No description provided for @empresaImpactoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Impacto de su aporte'**
+  String get empresaImpactoTitulo;
+
+  /// No description provided for @empresaImpactoSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué hizo posible su organización'**
+  String get empresaImpactoSubtitulo;
+
+  /// No description provided for @empresaEstudiantesAlcanzados.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes alcanzados'**
+  String get empresaEstudiantesAlcanzados;
+
+  /// No description provided for @empresaEquipoFormador.
+  ///
+  /// In es, this message translates to:
+  /// **'Su equipo formador'**
+  String get empresaEquipoFormador;
+
+  /// No description provided for @empresaHorasFormacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas de formación'**
+  String get empresaHorasFormacion;
+
+  /// No description provided for @empresaAcompana.
+  ///
+  /// In es, this message translates to:
+  /// **'{empresa} acompaña a {estudiantes} estudiantes en {laboratorios} laboratorios.'**
+  String empresaAcompana(
+    Object empresa,
+    Object estudiantes,
+    Object laboratorios,
+  );
+
+  /// No description provided for @empresaLabsSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los que patrocina y aquellos donde trabaja su equipo'**
+  String get empresaLabsSubtitulo;
+
+  /// No description provided for @empresaSinLabs.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay laboratorios asociados a su organización.'**
+  String get empresaSinLabs;
+
+  /// No description provided for @empresaPatrocinadosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'A quiénes alcanza su aporte y cómo van'**
+  String get empresaPatrocinadosSubtitulo;
+
+  /// No description provided for @empresaSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay estudiantes vinculados a su organización.'**
+  String get empresaSinEstudiantes;
+
+  /// No description provided for @empresaEquipoSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los LXD y mentores de su organización'**
+  String get empresaEquipoSubtitulo;
+
+  /// No description provided for @empresaNuevaCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva cuenta'**
+  String get empresaNuevaCuenta;
+
+  /// No description provided for @empresaSinCuentas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no ha dado de alta a nadie.'**
+  String get empresaSinCuentas;
+
+  /// No description provided for @empresaCuentasAtadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas que cree quedan atadas a su organización. Solo puede dar de alta LXD y mentores: los estudiantes los asigna el equipo de administración.'**
+  String get empresaCuentasAtadas;
+
+  /// No description provided for @empresaEntregasRevisadas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} entregas revisadas'**
+  String empresaEntregasRevisadas(Object cantidad);
+
+  /// No description provided for @empresaCuentaCreada.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta creada ✓'**
+  String get empresaCuentaCreada;
+
+  /// No description provided for @empresaNuevaCuentaEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva cuenta de su equipo'**
+  String get empresaNuevaCuentaEquipo;
+
+  /// No description provided for @empresaContrasenaAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Mínimo 6 caracteres. Usted se la comparte.'**
+  String get empresaContrasenaAyuda;
+
+  /// No description provided for @empresaCargoOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargo (opcional)'**
+  String get empresaCargoOpcional;
+
+  /// No description provided for @donantePortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal Donante'**
+  String get donantePortal;
+
+  /// No description provided for @tabMiImpacto.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi Impacto'**
+  String get tabMiImpacto;
+
+  /// No description provided for @donanteSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'A quiénes apoya y cómo van'**
+  String get donanteSubtitulo;
+
+  /// No description provided for @donanteEstudiantesApoyados.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes apoyados'**
+  String get donanteEstudiantesApoyados;
+
+  /// No description provided for @donanteEvidenciasRecibidas.
+  ///
+  /// In es, this message translates to:
+  /// **'Evidencias recibidas'**
+  String get donanteEvidenciasRecibidas;
+
+  /// No description provided for @donanteEstudiantesQueApoya.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes que apoya'**
+  String get donanteEstudiantesQueApoya;
+
+  /// No description provided for @donanteSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá acá.'**
+  String get donanteSinEstudiantes;
+
+  /// No description provided for @donanteEvidenciasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Evidencias de Impacto'**
+  String get donanteEvidenciasTitulo;
+
+  /// No description provided for @donanteEvidenciasSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Fotos, historias y reportes de lo que su aporte hizo posible'**
+  String get donanteEvidenciasSubtitulo;
+
+  /// No description provided for @donanteSinEvidencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay evidencias para su aporte.'**
+  String get donanteSinEvidencias;
+
+  /// No description provided for @donanteVerArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver archivo'**
+  String get donanteVerArchivo;
 }
 
 class _AppLocalizationsDelegate

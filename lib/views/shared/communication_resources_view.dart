@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/textos.dart';
@@ -9,6 +8,7 @@ import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
@@ -107,7 +107,7 @@ class _ResourceCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis),
                 Text(
                   '${resource.isLink ? 'Enlace' : resource.fileExt.toUpperCase()}'
-                  ' · ${DateFormat('d MMM yyyy').format(resource.createdAt)}',
+                  ' · ${fechaCorta(resource.createdAt)}',
                   style: const TextStyle(
                       fontSize: 11.5, color: AppColors.textMuted),
                 ),

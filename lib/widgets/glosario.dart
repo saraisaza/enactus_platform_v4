@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show KeyDownEvent, LogicalKeyboardKey;
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../models/glossary.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
@@ -198,15 +199,15 @@ class _LeccionDesplegableState extends State<LeccionDesplegable> {
             expanded: _abierta,
             child: IconButton(
               tooltip: _abierta
-                  ? 'Ocultar texto y glosario'
-                  : 'Ver texto y glosario de la lección',
+                  ? tr.glosarioOcultarTexto
+                  : tr.glosarioVerTexto,
               onPressed: () => setState(() => _abierta = !_abierta),
               icon: AnimatedRotation(
                 turns: _abierta ? 0.5 : 0,
                 duration: _animacion(context, _rapida),
                 child: Icon(Icons.expand_more,
                     color: _abierta ? AppColors.gold : AppColors.textMuted,
-                    semanticLabel: 'Texto y glosario de «${widget.titulo}»'),
+                    semanticLabel: tr.glosarioTextoDe(widget.titulo)),
               ),
             ),
           );
@@ -272,11 +273,11 @@ class GlosarioDeLeccion extends StatelessWidget {
           ),
           const SizedBox(height: 18),
         ],
-        const _Subtitulo('Glosario de esta lección'),
+        _Subtitulo(tr.glosarioDeLeccion),
         if (terminos.isEmpty)
-          const _Vacio(
+          _Vacio(
             icono: Icons.menu_book_outlined,
-            texto: 'Esta lección no tiene términos de glosario.',
+            texto: tr.glosarioLeccionVacio,
           )
         else
           GlosarioPanel(
@@ -343,15 +344,13 @@ class _GlosarioDelModuloState extends State<GlosarioDelModulo> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Glosario del módulo',
+                        Text(tr.glosarioDelModulo,
                             style: TextStyle(fontWeight: FontWeight.w600)),
                         Text(
                           [
-                            terminos.length == 1
-                                ? '1 término'
-                                : '${terminos.length} términos',
+                            tr.glosarioTerminos(terminos.length),
                             if (widget.puedeRepasar && porRepasar > 0)
-                              '$porRepasar por repasar',
+                              tr.glosarioPorRepasar(porRepasar),
                           ].join(' · '),
                           style: const TextStyle(
                               color: AppColors.textMuted, fontSize: 12),
@@ -533,8 +532,8 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _chipModo(_Modo.tarjetas, 'Tarjetas', Icons.view_module_outlined),
-            _chipModo(_Modo.repaso, 'Modo repaso', Icons.style_outlined),
+            _chipModo(_Modo.tarjetas, tr.glosarioTarjetas, Icons.view_module_outlined),
+            _chipModo(_Modo.repaso, tr.glosarioModoRepaso, Icons.style_outlined),
           ],
         ),
         if (widget.buscador) ...[
@@ -544,12 +543,12 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
             onChanged: (_) => setState(() {}),
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              labelText: 'Buscar en el glosario',
+              labelText: tr.glosarioBuscar,
               prefixIcon: const Icon(Icons.search, size: 20),
               suffixIcon: _busqueda.text.isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Borrar la búsqueda',
+                      tooltip: tr.glosarioBorrarBusqueda,
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () => setState(_busqueda.clear),
                     ),
@@ -568,14 +567,14 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
           _Vacio(
             icono: Icons.search_off,
             texto: _busqueda.text.trim().isNotEmpty
-                ? 'Ningún término coincide con «${_busqueda.text.trim()}».'
+                ? tr.glosarioNingunoCoincide(_busqueda.text.trim())
                 : _soloPorRepasar
-                    ? 'No tiene términos marcados para repasar.'
-                    : 'Ningún término empieza con esa letra.',
+                    ? tr.glosarioNingunoMarcado
+                    : tr.glosarioNingunoLetra,
             accion: _hayFiltros
                 ? TextButton(
                     onPressed: _limpiarFiltros,
-                    child: const Text('Quitar los filtros'))
+                    child: Text(tr.glosarioQuitarFiltros))
                 : null,
           )
         else
@@ -639,7 +638,7 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _botonLetra(null, 'Todas', disponible: true),
+          _botonLetra(null, tr.glosarioTodas, disponible: true),
           for (final l in letras)
             _botonLetra(l, l, disponible: disponibles.contains(l)),
         ],
@@ -657,8 +656,8 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
       child: Semantics(
         selected: elegida,
         label: letra == null
-            ? 'Todas las letras'
-            : 'Letra $letra, ${cuantos == 1 ? '1 término' : '$cuantos términos'}',
+            ? tr.glosarioTodasLasLetras
+            : tr.glosarioLetraTerminos(letra, cuantos),
         excludeSemantics: true,
         button: true,
         enabled: disponible,
@@ -696,9 +695,8 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
         .length;
 
     if (!widget.puedeRepasar) {
-      return const Text(
-        'Toque una tarjeta para voltearla. El avance del repaso se guarda en la '
-        'cuenta de cada estudiante.',
+      return Text(
+        tr.glosarioAyudaTarjetas,
         style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
       );
     }
@@ -706,18 +704,17 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Toque una tarjeta para ver la definición y marque si ya la sabe. '
-          'Ya lo sabe: $sabe de $total · Por repasar: $repasar',
+          tr.glosarioAyudaRepaso(sabe, total, repasar),
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
         ),
         const SizedBox(height: 6),
         ThinProgressBar(
           value: total == 0 ? 0 : sabe / total,
-          tooltip: 'Ya lo sabe: $sabe de $total',
+          tooltip: tr.glosarioYaLoSabeDe(sabe, total),
         ),
         const SizedBox(height: 8),
         FilterChip(
-          label: const Text('Solo los de repasar',
+          label: Text(tr.glosarioSoloRepasar,
               style: TextStyle(fontSize: 12.5)),
           selected: _soloPorRepasar,
           onSelected: (on) => setState(() => _soloPorRepasar = on),
@@ -893,7 +890,7 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                           const SizedBox(height: 12),
                         ],
                         if (relacionados.isNotEmpty) ...[
-                          const Text('Relacionados',
+                          Text(tr.glosarioRelacionados,
                               style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -909,7 +906,7 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                                       size: 14, color: AppColors.gold),
                                   label: Text(r.word,
                                       style: const TextStyle(fontSize: 12.5)),
-                                  tooltip: 'Ir a «${r.word}»',
+                                  tooltip: tr.glosarioIrA(r.word),
                                   onPressed: () => widget.onRelacionado(r.id),
                                 ),
                             ],
@@ -942,7 +939,7 @@ class _Ejemplo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Ejemplo',
+          Text(tr.glosarioEjemplo,
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -965,7 +962,7 @@ class _Imagen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       image: true,
-      label: 'Imagen de «${termino.word}»',
+      label: tr.glosarioImagenDe(termino.word),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: ConstrainedBox(
@@ -995,9 +992,9 @@ class _MarcaRepaso extends StatelessWidget {
       ReviewStatus.known => (
           Icons.check_circle,
           AppColors.statusGood,
-          'Ya lo sabe'
+          tr.glosarioYaLoSabe
         ),
-      ReviewStatus.review => (Icons.replay, AppColors.statusWarning, 'Por repasar'),
+      ReviewStatus.review => (Icons.replay, AppColors.statusWarning, tr.glosarioPorRepasarEstado),
     };
     return Padding(
       padding: const EdgeInsets.only(left: 6, top: 1),
@@ -1059,8 +1056,8 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
               button: true,
               onTap: _voltear,
               label: atras
-                  ? 'Definición de «${t.word}»: ${t.shortDefinition}'
-                  : '«${t.word}». Toque para ver la definición.',
+                  ? tr.glosarioDefinicionDe(t.word, t.shortDefinition)
+                  : tr.glosarioToqueParaVer(t.word),
               excludeSemantics: true,
               child: Transform(
                 alignment: Alignment.center,
@@ -1104,7 +1101,7 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
             children: [
               Expanded(
                 child: _BotonRepaso(
-                  texto: 'Ya lo sé',
+                  texto: tr.glosarioYaLoSe,
                   icono: Icons.check_circle_outline,
                   color: AppColors.statusGood,
                   elegido: widget.estado == ReviewStatus.known,
@@ -1114,7 +1111,7 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
               const SizedBox(width: 8),
               Expanded(
                 child: _BotonRepaso(
-                  texto: 'Repasar',
+                  texto: tr.glosarioRepasar,
                   icono: Icons.replay,
                   color: AppColors.statusWarning,
                   elegido: widget.estado == ReviewStatus.review,
@@ -1141,7 +1138,7 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
-                const Text('Toque para ver la definición',
+                Text(tr.glosarioToqueDefinicion,
                     style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
               ],
             ),
@@ -1242,7 +1239,7 @@ class _DialogoTerminoState extends State<_DialogoTermino> {
               Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  tooltip: 'Cerrar',
+                  tooltip: tr.comunCerrar,
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
                 ),

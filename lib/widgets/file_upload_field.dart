@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../providers/data_provider.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
+import '../utils/formatos.dart';
 
 /// Un archivo ya subido a S3, listo para adjuntarse a lo que corresponda.
 ///
@@ -124,15 +126,13 @@ class _FileUploadFieldState extends State<FileUploadField> {
 
     final contentType = _contentTypeOf(file.name);
     if (contentType.isEmpty) {
-      setState(() => _error = const ValidationError(
-          'Tipo de archivo no permitido. Se aceptan PDF, imágenes, '
-          'documentos de Word y ZIP.'));
+      setState(() => _error = ValidationError(
+          tr.archivoTipoNoPermitido));
       return;
     }
     if (file.size > _maxBytes) {
       setState(() => _error = ValidationError(
-          'El archivo pesa ${(file.size / 1024 / 1024).toStringAsFixed(1)} MB '
-          'y el máximo son 25 MB.'));
+          tr.archivoPesado(decimal(file.size / 1024 / 1024))));
       return;
     }
     final bytes = file.bytes ?? await file.xFile.readAsBytes();
@@ -188,12 +188,12 @@ class _FileUploadFieldState extends State<FileUploadField> {
             if (!kIsWeb)
               OutlinedButton.icon(
                 icon: const Icon(Icons.photo_library_outlined, size: 16),
-                label: const Text('Foto'),
+                label: Text(tr.evidenciaFoto),
                 onPressed: full || busy ? null : () => _pick(foto: true),
               ),
             OutlinedButton.icon(
               icon: const Icon(Icons.attach_file, size: 16),
-              label: Text(kIsWeb ? 'Adjuntar archivo' : 'Archivo'),
+              label: Text(kIsWeb ? tr.archivoAdjuntar : tr.archivoArchivo),
               onPressed: full || busy ? null : _pick,
             ),
             Text('${widget.files.length}/${widget.maxFiles}',
@@ -211,8 +211,8 @@ class _FileUploadFieldState extends State<FileUploadField> {
           const SizedBox(height: 4),
           Text(
               _progress == 0
-                  ? 'Preparando la subida…'
-                  : 'Subiendo… ${(_progress * 100).round()}%',
+                  ? tr.archivoPreparando
+                  : tr.archivoSubiendo((_progress * 100).round()),
               style: const TextStyle(
                   color: AppColors.textMuted, fontSize: 11.5)),
         ],
@@ -234,7 +234,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
                         color: AppColors.textMuted, fontSize: 11)),
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),
-                  tooltip: 'Quitar',
+                  tooltip: tr.comunQuitar,
                   // Quitarlo de la entrega no borra el objeto de S3: eso lo
                   // limpia el administrador, no una pantalla de estudiante.
                   onPressed: busy
@@ -261,6 +261,6 @@ class _FileUploadFieldState extends State<FileUploadField> {
   String _humanSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
-    return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+    return '${decimal(bytes / 1024 / 1024)} MB';
   }
 }

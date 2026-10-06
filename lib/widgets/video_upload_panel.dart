@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../services/api_errors.dart';
 import '../services/video_upload/mp4_inspector.dart';
@@ -8,6 +8,7 @@ import '../services/video_upload/upload_types.dart';
 import '../services/video_upload/video_platform.dart' as platform;
 import '../services/video_upload/video_upload_controller.dart';
 import '../utils/app_theme.dart';
+import '../utils/formatos.dart';
 import 'common.dart';
 import 'lesson_video_shell.dart';
 import 'uploaded_lesson_player.dart';
@@ -75,9 +76,7 @@ class _VideoUploadPanelState extends State<VideoUploadPanel> {
               if (_c.pending != null) ...[
                 _Aviso(
                   icon: Icons.restore,
-                  text: 'Quedó sin terminar la subida de «${_c.pending!.fileName}» '
-                      '(${formatMegabytes(_c.pending!.sizeBytes)}). Elija el '
-                      'mismo archivo y, al guardar, sigue desde donde iba.',
+                  text: tr.subidaSinTerminar(_c.pending!.fileName, formatMegabytes(_c.pending!.sizeBytes)),
                 ),
                 const SizedBox(height: 10),
               ],
@@ -133,7 +132,7 @@ class _ZonaDeSoltar extends StatelessWidget {
     final color = arrastrando ? AppColors.gold : AppColors.border;
     return Semantics(
       container: true,
-      label: 'Zona para soltar el video',
+      label: tr.subidaZonaSoltar,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
@@ -155,10 +154,10 @@ class _ZonaDeSoltar extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   arrastrando
-                      ? 'Suelte el video para elegirlo'
+                      ? tr.subidaSuelte
                       : reemplaza
-                          ? 'Para reemplazarlo, arrastre otro video aquí'
-                          : 'Arrastre el video aquí',
+                          ? tr.subidaReemplazar
+                          : tr.subidaArrastre,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
@@ -167,12 +166,12 @@ class _ZonaDeSoltar extends StatelessWidget {
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.folder_open, size: 18),
-                  label: const Text('Elegir video'),
+                  label: Text(tr.subidaElegirVideo),
                   onPressed: enabled ? onPick : null,
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'MP4 (H.264 con audio AAC) · hasta 500 MB',
+                Text(
+                  tr.subidaFormato,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                 ),
@@ -196,7 +195,7 @@ class _Revisando extends StatelessWidget {
         color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Row(
+      child: Row(
         children: [
           SizedBox(
             width: 20,
@@ -205,7 +204,7 @@ class _Revisando extends StatelessWidget {
           ),
           SizedBox(width: 12),
           Expanded(
-            child: Text('Revisando el video…',
+            child: Text(tr.subidaRevisando,
                 style: TextStyle(color: AppColors.textSecondary)),
           ),
         ],
@@ -248,7 +247,7 @@ class _Problema extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.folder_open, size: 18),
-              label: const Text('Elegir otro video'),
+              label: Text(tr.subidaElegirOtro),
               onPressed: onPickOther,
             ),
           ),
@@ -285,7 +284,7 @@ class _Elegido extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Vista previa — así lo verán los estudiantes:',
+        Text(tr.subidaVistaPreviaAsi,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
         const SizedBox(height: 6),
         if (file.previewUrl != null)
@@ -294,14 +293,13 @@ class _Elegido extends StatelessWidget {
             localUrl: file.previewUrl,
             localThumbnail: c.cover,
             durationHint: probe?.duration,
-            title: title.isEmpty ? 'Vista previa' : title,
+            title: title.isEmpty ? tr.subidaVistaPrevia : title,
           )
         else
-          const VideoBox16x9(
+          VideoBox16x9(
             child: LessonVideoFailure(
-              title: 'La vista previa se ve en el navegador',
-              detail: 'El video se sube igual; para mirarlo antes de guardar, '
-                  'abra el editor desde el sitio web.',
+              title: tr.subidaVistaPreviaNavegador,
+              detail: tr.subidaVistaPreviaDetalle,
             ),
           ),
         const SizedBox(height: 10),
@@ -326,7 +324,7 @@ class _Elegido extends StatelessWidget {
             ),
             TextButton(
               onPressed: enabled && !c.uploading ? c.clearFile : null,
-              child: const Text('Quitar'),
+              child: Text(tr.comunQuitar),
             ),
           ],
         ),
@@ -365,10 +363,10 @@ class _Portada extends StatelessWidget {
             Expanded(
               child: Text(
                 c.customCover != null
-                    ? 'Portada propia'
+                    ? tr.subidaPortadaPropia
                     : cover != null
-                        ? 'Portada tomada del video'
-                        : 'Sin portada: se verá un fondo genérico',
+                        ? tr.subidaPortadaDelVideo
+                        : tr.subidaSinPortada,
                 style: const TextStyle(
                     fontSize: 12.5, color: AppColors.textSecondary),
               ),
@@ -381,15 +379,15 @@ class _Portada extends StatelessWidget {
           children: [
             TextButton.icon(
               icon: const Icon(Icons.image_outlined, size: 18),
-              label: const Text('Usar otra imagen'),
+              label: Text(tr.subidaUsarOtraImagen),
               onPressed: enabled ? c.pickCover : null,
             ),
             if (c.customCover != null)
               TextButton(
                 onPressed: enabled ? c.removeCustomCover : null,
                 child: Text(c.probe?.frameJpeg != null
-                    ? 'Volver a la del video'
-                    : 'Quitar la portada'),
+                    ? tr.subidaVolverPortadaVideo
+                    : tr.subidaQuitarPortada),
               ),
           ],
         ),
@@ -416,14 +414,15 @@ class _VideoActual extends StatelessWidget {
       if (segundos != null && segundos > 0)
         formatVideoTime(Duration(seconds: segundos)),
       if (fecha != null)
-        'subido el ${DateFormat('d MMM y', 'es').format(fecha.toLocal())}',
+        tr.subidaSubidoEl(fechaCorta(fecha.toLocal())),
     ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Video actual: ${lesson.videoOriginalName ?? 'archivo subido'}'
-          '${datos.isEmpty ? '' : ' · $datos'}',
+          tr.subidaVideoActual(
+                  lesson.videoOriginalName ?? tr.subidaArchivoSubido) +
+              (datos.isEmpty ? '' : ' · $datos'),
           style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
         ),
         const SizedBox(height: 6),
@@ -443,8 +442,8 @@ class _VideoActual extends StatelessWidget {
               TextButton.icon(
                 icon: const Icon(Icons.image_outlined, size: 18),
                 label: Text(lesson.hasVideoThumbnail
-                    ? 'Cambiar la portada'
-                    : 'Ponerle portada'),
+                    ? tr.subidaCambiarPortada
+                    : tr.subidaPonerPortada),
                 onPressed: controller.uploading ? null : controller.pickCover,
               ),
               if (controller.customCover != null)
@@ -457,7 +456,7 @@ class _VideoActual extends StatelessWidget {
                           width: 64, height: 36, fit: BoxFit.cover),
                     ),
                     const SizedBox(width: 6),
-                    const Text('Nueva portada: se guarda al guardar',
+                    Text(tr.subidaNuevaPortada,
                         style: TextStyle(
                             fontSize: 12, color: AppColors.textSecondary)),
                   ],
@@ -490,16 +489,15 @@ class _Subida extends StatelessWidget {
       return _Aviso(
         icon: Icons.wifi_off_outlined,
         color: AppColors.statusCritical,
-        text: 'No se pudo terminar la subida: $mensaje Las partes que ya '
-            'llegaron no se pierden: guarde de nuevo y sigue desde donde iba.',
+        text: tr.subidaNoTermino(mensaje),
       );
     }
     final pct = ((p?.ratio ?? 0) * 100).floor();
     final falta = p?.remaining;
     final detalle = [
       if (p != null)
-        '${formatMegabytes(p.sentBytes)} de ${formatMegabytes(p.totalBytes)}',
-      if (falta != null) 'quedan ${_restante(falta)}',
+        tr.subidaDe(formatMegabytes(p.sentBytes), formatMegabytes(p.totalBytes)),
+      if (falta != null) tr.subidaQuedan(_restante(falta)),
     ].join(' · ');
     return Container(
       padding: const EdgeInsets.all(14),
@@ -516,21 +514,21 @@ class _Subida extends StatelessWidget {
               Expanded(
                 child: Text(
                   p?.resumed == true
-                      ? 'Siguiendo la subida… $pct %'
-                      : 'Subiendo el video… $pct %',
+                      ? tr.subidaSiguiendo(pct)
+                      : tr.subidaSubiendo(pct),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               TextButton.icon(
                 icon: const Icon(Icons.close, size: 18),
-                label: const Text('Cancelar subida'),
+                label: Text(tr.subidaCancelar),
                 onPressed: c.cancelUpload,
               ),
             ],
           ),
           const SizedBox(height: 6),
           Semantics(
-            label: 'Avance de la subida',
+            label: tr.subidaAvance,
             value: '$pct %',
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
@@ -549,8 +547,8 @@ class _Subida extends StatelessWidget {
                     const TextStyle(fontSize: 12, color: AppColors.textMuted)),
           ],
           const SizedBox(height: 4),
-          const Text(
-            'No cierre esta ventana hasta que termine.',
+          Text(
+            tr.subidaNoCierre,
             style: TextStyle(fontSize: 12, color: AppColors.textMuted),
           ),
         ],

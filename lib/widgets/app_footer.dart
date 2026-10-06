@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import 'animated_logo.dart';
@@ -101,7 +102,7 @@ class AppFooter extends StatelessWidget {
                           ),
                           SizedBox(height: 3),
                           Text(
-                            'Formamos líderes que transforman comunidades 💛',
+                            tr.pieLema,
                             style: TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 12,
@@ -138,7 +139,7 @@ class AppFooter extends StatelessWidget {
                                 ),
                                 SizedBox(height: 3),
                                 Text(
-                                  'Formamos líderes que transforman comunidades 💛',
+                                  tr.pieLema,
                                   style: TextStyle(
                                     color: AppColors.textMuted,
                                     fontSize: 12,
@@ -175,14 +176,14 @@ class AppFooter extends StatelessWidget {
               alignment: WrapAlignment.spaceBetween,
               children: [
                 Text(
-                  '© ${DateTime.now().year} eduXaction Colombia — Todos los derechos reservados',
+                  tr.pieDerechos(DateTime.now().year),
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 11,
                   ),
                 ),
-                const Text(
-                  'Hecho con 💛 en Bogotá',
+                Text(
+                  tr.pieHechoEn,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                 ),
               ],

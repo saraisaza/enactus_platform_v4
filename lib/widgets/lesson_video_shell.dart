@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
 
@@ -89,10 +90,10 @@ class LessonVideoCover extends StatelessWidget {
         onTap: loading ? null : onPlay,
         builder: (context, activo) => Semantics(
           label: loading
-              ? 'Cargando el video «$title»'
+              ? tr.videoCargandoTitulo(title)
               : resume == null
-                  ? 'Reproducir el video «$title»'
-                  : 'Seguir viendo «$title» desde ${formatVideoTime(resume)}',
+                  ? tr.videoReproducirTitulo(title)
+                  : tr.videoSeguirViendo(title, formatVideoTime(resume)),
           excludeSemantics: true,
           child: Stack(
             fit: StackFit.expand,
@@ -157,13 +158,13 @@ class LessonVideoCover extends StatelessWidget {
                   children: [
                     _Etiqueta(icon: sourceIcon, text: sourceLabel),
                     if (loading)
-                      const _Etiqueta(
+                      _Etiqueta(
                           icon: Icons.hourglass_empty,
-                          text: 'Cargando el video…')
+                          text: tr.videoCargando)
                     else if (resume != null)
                       _Etiqueta(
                           icon: Icons.history,
-                          text: 'Seguir desde ${formatVideoTime(resume)}'),
+                          text: tr.videoSeguirDesde(formatVideoTime(resume))),
                   ],
                 ),
               ),
@@ -289,7 +290,7 @@ class LessonVideoFailure extends StatelessWidget {
                   if (onRetry != null)
                     OutlinedButton.icon(
                       icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Reintentar'),
+                      label: Text(tr.comunReintentar),
                       onPressed: onRetry,
                     ),
                   if (otra != null)

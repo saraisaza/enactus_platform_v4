@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
+import '../utils/formatos.dart';
 import 'async_states.dart';
 import 'common.dart';
 import 'visor_pdf.dart';
@@ -28,9 +29,9 @@ IconData calendarEventIcon(CalendarEventType t) => switch (t) {
     };
 
 String calendarEventTypeLabel(CalendarEventType t) => switch (t) {
-      CalendarEventType.openLearningSync => 'Sesión sincrónica',
-      CalendarEventType.rutaImpacto => 'Evento Ruta de Impacto',
-      CalendarEventType.mentoria => 'Mentoría',
+      CalendarEventType.openLearningSync => tr.eventoSesionSincronica,
+      CalendarEventType.rutaImpacto => tr.eventoRutaImpacto,
+      CalendarEventType.mentoria => tr.eventoMentoria,
     };
 
 bool _sameDay(DateTime a, DateTime b) =>
@@ -94,7 +95,7 @@ class _CalendarViewState extends State<CalendarView> {
     final totalCells = ((leading + daysInMonth) / 7).ceil() * 7;
     final gridStart = firstOfMonth.subtract(Duration(days: leading));
     final today = DateTime.now();
-    final monthLabel = DateFormat('MMMM yyyy', 'es').format(_visibleMonth);
+    final monthLabel = mesAnio(_visibleMonth);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +114,7 @@ class _CalendarViewState extends State<CalendarView> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  tooltip: 'Mes anterior',
+                  tooltip: tr.calendarioMesAnterior,
                   onPressed: () => _changeMonth(-1),
                 ),
                 Flexible(
@@ -125,7 +126,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  tooltip: 'Mes siguiente',
+                  tooltip: tr.calendarioMesSiguiente,
                   onPressed: () => _changeMonth(1),
                 ),
               ],
@@ -133,7 +134,7 @@ class _CalendarViewState extends State<CalendarView> {
             if (widget.canManage)
               ElevatedButton.icon(
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Agregar evento'),
+                label: Text(tr.calendarioAgregarEvento),
                 onPressed: () => widget.onAddEvent?.call(_selectedDay),
               ),
           ],
@@ -226,7 +227,7 @@ class _CalendarViewState extends State<CalendarView> {
       tooltip: hasEvents
           ? dayEvents
               .map((e) =>
-                  '${DateFormat('h:mm a').format(e.startsAt)} · ${e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title}')
+                  '${hora(e.startsAt)} · ${e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title}')
               .join('\n')
           : null,
       child: Container(
@@ -305,7 +306,7 @@ class _CalendarViewState extends State<CalendarView> {
 
   Widget _buildDayEvents() {
     final dayEvents = _eventsOn(_selectedDay);
-    final label = DateFormat("EEEE d 'de' MMMM", 'es').format(_selectedDay);
+    final label = diaSemanaLargo(_selectedDay);
     final capitalized = label.isEmpty
         ? label
         : label[0].toUpperCase() + label.substring(1);
@@ -317,7 +318,7 @@ class _CalendarViewState extends State<CalendarView> {
                 const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
         const SizedBox(height: 10),
         if (dayEvents.isEmpty)
-          const Text('No hay eventos este día.',
+          Text(tr.calendarioSinEventosDia,
               style: TextStyle(color: AppColors.textMuted, fontSize: 13))
         else
           for (final e in dayEvents)
@@ -402,7 +403,7 @@ class _EventCard extends StatelessWidget {
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 14)),
               ),
-              Text(DateFormat('h:mm a').format(event.startsAt),
+              Text(hora(event.startsAt),
                   style: const TextStyle(
                       color: AppColors.textMuted, fontSize: 12)),
             ],
@@ -429,7 +430,7 @@ class _EventCard extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 icon: const Icon(Icons.videocam_outlined, size: 16),
-                label: const Text('Unirse a la reunión'),
+                label: Text(tr.calendarioUnirse),
                 onPressed: event.meetLink.trim().isEmpty
                     ? null
                     : () => abrirReunion(context, event.meetLink),
@@ -438,20 +439,20 @@ class _EventCard extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  tooltip: 'Editar',
+                  tooltip: tr.comunEditar,
                   onPressed: () => onEdit?.call(event),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline,
                       size: 18, color: AppColors.statusCritical),
-                  tooltip: 'Eliminar',
+                  tooltip: tr.comunEliminar,
                   onPressed: onDelete == null
                       ? null
                       : () async {
                           final ok = await confirmDialog(
                               context,
-                              'Eliminar evento',
-                              '¿Eliminar "${event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title}"? Esta acción no se puede deshacer.');
+                              tr.calendarioEliminarEvento,
+                              tr.calendarioEliminarConfirmar(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title));
                           if (ok) await onDelete!(event);
                         },
                 ),
@@ -508,7 +509,7 @@ Future<void> showCalendarEventDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
-        title: Text(isEditing ? 'Editar evento' : 'Agregar evento',
+        title: Text(isEditing ? tr.calendarioEditarEvento : tr.calendarioAgregarEvento,
             style: const TextStyle(fontSize: 18)),
         content: SizedBox(
           width: 460,
@@ -520,14 +521,14 @@ Future<void> showCalendarEventDialog(
                 if (error != null) ErrorBanner(error!),
                 TextField(
                   controller: title,
-                  decoration: const InputDecoration(labelText: 'Título'),
+                  decoration: InputDecoration(labelText: tr.comunTitulo),
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<CalendarEventType>(
                   isExpanded: true,
                   initialValue: type,
-                  decoration: const InputDecoration(labelText: 'Tipo de evento'),
+                  decoration: InputDecoration(labelText: tr.calendarioTipoEvento),
                   items: [
                     for (final t in allowedTypes)
                       DropdownMenuItem(
@@ -538,17 +539,15 @@ Future<void> showCalendarEventDialog(
                 const SizedBox(height: 14),
                 if (type == CalendarEventType.openLearningSync)
                   courses.isEmpty
-                      ? const Text(
-                          'Todavía no tiene cursos de Open Learning '
-                          'propios. Cree uno en "Mis Cursos" antes de '
-                          'agendar una sesión.',
+                      ? Text(
+                          tr.calendarioSinCursosOL,
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))
                       : DropdownButtonFormField<String>(
                         isExpanded: true,
                           initialValue: courseId.isEmpty ? null : courseId,
                           decoration:
-                              const InputDecoration(labelText: 'Curso'),
+                              InputDecoration(labelText: tr.busquedaTipoCurso),
                           items: [
                             for (final c in courses)
                               DropdownMenuItem(
@@ -558,16 +557,15 @@ Future<void> showCalendarEventDialog(
                         )
                 else if (type == CalendarEventType.mentoria)
                   labs.isEmpty
-                      ? const Text(
-                          'Todavía no tiene laboratorios asignados, así '
-                          'que no hay a quién agendarle una mentoría.',
+                      ? Text(
+                          tr.calendarioSinLaboratorios,
                           style: TextStyle(
                               color: AppColors.statusWarning, fontSize: 12.5))
                       : DropdownButtonFormField<String>(
                         isExpanded: true,
                           initialValue: labId.isEmpty ? null : labId,
-                          decoration: const InputDecoration(
-                              labelText: 'Laboratorio'),
+                          decoration: InputDecoration(
+                              labelText: tr.comunLaboratorio),
                           items: [
                             for (final l in labs)
                               DropdownMenuItem(
@@ -576,10 +574,8 @@ Future<void> showCalendarEventDialog(
                           onChanged: (v) => setState(() => labId = v ?? ''),
                         )
                 else
-                  const Text(
-                      'Evento global: lo verán todos los estudiantes y '
-                      'alumni eduXaction de la plataforma, sin importar su '
-                      'laboratorio.',
+                  Text(
+                      tr.calendarioEventoGlobal,
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
                 const SizedBox(height: 14),
@@ -590,7 +586,7 @@ Future<void> showCalendarEventDialog(
                         icon: const Icon(Icons.calendar_today_outlined,
                             size: 16),
                         label: Text(
-                            DateFormat('d MMM yyyy', 'es').format(start)),
+                            fechaCorta(start)),
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: ctx,
@@ -611,7 +607,7 @@ Future<void> showCalendarEventDialog(
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.access_time, size: 16),
-                        label: Text(DateFormat('h:mm a').format(start)),
+                        label: Text(hora(start)),
                         onPressed: () async {
                           final picked = await showTimePicker(
                             context: ctx,
@@ -631,30 +627,30 @@ Future<void> showCalendarEventDialog(
                   controller: meetLink,
                   keyboardType: TextInputType.url,
                   autocorrect: false,
-                  decoration: const InputDecoration(
-                      labelText: 'Link de la reunión'),
+                  decoration: InputDecoration(
+                      labelText: tr.calendarioLinkReunion),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: guests,
-                  decoration: const InputDecoration(
-                      labelText: 'Invitados (opcional)',
-                      hintText: 'Ej: María Pérez (Bancolombia)'),
+                  decoration: InputDecoration(
+                      labelText: tr.calendarioInvitados,
+                      hintText: tr.calendarioInvitadosPista),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: description,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                      labelText: 'Descripción (opcional)'),
+                  decoration: InputDecoration(
+                      labelText: tr.comunDescripcionOpcional),
                 ),
                 if (!isEditing) ...[
                   const SizedBox(height: 14),
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                            'Repetir cada 15 días',
+                            tr.calendarioRepetir,
                             style: TextStyle(fontSize: 13)),
                       ),
                       IconButton(
@@ -664,7 +660,7 @@ Future<void> showCalendarEventDialog(
                             ? null
                             : () => setState(() => repeatCount--),
                       ),
-                      Text('$repeatCount vez${repeatCount == 1 ? '' : 'es'}',
+                      Text(tr.calendarioVeces(repeatCount),
                           style: const TextStyle(fontSize: 13)),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline, size: 20),
@@ -682,7 +678,7 @@ Future<void> showCalendarEventDialog(
         actions: [
           TextButton(
               onPressed: guardando ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
+              child: Text(tr.comunCancelar)),
           ElevatedButton(
             onPressed: () {
               if (guardando) return true;
@@ -756,10 +752,10 @@ Future<void> showCalendarEventDialog(
                     if (ctx.mounted) Navigator.pop(ctx);
                     if (context.mounted) {
                       showSuccessCheck(context,
-                          isEditing ? 'Evento actualizado ✓' : 'Evento agregado ✓');
+                          isEditing ? tr.calendarioEventoActualizado : tr.calendarioEventoAgregado);
                     }
                   },
-            child: Text(guardando ? 'Guardando…' : 'Guardar'),
+            child: Text(guardando ? tr.comunGuardando : tr.comunGuardar),
           ),
         ],
       ),

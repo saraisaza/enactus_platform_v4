@@ -239,5 +239,494 @@
   "youtubeNoEsVideo": "Ese enlace es de YouTube, pero no de un video (parece un canal o una lista). Abra el video y copie su enlace.",
   "youtubePegueEnlace": "Pegue el enlace de un video de YouTube, por ejemplo https://www.youtube.com/watch?v=… o https://youtu.be/…",
   "errorSinConexion": "No pudimos conectar con el servidor. Revise su conexión.",
-  "errorServidorMomento": "El servidor tuvo un problema. Intente de nuevo en un momento."
+  "errorServidorMomento": "El servidor tuvo un problema. Intente de nuevo en un momento.",
+  "pieLema": "Formamos líderes que transforman comunidades 💛",
+  "pieDerechos": "© {anio} eduXaction Colombia — Todos los derechos reservados",
+  "@pieDerechos": {
+    "placeholders": {
+      "anio": {}
+    }
+  },
+  "pieHechoEn": "Hecho con 💛 en Bogotá",
+  "comunMenu": "Menú",
+  "comunBuscar": "Buscar",
+  "busquedaTipoCurso": "Curso",
+  "busquedaTipoProyecto": "Proyecto",
+  "busquedaEtapa": "Etapa: {etapa}",
+  "@busquedaEtapa": {
+    "placeholders": {
+      "etapa": {}
+    }
+  },
+  "comunCerrar": "Cerrar",
+  "busquedaPista": "Buscar estudiantes, cursos, proyectos…",
+  "busquedaEscriba": "Escriba para buscar",
+  "comunSinResultados": "Sin resultados",
+  "cuentaMiCuenta": "Mi cuenta",
+  "cuentaMiPerfil": "Mi perfil",
+  "cuentaAcerca": "Acerca de eduXaction",
+  "cuentaEliminar": "Eliminar mi cuenta",
+  "notificacionesTitulo": "Notificaciones",
+  "notificacionesVacio": "Sin notificaciones",
+  "contactoEnviado": "¡Mensaje enviado! Nos pondremos en contacto pronto.",
+  "contactoError": "No pudimos enviar su mensaje. Intente de nuevo en un momento.",
+  "contactoTitulo": "Contáctenos",
+  "contactoTexto": "Cuéntenos quién es y qué le gustaría hacer con nosotros.",
+  "comunNombre": "Nombre",
+  "comunRequerido": "Requerido",
+  "comunCorreoInvalido": "Correo inválido",
+  "contactoMensaje": "Mensaje",
+  "contactoMensajePista": "¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)",
+  "comunCancelar": "Cancelar",
+  "comunEnviando": "Enviando…",
+  "contactoEnviar": "Enviar mensaje",
+  "cuentaPrivacidadError": "No pudimos abrir la política de privacidad. Revise su conexión e intente de nuevo.",
+  "cuentaEscribaContrasena": "Escriba su contraseña para confirmar.",
+  "cuentaSolicitudRecibida": "Solicitud recibida",
+  "cuentaDesactivada": "Su cuenta quedó desactivada y se cerró la sesión en todos sus dispositivos. En un plazo máximo de {dias} días borraremos sus datos personales.",
+  "@cuentaDesactivada": {
+    "placeholders": {
+      "dias": {}
+    }
+  },
+  "comunEntendido": "Entendido",
+  "cuentaEliminando": "Eliminando…",
+  "cuentaQuePasa": "Esto es lo que pasa si elimina su cuenta:",
+  "cuentaPunto1": "Deja de funcionar de inmediato y se cierra la sesión en todos sus dispositivos.",
+  "cuentaPunto2": "En un plazo máximo de 30 días borramos sus datos personales: nombre, correo, teléfono, cédula, ciudad, foto y perfil.",
+  "cuentaPunto3": "Lo que publicó en el foro y sus entregas se conservan a nombre de «Cuenta eliminada», para no borrar el trabajo de su equipo.",
+  "cuentaPunto4": "Si tiene certificados, descárguelos antes: al borrar sus datos dejan de mostrar su nombre.",
+  "cuentaParaConfirmar": "Para confirmar que es usted.",
+  "cuentaAcercaTexto": "Formamos líderes que transforman comunidades 💛\n{pie}",
+  "@cuentaAcercaTexto": {
+    "placeholders": {
+      "pie": {}
+    }
+  },
+  "cuentaNormas": "Normas de la comunidad",
+  "cuentaEscribanos": "Escríbanos",
+  "cuentaLicencias": "Licencias de software",
+  "cuentaDerechos": "© {anio} eduXaction Colombia — Todos los derechos reservados\nHecho con 💛 en Bogotá",
+  "@cuentaDerechos": {
+    "placeholders": {
+      "anio": {}
+    }
+  },
+  "portalMas": "Más",
+  "portalMasOpciones": "Más opciones",
+  "etapaDeTotal": "Etapa {actual} de {total}",
+  "@etapaDeTotal": {
+    "placeholders": {
+      "actual": {},
+      "total": {}
+    }
+  },
+  "etapaFinal": "Etapa final",
+  "etapaSigue": "Sigue: {etapa}",
+  "@etapaSigue": {
+    "placeholders": {
+      "etapa": {}
+    }
+  },
+  "universidadCargando": "Cargando universidades…",
+  "universidadFueraCatalogo": "(universidad fuera del catálogo)",
+  "universidadOtra": "Otra (¿cuál?)",
+  "universidadCual": "¿Cuál institución?",
+  "universidadCualAyuda": "El nombre oficial completo. Queda en la lista para las próximas inscripciones.",
+  "mapaNoCarga": "No se pudo cargar el mapa",
+  "mapaCifras": "Las cifras y el listado siguen disponibles a la derecha.",
+  "mapaEstudiantesPorCiudad": "ESTUDIANTES POR CIUDAD",
+  "perfilRol": "Rol: {rol}",
+  "@perfilRol": {
+    "placeholders": {
+      "rol": {}
+    }
+  },
+  "perfilCorreo": "Correo: {correo}",
+  "@perfilCorreo": {
+    "placeholders": {
+      "correo": {}
+    }
+  },
+  "perfilTelefono": "Teléfono: {telefono}",
+  "@perfilTelefono": {
+    "placeholders": {
+      "telefono": {}
+    }
+  },
+  "perfilUniversidad": "Universidad: {universidad}",
+  "@perfilUniversidad": {
+    "placeholders": {
+      "universidad": {}
+    }
+  },
+  "universidadEtiqueta": "Universidad",
+  "universidadNinguna": "Sin universidad",
+  "comunConfirmar": "Confirmar",
+  "comunNoSeDeshace": "Esta acción no se puede deshacer.",
+  "comunEscribaParaConfirmar": "Escriba {palabra} para confirmar",
+  "@comunEscribaParaConfirmar": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "comunEliminarDefinitivamente": "Eliminar definitivamente",
+  "formularioDescartarTitulo": "Descartar cambios",
+  "formularioDescartarTexto": "Lo que escribió en este formulario no se ha guardado. ¿Desea salir de todas formas?",
+  "escritorioTitulo": "Mejor desde un computador",
+  "escritorioTexto": "Desde el teléfono, {herramienta} es difícil de usar y es fácil equivocarse: tiene listas para ordenar, tablas y formularios largos. Le recomendamos abrirlo en eduxaction.com desde un computador.",
+  "@escritorioTexto": {
+    "placeholders": {
+      "herramienta": {}
+    }
+  },
+  "escritorioContinuar": "Continuar de todas formas",
+  "eventoSesionSincronica": "Sesión sincrónica",
+  "eventoRutaImpacto": "Evento Ruta de Impacto",
+  "calendarioMesAnterior": "Mes anterior",
+  "calendarioMesSiguiente": "Mes siguiente",
+  "calendarioAgregarEvento": "Agregar evento",
+  "calendarioSinEventosDia": "No hay eventos este día.",
+  "calendarioUnirse": "Unirse a la reunión",
+  "comunEditar": "Editar",
+  "comunEliminar": "Eliminar",
+  "calendarioEliminarEvento": "Eliminar evento",
+  "calendarioEliminarConfirmar": "¿Eliminar \"{titulo}\"? Esta acción no se puede deshacer.",
+  "@calendarioEliminarConfirmar": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "calendarioEditarEvento": "Editar evento",
+  "comunTitulo": "Título",
+  "calendarioTipoEvento": "Tipo de evento",
+  "calendarioSinCursosOL": "Todavía no tiene cursos de Open Learning propios. Cree uno en \"Mis Cursos\" antes de agendar una sesión.",
+  "calendarioSinLaboratorios": "Todavía no tiene laboratorios asignados, así que no hay a quién agendarle una mentoría.",
+  "comunLaboratorio": "Laboratorio",
+  "calendarioEventoGlobal": "Evento global: lo verán todos los estudiantes y alumni eduXaction de la plataforma, sin importar su laboratorio.",
+  "calendarioLinkReunion": "Link de la reunión",
+  "calendarioInvitados": "Invitados (opcional)",
+  "calendarioInvitadosPista": "Ej: María Pérez (Bancolombia)",
+  "comunDescripcionOpcional": "Descripción (opcional)",
+  "calendarioRepetir": "Repetir cada 15 días",
+  "calendarioEventoActualizado": "Evento actualizado ✓",
+  "calendarioEventoAgregado": "Evento agregado ✓",
+  "comunGuardando": "Guardando…",
+  "comunGuardar": "Guardar",
+  "archivoTipoNoPermitido": "Tipo de archivo no permitido. Se aceptan PDF, imágenes, documentos de Word y ZIP.",
+  "archivoPesado": "El archivo pesa {megas} MB y el máximo son 25 MB.",
+  "@archivoPesado": {
+    "placeholders": {
+      "megas": {}
+    }
+  },
+  "archivoAdjuntar": "Adjuntar archivo",
+  "archivoArchivo": "Archivo",
+  "archivoPreparando": "Preparando la subida…",
+  "archivoSubiendo": "Subiendo… {porcentaje}%",
+  "@archivoSubiendo": {
+    "placeholders": {
+      "porcentaje": {}
+    }
+  },
+  "comunQuitar": "Quitar",
+  "archivoNoAbre": "No se pudo abrir el archivo.",
+  "archivoNoVisible": "Este tipo de archivo no se puede ver dentro de la página. Descárguelo para abrirlo.",
+  "comunDescargar": "Descargar",
+  "archivoNoImagen": "No se pudo mostrar la imagen.",
+  "normas1Titulo": "Respeto ante todo",
+  "normas1Texto": "Trate a las demás personas como quiere que lo traten. No se permiten insultos, burlas, acoso ni amenazas.",
+  "normas2Titulo": "Cero discriminación",
+  "normas2Texto": "No se acepta contenido que discrimine por origen, nacionalidad, género, orientación sexual, religión, discapacidad o condición social.",
+  "normas3Titulo": "Contenido apropiado",
+  "normas3Texto": "No publique contenido sexual, violento, ilegal ni nada que ponga en riesgo a otra persona.",
+  "normas4Titulo": "Sin publicidad",
+  "normas4Texto": "El foro es para aprender y construir proyectos: no publique ventas, rifas, cadenas ni publicidad.",
+  "normas5Titulo": "Cuide los datos",
+  "normas5Texto": "No comparta datos personales suyos ni de otras personas: teléfonos, direcciones, documentos o fotos de terceros.",
+  "normas6Titulo": "Reporte lo que no está bien",
+  "normas6Texto": "Si algo incumple estas normas, use «Reportar» en el menú ⋮ de la publicación. Si alguien le incomoda, puede bloquearlo y dejará de ver lo que publica.",
+  "normasConsecuencias": "No hay tolerancia con el contenido ofensivo ni con el abuso. El equipo de Enactus Colombia revisa cada reporte y puede quitar el contenido y suspender la cuenta de quien incumpla estas normas.",
+  "normasAntesDePublicar": "Antes de publicar por primera vez, lea y acepte las normas del foro.",
+  "normasAcepto": "Acepto",
+  "visorAbriendo": "Abriendo el documento…",
+  "visorNoAbre": "No pudimos abrir este documento. Revise su conexión e intente de nuevo.",
+  "visorAppSistema": "Este archivo se abre con la aplicación del sistema.",
+  "visorNoCarga": "No se pudo cargar el visor de PDF. Recargue la página.",
+  "leccionTipoRecurso": "Recurso",
+  "leccionTipoEnlace": "Enlace",
+  "leccionTipoQuiz": "Quiz",
+  "leccionTipoActividad": "Actividad",
+  "leccionTipoEncuesta": "Encuesta",
+  "visorDocumento": "Documento",
+  "calendarioVeces": "{cantidad, plural, =1{1 vez} other{{cantidad} veces}}",
+  "@calendarioVeces": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "glosarioOcultarTexto": "Ocultar texto y glosario",
+  "glosarioVerTexto": "Ver texto y glosario de la lección",
+  "glosarioTextoDe": "Texto y glosario de «{titulo}»",
+  "@glosarioTextoDe": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "glosarioDeLeccion": "Glosario de esta lección",
+  "glosarioLeccionVacio": "Esta lección no tiene términos de glosario.",
+  "glosarioDelModulo": "Glosario del módulo",
+  "glosarioPorRepasar": "{cantidad} por repasar",
+  "@glosarioPorRepasar": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "glosarioTarjetas": "Tarjetas",
+  "glosarioModoRepaso": "Modo repaso",
+  "glosarioBuscar": "Buscar en el glosario",
+  "glosarioBorrarBusqueda": "Borrar la búsqueda",
+  "glosarioNingunoCoincide": "Ningún término coincide con «{busqueda}».",
+  "@glosarioNingunoCoincide": {
+    "placeholders": {
+      "busqueda": {}
+    }
+  },
+  "glosarioNingunoMarcado": "No tiene términos marcados para repasar.",
+  "glosarioNingunoLetra": "Ningún término empieza con esa letra.",
+  "glosarioQuitarFiltros": "Quitar los filtros",
+  "glosarioTodas": "Todas",
+  "glosarioTodasLasLetras": "Todas las letras",
+  "glosarioAyudaTarjetas": "Toque una tarjeta para voltearla. El avance del repaso se guarda en la cuenta de cada estudiante.",
+  "glosarioAyudaRepaso": "Toque una tarjeta para ver la definición y marque si ya la sabe. Ya lo sabe: {sabe} de {total} · Por repasar: {repasar}",
+  "@glosarioAyudaRepaso": {
+    "placeholders": {
+      "sabe": {},
+      "total": {},
+      "repasar": {}
+    }
+  },
+  "glosarioYaLoSabeDe": "Ya lo sabe: {sabe} de {total}",
+  "@glosarioYaLoSabeDe": {
+    "placeholders": {
+      "sabe": {},
+      "total": {}
+    }
+  },
+  "glosarioSoloRepasar": "Solo los de repasar",
+  "glosarioRelacionados": "Relacionados",
+  "glosarioIrA": "Ir a «{palabra}»",
+  "@glosarioIrA": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioEjemplo": "Ejemplo",
+  "glosarioImagenDe": "Imagen de «{palabra}»",
+  "@glosarioImagenDe": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioYaLoSabe": "Ya lo sabe",
+  "glosarioPorRepasarEstado": "Por repasar",
+  "glosarioDefinicionDe": "Definición de «{palabra}»: {definicion}",
+  "@glosarioDefinicionDe": {
+    "placeholders": {
+      "palabra": {},
+      "definicion": {}
+    }
+  },
+  "glosarioToqueParaVer": "«{palabra}». Toque para ver la definición.",
+  "@glosarioToqueParaVer": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioYaLoSe": "Ya lo sé",
+  "glosarioRepasar": "Repasar",
+  "glosarioToqueDefinicion": "Toque para ver la definición",
+  "videoCargandoTitulo": "Cargando el video «{titulo}»",
+  "@videoCargandoTitulo": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "videoReproducirTitulo": "Reproducir el video «{titulo}»",
+  "@videoReproducirTitulo": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "videoSeguirViendo": "Seguir viendo «{titulo}» desde {tiempo}",
+  "@videoSeguirViendo": {
+    "placeholders": {
+      "titulo": {},
+      "tiempo": {}
+    }
+  },
+  "videoCargando": "Cargando el video…",
+  "videoSeguirDesde": "Seguir desde {tiempo}",
+  "@videoSeguirDesde": {
+    "placeholders": {
+      "tiempo": {}
+    }
+  },
+  "videoNoDisponibleEntorno": "La reproducción no está disponible en este entorno",
+  "videoYaNoDisponible": "Este video ya no está disponible",
+  "videoAviseCreador": "Avísele a quien armó el curso.",
+  "videoNoCarga": "No se pudo cargar el video",
+  "videoPuedeSerConexion": "Puede ser la conexión. Intente de nuevo en un momento.",
+  "videoPausar": "Pausar el video",
+  "videoReproducir": "Reproducir el video",
+  "videoCargandoCorto": "Cargando el video",
+  "videoPosicion": "Posición del video",
+  "videoTiempoDe": "{actual} de {total}",
+  "@videoTiempoDe": {
+    "placeholders": {
+      "actual": {},
+      "total": {}
+    }
+  },
+  "videoPausarK": "Pausar (K)",
+  "videoReproducirK": "Reproducir (K)",
+  "videoActivarSonido": "Activar el sonido (M)",
+  "videoSilenciar": "Silenciar (M)",
+  "videoVolumen": "Volumen",
+  "videoMinutoDe": "Minuto {actual} de {total}",
+  "@videoMinutoDe": {
+    "placeholders": {
+      "actual": {},
+      "total": {}
+    }
+  },
+  "videoVelocidad": "Velocidad de reproducción",
+  "videoVelocidadNormal": "Normal (1×)",
+  "videoVelocidadActual": "Velocidad de reproducción: {velocidad}",
+  "@videoVelocidadActual": {
+    "placeholders": {
+      "velocidad": {}
+    }
+  },
+  "videoSalirPantallaCompleta": "Salir de pantalla completa (F)",
+  "videoPantallaCompleta": "Pantalla completa (F)",
+  "videoVer": "Ver el video",
+  "videoPestanaNueva": "Se abre en una pestaña nueva.",
+  "videoAbrir": "Abrir video",
+  "videoLeccionSinVideo": "Esta lección todavía no tiene video",
+  "videoCreadorNoCargo": "Quien la creó aún no le cargó ninguno.",
+  "videoEnlaceNoAbre": "No se pudo abrir el enlace del video.",
+  "videoAvanceSeGuarda": "Su avance se guarda solo: si cierra, sigue donde quedó.",
+  "videoLeccionCompletada": "Lección completada",
+  "videoVisto": "Visto {porcentaje}%",
+  "@videoVisto": {
+    "placeholders": {
+      "porcentaje": {}
+    }
+  },
+  "subidaSinTerminar": "Quedó sin terminar la subida de «{archivo}» ({tamano}). Elija el mismo archivo y, al guardar, sigue desde donde iba.",
+  "@subidaSinTerminar": {
+    "placeholders": {
+      "archivo": {},
+      "tamano": {}
+    }
+  },
+  "subidaZonaSoltar": "Zona para soltar el video",
+  "subidaSuelte": "Suelte el video para elegirlo",
+  "subidaReemplazar": "Para reemplazarlo, arrastre otro video aquí",
+  "subidaArrastre": "Arrastre el video aquí",
+  "subidaElegirVideo": "Elegir video",
+  "subidaFormato": "MP4 (H.264 con audio AAC) · hasta 500 MB",
+  "subidaRevisando": "Revisando el video…",
+  "subidaElegirOtro": "Elegir otro video",
+  "subidaVistaPreviaAsi": "Vista previa — así lo verán los estudiantes:",
+  "subidaVistaPrevia": "Vista previa",
+  "subidaVistaPreviaNavegador": "La vista previa se ve en el navegador",
+  "subidaVistaPreviaDetalle": "El video se sube igual; para mirarlo antes de guardar, abra el editor desde el sitio web.",
+  "subidaPortadaPropia": "Portada propia",
+  "subidaPortadaDelVideo": "Portada tomada del video",
+  "subidaSinPortada": "Sin portada: se verá un fondo genérico",
+  "subidaUsarOtraImagen": "Usar otra imagen",
+  "subidaVolverPortadaVideo": "Volver a la del video",
+  "subidaQuitarPortada": "Quitar la portada",
+  "subidaCambiarPortada": "Cambiar la portada",
+  "subidaPonerPortada": "Ponerle portada",
+  "subidaNuevaPortada": "Nueva portada: se guarda al guardar",
+  "subidaNoTermino": "No se pudo terminar la subida: {mensaje} Las partes que ya llegaron no se pierden: guarde de nuevo y sigue desde donde iba.",
+  "@subidaNoTermino": {
+    "placeholders": {
+      "mensaje": {}
+    }
+  },
+  "subidaDe": "{enviado} de {total}",
+  "@subidaDe": {
+    "placeholders": {
+      "enviado": {},
+      "total": {}
+    }
+  },
+  "subidaQuedan": "quedan {tiempo}",
+  "@subidaQuedan": {
+    "placeholders": {
+      "tiempo": {}
+    }
+  },
+  "subidaSiguiendo": "Siguiendo la subida… {pct} %",
+  "@subidaSiguiendo": {
+    "placeholders": {
+      "pct": {}
+    }
+  },
+  "subidaSubiendo": "Subiendo el video… {pct} %",
+  "@subidaSubiendo": {
+    "placeholders": {
+      "pct": {}
+    }
+  },
+  "subidaCancelar": "Cancelar subida",
+  "subidaAvance": "Avance de la subida",
+  "subidaNoCierre": "No cierre esta ventana hasta que termine.",
+  "youtubeNoAbre": "No se pudo abrir YouTube.",
+  "youtubeNoCarga": "No se pudo cargar el reproductor",
+  "youtubeNoCargaDetalle": "Puede ser la conexión, o que el navegador esté bloqueando a YouTube. Puede intentar de nuevo o verlo directamente allá.",
+  "youtubeSoloYoutube": "Este video solo se puede ver en YouTube",
+  "youtubeSoloYoutubeDetalle": "Quien lo subió no permite reproducirlo fuera de YouTube.",
+  "youtubeBorrado": "Lo borraron de YouTube o lo hicieron privado. Avísele a quien armó el curso.",
+  "youtubeNoValido": "El video guardado no es válido",
+  "youtubeNoValidoDetalle": "Avísele a quien armó el curso para que revise el enlace.",
+  "youtubeNoReproduce": "YouTube no pudo reproducir el video",
+  "youtubeNoReproduceDetalle": "Pruebe de nuevo, o mírelo directamente en YouTube.",
+  "youtubeVerEn": "Ver en YouTube",
+  "glosarioTerminos": "{cantidad, plural, =1{1 término} other{{cantidad} términos}}",
+  "@glosarioTerminos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "glosarioLetraTerminos": "Letra {letra}, {cantidad, plural, =1{1 término} other{{cantidad} términos}}",
+  "@glosarioLetraTerminos": {
+    "placeholders": {
+      "letra": {},
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "subidaSubidoEl": "subido el {fecha}",
+  "@subidaSubidoEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "subidaVideoActual": "Video actual: {nombre}",
+  "@subidaVideoActual": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "subidaArchivoSubido": "archivo subido"
 }

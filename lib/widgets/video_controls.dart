@@ -6,19 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
+import '../utils/formatos.dart';
 import 'lesson_video_shell.dart';
 
 /// Las velocidades que se ofrecen.
 const videoSpeeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
-/// `0,5×`, `1×`, `1,25×`: con coma, como se escribe acá.
-String speedLabel(double speed) {
-  final texto = speed == speed.roundToDouble()
-      ? speed.toStringAsFixed(0)
-      : speed.toString().replaceAll('.', ',');
-  return '$texto×';
-}
+/// `0,5×`, `1×`, `1,25×` en español; `0.5×` en inglés.
+String speedLabel(double speed) => '${numero(speed)}×';
 
 /// Los controles del video subido, con los colores y la tipografía de la app.
 ///
@@ -202,8 +199,8 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                 Semantics(
                   container: true,
                   label: v.isPlaying
-                      ? 'Pausar el video'
-                      : 'Reproducir el video',
+                      ? tr.videoPausar
+                      : tr.videoReproducir,
                   button: true,
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -217,7 +214,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                     child: IgnorePointer(
                       child: Semantics(
                         container: true,
-                        label: 'Cargando el video',
+                        label: tr.videoCargandoCorto,
                         child: const SizedBox(
                           width: 44,
                           height: 44,
@@ -310,14 +307,13 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                       height: 28,
                       child: MergeSemantics(
                         child: Semantics(
-                          label: 'Posición del video',
+                          label: tr.videoPosicion,
                           child: Slider(
                             value: posSeg,
                             max: totalSeg,
                             secondaryTrackValue: cargado.clamp(0.0, totalSeg),
                             semanticFormatterCallback: (s) =>
-                                '${formatVideoTime(Duration(seconds: s.round()))} de '
-                                '${formatVideoTime(total)}',
+                                tr.videoTiempoDe(formatVideoTime(Duration(seconds: s.round())), formatVideoTime(total)),
                             onChangeStart: (s) => setState(() => _arrastre = s),
                             onChanged: (s) => setState(() => _arrastre = s),
                             onChangeEnd: (s) async {
@@ -335,7 +331,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                   Row(
                     children: [
                       IconButton(
-                        tooltip: v.isPlaying ? 'Pausar (K)' : 'Reproducir (K)',
+                        tooltip: v.isPlaying ? tr.videoPausarK : tr.videoReproducirK,
                         icon: Icon(
                           v.isPlaying
                               ? Icons.pause_rounded
@@ -345,8 +341,8 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                       ),
                       IconButton(
                         tooltip: v.volume == 0
-                            ? 'Activar el sonido (M)'
-                            : 'Silenciar (M)',
+                            ? tr.videoActivarSonido
+                            : tr.videoSilenciar,
                         icon: Icon(
                           v.volume == 0
                               ? Icons.volume_off_rounded
@@ -374,7 +370,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                             ),
                             child: MergeSemantics(
                               child: Semantics(
-                                label: 'Volumen',
+                                label: tr.videoVolumen,
                                 child: Slider(
                                   value: v.volume.clamp(0.0, 1.0),
                                   semanticFormatterCallback: (s) =>
@@ -390,8 +386,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                         child: Semantics(
                           container: true,
                           label:
-                              'Minuto ${formatVideoTime(Duration(milliseconds: (posSeg * 1000).round()))}'
-                              ' de ${formatVideoTime(total)}',
+                              tr.videoMinutoDe(formatVideoTime(Duration(milliseconds: (posSeg * 1000).round())), formatVideoTime(total)),
                           excludeSemantics: true,
                           child: Text(
                             '${formatVideoTime(Duration(milliseconds: (posSeg * 1000).round()))}'
@@ -410,7 +405,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                       ),
                       const Spacer(),
                       PopupMenuButton<double>(
-                        tooltip: 'Velocidad de reproducción',
+                        tooltip: tr.videoVelocidad,
                         initialValue: v.playbackSpeed,
                         onSelected: (s) async {
                           await _c.setPlaybackSpeed(s);
@@ -421,7 +416,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                             PopupMenuItem(
                               value: s,
                               child: Text(
-                                s == 1 ? 'Normal (1×)' : speedLabel(s),
+                                s == 1 ? tr.videoVelocidadNormal : speedLabel(s),
                               ),
                             ),
                         ],
@@ -432,8 +427,7 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                           container: true,
                           button: true,
                           label:
-                              'Velocidad de reproducción: '
-                              '${speedLabel(v.playbackSpeed)}',
+                              tr.videoVelocidadActual(speedLabel(v.playbackSpeed)),
                           excludeSemantics: true,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -453,8 +447,8 @@ class _LessonVideoControlsState extends State<LessonVideoControls> {
                       ),
                       IconButton(
                         tooltip: widget.isFullscreen
-                            ? 'Salir de pantalla completa (F)'
-                            : 'Pantalla completa (F)',
+                            ? tr.videoSalirPantallaCompleta
+                            : tr.videoPantallaCompleta,
                         icon: Icon(
                           widget.isFullscreen
                               ? Icons.fullscreen_exit_rounded

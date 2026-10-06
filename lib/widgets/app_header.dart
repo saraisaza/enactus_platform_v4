@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart';
 import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
+import '../utils/formatos.dart';
 import '../utils/responsive.dart';
 import 'animated_logo.dart';
 import 'common.dart';
@@ -74,7 +75,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 IconButton(
                   icon: const Icon(Icons.menu),
                   color: AppColors.textPrimary,
-                  tooltip: 'Menú',
+                  tooltip: tr.comunMenu,
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               // El logotipo va en `Flexible` con `scaleDown`, y su alto baja
@@ -88,7 +89,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     // a 48 alrededor, y el lector de pantalla dice qué hace.
                     ? Semantics(
                         button: true,
-                        label: 'Ir al inicio',
+                        label: tr.comunIrAlInicio,
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => Navigator.of(context)
@@ -160,7 +161,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   IconButton(
                     icon: const Icon(Icons.search),
                     color: AppColors.textSecondary,
-                    tooltip: 'Buscar',
+                    tooltip: tr.comunBuscar,
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const _CompactSearchScreen(),
@@ -216,7 +217,7 @@ List<_SearchHit> _searchHits(DataProvider data, String query) {
     if (c.name.toLowerCase().contains(q)) {
       hits.add(
         _SearchHit(
-          'Curso',
+          tr.busquedaTipoCurso,
           c.name,
           c.description.isEmpty ? c.levelLabel : c.description,
           Icons.video_library_outlined,
@@ -229,9 +230,9 @@ List<_SearchHit> _searchHits(DataProvider data, String query) {
     if (p.name.toLowerCase().contains(q)) {
       hits.add(
         _SearchHit(
-          'Proyecto',
+          tr.busquedaTipoProyecto,
           p.name,
-          'Etapa: ${p.stageLabel}',
+          tr.busquedaEtapa(p.stageLabel),
           Icons.lightbulb_outline,
         ),
       );
@@ -261,7 +262,7 @@ void _showSearchHitDetail(BuildContext context, _SearchHit hit) {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
+          child: Text(tr.comunCerrar),
         ),
       ],
     ),
@@ -309,7 +310,7 @@ class _GlobalSearchState extends State<_GlobalSearch> {
           focusNode: focus,
           style: const TextStyle(fontSize: 13.5),
           decoration: InputDecoration(
-            hintText: 'Buscar estudiantes, cursos, proyectos…',
+            hintText: tr.busquedaPista,
             prefixIcon: Icon(
               Icons.search,
               size: 19,
@@ -420,8 +421,8 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
           focusNode: _focus,
           autofocus: true,
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
-          decoration: const InputDecoration(
-            hintText: 'Buscar estudiantes, cursos, proyectos…',
+          decoration: InputDecoration(
+            hintText: tr.busquedaPista,
             hintStyle: TextStyle(color: AppColors.textMuted),
             border: InputBorder.none,
           ),
@@ -429,16 +430,16 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
         ),
       ),
       body: _query.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                'Escriba para buscar',
+                tr.busquedaEscriba,
                 style: TextStyle(color: AppColors.textMuted),
               ),
             )
           : hits.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                'Sin resultados',
+                tr.comunSinResultados,
                 style: TextStyle(color: AppColors.textMuted),
               ),
             )
@@ -483,7 +484,7 @@ class _AvatarMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      tooltip: 'Mi cuenta',
+      tooltip: tr.cuentaMiCuenta,
       offset: const Offset(0, 52),
       color: AppColors.surfaceAlt,
       shape: RoundedRectangleBorder(
@@ -514,20 +515,20 @@ class _AvatarMenu extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'profile',
           child: Row(
             children: [
               Icon(Icons.person_outline, size: 18),
               SizedBox(width: 10),
-              Text('Mi perfil'),
+              Text(tr.cuentaMiPerfil),
             ],
           ),
         ),
         // En la web esto ya está en el pie de página, con enlaces `<a>` de
         // verdad (ver `social_button_web.dart`); en la app no hay pie.
         if (!kIsWeb) ...[
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'about',
             child: Row(
               children: [
@@ -535,40 +536,40 @@ class _AvatarMenu extends StatelessWidget {
                 SizedBox(width: 10),
                 // Flexible: el menú mide como mucho 280 dp, y con letra
                 // grande del sistema el rótulo no cabría.
-                Flexible(child: Text('Acerca de eduXaction')),
+                Flexible(child: Text(tr.cuentaAcerca)),
               ],
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'privacy',
             child: Row(
               children: [
                 Icon(Icons.privacy_tip_outlined, size: 18),
                 SizedBox(width: 10),
-                Flexible(child: Text('Política de privacidad')),
+                Flexible(child: Text(tr.comunPoliticaPrivacidad)),
               ],
             ),
           ),
         ],
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
           child: Row(
             children: [
               Icon(Icons.person_remove_outlined, size: 18),
               SizedBox(width: 10),
-              Flexible(child: Text('Eliminar mi cuenta')),
+              Flexible(child: Text(tr.cuentaEliminar)),
             ],
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'logout',
           child: Row(
             children: [
               Icon(Icons.logout, size: 18, color: AppColors.statusCritical),
               SizedBox(width: 10),
               Text(
-                'Cerrar sesión',
+                tr.comunCerrarSesion,
                 style: TextStyle(color: AppColors.statusCritical),
               ),
             ],
@@ -621,16 +622,19 @@ class _AvatarMenu extends StatelessWidget {
           ],
         ),
         content: Text(
-          'Rol: ${Roles.label(user.role)}\n'
-          'Correo: ${user.email}\n'
-          '${user.phone.isNotEmpty ? 'Teléfono: ${user.phone}\n' : ''}'
-          '${user.university.isNotEmpty ? 'Universidad: ${user.university}\n' : ''}',
+          [
+            tr.perfilRol(Roles.label(user.role)),
+            tr.perfilCorreo(user.email),
+            if (user.phone.isNotEmpty) tr.perfilTelefono(user.phone),
+            if (user.university.isNotEmpty)
+              tr.perfilUniversidad(user.university),
+          ].map((linea) => '$linea\n').join(),
           style: const TextStyle(height: 1.7),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+            child: Text(tr.comunCerrar),
           ),
         ],
       ),
@@ -756,7 +760,7 @@ class _NotificationBell extends StatelessWidget {
           icon: const Icon(Icons.notifications_outlined),
           color: AppColors.textSecondary,
           hoverColor: AppColors.gold.withValues(alpha: 0.1),
-          tooltip: 'Notificaciones',
+          tooltip: tr.notificacionesTitulo,
           onPressed: () => _showPanel(context),
         ),
         if (unread > 0)
@@ -816,7 +820,7 @@ class _NotificationBell extends StatelessWidget {
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Notificaciones',
+      barrierLabel: tr.notificacionesTitulo,
       barrierColor: Colors.black38,
       transitionDuration: const Duration(milliseconds: 260),
       transitionBuilder: (context, anim, _, child) => SlideTransition(
@@ -861,10 +865,10 @@ class _NotificationListBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notifications.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.all(32),
         child: Text(
-          'Sin notificaciones',
+          tr.notificacionesVacio,
           textAlign: TextAlign.center,
           style: TextStyle(color: AppColors.textMuted),
         ),
@@ -890,7 +894,7 @@ class _NotificationListBody extends StatelessWidget {
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              '${n.body}\n${DateFormat('d MMM yyyy, h:mm a').format(n.createdAt)}',
+              '${n.body}\n${fechaHora(n.createdAt)}',
               style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             isThreeLine: true,

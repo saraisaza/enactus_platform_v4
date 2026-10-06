@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../l10n/textos.dart';
+import '../../utils/formatos.dart';
 import 'picked_video.dart';
 
 /// Tope de lo que se sube: el mismo que exige la API.
@@ -290,9 +291,9 @@ String _fourcc(Uint8List d, int at) =>
 String formatMegabytes(int bytes) {
   final mb = bytes / (1024 * 1024);
   if (mb >= 1024) {
-    return '${(mb / 1024).toStringAsFixed(1).replaceAll('.', ',')} GB';
+    return '${decimal(mb / 1024)} GB';
   }
   return mb >= 10
       ? '${mb.round()} MB'
-      : '${mb.toStringAsFixed(1).replaceAll('.', ',')} MB';
+      : '${decimal(mb)} MB';
 }

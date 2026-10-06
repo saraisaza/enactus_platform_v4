@@ -4,6 +4,8 @@ import 'dart:js_interop_unsafe';
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
+import '../l10n/textos.dart';
+
 /// `true`: en el navegador el PDF se dibuja dentro de la página.
 const bool visorPdfDisponible = true;
 
@@ -39,7 +41,7 @@ class _PdfViewState extends State<PdfView> {
           .toDart;
       error = resultado.toDart;
     } catch (_) {
-      error = 'No se pudo cargar el visor de PDF. Recargue la página.';
+      error = tr.visorNoCarga;
     }
     if (!mounted) return;
     setState(() {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import 'pdf_view_io.dart' if (dart.library.js_interop) 'pdf_view_web.dart';
 import 'visor_pdf.dart';
@@ -49,7 +50,7 @@ class FileViewer {
     if (fileName != null && fileName.trim().isNotEmpty) return fileName.trim();
     final fuente = s3Key ?? Uri.tryParse(url)?.path ?? '';
     final ultimo = fuente.split('/').last;
-    return ultimo.isEmpty ? 'Archivo' : ultimo;
+    return ultimo.isEmpty ? tr.archivoArchivo : ultimo;
   }
 
   /// La extensión de la key manda: el servidor la arma con la del archivo
@@ -75,7 +76,7 @@ Future<void> _abrirAfuera(BuildContext context, String url) async {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!ok && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir el archivo.')));
+        SnackBar(content: Text(tr.archivoNoAbre)));
   }
 }
 
@@ -112,8 +113,7 @@ class _FileViewerDialog extends StatelessWidget {
             const Divider(height: 1, color: AppColors.border),
             if (tipo == _Tipo.otro)
               _Aviso(
-                mensaje: 'Este tipo de archivo no se puede ver dentro de la '
-                    'página. Descárguelo para abrirlo.',
+                mensaje: tr.archivoNoVisible,
                 url: url,
               )
             else
@@ -160,13 +160,13 @@ class _Encabezado extends StatelessWidget {
           ),
           if (tipo != _Tipo.otro)
             IconButton(
-              tooltip: 'Descargar',
+              tooltip: tr.comunDescargar,
               icon: const Icon(Icons.download_outlined,
                   color: AppColors.textSecondary),
               onPressed: () => _abrirAfuera(context, url),
             ),
           IconButton(
-            tooltip: 'Cerrar',
+            tooltip: tr.comunCerrar,
             icon: const Icon(Icons.close, color: AppColors.textSecondary),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -200,7 +200,7 @@ class _Contenido extends StatelessWidget {
               ? imagen
               : const CircularProgressIndicator(),
           errorBuilder: (_, _, _) =>
-              fallo('No se pudo mostrar la imagen.'),
+              fallo(tr.archivoNoImagen),
         ),
       ),
     );
@@ -227,7 +227,7 @@ class _Aviso extends StatelessWidget {
           const SizedBox(height: 16),
           FilledButton.icon(
             icon: const Icon(Icons.download_outlined, size: 18),
-            label: const Text('Descargar'),
+            label: Text(tr.comunDescargar),
             onPressed: () => _abrirAfuera(context, url),
           ),
         ],

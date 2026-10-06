@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
+import '../l10n/textos.dart';
 import '../utils/video_watch_tracker.dart';
 import '../utils/youtube.dart';
 import 'common.dart';
@@ -233,7 +234,7 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
         (desde == null ? '' : '&t=${desde}s'));
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      showAppSnack(context, 'No se pudo abrir YouTube.', error: true);
+      showAppSnack(context, tr.youtubeNoAbre, error: true);
     }
   }
 
@@ -328,29 +329,27 @@ class _Fallo extends StatelessWidget {
   /// Qué pasó, en palabras de quien lo está mirando.
   (String, String) get _mensaje => switch (error) {
         null => (
-            'No se pudo cargar el reproductor',
-            'Puede ser la conexión, o que el navegador esté bloqueando a '
-                'YouTube. Puede intentar de nuevo o verlo directamente allá.',
+            tr.youtubeNoCarga,
+            tr.youtubeNoCargaDetalle,
           ),
         YoutubeError.notEmbeddable ||
         YoutubeError.sameAsNotEmbeddable ||
         YoutubeError.sameAsNotEmbeddable2 =>
           (
-            'Este video solo se puede ver en YouTube',
-            'Quien lo subió no permite reproducirlo fuera de YouTube.',
+            tr.youtubeSoloYoutube,
+            tr.youtubeSoloYoutubeDetalle,
           ),
         YoutubeError.videoNotFound || YoutubeError.cannotFindVideo => (
-            'Este video ya no está disponible',
-            'Lo borraron de YouTube o lo hicieron privado. Avísele a quien '
-                'armó el curso.',
+            tr.videoYaNoDisponible,
+            tr.youtubeBorrado,
           ),
         YoutubeError.invalidParam => (
-            'El video guardado no es válido',
-            'Avísele a quien armó el curso para que revise el enlace.',
+            tr.youtubeNoValido,
+            tr.youtubeNoValidoDetalle,
           ),
         _ => (
-            'YouTube no pudo reproducir el video',
-            'Pruebe de nuevo, o mírelo directamente en YouTube.',
+            tr.youtubeNoReproduce,
+            tr.youtubeNoReproduceDetalle,
           ),
       };
 
@@ -369,7 +368,7 @@ class _Fallo extends StatelessWidget {
       detail: detalle,
       onRetry: _puedeReintentar ? onRetry : null,
       secondary:
-          noExiste ? null : ('Ver en YouTube', Icons.open_in_new, onOpenYoutube),
+          noExiste ? null : (tr.youtubeVerEn, Icons.open_in_new, onOpenYoutube),
     );
   }
 }

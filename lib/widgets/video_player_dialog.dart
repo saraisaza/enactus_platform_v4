@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
 import '../services/api_errors.dart';
@@ -223,9 +224,9 @@ class VideoPlayerDialog extends StatelessWidget {
         aspectRatio: 16 / 9,
         child: _Panel(
           icon: Icons.open_in_new,
-          title: 'Ver el video',
-          message: 'Se abre en una pestaña nueva.',
-          action: ('Abrir video', () => _open(context, url)),
+          title: tr.videoVer,
+          message: tr.videoPestanaNueva,
+          action: (tr.videoAbrir, () => _open(context, url)),
         ),
       );
     }
@@ -239,12 +240,12 @@ class VideoPlayerDialog extends StatelessWidget {
       );
     }
 
-    return const AspectRatio(
+    return AspectRatio(
       aspectRatio: 16 / 9,
       child: _Panel(
         icon: Icons.videocam_off_outlined,
-        title: 'Esta lección todavía no tiene video',
-        message: 'Quien la creó aún no le cargó ninguno.',
+        title: tr.videoLeccionSinVideo,
+        message: tr.videoCreadorNoCargo,
       ),
     );
   }
@@ -255,7 +256,7 @@ class VideoPlayerDialog extends StatelessWidget {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir el enlace del video.')),
+        SnackBar(content: Text(tr.videoEnlaceNoAbre)),
       );
     }
   }
@@ -280,7 +281,7 @@ class _Header extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.close),
-          tooltip: 'Cerrar',
+          tooltip: tr.comunCerrar,
           onPressed: () => Navigator.pop(context),
         ),
       ],
@@ -431,7 +432,7 @@ class _Footer extends StatelessWidget {
             runSpacing: 6,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Row(
+              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.cloud_done_outlined,
@@ -439,8 +440,7 @@ class _Footer extends StatelessWidget {
                   SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                        'Su avance se guarda solo: si cierra, sigue donde '
-                        'quedó.',
+                        tr.videoAvanceSeGuarda,
                         style: TextStyle(
                             color: AppColors.textMuted, fontSize: 12)),
                   ),
@@ -449,14 +449,14 @@ class _Footer extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 child: complete
-                    ? const Row(
+                    ? Row(
                         key: ValueKey('completa'),
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.check_circle,
                               size: 15, color: AppColors.statusGood),
                           SizedBox(width: 6),
-                          Text('Lección completada',
+                          Text(tr.videoLeccionCompletada,
                               style: TextStyle(
                                   color: AppColors.statusGood,
                                   fontSize: 12,
@@ -464,7 +464,7 @@ class _Footer extends StatelessWidget {
                         ],
                       )
                     : watched != null && watched > 0
-                        ? Text('Visto ${(watched * 100).round()}%',
+                        ? Text(tr.videoVisto((watched * 100).round()),
                             key: const ValueKey('visto'),
                             style: const TextStyle(
                                 color: AppColors.gold,

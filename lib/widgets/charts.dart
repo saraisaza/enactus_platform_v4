@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
+import '../utils/formatos.dart';
 
 /// Gráficos del dashboard sobre fl_chart, siguiendo el sistema de
 /// visualización: paleta categórica validada en orden fijo
@@ -107,7 +108,7 @@ class SimpleBarChart extends StatelessWidget {
             getTooltipColor: (_) => AppColors.slate,
             getTooltipItem: (group, _, rod, _) => BarTooltipItem(
               '${data[group.x].label}\n'
-              '${valueFormat?.call(rod.toY) ?? rod.toY.toStringAsFixed(1)}',
+              '${valueFormat?.call(rod.toY) ?? decimal(rod.toY)}',
               const TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,

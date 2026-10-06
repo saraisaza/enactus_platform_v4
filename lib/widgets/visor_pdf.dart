@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import 'async_states.dart';
 
@@ -58,13 +59,12 @@ class _VisorPdfState extends State<VisorPdf> {
         canChangePageFormat: false,
         canChangeOrientation: false,
         canDebug: false,
-        loadingWidget: const BrandLoader(message: 'Abriendo el documento…'),
+        loadingWidget: BrandLoader(message: tr.visorAbriendo),
         onError: (context, error) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'No pudimos abrir este documento. Revise su conexión e '
-              'intente de nuevo.',
+              tr.visorNoAbre,
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.textSecondary),
             ),
@@ -86,7 +86,7 @@ class _VisorPdfState extends State<VisorPdf> {
 Future<bool> abrirRecurso(
   BuildContext context,
   String url, {
-  String titulo = 'Documento',
+  String? titulo,
 }) async {
   final uri = Uri.tryParse(url);
   if (uri == null || !uri.hasScheme) return false;
@@ -104,14 +104,15 @@ Future<bool> abrirRecurso(
 Future<void> abrirPdf(
   BuildContext context,
   String url, {
-  String titulo = 'Documento',
+  String? titulo,
 }) async {
+  final tituloVisible = titulo ?? tr.visorDocumento;
   final uri = Uri.parse(url);
   final nombre = uri.pathSegments.isEmpty ? 'documento.pdf' : uri.pathSegments.last;
   await Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
       builder: (_) => VisorPdf(
-        titulo: titulo,
+        titulo: tituloVisible,
         nombreArchivo: nombre,
         cargar: () => _descargar(uri),
       ),

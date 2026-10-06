@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import '../utils/responsive.dart';
 
@@ -783,10 +784,10 @@ Future<bool> confirmDialog(
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar')),
+            child: Text(tr.comunCancelar)),
         ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Confirmar')),
+            child: Text(tr.comunConfirmar)),
       ],
     ),
   );
@@ -831,7 +832,7 @@ Future<T?> showAdaptiveFormDialog<T>({
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close),
-            tooltip: 'Cerrar',
+            tooltip: tr.comunCerrar,
             onPressed: () => Navigator.pop(routeContext),
           ),
           title: Text(title, style: const TextStyle(fontSize: 17)),
@@ -910,8 +911,8 @@ Future<bool> confirmDoubleDialog(
             children: [
               Text(message),
               const SizedBox(height: 8),
-              const Text(
-                'Esta acción no se puede deshacer.',
+              Text(
+                tr.comunNoSeDeshace,
                 style: TextStyle(
                     color: AppColors.statusCritical,
                     fontWeight: FontWeight.w600,
@@ -921,8 +922,8 @@ Future<bool> confirmDoubleDialog(
               TextField(
                 controller: ctrl,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'Escriba $keyword para confirmar',
+                decoration: InputDecoration(
+                  labelText: tr.comunEscribaParaConfirmar(keyword),
                   hintText: keyword,
                 ),
                 onChanged: (_) => setState(() {}),
@@ -933,7 +934,7 @@ Future<bool> confirmDoubleDialog(
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(tr.comunCancelar)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.statusCritical,
@@ -942,7 +943,7 @@ Future<bool> confirmDoubleDialog(
             onPressed: ctrl.text.trim().toUpperCase() == keyword
                 ? () => Navigator.pop(ctx, true)
                 : null,
-            child: const Text('Eliminar definitivamente'),
+            child: Text(tr.comunEliminarDefinitivamente),
           ),
         ],
       ),
@@ -984,13 +985,13 @@ class AdaptiveFormShell extends StatelessWidget {
   /// `null` deshabilita "Guardar": p. ej. mientras todavía no llegaron los
   /// datos sobre los que se va a guardar.
   final VoidCallback? onSave;
-  final String saveLabel;
+  final String? saveLabel;
 
   /// Rótulo del botón de salir ("Cerrar" en un quiz ya calificado).
-  final String cancelLabel;
+  final String? cancelLabel;
 
   /// Lo que dice el botón principal mientras [saving] ("Enviando…").
-  final String savingLabel;
+  final String? savingLabel;
 
   const AdaptiveFormShell({
     super.key,
@@ -1001,16 +1002,16 @@ class AdaptiveFormShell extends StatelessWidget {
     this.maxWidth = 480,
     this.saving = false,
     this.dirty = false,
-    this.saveLabel = 'Guardar',
-    this.cancelLabel = 'Cancelar',
-    this.savingLabel = 'Guardando…',
+    this.saveLabel,
+    this.cancelLabel,
+    this.savingLabel,
   });
 
   Future<void> _salir(BuildContext context) async {
     if (saving) return;
     if (dirty &&
-        !await confirmDialog(context, 'Descartar cambios',
-            'Lo que escribió en este formulario no se ha guardado. ¿Desea salir de todas formas?')) {
+        !await confirmDialog(context, tr.formularioDescartarTitulo,
+            tr.formularioDescartarTexto)) {
       return;
     }
     onCancel();
@@ -1021,11 +1022,13 @@ class AdaptiveFormShell extends StatelessWidget {
     final acciones = [
       TextButton(
         onPressed: saving ? null : () => _salir(context),
-        child: Text(cancelLabel),
+        child: Text(cancelLabel ?? tr.comunCancelar),
       ),
       ElevatedButton(
         onPressed: saving ? null : onSave,
-        child: Text(saving ? savingLabel : saveLabel),
+        child: Text(saving
+            ? savingLabel ?? tr.comunGuardando
+            : saveLabel ?? tr.comunGuardar),
       ),
     ];
 
@@ -1041,7 +1044,7 @@ class AdaptiveFormShell extends StatelessWidget {
                 elevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Cerrar',
+                  tooltip: tr.comunCerrar,
                   onPressed: saving ? null : () => _salir(context),
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
@@ -1138,7 +1141,7 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
               const Icon(Icons.desktop_windows_outlined,
                   size: 44, color: AppColors.gold),
               const SizedBox(height: 16),
-              const Text('Mejor desde un computador',
+              Text(tr.escritorioTitulo,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 19,
@@ -1146,10 +1149,7 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
                       color: AppColors.textPrimary)),
               const SizedBox(height: 10),
               Text(
-                'Desde el teléfono, ${widget.herramienta} es difícil de usar y '
-                'es fácil equivocarse: tiene listas para ordenar, tablas y '
-                'formularios largos. Le recomendamos abrirlo en eduxaction.com '
-                'desde un computador.',
+                tr.escritorioTexto(widget.herramienta),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 14, height: 1.45),
@@ -1157,7 +1157,7 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
               const SizedBox(height: 22),
               OutlinedButton(
                 onPressed: () => setState(() => _continuar = true),
-                child: const Text('Continuar de todas formas'),
+                child: Text(tr.escritorioContinuar),
               ),
             ],
           ),

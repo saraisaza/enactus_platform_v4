@@ -62,5 +62,9 @@ String decimal(num n, [int digitos = 1]) {
   return f.format(n);
 }
 
+/// "0,75" / "0.75": un número tal cual, con los decimales que tenga (hasta
+/// tres) y el separador del idioma. "2" para 2.0.
+String numero(num n) => NumberFormat.decimalPattern(_loc).format(n);
+
 /// "1.234" / "1,234": enteros con separador de miles.
 String entero(num n) => NumberFormat.decimalPattern(_loc).format(n.round());

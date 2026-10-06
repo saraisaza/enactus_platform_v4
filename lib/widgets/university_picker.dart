@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
 
@@ -30,10 +31,10 @@ class UniversityPicker extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.label = 'Universidad',
+    this.label,
     this.enabled = true,
     this.allowEmpty = true,
-    this.emptyLabel = 'Sin universidad',
+    this.emptyLabel,
     this.helperText,
     this.otraController,
   });
@@ -45,13 +46,15 @@ class UniversityPicker extends StatelessWidget {
   /// El id seleccionado, o `null`.
   final String? value;
   final ValueChanged<String?> onChanged;
-  final String label;
+  /// Por defecto, «Universidad» en el idioma activo.
+  final String? label;
   final bool enabled;
 
   /// Si se permite «sin universidad». Para un estudiante Enactus **no** se
   /// permite (INV-2); para Open Learning y los demás roles, sí: no la llevan.
   final bool allowEmpty;
-  final String emptyLabel;
+  /// Por defecto, «Sin universidad» en el idioma activo.
+  final String? emptyLabel;
   final String? helperText;
 
   /// Con valor, se ofrece «Otra (¿cuál?)» y aquí queda lo que se escriba.
@@ -68,7 +71,8 @@ class UniversityPicker extends StatelessWidget {
       // de «no hay universidades» y alguien esperaría a que aparezcan opciones
       // que ya llegaron.
       return InputDecorator(
-        decoration: InputDecoration(labelText: label, helperText: helperText),
+        decoration: InputDecoration(
+            labelText: label ?? tr.universidadEtiqueta, helperText: helperText),
         child: Row(
           children: [
             const SizedBox(
@@ -77,7 +81,7 @@ class UniversityPicker extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
             const SizedBox(width: 10),
-            Text('Cargando universidades…',
+            Text(tr.universidadCargando,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
           ],
         ),
@@ -100,19 +104,20 @@ class UniversityPicker extends StatelessWidget {
       key: ValueKey('universidad-$value'),
       initialValue: value == null || value!.isEmpty ? null : value,
       isExpanded: true,
-      decoration: InputDecoration(labelText: label, helperText: helperText),
+      decoration: InputDecoration(
+          labelText: label ?? tr.universidadEtiqueta, helperText: helperText),
       onChanged: enabled ? onChanged : null,
       items: [
         if (allowEmpty)
           DropdownMenuItem<String?>(
             value: null,
-            child: Text(emptyLabel,
+            child: Text(emptyLabel ?? tr.universidadNinguna,
                 style: const TextStyle(color: AppColors.textSecondary)),
           ),
         if (seleccionadaFalta)
           DropdownMenuItem<String?>(
             value: value,
-            child: const Text('(universidad fuera del catálogo)'),
+            child: Text(tr.universidadFueraCatalogo),
           ),
         for (final u in lista)
           DropdownMenuItem<String?>(
@@ -120,9 +125,9 @@ class UniversityPicker extends StatelessWidget {
             child: Text(u.name, overflow: TextOverflow.ellipsis),
           ),
         if (otraController != null)
-          const DropdownMenuItem<String?>(
+          DropdownMenuItem<String?>(
             value: otra,
-            child: Text('Otra (¿cuál?)'),
+            child: Text(tr.universidadOtra),
           ),
       ],
     );
@@ -138,10 +143,9 @@ class UniversityPicker extends StatelessWidget {
           controller: otraController,
           enabled: enabled,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: '¿Cuál institución?',
-            helperText: 'El nombre oficial completo. Queda en la lista para '
-                'las próximas inscripciones.',
+          decoration: InputDecoration(
+            labelText: tr.universidadCual,
+            helperText: tr.universidadCualAyuda,
             helperMaxLines: 2,
           ),
         ),

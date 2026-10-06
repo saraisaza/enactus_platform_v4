@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
 import '../services/api_errors.dart';
@@ -266,7 +267,7 @@ class _UploadedLessonPlayerState extends State<UploadedLessonPlayer> {
       image: miniatura,
       sourceLabel: duracion != null && duracion > Duration.zero
           ? formatVideoTime(duracion)
-          : 'Video',
+          : tr.tipoArchivoVideo,
       sourceIcon: duracion != null && duracion > Duration.zero
           ? Icons.schedule
           : Icons.movie_outlined,
@@ -303,19 +304,19 @@ class _UploadedLessonPlayerState extends State<UploadedLessonPlayer> {
     // mensaje del servidor dice QUÉ falta, que es lo que necesita el equipo.
     if (error is ApiException && error.code == 'cdn_not_configured') {
       return LessonVideoFailure(
-        title: 'La reproducción no está disponible en este entorno',
+        title: tr.videoNoDisponibleEntorno,
         detail: error.message,
       );
     }
     if (error is NotFoundError) {
-      return const LessonVideoFailure(
-        title: 'Este video ya no está disponible',
-        detail: 'Avísele a quien armó el curso.',
+      return LessonVideoFailure(
+        title: tr.videoYaNoDisponible,
+        detail: tr.videoAviseCreador,
       );
     }
     return LessonVideoFailure(
-      title: 'No se pudo cargar el video',
-      detail: 'Puede ser la conexión. Intente de nuevo en un momento.',
+      title: tr.videoNoCarga,
+      detail: tr.videoPuedeSerConexion,
       onRetry: _activar,
     );
   }

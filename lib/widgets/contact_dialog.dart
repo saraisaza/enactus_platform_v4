@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/textos.dart';
 import '../services/contact_service.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
@@ -47,10 +48,10 @@ class _ContactDialogState extends State<_ContactDialog> {
     setState(() => _sending = false);
     if (ok) {
       Navigator.pop(context);
-      showSuccessCheck(context, '¡Mensaje enviado! Nos pondremos en contacto pronto.');
+      showSuccessCheck(context, tr.contactoEnviado);
     } else {
       showAppSnack(context,
-          'No pudimos enviar su mensaje. Intente de nuevo en un momento.',
+          tr.contactoError,
           error: true);
     }
   }
@@ -58,7 +59,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Contáctenos', style: TextStyle(fontSize: 18)),
+      title: Text(tr.contactoTitulo, style: TextStyle(fontSize: 18)),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -67,16 +68,16 @@ class _ContactDialogState extends State<_ContactDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Cuéntenos quién es y qué le gustaría hacer con nosotros.',
+              Text(
+                tr.contactoTexto,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _name,
-                decoration: const InputDecoration(labelText: 'Nombre'),
+                decoration: InputDecoration(labelText: tr.comunNombre),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                    (v == null || v.trim().isEmpty) ? tr.comunRequerido : null,
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -85,12 +86,12 @@ class _ContactDialogState extends State<_ContactDialog> {
                 autocorrect: false,
                 autofillHints: const [AutofillHints.email],
                 decoration:
-                    const InputDecoration(labelText: 'Correo electrónico'),
+                    InputDecoration(labelText: tr.ingresoCorreo),
                 validator: (v) {
                   final value = v?.trim() ?? '';
-                  if (value.isEmpty) return 'Requerido';
+                  if (value.isEmpty) return tr.comunRequerido;
                   if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)) {
-                    return 'Correo inválido';
+                    return tr.comunCorreoInvalido;
                   }
                   return null;
                 },
@@ -99,12 +100,12 @@ class _ContactDialogState extends State<_ContactDialog> {
               TextFormField(
                 controller: _message,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                    labelText: 'Mensaje',
+                decoration: InputDecoration(
+                    labelText: tr.contactoMensaje,
                     hintText:
-                        '¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)'),
+                        tr.contactoMensajePista),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                    (v == null || v.trim().isEmpty) ? tr.comunRequerido : null,
               ),
             ],
           ),
@@ -113,7 +114,7 @@ class _ContactDialogState extends State<_ContactDialog> {
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(tr.comunCancelar),
         ),
         ElevatedButton.icon(
           onPressed: _sending ? null : _submit,
@@ -125,7 +126,7 @@ class _ContactDialogState extends State<_ContactDialog> {
                       strokeWidth: 2, color: AppColors.ink),
                 )
               : const Icon(Icons.send_outlined, size: 18),
-          label: Text(_sending ? 'Enviando…' : 'Enviar mensaje'),
+          label: Text(_sending ? tr.comunEnviando : tr.contactoEnviar),
         ),
       ],
     );

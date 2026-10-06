@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../l10n/textos.dart';
+
 /// `false`: fuera del navegador no hay pdf.js, y el PDF se abre con la
 /// aplicación del sistema.
 const bool visorPdfDisponible = false;
@@ -13,5 +15,5 @@ class PdfView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      errorBuilder('Este archivo se abre con la aplicación del sistema.');
+      errorBuilder(tr.visorAppSistema);
 }

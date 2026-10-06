@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/textos.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
@@ -19,11 +20,10 @@ import 'visor_pdf.dart';
 Future<void> abrirPoliticaDePrivacidad(BuildContext context) async {
   final messenger = ScaffoldMessenger.maybeOf(context);
   final abierta = await abrirRecurso(context, LegalLinks.privacidad,
-      titulo: 'Política de privacidad');
+      titulo: tr.comunPoliticaPrivacidad);
   if (!abierta) {
-    messenger?.showSnackBar(const SnackBar(
-      content: Text('No pudimos abrir la política de privacidad. '
-          'Revise su conexión e intente de nuevo.'),
+    messenger?.showSnackBar(SnackBar(
+      content: Text(tr.cuentaPrivacidadError),
     ));
   }
 }
@@ -69,7 +69,7 @@ class _EliminarCuentaDialogState extends State<EliminarCuentaDialog> {
 
   Future<void> _eliminar() async {
     if (_password.text.isEmpty) {
-      setState(() => _error = 'Escriba su contraseña para confirmar.');
+      setState(() => _error = tr.cuentaEscribaContrasena);
       return;
     }
     setState(() {
@@ -111,18 +111,16 @@ class _EliminarCuentaDialogState extends State<EliminarCuentaDialog> {
           if (!didPop) _terminar();
         },
         child: AlertDialog(
-          title: const Text('Solicitud recibida',
+          title: Text(tr.cuentaSolicitudRecibida,
               style: TextStyle(fontSize: 18)),
           content: Text(
-            'Su cuenta quedó desactivada y se cerró la sesión en todos sus '
-            'dispositivos. En un plazo máximo de $dias días borraremos sus '
-            'datos personales.',
+            tr.cuentaDesactivada(dias),
             style: const TextStyle(height: 1.5),
           ),
           actions: [
             ElevatedButton(
               onPressed: _terminar,
-              child: const Text('Entendido'),
+              child: Text(tr.comunEntendido),
             ),
           ],
         ),
@@ -130,32 +128,26 @@ class _EliminarCuentaDialogState extends State<EliminarCuentaDialog> {
     }
 
     return AdaptiveFormShell(
-      title: 'Eliminar mi cuenta',
+      title: tr.cuentaEliminar,
       saving: _enviando,
       dirty: _password.text.isNotEmpty,
-      saveLabel: 'Eliminar mi cuenta',
-      savingLabel: 'Eliminando…',
+      saveLabel: tr.cuentaEliminar,
+      savingLabel: tr.cuentaEliminando,
       onCancel: () => Navigator.pop(context),
       onSave: _eliminar,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Esto es lo que pasa si elimina su cuenta:',
+          Text(
+            tr.cuentaQuePasa,
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
-          const _Punto('Deja de funcionar de inmediato y se cierra la sesión '
-              'en todos sus dispositivos.'),
-          const _Punto('En un plazo máximo de 30 días borramos sus datos '
-              'personales: nombre, correo, teléfono, cédula, ciudad, foto y '
-              'perfil.'),
-          const _Punto('Lo que publicó en el foro y sus entregas se conservan '
-              'a nombre de «Cuenta eliminada», para no borrar el trabajo de '
-              'su equipo.'),
-          const _Punto('Si tiene certificados, descárguelos antes: al borrar '
-              'sus datos dejan de mostrar su nombre.'),
+          _Punto(tr.cuentaPunto1),
+          _Punto(tr.cuentaPunto2),
+          _Punto(tr.cuentaPunto3),
+          _Punto(tr.cuentaPunto4),
           const SizedBox(height: 16),
           TextField(
             controller: _password,
@@ -166,12 +158,12 @@ class _EliminarCuentaDialogState extends State<EliminarCuentaDialog> {
             onChanged: (_) => setState(() => _error = null),
             onSubmitted: (_) => _eliminar(),
             decoration: InputDecoration(
-              labelText: 'Contraseña',
-              helperText: 'Para confirmar que es usted.',
+              labelText: tr.ingresoContrasena,
+              helperText: tr.cuentaParaConfirmar,
               errorText: _error,
               suffixIcon: IconButton(
                 tooltip:
-                    _verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña',
+                    _verPassword ? tr.ingresoOcultarContrasena : tr.ingresoMostrarContrasena,
                 icon: Icon(_verPassword
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined),
@@ -230,8 +222,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'Formamos líderes que transforman comunidades 💛\n'
-                  '${InstitutionalInfo.footerText}',
+                  tr.cuentaAcercaTexto(InstitutionalInfo.footerText),
                   style: TextStyle(height: 1.5),
                 ),
               ),
@@ -261,18 +252,18 @@ Future<void> mostrarAcercaDe(BuildContext context) {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.privacy_tip_outlined),
-                title: const Text('Política de privacidad'),
+                title: Text(tr.comunPoliticaPrivacidad),
                 onTap: () => abrirPoliticaDePrivacidad(ctx),
               ),
               ListTile(
                 leading: const Icon(Icons.forum_outlined),
-                title: const Text('Normas de la comunidad'),
+                title: Text(tr.cuentaNormas),
                 onTap: () => mostrarNormasDeLaComunidad(ctx),
               ),
               if (ContactInfo.correoSoporte.isNotEmpty)
                 ListTile(
                   leading: const Icon(Icons.mail_outline),
-                  title: const Text('Escríbanos'),
+                  title: Text(tr.cuentaEscribanos),
                   subtitle: const Text(ContactInfo.correoSoporte),
                   onTap: () => launchUrl(
                     Uri(scheme: 'mailto', path: ContactInfo.correoSoporte),
@@ -280,7 +271,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
                 ),
               ListTile(
                 leading: const Icon(Icons.description_outlined),
-                title: const Text('Licencias de software'),
+                title: Text(tr.cuentaLicencias),
                 onTap: () => showLicensePage(
                   context: ctx,
                   applicationName: 'eduXaction',
@@ -289,8 +280,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Text(
-                  '© ${DateTime.now().year} eduXaction Colombia — Todos los '
-                  'derechos reservados\nHecho con 💛 en Bogotá',
+                  tr.cuentaDerechos(DateTime.now().year),
                   style: const TextStyle(
                       fontSize: 12, color: AppColors.textMuted, height: 1.5),
                 ),
@@ -302,7 +292,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cerrar'),
+          child: Text(tr.comunCerrar),
         ),
       ],
     ),

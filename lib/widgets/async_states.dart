@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/textos.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
 
@@ -242,7 +243,7 @@ class ErrorState extends StatelessWidget {
           SizedBox(height: compact ? 12 : 20),
           OutlinedButton.icon(
             icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('Reintentar'),
+            label: Text(tr.comunReintentar),
             onPressed: () => onRetry?.call(),
           ),
         ],
@@ -294,7 +295,7 @@ class ErrorBanner extends StatelessWidget {
           if (onRetry != null)
             TextButton(
               onPressed: () => onRetry?.call(),
-              child: const Text('Reintentar'),
+              child: Text(tr.comunReintentar),
             ),
         ],
       ),

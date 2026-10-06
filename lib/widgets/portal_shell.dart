@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
@@ -247,10 +248,10 @@ class _PortalShellState extends State<PortalShell> {
               tooltip: widget.tabs[i].label,
             ),
           if (_hayMas)
-            const NavigationDestination(
+            NavigationDestination(
               icon: Icon(Icons.menu),
-              label: 'Más',
-              tooltip: 'Más opciones',
+              label: tr.portalMas,
+              tooltip: tr.portalMasOpciones,
             ),
         ],
       ),
@@ -865,7 +866,7 @@ class StageRail extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    'Etapa ${currentIndex + 1} de $total',
+                    tr.etapaDeTotal(currentIndex + 1, total),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 11.5, color: colors.text3),
                   ),
@@ -874,9 +875,8 @@ class StageRail extends StatelessWidget {
                 Flexible(
                   child: Text(
                     currentIndex >= total - 1
-                        ? 'Etapa final'
-                        : 'Sigue: '
-                              '${ProjectStage.label(projectStages[currentIndex + 1])}',
+                        ? tr.etapaFinal
+                        : tr.etapaSigue(ProjectStage.label(projectStages[currentIndex + 1])),
                     textAlign: TextAlign.end,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 11.5, color: colors.text3),

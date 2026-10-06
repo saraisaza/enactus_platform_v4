@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import '../utils/colombia_cities.dart';
 
@@ -252,7 +253,7 @@ class _ColombiaStudentsMapState extends State<ColombiaStudentsMap> {
               Icon(Icons.public_off, size: 34, color: colors.text3),
               const SizedBox(height: 14),
               Text(
-                'No se pudo cargar el mapa',
+                tr.mapaNoCarga,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -261,7 +262,7 @@ class _ColombiaStudentsMapState extends State<ColombiaStudentsMap> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Las cifras y el listado siguen disponibles a la derecha.',
+                tr.mapaCifras,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12.5, color: colors.text3),
               ),
@@ -688,7 +689,7 @@ class _MapLegend extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'ESTUDIANTES POR CIUDAD',
+                tr.mapaEstudiantesPorCiudad,
                 style: TextStyle(
                   fontSize: 10.5,
                   letterSpacing: 10.5 * 0.14,

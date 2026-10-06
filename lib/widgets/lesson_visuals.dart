@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 
 /// Ícono y etiqueta de cada tipo de lección.
@@ -19,11 +20,11 @@ IconData lessonTypeIcon(LessonType t) => switch (t) {
     };
 
 String lessonTypeLabel(LessonType t) => switch (t) {
-      LessonType.video => 'Video',
+      LessonType.video => tr.tipoArchivoVideo,
       LessonType.pdf => 'PDF',
-      LessonType.resource => 'Recurso',
-      LessonType.link => 'Enlace',
-      LessonType.quiz => 'Quiz',
-      LessonType.activity => 'Actividad',
-      LessonType.survey => 'Encuesta',
+      LessonType.resource => tr.leccionTipoRecurso,
+      LessonType.link => tr.leccionTipoEnlace,
+      LessonType.quiz => tr.leccionTipoQuiz,
+      LessonType.activity => tr.leccionTipoActividad,
+      LessonType.survey => tr.leccionTipoEncuesta,
     };

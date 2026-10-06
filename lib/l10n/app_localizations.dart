@@ -1081,6 +1081,1518 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'El servidor tuvo un problema. Intente de nuevo en un momento.'**
   String get errorServidorMomento;
+
+  /// No description provided for @pieLema.
+  ///
+  /// In es, this message translates to:
+  /// **'Formamos líderes que transforman comunidades 💛'**
+  String get pieLema;
+
+  /// No description provided for @pieDerechos.
+  ///
+  /// In es, this message translates to:
+  /// **'© {anio} eduXaction Colombia — Todos los derechos reservados'**
+  String pieDerechos(Object anio);
+
+  /// No description provided for @pieHechoEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Hecho con 💛 en Bogotá'**
+  String get pieHechoEn;
+
+  /// No description provided for @comunMenu.
+  ///
+  /// In es, this message translates to:
+  /// **'Menú'**
+  String get comunMenu;
+
+  /// No description provided for @comunBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get comunBuscar;
+
+  /// No description provided for @busquedaTipoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso'**
+  String get busquedaTipoCurso;
+
+  /// No description provided for @busquedaTipoProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyecto'**
+  String get busquedaTipoProyecto;
+
+  /// No description provided for @busquedaEtapa.
+  ///
+  /// In es, this message translates to:
+  /// **'Etapa: {etapa}'**
+  String busquedaEtapa(Object etapa);
+
+  /// No description provided for @comunCerrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get comunCerrar;
+
+  /// No description provided for @busquedaPista.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar estudiantes, cursos, proyectos…'**
+  String get busquedaPista;
+
+  /// No description provided for @busquedaEscriba.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba para buscar'**
+  String get busquedaEscriba;
+
+  /// No description provided for @comunSinResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin resultados'**
+  String get comunSinResultados;
+
+  /// No description provided for @cuentaMiCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi cuenta'**
+  String get cuentaMiCuenta;
+
+  /// No description provided for @cuentaMiPerfil.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi perfil'**
+  String get cuentaMiPerfil;
+
+  /// No description provided for @cuentaAcerca.
+  ///
+  /// In es, this message translates to:
+  /// **'Acerca de eduXaction'**
+  String get cuentaAcerca;
+
+  /// No description provided for @cuentaEliminar.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get cuentaEliminar;
+
+  /// No description provided for @notificacionesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificaciones'**
+  String get notificacionesTitulo;
+
+  /// No description provided for @notificacionesVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin notificaciones'**
+  String get notificacionesVacio;
+
+  /// No description provided for @contactoEnviado.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Mensaje enviado! Nos pondremos en contacto pronto.'**
+  String get contactoEnviado;
+
+  /// No description provided for @contactoError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos enviar su mensaje. Intente de nuevo en un momento.'**
+  String get contactoError;
+
+  /// No description provided for @contactoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Contáctenos'**
+  String get contactoTitulo;
+
+  /// No description provided for @contactoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntenos quién es y qué le gustaría hacer con nosotros.'**
+  String get contactoTexto;
+
+  /// No description provided for @comunNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get comunNombre;
+
+  /// No description provided for @comunRequerido.
+  ///
+  /// In es, this message translates to:
+  /// **'Requerido'**
+  String get comunRequerido;
+
+  /// No description provided for @comunCorreoInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo inválido'**
+  String get comunCorreoInvalido;
+
+  /// No description provided for @contactoMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensaje'**
+  String get contactoMensaje;
+
+  /// No description provided for @contactoMensajePista.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)'**
+  String get contactoMensajePista;
+
+  /// No description provided for @comunCancelar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get comunCancelar;
+
+  /// No description provided for @comunEnviando.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviando…'**
+  String get comunEnviando;
+
+  /// No description provided for @contactoEnviar.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar mensaje'**
+  String get contactoEnviar;
+
+  /// No description provided for @cuentaPrivacidadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos abrir la política de privacidad. Revise su conexión e intente de nuevo.'**
+  String get cuentaPrivacidadError;
+
+  /// No description provided for @cuentaEscribaContrasena.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba su contraseña para confirmar.'**
+  String get cuentaEscribaContrasena;
+
+  /// No description provided for @cuentaSolicitudRecibida.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud recibida'**
+  String get cuentaSolicitudRecibida;
+
+  /// No description provided for @cuentaDesactivada.
+  ///
+  /// In es, this message translates to:
+  /// **'Su cuenta quedó desactivada y se cerró la sesión en todos sus dispositivos. En un plazo máximo de {dias} días borraremos sus datos personales.'**
+  String cuentaDesactivada(Object dias);
+
+  /// No description provided for @comunEntendido.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get comunEntendido;
+
+  /// No description provided for @cuentaEliminando.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminando…'**
+  String get cuentaEliminando;
+
+  /// No description provided for @cuentaQuePasa.
+  ///
+  /// In es, this message translates to:
+  /// **'Esto es lo que pasa si elimina su cuenta:'**
+  String get cuentaQuePasa;
+
+  /// No description provided for @cuentaPunto1.
+  ///
+  /// In es, this message translates to:
+  /// **'Deja de funcionar de inmediato y se cierra la sesión en todos sus dispositivos.'**
+  String get cuentaPunto1;
+
+  /// No description provided for @cuentaPunto2.
+  ///
+  /// In es, this message translates to:
+  /// **'En un plazo máximo de 30 días borramos sus datos personales: nombre, correo, teléfono, cédula, ciudad, foto y perfil.'**
+  String get cuentaPunto2;
+
+  /// No description provided for @cuentaPunto3.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que publicó en el foro y sus entregas se conservan a nombre de «Cuenta eliminada», para no borrar el trabajo de su equipo.'**
+  String get cuentaPunto3;
+
+  /// No description provided for @cuentaPunto4.
+  ///
+  /// In es, this message translates to:
+  /// **'Si tiene certificados, descárguelos antes: al borrar sus datos dejan de mostrar su nombre.'**
+  String get cuentaPunto4;
+
+  /// No description provided for @cuentaParaConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Para confirmar que es usted.'**
+  String get cuentaParaConfirmar;
+
+  /// No description provided for @cuentaAcercaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Formamos líderes que transforman comunidades 💛\n{pie}'**
+  String cuentaAcercaTexto(Object pie);
+
+  /// No description provided for @cuentaNormas.
+  ///
+  /// In es, this message translates to:
+  /// **'Normas de la comunidad'**
+  String get cuentaNormas;
+
+  /// No description provided for @cuentaEscribanos.
+  ///
+  /// In es, this message translates to:
+  /// **'Escríbanos'**
+  String get cuentaEscribanos;
+
+  /// No description provided for @cuentaLicencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Licencias de software'**
+  String get cuentaLicencias;
+
+  /// No description provided for @cuentaDerechos.
+  ///
+  /// In es, this message translates to:
+  /// **'© {anio} eduXaction Colombia — Todos los derechos reservados\nHecho con 💛 en Bogotá'**
+  String cuentaDerechos(Object anio);
+
+  /// No description provided for @portalMas.
+  ///
+  /// In es, this message translates to:
+  /// **'Más'**
+  String get portalMas;
+
+  /// No description provided for @portalMasOpciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Más opciones'**
+  String get portalMasOpciones;
+
+  /// No description provided for @etapaDeTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Etapa {actual} de {total}'**
+  String etapaDeTotal(Object actual, Object total);
+
+  /// No description provided for @etapaFinal.
+  ///
+  /// In es, this message translates to:
+  /// **'Etapa final'**
+  String get etapaFinal;
+
+  /// No description provided for @etapaSigue.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue: {etapa}'**
+  String etapaSigue(Object etapa);
+
+  /// No description provided for @universidadCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando universidades…'**
+  String get universidadCargando;
+
+  /// No description provided for @universidadFueraCatalogo.
+  ///
+  /// In es, this message translates to:
+  /// **'(universidad fuera del catálogo)'**
+  String get universidadFueraCatalogo;
+
+  /// No description provided for @universidadOtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Otra (¿cuál?)'**
+  String get universidadOtra;
+
+  /// No description provided for @universidadCual.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cuál institución?'**
+  String get universidadCual;
+
+  /// No description provided for @universidadCualAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre oficial completo. Queda en la lista para las próximas inscripciones.'**
+  String get universidadCualAyuda;
+
+  /// No description provided for @mapaNoCarga.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar el mapa'**
+  String get mapaNoCarga;
+
+  /// No description provided for @mapaCifras.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cifras y el listado siguen disponibles a la derecha.'**
+  String get mapaCifras;
+
+  /// No description provided for @mapaEstudiantesPorCiudad.
+  ///
+  /// In es, this message translates to:
+  /// **'ESTUDIANTES POR CIUDAD'**
+  String get mapaEstudiantesPorCiudad;
+
+  /// No description provided for @perfilRol.
+  ///
+  /// In es, this message translates to:
+  /// **'Rol: {rol}'**
+  String perfilRol(Object rol);
+
+  /// No description provided for @perfilCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo: {correo}'**
+  String perfilCorreo(Object correo);
+
+  /// No description provided for @perfilTelefono.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono: {telefono}'**
+  String perfilTelefono(Object telefono);
+
+  /// No description provided for @perfilUniversidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidad: {universidad}'**
+  String perfilUniversidad(Object universidad);
+
+  /// No description provided for @universidadEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidad'**
+  String get universidadEtiqueta;
+
+  /// No description provided for @universidadNinguna.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin universidad'**
+  String get universidadNinguna;
+
+  /// No description provided for @comunConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar'**
+  String get comunConfirmar;
+
+  /// No description provided for @comunNoSeDeshace.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta acción no se puede deshacer.'**
+  String get comunNoSeDeshace;
+
+  /// No description provided for @comunEscribaParaConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba {palabra} para confirmar'**
+  String comunEscribaParaConfirmar(Object palabra);
+
+  /// No description provided for @comunEliminarDefinitivamente.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar definitivamente'**
+  String get comunEliminarDefinitivamente;
+
+  /// No description provided for @formularioDescartarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar cambios'**
+  String get formularioDescartarTitulo;
+
+  /// No description provided for @formularioDescartarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que escribió en este formulario no se ha guardado. ¿Desea salir de todas formas?'**
+  String get formularioDescartarTexto;
+
+  /// No description provided for @escritorioTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mejor desde un computador'**
+  String get escritorioTitulo;
+
+  /// No description provided for @escritorioTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde el teléfono, {herramienta} es difícil de usar y es fácil equivocarse: tiene listas para ordenar, tablas y formularios largos. Le recomendamos abrirlo en eduxaction.com desde un computador.'**
+  String escritorioTexto(Object herramienta);
+
+  /// No description provided for @escritorioContinuar.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar de todas formas'**
+  String get escritorioContinuar;
+
+  /// No description provided for @eventoSesionSincronica.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión sincrónica'**
+  String get eventoSesionSincronica;
+
+  /// No description provided for @eventoRutaImpacto.
+  ///
+  /// In es, this message translates to:
+  /// **'Evento Ruta de Impacto'**
+  String get eventoRutaImpacto;
+
+  /// No description provided for @calendarioMesAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes anterior'**
+  String get calendarioMesAnterior;
+
+  /// No description provided for @calendarioMesSiguiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes siguiente'**
+  String get calendarioMesSiguiente;
+
+  /// No description provided for @calendarioAgregarEvento.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar evento'**
+  String get calendarioAgregarEvento;
+
+  /// No description provided for @calendarioSinEventosDia.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay eventos este día.'**
+  String get calendarioSinEventosDia;
+
+  /// No description provided for @calendarioUnirse.
+  ///
+  /// In es, this message translates to:
+  /// **'Unirse a la reunión'**
+  String get calendarioUnirse;
+
+  /// No description provided for @comunEditar.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get comunEditar;
+
+  /// No description provided for @comunEliminar.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get comunEliminar;
+
+  /// No description provided for @calendarioEliminarEvento.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar evento'**
+  String get calendarioEliminarEvento;
+
+  /// No description provided for @calendarioEliminarConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar \"{titulo}\"? Esta acción no se puede deshacer.'**
+  String calendarioEliminarConfirmar(Object titulo);
+
+  /// No description provided for @calendarioEditarEvento.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar evento'**
+  String get calendarioEditarEvento;
+
+  /// No description provided for @comunTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Título'**
+  String get comunTitulo;
+
+  /// No description provided for @calendarioTipoEvento.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de evento'**
+  String get calendarioTipoEvento;
+
+  /// No description provided for @calendarioSinCursosOL.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tiene cursos de Open Learning propios. Cree uno en \"Mis Cursos\" antes de agendar una sesión.'**
+  String get calendarioSinCursosOL;
+
+  /// No description provided for @calendarioSinLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tiene laboratorios asignados, así que no hay a quién agendarle una mentoría.'**
+  String get calendarioSinLaboratorios;
+
+  /// No description provided for @comunLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio'**
+  String get comunLaboratorio;
+
+  /// No description provided for @calendarioEventoGlobal.
+  ///
+  /// In es, this message translates to:
+  /// **'Evento global: lo verán todos los estudiantes y alumni eduXaction de la plataforma, sin importar su laboratorio.'**
+  String get calendarioEventoGlobal;
+
+  /// No description provided for @calendarioLinkReunion.
+  ///
+  /// In es, this message translates to:
+  /// **'Link de la reunión'**
+  String get calendarioLinkReunion;
+
+  /// No description provided for @calendarioInvitados.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitados (opcional)'**
+  String get calendarioInvitados;
+
+  /// No description provided for @calendarioInvitadosPista.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: María Pérez (Bancolombia)'**
+  String get calendarioInvitadosPista;
+
+  /// No description provided for @comunDescripcionOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (opcional)'**
+  String get comunDescripcionOpcional;
+
+  /// No description provided for @calendarioRepetir.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetir cada 15 días'**
+  String get calendarioRepetir;
+
+  /// No description provided for @calendarioEventoActualizado.
+  ///
+  /// In es, this message translates to:
+  /// **'Evento actualizado ✓'**
+  String get calendarioEventoActualizado;
+
+  /// No description provided for @calendarioEventoAgregado.
+  ///
+  /// In es, this message translates to:
+  /// **'Evento agregado ✓'**
+  String get calendarioEventoAgregado;
+
+  /// No description provided for @comunGuardando.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando…'**
+  String get comunGuardando;
+
+  /// No description provided for @comunGuardar.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get comunGuardar;
+
+  /// No description provided for @archivoTipoNoPermitido.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de archivo no permitido. Se aceptan PDF, imágenes, documentos de Word y ZIP.'**
+  String get archivoTipoNoPermitido;
+
+  /// No description provided for @archivoPesado.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo pesa {megas} MB y el máximo son 25 MB.'**
+  String archivoPesado(Object megas);
+
+  /// No description provided for @archivoAdjuntar.
+  ///
+  /// In es, this message translates to:
+  /// **'Adjuntar archivo'**
+  String get archivoAdjuntar;
+
+  /// No description provided for @archivoArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo'**
+  String get archivoArchivo;
+
+  /// No description provided for @archivoPreparando.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando la subida…'**
+  String get archivoPreparando;
+
+  /// No description provided for @archivoSubiendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subiendo… {porcentaje}%'**
+  String archivoSubiendo(Object porcentaje);
+
+  /// No description provided for @comunQuitar.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar'**
+  String get comunQuitar;
+
+  /// No description provided for @archivoNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el archivo.'**
+  String get archivoNoAbre;
+
+  /// No description provided for @archivoNoVisible.
+  ///
+  /// In es, this message translates to:
+  /// **'Este tipo de archivo no se puede ver dentro de la página. Descárguelo para abrirlo.'**
+  String get archivoNoVisible;
+
+  /// No description provided for @comunDescargar.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar'**
+  String get comunDescargar;
+
+  /// No description provided for @archivoNoImagen.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo mostrar la imagen.'**
+  String get archivoNoImagen;
+
+  /// No description provided for @normas1Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Respeto ante todo'**
+  String get normas1Titulo;
+
+  /// No description provided for @normas1Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Trate a las demás personas como quiere que lo traten. No se permiten insultos, burlas, acoso ni amenazas.'**
+  String get normas1Texto;
+
+  /// No description provided for @normas2Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cero discriminación'**
+  String get normas2Titulo;
+
+  /// No description provided for @normas2Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'No se acepta contenido que discrimine por origen, nacionalidad, género, orientación sexual, religión, discapacidad o condición social.'**
+  String get normas2Texto;
+
+  /// No description provided for @normas3Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Contenido apropiado'**
+  String get normas3Titulo;
+
+  /// No description provided for @normas3Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'No publique contenido sexual, violento, ilegal ni nada que ponga en riesgo a otra persona.'**
+  String get normas3Texto;
+
+  /// No description provided for @normas4Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin publicidad'**
+  String get normas4Titulo;
+
+  /// No description provided for @normas4Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'El foro es para aprender y construir proyectos: no publique ventas, rifas, cadenas ni publicidad.'**
+  String get normas4Texto;
+
+  /// No description provided for @normas5Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuide los datos'**
+  String get normas5Titulo;
+
+  /// No description provided for @normas5Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'No comparta datos personales suyos ni de otras personas: teléfonos, direcciones, documentos o fotos de terceros.'**
+  String get normas5Texto;
+
+  /// No description provided for @normas6Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reporte lo que no está bien'**
+  String get normas6Titulo;
+
+  /// No description provided for @normas6Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Si algo incumple estas normas, use «Reportar» en el menú ⋮ de la publicación. Si alguien le incomoda, puede bloquearlo y dejará de ver lo que publica.'**
+  String get normas6Texto;
+
+  /// No description provided for @normasConsecuencias.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay tolerancia con el contenido ofensivo ni con el abuso. El equipo de Enactus Colombia revisa cada reporte y puede quitar el contenido y suspender la cuenta de quien incumpla estas normas.'**
+  String get normasConsecuencias;
+
+  /// No description provided for @normasAntesDePublicar.
+  ///
+  /// In es, this message translates to:
+  /// **'Antes de publicar por primera vez, lea y acepte las normas del foro.'**
+  String get normasAntesDePublicar;
+
+  /// No description provided for @normasAcepto.
+  ///
+  /// In es, this message translates to:
+  /// **'Acepto'**
+  String get normasAcepto;
+
+  /// No description provided for @visorAbriendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Abriendo el documento…'**
+  String get visorAbriendo;
+
+  /// No description provided for @visorNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos abrir este documento. Revise su conexión e intente de nuevo.'**
+  String get visorNoAbre;
+
+  /// No description provided for @visorAppSistema.
+  ///
+  /// In es, this message translates to:
+  /// **'Este archivo se abre con la aplicación del sistema.'**
+  String get visorAppSistema;
+
+  /// No description provided for @visorNoCarga.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar el visor de PDF. Recargue la página.'**
+  String get visorNoCarga;
+
+  /// No description provided for @leccionTipoRecurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurso'**
+  String get leccionTipoRecurso;
+
+  /// No description provided for @leccionTipoEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlace'**
+  String get leccionTipoEnlace;
+
+  /// No description provided for @leccionTipoQuiz.
+  ///
+  /// In es, this message translates to:
+  /// **'Quiz'**
+  String get leccionTipoQuiz;
+
+  /// No description provided for @leccionTipoActividad.
+  ///
+  /// In es, this message translates to:
+  /// **'Actividad'**
+  String get leccionTipoActividad;
+
+  /// No description provided for @leccionTipoEncuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Encuesta'**
+  String get leccionTipoEncuesta;
+
+  /// No description provided for @visorDocumento.
+  ///
+  /// In es, this message translates to:
+  /// **'Documento'**
+  String get visorDocumento;
+
+  /// No description provided for @calendarioVeces.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 vez} other{{cantidad} veces}}'**
+  String calendarioVeces(int cantidad);
+
+  /// No description provided for @glosarioOcultarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar texto y glosario'**
+  String get glosarioOcultarTexto;
+
+  /// No description provided for @glosarioVerTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver texto y glosario de la lección'**
+  String get glosarioVerTexto;
+
+  /// No description provided for @glosarioTextoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Texto y glosario de «{titulo}»'**
+  String glosarioTextoDe(Object titulo);
+
+  /// No description provided for @glosarioDeLeccion.
+  ///
+  /// In es, this message translates to:
+  /// **'Glosario de esta lección'**
+  String get glosarioDeLeccion;
+
+  /// No description provided for @glosarioLeccionVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección no tiene términos de glosario.'**
+  String get glosarioLeccionVacio;
+
+  /// No description provided for @glosarioDelModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Glosario del módulo'**
+  String get glosarioDelModulo;
+
+  /// No description provided for @glosarioPorRepasar.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} por repasar'**
+  String glosarioPorRepasar(Object cantidad);
+
+  /// No description provided for @glosarioTarjetas.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjetas'**
+  String get glosarioTarjetas;
+
+  /// No description provided for @glosarioModoRepaso.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo repaso'**
+  String get glosarioModoRepaso;
+
+  /// No description provided for @glosarioBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar en el glosario'**
+  String get glosarioBuscar;
+
+  /// No description provided for @glosarioBorrarBusqueda.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar la búsqueda'**
+  String get glosarioBorrarBusqueda;
+
+  /// No description provided for @glosarioNingunoCoincide.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún término coincide con «{busqueda}».'**
+  String glosarioNingunoCoincide(Object busqueda);
+
+  /// No description provided for @glosarioNingunoMarcado.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene términos marcados para repasar.'**
+  String get glosarioNingunoMarcado;
+
+  /// No description provided for @glosarioNingunoLetra.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún término empieza con esa letra.'**
+  String get glosarioNingunoLetra;
+
+  /// No description provided for @glosarioQuitarFiltros.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar los filtros'**
+  String get glosarioQuitarFiltros;
+
+  /// No description provided for @glosarioTodas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas'**
+  String get glosarioTodas;
+
+  /// No description provided for @glosarioTodasLasLetras.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las letras'**
+  String get glosarioTodasLasLetras;
+
+  /// No description provided for @glosarioAyudaTarjetas.
+  ///
+  /// In es, this message translates to:
+  /// **'Toque una tarjeta para voltearla. El avance del repaso se guarda en la cuenta de cada estudiante.'**
+  String get glosarioAyudaTarjetas;
+
+  /// No description provided for @glosarioAyudaRepaso.
+  ///
+  /// In es, this message translates to:
+  /// **'Toque una tarjeta para ver la definición y marque si ya la sabe. Ya lo sabe: {sabe} de {total} · Por repasar: {repasar}'**
+  String glosarioAyudaRepaso(Object sabe, Object total, Object repasar);
+
+  /// No description provided for @glosarioYaLoSabeDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya lo sabe: {sabe} de {total}'**
+  String glosarioYaLoSabeDe(Object sabe, Object total);
+
+  /// No description provided for @glosarioSoloRepasar.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo los de repasar'**
+  String get glosarioSoloRepasar;
+
+  /// No description provided for @glosarioRelacionados.
+  ///
+  /// In es, this message translates to:
+  /// **'Relacionados'**
+  String get glosarioRelacionados;
+
+  /// No description provided for @glosarioIrA.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a «{palabra}»'**
+  String glosarioIrA(Object palabra);
+
+  /// No description provided for @glosarioEjemplo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejemplo'**
+  String get glosarioEjemplo;
+
+  /// No description provided for @glosarioImagenDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagen de «{palabra}»'**
+  String glosarioImagenDe(Object palabra);
+
+  /// No description provided for @glosarioYaLoSabe.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya lo sabe'**
+  String get glosarioYaLoSabe;
+
+  /// No description provided for @glosarioPorRepasarEstado.
+  ///
+  /// In es, this message translates to:
+  /// **'Por repasar'**
+  String get glosarioPorRepasarEstado;
+
+  /// No description provided for @glosarioDefinicionDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Definición de «{palabra}»: {definicion}'**
+  String glosarioDefinicionDe(Object palabra, Object definicion);
+
+  /// No description provided for @glosarioToqueParaVer.
+  ///
+  /// In es, this message translates to:
+  /// **'«{palabra}». Toque para ver la definición.'**
+  String glosarioToqueParaVer(Object palabra);
+
+  /// No description provided for @glosarioYaLoSe.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya lo sé'**
+  String get glosarioYaLoSe;
+
+  /// No description provided for @glosarioRepasar.
+  ///
+  /// In es, this message translates to:
+  /// **'Repasar'**
+  String get glosarioRepasar;
+
+  /// No description provided for @glosarioToqueDefinicion.
+  ///
+  /// In es, this message translates to:
+  /// **'Toque para ver la definición'**
+  String get glosarioToqueDefinicion;
+
+  /// No description provided for @videoCargandoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando el video «{titulo}»'**
+  String videoCargandoTitulo(Object titulo);
+
+  /// No description provided for @videoReproducirTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reproducir el video «{titulo}»'**
+  String videoReproducirTitulo(Object titulo);
+
+  /// No description provided for @videoSeguirViendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir viendo «{titulo}» desde {tiempo}'**
+  String videoSeguirViendo(Object titulo, Object tiempo);
+
+  /// No description provided for @videoCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando el video…'**
+  String get videoCargando;
+
+  /// No description provided for @videoSeguirDesde.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir desde {tiempo}'**
+  String videoSeguirDesde(Object tiempo);
+
+  /// No description provided for @videoNoDisponibleEntorno.
+  ///
+  /// In es, this message translates to:
+  /// **'La reproducción no está disponible en este entorno'**
+  String get videoNoDisponibleEntorno;
+
+  /// No description provided for @videoYaNoDisponible.
+  ///
+  /// In es, this message translates to:
+  /// **'Este video ya no está disponible'**
+  String get videoYaNoDisponible;
+
+  /// No description provided for @videoAviseCreador.
+  ///
+  /// In es, this message translates to:
+  /// **'Avísele a quien armó el curso.'**
+  String get videoAviseCreador;
+
+  /// No description provided for @videoNoCarga.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar el video'**
+  String get videoNoCarga;
+
+  /// No description provided for @videoPuedeSerConexion.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede ser la conexión. Intente de nuevo en un momento.'**
+  String get videoPuedeSerConexion;
+
+  /// No description provided for @videoPausar.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausar el video'**
+  String get videoPausar;
+
+  /// No description provided for @videoReproducir.
+  ///
+  /// In es, this message translates to:
+  /// **'Reproducir el video'**
+  String get videoReproducir;
+
+  /// No description provided for @videoCargandoCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando el video'**
+  String get videoCargandoCorto;
+
+  /// No description provided for @videoPosicion.
+  ///
+  /// In es, this message translates to:
+  /// **'Posición del video'**
+  String get videoPosicion;
+
+  /// No description provided for @videoTiempoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'{actual} de {total}'**
+  String videoTiempoDe(Object actual, Object total);
+
+  /// No description provided for @videoPausarK.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausar (K)'**
+  String get videoPausarK;
+
+  /// No description provided for @videoReproducirK.
+  ///
+  /// In es, this message translates to:
+  /// **'Reproducir (K)'**
+  String get videoReproducirK;
+
+  /// No description provided for @videoActivarSonido.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar el sonido (M)'**
+  String get videoActivarSonido;
+
+  /// No description provided for @videoSilenciar.
+  ///
+  /// In es, this message translates to:
+  /// **'Silenciar (M)'**
+  String get videoSilenciar;
+
+  /// No description provided for @videoVolumen.
+  ///
+  /// In es, this message translates to:
+  /// **'Volumen'**
+  String get videoVolumen;
+
+  /// No description provided for @videoMinutoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Minuto {actual} de {total}'**
+  String videoMinutoDe(Object actual, Object total);
+
+  /// No description provided for @videoVelocidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Velocidad de reproducción'**
+  String get videoVelocidad;
+
+  /// No description provided for @videoVelocidadNormal.
+  ///
+  /// In es, this message translates to:
+  /// **'Normal (1×)'**
+  String get videoVelocidadNormal;
+
+  /// No description provided for @videoVelocidadActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Velocidad de reproducción: {velocidad}'**
+  String videoVelocidadActual(Object velocidad);
+
+  /// No description provided for @videoSalirPantallaCompleta.
+  ///
+  /// In es, this message translates to:
+  /// **'Salir de pantalla completa (F)'**
+  String get videoSalirPantallaCompleta;
+
+  /// No description provided for @videoPantallaCompleta.
+  ///
+  /// In es, this message translates to:
+  /// **'Pantalla completa (F)'**
+  String get videoPantallaCompleta;
+
+  /// No description provided for @videoVer.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver el video'**
+  String get videoVer;
+
+  /// No description provided for @videoPestanaNueva.
+  ///
+  /// In es, this message translates to:
+  /// **'Se abre en una pestaña nueva.'**
+  String get videoPestanaNueva;
+
+  /// No description provided for @videoAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir video'**
+  String get videoAbrir;
+
+  /// No description provided for @videoLeccionSinVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección todavía no tiene video'**
+  String get videoLeccionSinVideo;
+
+  /// No description provided for @videoCreadorNoCargo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien la creó aún no le cargó ninguno.'**
+  String get videoCreadorNoCargo;
+
+  /// No description provided for @videoEnlaceNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace del video.'**
+  String get videoEnlaceNoAbre;
+
+  /// No description provided for @videoAvanceSeGuarda.
+  ///
+  /// In es, this message translates to:
+  /// **'Su avance se guarda solo: si cierra, sigue donde quedó.'**
+  String get videoAvanceSeGuarda;
+
+  /// No description provided for @videoLeccionCompletada.
+  ///
+  /// In es, this message translates to:
+  /// **'Lección completada'**
+  String get videoLeccionCompletada;
+
+  /// No description provided for @videoVisto.
+  ///
+  /// In es, this message translates to:
+  /// **'Visto {porcentaje}%'**
+  String videoVisto(Object porcentaje);
+
+  /// No description provided for @subidaSinTerminar.
+  ///
+  /// In es, this message translates to:
+  /// **'Quedó sin terminar la subida de «{archivo}» ({tamano}). Elija el mismo archivo y, al guardar, sigue desde donde iba.'**
+  String subidaSinTerminar(Object archivo, Object tamano);
+
+  /// No description provided for @subidaZonaSoltar.
+  ///
+  /// In es, this message translates to:
+  /// **'Zona para soltar el video'**
+  String get subidaZonaSoltar;
+
+  /// No description provided for @subidaSuelte.
+  ///
+  /// In es, this message translates to:
+  /// **'Suelte el video para elegirlo'**
+  String get subidaSuelte;
+
+  /// No description provided for @subidaReemplazar.
+  ///
+  /// In es, this message translates to:
+  /// **'Para reemplazarlo, arrastre otro video aquí'**
+  String get subidaReemplazar;
+
+  /// No description provided for @subidaArrastre.
+  ///
+  /// In es, this message translates to:
+  /// **'Arrastre el video aquí'**
+  String get subidaArrastre;
+
+  /// No description provided for @subidaElegirVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir video'**
+  String get subidaElegirVideo;
+
+  /// No description provided for @subidaFormato.
+  ///
+  /// In es, this message translates to:
+  /// **'MP4 (H.264 con audio AAC) · hasta 500 MB'**
+  String get subidaFormato;
+
+  /// No description provided for @subidaRevisando.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisando el video…'**
+  String get subidaRevisando;
+
+  /// No description provided for @subidaElegirOtro.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir otro video'**
+  String get subidaElegirOtro;
+
+  /// No description provided for @subidaVistaPreviaAsi.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa — así lo verán los estudiantes:'**
+  String get subidaVistaPreviaAsi;
+
+  /// No description provided for @subidaVistaPrevia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa'**
+  String get subidaVistaPrevia;
+
+  /// No description provided for @subidaVistaPreviaNavegador.
+  ///
+  /// In es, this message translates to:
+  /// **'La vista previa se ve en el navegador'**
+  String get subidaVistaPreviaNavegador;
+
+  /// No description provided for @subidaVistaPreviaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'El video se sube igual; para mirarlo antes de guardar, abra el editor desde el sitio web.'**
+  String get subidaVistaPreviaDetalle;
+
+  /// No description provided for @subidaPortadaPropia.
+  ///
+  /// In es, this message translates to:
+  /// **'Portada propia'**
+  String get subidaPortadaPropia;
+
+  /// No description provided for @subidaPortadaDelVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Portada tomada del video'**
+  String get subidaPortadaDelVideo;
+
+  /// No description provided for @subidaSinPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin portada: se verá un fondo genérico'**
+  String get subidaSinPortada;
+
+  /// No description provided for @subidaUsarOtraImagen.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar otra imagen'**
+  String get subidaUsarOtraImagen;
+
+  /// No description provided for @subidaVolverPortadaVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la del video'**
+  String get subidaVolverPortadaVideo;
+
+  /// No description provided for @subidaQuitarPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar la portada'**
+  String get subidaQuitarPortada;
+
+  /// No description provided for @subidaCambiarPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar la portada'**
+  String get subidaCambiarPortada;
+
+  /// No description provided for @subidaPonerPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Ponerle portada'**
+  String get subidaPonerPortada;
+
+  /// No description provided for @subidaNuevaPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva portada: se guarda al guardar'**
+  String get subidaNuevaPortada;
+
+  /// No description provided for @subidaNoTermino.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo terminar la subida: {mensaje} Las partes que ya llegaron no se pierden: guarde de nuevo y sigue desde donde iba.'**
+  String subidaNoTermino(Object mensaje);
+
+  /// No description provided for @subidaDe.
+  ///
+  /// In es, this message translates to:
+  /// **'{enviado} de {total}'**
+  String subidaDe(Object enviado, Object total);
+
+  /// No description provided for @subidaQuedan.
+  ///
+  /// In es, this message translates to:
+  /// **'quedan {tiempo}'**
+  String subidaQuedan(Object tiempo);
+
+  /// No description provided for @subidaSiguiendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiendo la subida… {pct} %'**
+  String subidaSiguiendo(Object pct);
+
+  /// No description provided for @subidaSubiendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subiendo el video… {pct} %'**
+  String subidaSubiendo(Object pct);
+
+  /// No description provided for @subidaCancelar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar subida'**
+  String get subidaCancelar;
+
+  /// No description provided for @subidaAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance de la subida'**
+  String get subidaAvance;
+
+  /// No description provided for @subidaNoCierre.
+  ///
+  /// In es, this message translates to:
+  /// **'No cierre esta ventana hasta que termine.'**
+  String get subidaNoCierre;
+
+  /// No description provided for @youtubeNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir YouTube.'**
+  String get youtubeNoAbre;
+
+  /// No description provided for @youtubeNoCarga.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar el reproductor'**
+  String get youtubeNoCarga;
+
+  /// No description provided for @youtubeNoCargaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede ser la conexión, o que el navegador esté bloqueando a YouTube. Puede intentar de nuevo o verlo directamente allá.'**
+  String get youtubeNoCargaDetalle;
+
+  /// No description provided for @youtubeSoloYoutube.
+  ///
+  /// In es, this message translates to:
+  /// **'Este video solo se puede ver en YouTube'**
+  String get youtubeSoloYoutube;
+
+  /// No description provided for @youtubeSoloYoutubeDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien lo subió no permite reproducirlo fuera de YouTube.'**
+  String get youtubeSoloYoutubeDetalle;
+
+  /// No description provided for @youtubeBorrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo borraron de YouTube o lo hicieron privado. Avísele a quien armó el curso.'**
+  String get youtubeBorrado;
+
+  /// No description provided for @youtubeNoValido.
+  ///
+  /// In es, this message translates to:
+  /// **'El video guardado no es válido'**
+  String get youtubeNoValido;
+
+  /// No description provided for @youtubeNoValidoDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avísele a quien armó el curso para que revise el enlace.'**
+  String get youtubeNoValidoDetalle;
+
+  /// No description provided for @youtubeNoReproduce.
+  ///
+  /// In es, this message translates to:
+  /// **'YouTube no pudo reproducir el video'**
+  String get youtubeNoReproduce;
+
+  /// No description provided for @youtubeNoReproduceDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pruebe de nuevo, o mírelo directamente en YouTube.'**
+  String get youtubeNoReproduceDetalle;
+
+  /// No description provided for @youtubeVerEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver en YouTube'**
+  String get youtubeVerEn;
+
+  /// No description provided for @glosarioTerminos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 término} other{{cantidad} términos}}'**
+  String glosarioTerminos(int cantidad);
+
+  /// No description provided for @glosarioLetraTerminos.
+  ///
+  /// In es, this message translates to:
+  /// **'Letra {letra}, {cantidad, plural, =1{1 término} other{{cantidad} términos}}'**
+  String glosarioLetraTerminos(Object letra, int cantidad);
+
+  /// No description provided for @subidaSubidoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'subido el {fecha}'**
+  String subidaSubidoEl(Object fecha);
+
+  /// No description provided for @subidaVideoActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Video actual: {nombre}'**
+  String subidaVideoActual(Object nombre);
+
+  /// No description provided for @subidaArchivoSubido.
+  ///
+  /// In es, this message translates to:
+  /// **'archivo subido'**
+  String get subidaArchivoSubido;
 }
 
 class _AppLocalizationsDelegate

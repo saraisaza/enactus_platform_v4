@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 
 /// Normas de la comunidad del foro.
@@ -9,44 +10,17 @@ import '../utils/app_theme.dart';
 /// condiciones que dejen claro que no se tolera el contenido ofensivo ni el
 /// abuso. Son estas. El texto es un borrador que el equipo de Enactus
 /// Colombia debe revisar (ver `docs/movil/DATOS_Y_PRIVACIDAD.md`).
-const normasDeLaComunidad = <(String, String)>[
-  (
-    'Respeto ante todo',
-    'Trate a las demás personas como quiere que lo traten. No se permiten '
-        'insultos, burlas, acoso ni amenazas.',
-  ),
-  (
-    'Cero discriminación',
-    'No se acepta contenido que discrimine por origen, nacionalidad, género, '
-        'orientación sexual, religión, discapacidad o condición social.',
-  ),
-  (
-    'Contenido apropiado',
-    'No publique contenido sexual, violento, ilegal ni nada que ponga en '
-        'riesgo a otra persona.',
-  ),
-  (
-    'Sin publicidad',
-    'El foro es para aprender y construir proyectos: no publique ventas, '
-        'rifas, cadenas ni publicidad.',
-  ),
-  (
-    'Cuide los datos',
-    'No comparta datos personales suyos ni de otras personas: teléfonos, '
-        'direcciones, documentos o fotos de terceros.',
-  ),
-  (
-    'Reporte lo que no está bien',
-    'Si algo incumple estas normas, use «Reportar» en el menú ⋮ de la '
-        'publicación. Si alguien le incomoda, puede bloquearlo y dejará de '
-        'ver lo que publica.',
-  ),
-];
+/// Es una función, no una constante: el texto sigue al idioma activo.
+List<(String, String)> get normasDeLaComunidad => [
+      (tr.normas1Titulo, tr.normas1Texto),
+      (tr.normas2Titulo, tr.normas2Texto),
+      (tr.normas3Titulo, tr.normas3Texto),
+      (tr.normas4Titulo, tr.normas4Texto),
+      (tr.normas5Titulo, tr.normas5Texto),
+      (tr.normas6Titulo, tr.normas6Texto),
+    ];
 
-const _consecuencias =
-    'No hay tolerancia con el contenido ofensivo ni con el abuso. El equipo de '
-    'Enactus Colombia revisa cada reporte y puede quitar el contenido y '
-    'suspender la cuenta de quien incumpla estas normas.';
+String get _consecuencias => tr.normasConsecuencias;
 
 /// Muestra las normas. Con [pedirAceptacion], los botones son «Cancelar» y
 /// «Acepto», y devuelve `true` solo si la persona aceptó.
@@ -57,7 +31,7 @@ Future<bool> mostrarNormasDeLaComunidad(
   final acepto = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Normas de la comunidad',
+      title: Text(tr.cuentaNormas,
           style: TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
@@ -67,11 +41,10 @@ Future<bool> mostrarNormasDeLaComunidad(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (pedirAceptacion)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Text(
-                    'Antes de publicar por primera vez, lea y acepte las '
-                    'normas del foro.',
+                    tr.normasAntesDePublicar,
                     style: TextStyle(color: AppColors.textMuted),
                   ),
                 ),
@@ -89,7 +62,7 @@ Future<bool> mostrarNormasDeLaComunidad(
                   ),
                 ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 _consecuencias,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -104,17 +77,17 @@ Future<bool> mostrarNormasDeLaComunidad(
           ? [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar'),
+                child: Text(tr.comunCancelar),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Acepto'),
+                child: Text(tr.normasAcepto),
               ),
             ]
           : [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Cerrar'),
+                child: Text(tr.comunCerrar),
               ),
             ],
     ),

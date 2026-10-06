@@ -1750,8 +1750,10 @@ class SubmissionFile {
     this.sizeBytes = 0,
   });
 
+  // `id` tolerante: el `POST /submissions` lo omitía, y exigirlo tumbaba la
+  // ventana de entrega en "Enviando…" con la entrega ya guardada.
   factory SubmissionFile.fromJson(Map<String, dynamic> j) => SubmissionFile(
-        id: j['id'] as String,
+        id: (j['id'] as String?) ?? '',
         s3Key: (j['s3Key'] as String?) ?? '',
         fileName: (j['fileName'] as String?) ?? '',
         contentType: (j['contentType'] as String?) ?? '',

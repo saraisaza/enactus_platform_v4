@@ -144,10 +144,11 @@ describe('avatares', () => {
 
 describe('adjuntos de entregas', () => {
   let attachmentKey = '';
+  let created: { id: string; files: { id?: string; s3Key: string; fileName: string }[] };
 
   beforeAll(async () => {
     // Entrega real del estudiante 1, con un adjunto.
-    const created = await req(
+    const res = await req(
       '/submissions',
       est1Token,
       json({
@@ -163,9 +164,33 @@ describe('adjuntos de entregas', () => {
         ],
       }),
     );
-    expect(created.status).toBe(201);
-    const sub = await body<{ files: { s3Key: string }[] }>(created);
-    attachmentKey = sub.files[0]!.s3Key;
+    expect(res.status).toBe(201);
+    created = await body<typeof created>(res);
+    attachmentKey = created.files[0]!.s3Key;
+  });
+
+  it('la respuesta trae cada adjunto CON su id: la app lo exige', async () => {
+    // Sin `id`, la app fallaba al leer la respuesta y la ventana se quedaba
+    // en "Enviando…" con la entrega ya guardada.
+    const [file] = created.files;
+    expect(file?.id).toMatch(/^[0-9a-f-]{36}$/);
+    const [row] = await sql<{ id: string }[]>`
+      select id from submission_files where submission_id = ${created.id}
+    `;
+    expect(file?.id).toBe(row?.id);
+  });
+
+  it('el listado trae los adjuntos de cada entrega', async () => {
+    const res = await req('/submissions?pageSize=100', est1Token);
+    const page = await body<{
+      data: { id: string; files: { id: string; fileName: string }[] }[];
+    }>(res);
+    const listed = page.data.find((s) => s.id === created.id);
+    expect(listed?.files).toEqual([
+      expect.objectContaining({ id: created.files[0]!.id, fileName: 'entrega.pdf' }),
+    ]);
+    // Una entrega sin adjuntos trae una lista vacía, no `undefined`.
+    expect(page.data.every((s) => Array.isArray(s.files))).toBe(true);
   });
 
   it('quien la entregó puede abrirla', async () => {

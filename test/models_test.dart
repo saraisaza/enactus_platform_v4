@@ -268,6 +268,28 @@ void main() {
       expect(sub.gradeLabel, '86/100');
     });
 
+    test('un adjunto sin `id` no tumba la entrega', () {
+      // La respuesta real del `POST /submissions` en producción hasta
+      // octubre de 2026: los archivos volvían tal como se mandaron, sin `id`.
+      // Exigirlo dejaba la ventana en "Enviando…" con la entrega ya guardada.
+      final sub = Submission.fromJson({
+        'id': 's1',
+        'taskName': 'Entrega',
+        'submittedAt': '2026-01-10T12:00:00.000Z',
+        'files': [
+          {
+            's3Key': 'submissions/u1/logo.png',
+            'fileName': 'logo Enactus Colombia.png',
+            'contentType': 'image/png',
+            'sizeBytes': 157696,
+          },
+        ],
+      });
+      expect(sub.files, hasLength(1));
+      expect(sub.files.single.fileName, 'logo Enactus Colombia.png');
+      expect(sub.files.single.s3Key, 'submissions/u1/logo.png');
+    });
+
     test('100 significa cosas distintas según la escala', () {
       expect(GradingMode.display(100, 'points100'), '100/100');
       expect(GradingMode.display(1, 'passfail'), 'Aprobado');

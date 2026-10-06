@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -57,6 +57,22 @@ const gradeBody = z.object({
 const reviewBody = z.object({
   feedback: z.string().trim().min(1, 'El comentario es obligatorio.'),
 });
+
+/**
+ * Cada adjunto, tal como lo lee la app: CON su `id`.
+ *
+ * El `POST` devolvía los archivos tal como llegaron en el cuerpo, sin `id`, y
+ * `SubmissionFile.fromJson` lo exige. La entrega quedaba guardada, pero la
+ * app fallaba al leer la respuesta y la ventana se quedaba en "Enviando…"
+ * sin dejar salir.
+ */
+const fileColumns = {
+  id: submissionFiles.id,
+  s3Key: submissionFiles.s3Key,
+  fileName: submissionFiles.fileName,
+  contentType: submissionFiles.contentType,
+  sizeBytes: submissionFiles.sizeBytes,
+};
 
 const listQuery = paginationSchema.extend({
   courseId: z.uuid().optional(),
@@ -152,8 +168,8 @@ submissionRoutes.get('/', async (c) => {
 });
 
 /**
- * Agrega a cada entrega el nombre de quien la hizo, el del curso y la escala
- * de calificación que corresponde.
+ * Agrega a cada entrega el nombre de quien la hizo, el del curso, la escala
+ * de calificación que corresponde y sus adjuntos.
  *
  * Sin esto, la bandeja de calificaciones haría tres peticiones por entrega:
  * el estudiante, el curso y la lección — para poder escribir una sola línea
@@ -191,6 +207,18 @@ async function withContext(
      where s.id = any(${sql.param(ids)}::uuid[])
   `);
 
+  // Sin los adjuntos, la tarjeta de la entrega no tenía qué mostrar: el
+  // archivo quedaba guardado pero nadie lo veía en el listado.
+  const attached = await db
+    .select({ submissionId: submissionFiles.submissionId, ...fileColumns })
+    .from(submissionFiles)
+    .where(inArray(submissionFiles.submissionId, ids))
+    .orderBy(asc(submissionFiles.createdAt));
+  const filesById = new Map<string, typeof attached>();
+  for (const file of attached) {
+    filesById.set(file.submissionId, [...(filesById.get(file.submissionId) ?? []), file]);
+  }
+
   const byId = new Map(extra.map((e) => [e.id, e]));
   return rows.map((r) => {
     const e = byId.get(r.id);
@@ -200,6 +228,7 @@ async function withContext(
       courseName: e?.courseName ?? null,
       lessonTitle: e?.lessonTitle ?? null,
       gradingMode: r.gradingMode ?? e?.activityGradingMode ?? null,
+      files: filesById.get(r.id) ?? [],
     };
   });
 }
@@ -243,13 +272,15 @@ submissionRoutes.post('/', async (c) => {
     })
     .returning();
 
-  if (parsed.files.length > 0) {
-    await db
-      .insert(submissionFiles)
-      .values(parsed.files.map((f) => ({ submissionId: created!.id, ...f })));
-  }
+  const files =
+    parsed.files.length > 0
+      ? await db
+          .insert(submissionFiles)
+          .values(parsed.files.map((f) => ({ submissionId: created!.id, ...f })))
+          .returning(fileColumns)
+      : [];
 
-  return c.json({ ...created, files: parsed.files }, 201);
+  return c.json({ ...created, files }, 201);
 });
 
 /**

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/glossary.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
@@ -100,8 +101,8 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                     Expanded(
                       child: Text(
                         glossary.valueOrNull == null
-                            ? 'Glosario del módulo'
-                            : 'Glosario del módulo · ${_cuantos(terms.length)}',
+                            ? tr.glosarioDelModulo
+                            : tr.glosarioDelModuloCon(_cuantos(terms.length)),
                         style: const TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600),
                       ),
@@ -151,11 +152,10 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
       children: [
         if (_error != null) ErrorBanner(_error!),
         if (terms.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 10),
             child: Text(
-              'Este módulo todavía no tiene términos. Los que agregue aparecen '
-              'al final de las lecciones que marque y al final del módulo.',
+              tr.glosarioEditorVacio,
               style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
             ),
           )
@@ -179,7 +179,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
         OutlinedButton.icon(
           key: ValueKey('glosario-agregar-${widget.module.id}'),
           icon: const Icon(Icons.add, size: 17),
-          label: const Text('Agregar término'),
+          label: Text(tr.glosarioAgregarTermino),
           onPressed: _working
               ? null
               : () => showGlossaryTermEditor(context,
@@ -215,7 +215,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                 child: Icon(Icons.drag_indicator,
                     color: AppColors.textMuted,
                     size: 16,
-                    semanticLabel: 'Arrastrar para reordenar «${term.word}»'),
+                    semanticLabel: tr.glosarioArrastrar(term.word)),
               ),
             ),
           ),
@@ -238,10 +238,10 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
             ),
           ),
           if (term.imageS3Key != null)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 6),
               child: Tooltip(
-                message: 'Tiene imagen',
+                message: tr.glosarioTieneImagen,
                 child: Icon(Icons.image_outlined,
                     size: 15, color: AppColors.textMuted),
               ),
@@ -250,9 +250,8 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
             padding: const EdgeInsets.only(left: 6),
             child: Tooltip(
               message: term.lessonIds.isEmpty
-                  ? 'No está marcado en ninguna lección'
-                  : 'Aparece en ${term.lessonIds.length} '
-                      '${term.lessonIds.length == 1 ? 'lección' : 'lecciones'}',
+                  ? tr.glosarioSinLeccion
+                  : tr.glosarioApareceEn(term.lessonIds.length),
               child: Text('${term.lessonIds.length}',
                   style: const TextStyle(
                       fontSize: 11.5, color: AppColors.textMuted)),
@@ -261,7 +260,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 16),
             color: AppColors.textSecondary,
-            tooltip: 'Editar «${term.word}»',
+            tooltip: tr.glosarioEditarPalabra(term.word),
             onPressed: _working
                 ? null
                 : () => showGlossaryTermEditor(context,
@@ -273,16 +272,14 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 16),
             color: AppColors.statusCritical,
-            tooltip: 'Eliminar «${term.word}»',
+            tooltip: tr.glosarioEliminarPalabra(term.word),
             onPressed: _working
                 ? null
                 : () async {
                     final ok = await confirmDialog(
                       context,
-                      'Eliminar término',
-                      '¿Eliminar «${term.word}» del glosario? También se quita '
-                          'de los relacionados de otros términos y del repaso '
-                          'de los estudiantes.',
+                      tr.glosarioEliminarTermino,
+                      tr.glosarioEliminarTerminoTexto(term.word),
                     );
                     if (ok) {
                       await _run(() => data.deleteGlossaryTerm(term.id,
@@ -295,7 +292,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
     );
   }
 
-  static String _cuantos(int n) => n == 1 ? '1 término' : '$n términos';
+  static String _cuantos(int n) => tr.glosarioTerminos(n);
 }
 
 /// Abre el formulario de un término. Sin [term] lo crea al final del módulo.
@@ -411,7 +408,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
   String? get _wordError {
     if (_wordServerError != null) return _wordServerError;
     if (_intentado && _word.text.trim().isEmpty) {
-      return 'La palabra es obligatoria.';
+      return tr.glosarioPalabraObligatoria;
     }
     final dup = _duplicado;
     if (dup == null) return null;
@@ -420,8 +417,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
         .map((m) => m.title)
         .firstOrNull;
     return modulo == null || dup.moduleId == widget.module.id
-        ? 'Ya existe «${dup.word}» en este módulo.'
-        : 'Ya existe «${dup.word}» en el módulo «$modulo».';
+        ? tr.glosarioYaExiste(dup.word)
+        : tr.glosarioYaExisteEn(dup.word, modulo);
   }
 
   bool get _valido =>
@@ -432,8 +429,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
   Future<void> _salir() async {
     if (_saving) return;
     if (_hayCambios &&
-        !await confirmDialog(context, 'Descartar cambios',
-            'Hay cambios sin guardar en este término. ¿Desea salir de todas formas?')) {
+        !await confirmDialog(context, tr.formularioDescartarTitulo,
+            tr.glosarioDescartarTexto)) {
       return;
     }
     if (mounted) Navigator.pop(context, false);
@@ -481,7 +478,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
       }
       if (!mounted) return;
       Navigator.pop(context, true);
-      showSuccessCheck(context, _isNew ? 'Término agregado ✓' : 'Guardado ✓');
+      showSuccessCheck(context, _isNew ? tr.glosarioTerminoAgregado : tr.comunGuardado);
     } on ConflictError catch (e) {
       if (!mounted) return;
       setState(() {
@@ -514,7 +511,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
         if (!didPop) _salir();
       },
       child: AdaptiveFormShell(
-        title: _isNew ? 'Nuevo término' : 'Editar término',
+        title: _isNew ? tr.glosarioNuevoTermino : tr.glosarioEditarTermino,
         maxWidth: 560,
         saving: _saving,
         onCancel: _salir,
@@ -523,7 +520,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Módulo: ${widget.module.title}',
+            Text(tr.glosarioModulo(widget.module.title),
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 12.5)),
             const SizedBox(height: 12),
@@ -536,7 +533,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               textInputAction: TextInputAction.next,
               onChanged: (_) => setState(() => _wordServerError = null),
               decoration: InputDecoration(
-                labelText: 'Palabra o expresión *',
+                labelText: tr.glosarioPalabraCampo,
                 errorText: _wordError,
                 errorMaxLines: 2,
               ),
@@ -551,13 +548,12 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 500,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                labelText: 'Definición corta *',
+                labelText: tr.glosarioDefinicionCorta,
                 errorText: _intentado && _definition.text.trim().isEmpty
-                    ? 'La definición corta es obligatoria.'
+                    ? tr.glosarioDefinicionObligatoria
                     : null,
                 helperText:
-                    'Una o dos frases. Es lo que se ve en la tarjeta y al pasar '
-                    'el mouse sobre la palabra.',
+                    tr.glosarioDefinicionAyuda,
                 helperMaxLines: 2,
               ),
             ),
@@ -570,8 +566,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLines: 8,
               maxLength: 5000,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                  labelText: 'Explicación ampliada (opcional)'),
+              decoration: InputDecoration(
+                  labelText: tr.glosarioExplicacion),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -583,10 +579,10 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 2000,
               onChanged: (_) => setState(() {}),
               decoration:
-                  const InputDecoration(labelText: 'Ejemplo (opcional)'),
+                  InputDecoration(labelText: tr.glosarioEjemploOpcional),
             ),
             const SizedBox(height: 10),
-            _titulo('Imagen (opcional)'),
+            _titulo(tr.glosarioImagenOpcional),
             if (_imagenGuardada != null && _imagenNueva.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -607,7 +603,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
                     const SizedBox(width: 10),
                     TextButton.icon(
                       icon: const Icon(Icons.close, size: 16),
-                      label: const Text('Quitar imagen'),
+                      label: Text(tr.glosarioQuitarImagen),
                       onPressed: _saving
                           ? null
                           : () => setState(() => _imagenGuardada = null),
@@ -622,12 +618,12 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
                 enabled: !_saving,
                 onChanged: () => setState(() {}),
               ),
-            const Text('PNG o JPG.',
+            Text(tr.glosarioPngJpg,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
             const SizedBox(height: 14),
-            _titulo('Lecciones donde aparece'),
+            _titulo(tr.glosarioLeccionesDonde),
             if (widget.module.lessons.isEmpty)
-              const Text('Este módulo todavía no tiene lecciones.',
+              Text(tr.glosarioModuloSinLecciones,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 12.5))
             else
               Wrap(
@@ -649,10 +645,10 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
                 ],
               ),
             const SizedBox(height: 14),
-            _titulo('Términos relacionados'),
+            _titulo(tr.glosarioRelacionadosTitulo),
             if (otros.isEmpty)
-              const Text(
-                  'Cuando el curso tenga más términos, podrá relacionarlos acá.',
+              Text(
+                  tr.glosarioRelacionadosAyuda,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 12.5))
             else
               Wrap(
@@ -664,7 +660,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
                       label: Text(t.word, style: const TextStyle(fontSize: 12.5)),
                       tooltip: t.moduleId == widget.module.id
                           ? null
-                          : 'De otro módulo',
+                          : tr.glosarioDeOtroModulo,
                       selected: _relatedIds.contains(t.id),
                       onSelected: _saving
                           ? null

@@ -7,8 +7,10 @@
 // el objeto correcto, y que uno incompleto no tumbe la pantalla.
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:enactus_platform/l10n/idioma.dart';
 import 'package:enactus_platform/models/models.dart';
 import 'package:enactus_platform/models/progress.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('AppUser', () {
@@ -270,8 +272,19 @@ void main() {
       expect(GradingMode.display(100, 'points100'), '100/100');
       expect(GradingMode.display(1, 'passfail'), 'Aprobado');
       expect(GradingMode.display(0, 'passfail'), 'Reprobado');
-      expect(GradingMode.display(4.5, 'scale5'), '4.5');
+      // Con la coma decimal del español, como el resto de los decimales.
+      expect(GradingMode.display(4.5, 'scale5'), '4,5');
       expect(GradingMode.display(null, 'points100'), 'Pendiente');
+    });
+
+    test('en inglés, la misma nota con punto decimal y sus palabras', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      addTearDown(Idioma.instancia.restablecer);
+      await Idioma.instancia.cambiar('en');
+      expect(GradingMode.display(4.5, 'scale5'), '4.5');
+      expect(GradingMode.display(1, 'passfail'), 'Passed');
+      expect(GradingMode.display(null, 'points100'), 'Pending');
     });
 
     test('no se puede borrar una entrega ya calificada o comentada', () {

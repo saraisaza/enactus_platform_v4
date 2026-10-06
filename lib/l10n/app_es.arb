@@ -1636,5 +1636,470 @@
   "recursosFaltaUrl": "Falta la URL.",
   "recursosPublicado": "Recurso publicado ✓",
   "comunDescripcion": "Descripción",
-  "mapaSufijoEstudiantes": "estudiantes"
+  "mapaSufijoEstudiantes": "estudiantes",
+  "lxdPortal": "Portal LXD",
+  "tabMisEstudiantes": "Mis Estudiantes",
+  "tabEstudiantesCorto": "Estudiantes",
+  "tabCalificaciones": "Calificaciones",
+  "tabCalificarCorto": "Calificar",
+  "tabCertificaciones": "Certificaciones",
+  "lxdEstudiantesSubtitulo": "Estudiantes inscritos en cursos que usted creó",
+  "lxdFiltrarNombre": "Filtrar por nombre o institución",
+  "lxdSinEstudiantes": "No hay estudiantes inscritos en sus cursos.",
+  "comunEstudiante": "Estudiante",
+  "comunEtapa": "Etapa",
+  "lxdNecesidad": "Necesidad",
+  "comunInstitucion": "Institución",
+  "comunProgreso": "Progreso",
+  "lxdPromedioCursos": "Promedio de todos sus cursos",
+  "lxdAcompanamientoUrgente": "Acompañamiento urgente",
+  "lxdSeguimientoRegular": "Seguimiento regular",
+  "lxdAutonomo": "Autónomo",
+  "lxdResumenAvance": "Avance: {porcentaje}%",
+  "@lxdResumenAvance": {
+    "placeholders": {
+      "porcentaje": {}
+    }
+  },
+  "lxdResumenEmpresa": "Empresa: {empresa}",
+  "@lxdResumenEmpresa": {
+    "placeholders": {
+      "empresa": {}
+    }
+  },
+  "lxdProyectosSubtitulo": "Equipos y avance en la Ruta de Impacto de sus estudiantes",
+  "lxdSinProyectos": "Ninguno de sus estudiantes tiene proyecto asignado todavía.",
+  "lxdCalendarioSubtitulo": "Agende las sesiones sincrónicas de sus cursos Open Learning",
+  "lxdCursosSubtitulo": "Cursos que usted creó — eduXaction (asignados o no a un laboratorio) y Open Learning",
+  "lxdNuevoCurso": "Nuevo curso",
+  "lxdSinCursos": "Aún no ha creado ningún curso. Cree el primero.",
+  "lxdNombreCurso": "Póngale un nombre al curso.",
+  "lxdNombreDelCurso": "Nombre del curso",
+  "lxdCursoOpenLearning": "Curso de Open Learning",
+  "lxdCursoOpenLearningTexto": "Se asigna directo a estudiantes externos, sin laboratorio ni Ruta de Impacto",
+  "lxdLabsNoCargan": "No se pudieron cargar los laboratorios. Puede asignarlo después desde el constructor.",
+  "lxdLaboratorioOpcional": "Laboratorio (opcional)",
+  "lxdSinAsignarAun": "Sin asignar por ahora",
+  "comunCreando": "Creando…",
+  "lxdCrearAbrir": "Crear y abrir constructor",
+  "lxdInscritos": "{cantidad} inscritos",
+  "@lxdInscritos": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "lxdCompletados": "{cantidad} completados",
+  "@lxdCompletados": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "lxdAvance": "{porcentaje}% avance",
+  "@lxdAvance": {
+    "placeholders": {
+      "porcentaje": {}
+    }
+  },
+  "lxdSinNotas": "Sin notas",
+  "lxdPromedio": "Promedio {nota}",
+  "@lxdPromedio": {
+    "placeholders": {
+      "nota": {}
+    }
+  },
+  "lxdPendientes": "{cantidad} pendientes",
+  "@lxdPendientes": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "lxdSinVincular": "Sin vincular a ningún módulo todavía",
+  "lxdVinculadoA": "Vinculado a: {modulo}",
+  "@lxdVinculadoA": {
+    "placeholders": {
+      "modulo": {}
+    }
+  },
+  "lxdConstructor": "Constructor",
+  "lxdSeguimiento": "Seguimiento",
+  "lxdEliminarCurso": "Eliminar curso",
+  "lxdEliminarCursoTexto": "Va a eliminar \"{nombre}\" con todos sus módulos, lecciones y configuración.",
+  "@lxdEliminarCursoTexto": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "lxdCursoEliminado": "Curso eliminado",
+  "lxdCalificacionesSubtitulo": "Entregas de estudiantes en sus cursos",
+  "lxdSinPermisoCalificar": "Su Admin no le ha dado permiso de calificar todavía",
+  "lxdSinEntregas": "No hay entregas para calificar.",
+  "calificarElija": "Elija aprobado o reprobado.",
+  "calificarPuntajeRango": "El puntaje va de 0 a 100.",
+  "calificarNotaRango": "La nota va de 0.0 a 5.0.",
+  "calificarEntregaCalificada": "Entrega calificada ✓",
+  "calificarTitulo": "Calificar: {tarea}",
+  "@calificarTitulo": {
+    "placeholders": {
+      "tarea": {}
+    }
+  },
+  "calificarEscala": "Escala de calificación",
+  "calificarResultado": "Resultado:",
+  "calificarSoloRevision": "Esta actividad es de solo revisión: deja su retroalimentación sin nota.",
+  "calificarPuntaje": "Puntaje (0 - 100)",
+  "calificarNota": "Nota (0.0 - 5.0)",
+  "calificarRetroalimentacion": "Retroalimentación",
+  "certificadoEmitido": "Certificado {codigo} emitido 🏆",
+  "@certificadoEmitido": {
+    "placeholders": {
+      "codigo": {}
+    }
+  },
+  "certificacionesSubtitulo": "El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)",
+  "certificacionesSinPermiso": "Su Admin no le ha dado permiso de calificar en eduXaction: no puede emitir certificados todavía",
+  "certificacionesEmitidos": "Certificados emitidos",
+  "certificacionesVacio": "Aún no se han emitido certificados.",
+  "certificacionesEmitirNuevo": "Emitir nuevo certificado",
+  "certificacionesLabRuta": "Laboratorio (Ruta completa)",
+  "certificacionesEmitiendo": "Emitiendo…",
+  "certificacionesEmitir": "Emitir",
+  "certificacionesComprobando": "Comprobando su Ruta de Impacto…",
+  "certificacionesNoCompleto": "Este estudiante aún no completó la Ruta de Impacto de ningún laboratorio",
+  "lxdPerfilSubtitulo": "Información visible para administradores y estudiantes",
+  "lxdPermisoOL": "Permiso de calificar · Open Learning",
+  "comunActivado": "Activado",
+  "comunDesactivado": "Desactivado",
+  "lxdPermisoEduxaction": "Permiso de calificar · eduXaction",
+  "perfilCargo": "Cargo",
+  "perfilEspecialidad": "Especialidad",
+  "perfilIdiomas": "Idiomas",
+  "perfilDisponibilidad": "Disponibilidad",
+  "perfilExperiencia": "Experiencia",
+  "perfilIntereses": "Intereses",
+  "lxdResumenProyecto": "Proyecto: {proyecto}",
+  "@lxdResumenProyecto": {
+    "placeholders": {
+      "proyecto": {}
+    }
+  },
+  "certificadoLinea": "{estudiante} · Ruta de Impacto {laboratorio} · {codigo}",
+  "@certificadoLinea": {
+    "placeholders": {
+      "estudiante": {},
+      "laboratorio": {},
+      "codigo": {}
+    }
+  },
+  "constructorInfoGeneral": "Información general",
+  "constructorCategorizacion": "Categorización y objetivos",
+  "constructorDelCurso": "Constructor del curso",
+  "constructorEvaluacion": "Evaluación y certificado",
+  "constructorRestricciones": "Restricciones y patrocinio",
+  "constructorTitulo": "Constructor de Curso",
+  "comunVolver": "Volver",
+  "constructorHerramienta": "el constructor de módulos y lecciones",
+  "constructorNecesitaNombre": "El curso necesita un nombre.",
+  "constructorGuardado": "Curso guardado ✓",
+  "constructorSubtitulo": "Subtítulo",
+  "constructorDescCorta": "Descripción corta",
+  "constructorDescCompleta": "Descripción completa",
+  "constructorPortada": "Imagen de portada",
+  "constructorYaPortada": "Ya tiene portada. Subir otra la reemplaza.",
+  "constructorNivel": "Nivel",
+  "constructorDuracion": "Duración estimada (horas)",
+  "constructorIdioma": "Idioma",
+  "constructorEstado": "Estado: ",
+  "constructorPublicar": "Publicar",
+  "constructorArchivar": "Archivar",
+  "constructorArchivarCurso": "Archivar curso",
+  "constructorArchivarTexto": "Deja de asignarse a estudiantes nuevos, pero quienes ya tienen avance no se bloquean.",
+  "constructorLeccionesCompletar": "Lecciones a completar:",
+  "constructorCategorizacionGuardada": "Categorización guardada ✓",
+  "constructorSinLab": "Sin laboratorio (curso especial)",
+  "constructorEtiquetas": "Etiquetas",
+  "constructorCompetencias": "Competencias que desarrolla (métricas de impacto)",
+  "constructorOdsRelacionados": "ODS relacionados",
+  "constructorObjetivosCurso": "Objetivos del curso",
+  "constructorObjetivosPista": "p. ej. Comprender los fundamentos de la IA aplicada",
+  "constructorObjetivosRuta": "Objetivos para la Ruta de Impacto",
+  "constructorObjetivosRutaTexto": "Si este curso se vincula a un módulo de un laboratorio, estos objetivos se agregan automáticamente a los de esa fase.",
+  "constructorObjetivosEmprendimiento": "Objetivos de Emprendimiento",
+  "constructorObjetivosEmprendimientoPista": "p. ej. Identificar oportunidades de IA en proyectos sociales",
+  "constructorObjetivosEmpresariales": "Objetivos Empresariales",
+  "constructorObjetivosEmpresarialesPista": "p. ej. Comprender los fundamentos del aprendizaje automático",
+  "constructorResultados": "Resultados de aprendizaje",
+  "constructorResultadosPista": "p. ej. Construye un prototipo con datos reales",
+  "constructorPrerrequisitos": "Prerrequisitos",
+  "constructorPrerrequisitosTexto": "Cursos que el estudiante debería completar antes (o ninguno).",
+  "constructorSinOtrosCursos": "No hay otros cursos disponibles.",
+  "constructorNuevoModulo": "Nuevo módulo",
+  "constructorTituloModulo": "Título del módulo",
+  "constructorArrastre": "Arrastre con el ícono ⠿ para reordenar módulos y lecciones.",
+  "constructorPrimerModulo": "Cree el primer módulo para empezar.",
+  "constructorModuloTitulo": "Módulo {numero}: {titulo}",
+  "@constructorModuloTitulo": {
+    "placeholders": {
+      "numero": {},
+      "titulo": {}
+    }
+  },
+  "constructorRenombrarModulo": "Renombrar módulo",
+  "constructorAgregarLeccion": "Agregar lección",
+  "constructorEliminarModulo": "Eliminar módulo",
+  "constructorSinLecciones": "Sin lecciones — use + para agregar contenido.",
+  "constructorEditarTipo": "Editar {tipo}",
+  "@constructorEditarTipo": {
+    "placeholders": {
+      "tipo": {}
+    }
+  },
+  "constructorEliminarLeccion": "Eliminar lección",
+  "constructorEliminarLeccionTexto": "¿Eliminar \"{titulo}\"?",
+  "@constructorEliminarLeccionTexto": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "comunGuardado": "Guardado ✓",
+  "constructorCuentaCertificado": "¿Este curso cuenta para certificado?",
+  "constructorCuentaCertificadoTexto": "Se ve un sello en el curso y sus horas cuentan para el certificado de la Ruta de Impacto del laboratorio (el PDF lo emite el LXD al completar toda la Ruta, no por curso individual)",
+  "constructorHorasCertificadas": "Horas certificadas",
+  "constructorSinDefinir": "Sin definir",
+  "constructorApertura": "Apertura: {fecha}",
+  "@constructorApertura": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "constructorCierre": "Cierre: {fecha}",
+  "@constructorCierre": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "constructorCierreAntes": "El curso no puede cerrar antes de abrir.",
+  "constructorMaximo": "Máximo de estudiantes (0 = sin límite)",
+  "constructorVisible": "Visible",
+  "constructorOculto": "Oculto",
+  "constructorOcultosTexto": "Los cursos ocultos no aparecen para asignación",
+  "constructorPatrocinio": "Patrocinio",
+  "constructorEmpresaPatrocinadora": "Empresa patrocinadora del curso (opcional)",
+  "constructorNinguna": "Ninguna",
+  "constructorPatrocinioTexto": "Las horas de formación completadas en cursos patrocinados alimentan las métricas de impacto de la empresa.",
+  "constructorQuitarFecha": "Quitar fecha",
+  "comunAgregar": "Agregar",
+  "comunAceptar": "Aceptar",
+  "constructorEliminarModuloTexto": "Va a eliminar \"{modulo}\" con sus {cantidad} lecciones.",
+  "@constructorEliminarModuloTexto": {
+    "placeholders": {
+      "modulo": {},
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "quizTipoMultiple": "Selección múltiple",
+  "quizTipoVerdaderoFalso": "Verdadero / Falso",
+  "quizTipoCorta": "Respuesta corta",
+  "quizTipoOrdenar": "Ordenar",
+  "quizTipoCompletar": "Completar",
+  "leccionDescartarTexto": "Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?",
+  "leccionNecesitaTitulo": "La lección necesita un título.",
+  "leccionEnlaceNecesitaUrl": "Una lección de tipo enlace necesita su URL.",
+  "leccionEspereRevision": "Espere a que termine la revisión del video.",
+  "leccionSubidaCancelada": "Se canceló la subida. Si la lección ya tenía video, sigue igual.",
+  "leccionEnlaceYoutube": "Enlace del video de YouTube",
+  "leccionYoutubeEncontrado": "Video de YouTube encontrado. Se guarda solo su id ({id}), no el enlace.",
+  "@leccionYoutubeEncontrado": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "leccionEnlaceVimeo": "Enlace de Vimeo: se guarda tal cual y se ve con el reproductor de Vimeo.",
+  "leccionYaTieneVideo": "Esta lección ya tiene un video propio cargado. Pegar un enlace lo reemplaza.",
+  "leccionPegueEnlace": "Pegue el enlace tal como lo copia de YouTube: sirven watch?v=, youtu.be, shorts y embed. También se acepta Vimeo.",
+  "leccionNueva": "Nueva lección",
+  "leccionEditar": "Editar lección",
+  "leccionSubiendo": "Subiendo…",
+  "leccionPegarYoutube": "Pegar link de YouTube",
+  "leccionSubirVideo": "Subir video",
+  "leccionDuracionMinutos": "Duración (minutos)",
+  "leccionArchivoDescargable": "Archivo descargable",
+  "leccionArchivoActual": "Actual: {archivo}",
+  "@leccionArchivoActual": {
+    "placeholders": {
+      "archivo": {}
+    }
+  },
+  "leccionPreguntasEncuesta": "Preguntas de la encuesta (sin calificación)",
+  "leccionPreguntasQuiz": "Preguntas (las califica el servidor)",
+  "leccionPregunta": "Pregunta",
+  "leccionSinPreguntas": "Sin preguntas todavía. Una lección de quiz sin preguntas se guarda, pero quien la abra recibe un aviso en vez de una nota.",
+  "leccionPreguntaNumero": "Pregunta {numero}",
+  "@leccionPreguntaNumero": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "leccionQuitarPregunta": "Quitar pregunta",
+  "leccionEnunciado": "Enunciado",
+  "leccionQuitarOpcion": "Quitar opción",
+  "leccionOpcion": "Opción",
+  "leccionRespuestaCorrecta": "Respuesta correcta:",
+  "leccionRespuestaFlexible": "Respuesta correcta (se comparan tildes y mayúsculas de forma flexible)",
+  "leccionPalabraCompleta": "Palabra o frase que completa el enunciado",
+  "leccionOrdenCorrecto": "Elementos en el orden CORRECTO — así se guardan, y así se califica quien los ordene igual:",
+  "leccionQuitarElemento": "Quitar elemento",
+  "leccionElemento": "Elemento",
+  "leccionInstrucciones": "Instrucciones de la actividad",
+  "leccionFechaSinDefinir": "Fecha límite: sin definir",
+  "leccionMaxArchivos": "Máx. archivos",
+  "leccionPedirAlgo": "La actividad tiene que pedir al menos texto o archivo: si no, no hay nada que entregar.",
+  "leccionTiposEntregable": "Tipos de entregable aceptados (ninguno = cualquiera)",
+  "leccionCalificacion": "Calificación",
+  "leccionRubrica": "Rúbrica (criterios y puntos)",
+  "leccionCriterio": "Criterio",
+  "leccionPuntos": "Puntos",
+  "leccionQuitarCriterio": "Quitar criterio",
+  "leccionTotalPuntos": "Total: {total} puntos",
+  "@leccionTotalPuntos": {
+    "placeholders": {
+      "total": {}
+    }
+  },
+  "leccionOpcionNumero": "Opción {numero}",
+  "@leccionOpcionNumero": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "leccionOpcionCorrecta": "Opción {numero} (correcta)",
+  "@leccionOpcionCorrecta": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "glosarioDelModuloCon": "Glosario del módulo · {terminos}",
+  "@glosarioDelModuloCon": {
+    "placeholders": {
+      "terminos": {}
+    }
+  },
+  "glosarioEditorVacio": "Este módulo todavía no tiene términos. Los que agregue aparecen al final de las lecciones que marque y al final del módulo.",
+  "glosarioAgregarTermino": "Agregar término",
+  "glosarioArrastrar": "Arrastrar para reordenar «{palabra}»",
+  "@glosarioArrastrar": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioTieneImagen": "Tiene imagen",
+  "glosarioSinLeccion": "No está marcado en ninguna lección",
+  "glosarioEditarPalabra": "Editar «{palabra}»",
+  "@glosarioEditarPalabra": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioEliminarPalabra": "Eliminar «{palabra}»",
+  "@glosarioEliminarPalabra": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioEliminarTermino": "Eliminar término",
+  "glosarioEliminarTerminoTexto": "¿Eliminar «{palabra}» del glosario? También se quita de los relacionados de otros términos y del repaso de los estudiantes.",
+  "@glosarioEliminarTerminoTexto": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioPalabraObligatoria": "La palabra es obligatoria.",
+  "glosarioYaExiste": "Ya existe «{palabra}» en este módulo.",
+  "@glosarioYaExiste": {
+    "placeholders": {
+      "palabra": {}
+    }
+  },
+  "glosarioYaExisteEn": "Ya existe «{palabra}» en el módulo «{modulo}».",
+  "@glosarioYaExisteEn": {
+    "placeholders": {
+      "palabra": {},
+      "modulo": {}
+    }
+  },
+  "glosarioDescartarTexto": "Hay cambios sin guardar en este término. ¿Desea salir de todas formas?",
+  "glosarioTerminoAgregado": "Término agregado ✓",
+  "glosarioNuevoTermino": "Nuevo término",
+  "glosarioEditarTermino": "Editar término",
+  "glosarioModulo": "Módulo: {modulo}",
+  "@glosarioModulo": {
+    "placeholders": {
+      "modulo": {}
+    }
+  },
+  "glosarioPalabraCampo": "Palabra o expresión *",
+  "glosarioDefinicionCorta": "Definición corta *",
+  "glosarioDefinicionObligatoria": "La definición corta es obligatoria.",
+  "glosarioDefinicionAyuda": "Una o dos frases. Es lo que se ve en la tarjeta y al pasar el mouse sobre la palabra.",
+  "glosarioExplicacion": "Explicación ampliada (opcional)",
+  "glosarioEjemploOpcional": "Ejemplo (opcional)",
+  "glosarioImagenOpcional": "Imagen (opcional)",
+  "glosarioQuitarImagen": "Quitar imagen",
+  "glosarioPngJpg": "PNG o JPG.",
+  "glosarioLeccionesDonde": "Lecciones donde aparece",
+  "glosarioModuloSinLecciones": "Este módulo todavía no tiene lecciones.",
+  "glosarioRelacionadosTitulo": "Términos relacionados",
+  "glosarioRelacionadosAyuda": "Cuando el curso tenga más términos, podrá relacionarlos acá.",
+  "glosarioDeOtroModulo": "De otro módulo",
+  "seguimientoTitulo": "Seguimiento del Curso",
+  "seguimientoInscritos": "Inscritos",
+  "seguimientoCompletados": "Completados",
+  "seguimientoAvancePromedio": "Avance promedio",
+  "seguimientoNotaPromedio": "Nota promedio",
+  "seguimientoSinEstudiantes": "Aún no hay estudiantes asignados a este curso.\nEl admin los asigna desde su portal.",
+  "seguimientoAnaliticas": "Analíticas",
+  "seguimientoNota": "Nota",
+  "seguimientoUltimaActividad": "Última actividad",
+  "seguimientoEstado": "Estado",
+  "seguimientoComentarios": "Comentarios",
+  "seguimientoCompletado": "Completado",
+  "seguimientoSinIniciar": "Sin iniciar",
+  "seguimientoNotaPrivada": "Nota privada: {nota}",
+  "@seguimientoNotaPrivada": {
+    "placeholders": {
+      "nota": {}
+    }
+  },
+  "seguimientoAgregarComentario": "Agregar comentario privado",
+  "seguimientoComentariosDe": "Comentarios privados — {nombre}",
+  "@seguimientoComentariosDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "seguimientoRetroObservaciones": "Retroalimentación y observaciones",
+  "seguimientoSoloDocentes": "Solo para el equipo docente. El estudiante NO la ve.",
+  "seguimientoAvanceCurso": "Avance del curso",
+  "comunSinDatos": "Sin datos",
+  "seguimientoAvanceUniversidad": "Avance promedio por universidad (%)",
+  "seguimientoRiesgo": "Riesgo de abandono (sin iniciar)",
+  "seguimientoTiempoPromedio": "Tiempo promedio invertido",
+  "seguimientoAvancePatrocinados": "Avance de patrocinados",
+  "seguimientoLeccionesTotales": "Lecciones totales",
+  "glosarioApareceEn": "Aparece en {cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}",
+  "@glosarioApareceEn": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "seguimientoNotaYActividad": "Nota: {nota}  ·  {actividad}",
+  "@seguimientoNotaYActividad": {
+    "placeholders": {
+      "nota": {},
+      "actividad": {}
+    }
+  }
 }

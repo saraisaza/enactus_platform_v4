@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -33,7 +34,7 @@ class CourseTrackingView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Seguimiento del Curso'),
+          AppHeader(portalTitle: tr.seguimientoTitulo),
           Expanded(
             child: combine3(
               data.courseById(courseId),
@@ -101,38 +102,37 @@ class _Body extends StatelessWidget {
           StatRow(tiles: [
             StatTile(
                 value: '${stats.enrolled}',
-                label: 'Inscritos',
+                label: tr.seguimientoInscritos,
                 icon: Icons.people_outline),
             StatTile(
                 value: '${stats.completed}',
-                label: 'Completados',
+                label: tr.seguimientoCompletados,
                 icon: Icons.check_circle_outline),
             StatTile(
                 value: '${(stats.avgProgress * 100).round()}%',
-                label: 'Avance promedio',
+                label: tr.seguimientoAvancePromedio,
                 icon: Icons.trending_up),
             // Un guion, no un 0: "nadie tiene nota todavía" y "todos sacaron
             // cero" son cosas distintas.
             StatTile(
                 value: stats.avgGrade == null
                     ? '—'
-                    : stats.avgGrade!.toStringAsFixed(1),
-                label: 'Nota promedio',
+                    : decimal(stats.avgGrade!),
+                label: tr.seguimientoNotaPromedio,
                 icon: Icons.grade_outlined),
             StatTile(
                 value: '${stats.pending}',
-                label: 'Pendientes',
+                label: tr.dashboardPendientes,
                 icon: Icons.hourglass_empty),
           ]),
-          const SectionTitle('Estudiantes'),
+          SectionTitle(tr.tabEstudiantesCorto),
           if (students.isEmpty)
-            const EmptyState(
+            EmptyState(
                 icon: Icons.people_outline,
-                message: 'Aún no hay estudiantes asignados a este curso.\n'
-                    'El admin los asigna desde su portal.')
+                message: tr.seguimientoSinEstudiantes)
           else
             _StudentsTable(courseId: course.id, students: students),
-          const SectionTitle('Analíticas'),
+          SectionTitle(tr.seguimientoAnaliticas),
           _Analytics(course: course, students: students),
         ],
       ),
@@ -177,13 +177,13 @@ class _StudentsTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Estudiante')),
-            DataColumn(label: Text('Progreso')),
-            DataColumn(label: Text('Nota')),
-            DataColumn(label: Text('Última actividad')),
-            DataColumn(label: Text('Estado')),
-            DataColumn(label: Text('Comentarios')),
+          columns: [
+            DataColumn(label: Text(tr.comunEstudiante)),
+            DataColumn(label: Text(tr.comunProgreso)),
+            DataColumn(label: Text(tr.seguimientoNota)),
+            DataColumn(label: Text(tr.seguimientoUltimaActividad)),
+            DataColumn(label: Text(tr.seguimientoEstado)),
+            DataColumn(label: Text(tr.seguimientoComentarios)),
           ],
           rows: [
             for (final student in students) _row(context, student),
@@ -211,7 +211,7 @@ class _StudentsTable extends StatelessWidget {
         DataCell(SizedBox(
             width: 130, child: ThinProgressBar(value: s.progress.ratio))),
         DataCell(Text(
-            s.avgGrade == null ? '—' : s.avgGrade!.toStringAsFixed(1))),
+            s.avgGrade == null ? '—' : decimal(s.avgGrade!))),
         DataCell(Text(_lastActivity(s))),
         DataCell(StatusChip(
             label: status.$1, color: status.$2, icon: status.$3)),
@@ -222,14 +222,14 @@ class _StudentsTable extends StatelessWidget {
 }
 
 (String, Color, IconData) _statusOf(CourseStudent s) => s.progress.isComplete
-    ? ('Completado', AppColors.statusGood, Icons.check)
+    ? (tr.seguimientoCompletado, AppColors.statusGood, Icons.check)
     : s.hasStarted
-        ? ('En curso', AppColors.gold, Icons.play_arrow)
-        : ('Sin iniciar', AppColors.statusWarning, Icons.pause);
+        ? (tr.rutaEstadoEnCurso, AppColors.gold, Icons.play_arrow)
+        : (tr.seguimientoSinIniciar, AppColors.statusWarning, Icons.pause);
 
 String _lastActivity(CourseStudent s) => s.lastActivityAt == null
     ? '—'
-    : DateFormat('d MMM, h:mm a').format(s.lastActivityAt!);
+    : diaMesHora(s.lastActivityAt!);
 
 class _StudentCard extends StatelessWidget {
   final String courseId;
@@ -260,16 +260,18 @@ class _StudentCard extends StatelessWidget {
           const SizedBox(height: 10),
           ThinProgressBar(
             value: student.progress.ratio,
-            tooltip: '${student.progress.completedLessons} de '
-                '${student.progress.totalLessons} lecciones',
+            tooltip: tr.leccionesDeTotal(student.progress.completedLessons, student.progress.totalLessons),
           ),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: Text(
-                    'Nota: ${student.avgGrade == null ? '—' : student.avgGrade!.toStringAsFixed(1)}'
-                    '  ·  ${_lastActivity(student)}',
+                    tr.seguimientoNotaYActividad(
+                        student.avgGrade == null
+                            ? '—'
+                            : decimal(student.avgGrade!),
+                        _lastActivity(student)),
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12)),
               ),
@@ -292,8 +294,8 @@ class _NoteButton extends StatelessWidget {
     final hasNote = student.note.isNotEmpty;
     return Tooltip(
       message: hasNote
-          ? 'Nota privada: ${student.note}'
-          : 'Agregar comentario privado',
+          ? tr.seguimientoNotaPrivada(student.note)
+          : tr.seguimientoAgregarComentario,
       child: IconButton(
         icon: Icon(
           hasNote ? Icons.chat_bubble : Icons.chat_bubble_outline,
@@ -355,7 +357,7 @@ class _NoteDialogState extends State<_NoteDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Comentarios privados — ${widget.student.name}',
+      title: Text(tr.seguimientoComentariosDe(widget.student.name),
           style: const TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
@@ -367,12 +369,12 @@ class _NoteDialogState extends State<_NoteDialog> {
               enabled: !_saving,
               maxLines: 5,
               autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Retroalimentación y observaciones',
+              decoration: InputDecoration(
+                labelText: tr.seguimientoRetroObservaciones,
                 // Es literal: no hay ningún endpoint que le devuelva esta
                 // nota a un estudiante.
                 hintText:
-                    'Solo para el equipo docente. El estudiante NO la ve.',
+                    tr.seguimientoSoloDocentes,
               ),
             ),
             if (_error != null) ...[
@@ -385,10 +387,10 @@ class _NoteDialogState extends State<_NoteDialog> {
       actions: [
         TextButton(
             onPressed: _saving ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
+            child: Text(tr.comunCancelar)),
         ElevatedButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'Guardando…' : 'Guardar'),
+          child: Text(_saving ? tr.comunGuardando : tr.comunGuardar),
         ),
       ],
     );
@@ -445,27 +447,27 @@ class _Analytics extends StatelessWidget {
         LayoutBuilder(builder: (context, c) {
           final wide = c.maxWidth > 900;
           final donut = ChartCard(
-            title: 'Avance del curso',
+            title: tr.seguimientoAvanceCurso,
             height: 210,
             child: students.isEmpty
-                ? const EmptyState(
-                    icon: Icons.donut_large, message: 'Sin datos')
+                ? EmptyState(
+                    icon: Icons.donut_large, message: tr.comunSinDatos)
                 : DonutChart(data: [
                     if (completed > 0)
-                      (label: 'Completado', value: completed.toDouble()),
+                      (label: tr.seguimientoCompletado, value: completed.toDouble()),
                     if (inProgress > 0)
-                      (label: 'En curso', value: inProgress.toDouble()),
+                      (label: tr.rutaEstadoEnCurso, value: inProgress.toDouble()),
                     if (notStarted > 0)
-                      (label: 'Sin iniciar', value: notStarted.toDouble()),
+                      (label: tr.seguimientoSinIniciar, value: notStarted.toDouble()),
                   ]),
           );
           final uniBar = ChartCard(
-            title: 'Avance promedio por universidad (%)',
+            title: tr.seguimientoAvanceUniversidad,
             height: 210,
             child: byUniversity.isEmpty
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.account_balance_outlined,
-                    message: 'Sin datos')
+                    message: tr.comunSinDatos)
                 : SimpleBarChart(
                     maxY: 100,
                     data: [
@@ -490,17 +492,17 @@ class _Analytics extends StatelessWidget {
         StatRow(tiles: [
           StatTile(
               value: '${(abandonRate * 100).round()}%',
-              label: 'Riesgo de abandono (sin iniciar)',
+              label: tr.seguimientoRiesgo,
               icon: Icons.warning_amber_outlined),
           StatTile(
-              value: '${avgTimeHours.toStringAsFixed(1)} h',
-              label: 'Tiempo promedio invertido',
+              value: '${decimal(avgTimeHours)} h',
+              label: tr.seguimientoTiempoPromedio,
               icon: Icons.schedule),
           if (bySponsor.isNotEmpty)
             StatTile(
                 value:
                     '${(avg(bySponsor.values.expand((x) => x).toList()) * 100).round()}%',
-                label: 'Avance de patrocinados',
+                label: tr.seguimientoAvancePatrocinados,
                 icon: Icons.business_outlined,
                 detail: [
                   for (final e in bySponsor.entries)
@@ -508,7 +510,7 @@ class _Analytics extends StatelessWidget {
                 ].join('\n')),
           StatTile(
               value: '${course.lessonCount}',
-              label: 'Lecciones totales',
+              label: tr.seguimientoLeccionesTotales,
               icon: Icons.list_alt),
         ]),
       ],

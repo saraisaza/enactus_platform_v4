@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/authoring.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -38,13 +40,13 @@ class CourseEditorView extends StatefulWidget {
 }
 
 class _CourseEditorViewState extends State<CourseEditorView> {
-  static const _sections = [
-    ('Información general', Icons.info_outline),
-    ('Categorización y objetivos', Icons.category_outlined),
-    ('Constructor del curso', Icons.view_agenda_outlined),
-    ('Evaluación y certificado', Icons.workspace_premium_outlined),
-    ('Restricciones y patrocinio', Icons.tune),
-  ];
+  static List<(String, IconData)> get _sections => [
+        (tr.constructorInfoGeneral, Icons.info_outline),
+        (tr.constructorCategorizacion, Icons.category_outlined),
+        (tr.constructorDelCurso, Icons.view_agenda_outlined),
+        (tr.constructorEvaluacion, Icons.workspace_premium_outlined),
+        (tr.constructorRestricciones, Icons.tune),
+      ];
 
   int _section = 0;
 
@@ -55,7 +57,7 @@ class _CourseEditorViewState extends State<CourseEditorView> {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Constructor de Curso'),
+          AppHeader(portalTitle: tr.constructorTitulo),
           Expanded(
             child: data.courseById(widget.courseId).when(
                   loading: () => const Center(child: BrandLoader()),
@@ -98,7 +100,7 @@ class _CourseEditorViewState extends State<CourseEditorView> {
                       IconButton(
                         icon: const Icon(Icons.arrow_back),
                         color: AppColors.gold,
-                        tooltip: 'Volver',
+                        tooltip: tr.comunVolver,
                         onPressed: () => Navigator.pop(context),
                       ),
                       Expanded(
@@ -147,7 +149,7 @@ class _CourseEditorViewState extends State<CourseEditorView> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back),
                       color: AppColors.gold,
-                      tooltip: 'Volver',
+                      tooltip: tr.comunVolver,
                       onPressed: () => Navigator.pop(context),
                     ),
                     Expanded(
@@ -219,7 +221,7 @@ class _CourseSection extends StatelessWidget {
         // rúbricas: en el teléfono, primero el aviso de que conviene hacerlo
         // desde un computador.
         2 => AvisoEscritorio(
-            herramienta: 'el constructor de módulos y lecciones',
+            herramienta: tr.constructorHerramienta,
             child: _BuilderSection(course: course),
           ),
         3 => _CertificateSection(course: course),
@@ -280,7 +282,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('El curso necesita un nombre.'));
+          _error = ValidationError(tr.constructorNecesitaNombre));
       return;
     }
     setState(() {
@@ -300,7 +302,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
       });
       if (!mounted) return;
       setState(() => _saving = false);
-      showSuccessCheck(context, 'Curso guardado ✓');
+      showSuccessCheck(context, tr.constructorGuardado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -316,7 +318,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle('Información general'),
+        SectionTitle(tr.constructorInfoGeneral),
         if (_error != null) ...[
           ErrorBanner(_error!),
           const SizedBox(height: 12),
@@ -325,34 +327,34 @@ class _GeneralSectionState extends State<_GeneralSection> {
             controller: _name,
             enabled: !_saving,
             decoration:
-                const InputDecoration(labelText: 'Nombre del curso')),
+                InputDecoration(labelText: tr.lxdNombreDelCurso)),
         const SizedBox(height: 12),
         TextField(
             controller: _subtitle,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Subtítulo')),
+            decoration: InputDecoration(labelText: tr.constructorSubtitulo)),
         const SizedBox(height: 12),
         TextField(
             controller: _shortDesc,
             enabled: !_saving,
             maxLines: 2,
             decoration:
-                const InputDecoration(labelText: 'Descripción corta')),
+                InputDecoration(labelText: tr.constructorDescCorta)),
         const SizedBox(height: 12),
         TextField(
             controller: _fullDesc,
             enabled: !_saving,
             maxLines: 4,
             decoration:
-                const InputDecoration(labelText: 'Descripción completa')),
+                InputDecoration(labelText: tr.constructorDescCompleta)),
         const SizedBox(height: 16),
-        const Text('Imagen de portada',
+        Text(tr.constructorPortada,
             style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
         const SizedBox(height: 6),
         if (widget.course.coverS3Key != null && _cover.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 8),
-            child: Text('Ya tiene portada. Subir otra la reemplaza.',
+            child: Text(tr.constructorYaPortada,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
           ),
         FileUploadField(
@@ -369,7 +371,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _level,
-                decoration: const InputDecoration(labelText: 'Nivel'),
+                decoration: InputDecoration(labelText: tr.constructorNivel),
                 items: [
                   for (final l in CourseLevel.all)
                     DropdownMenuItem(
@@ -382,13 +384,13 @@ class _GeneralSectionState extends State<_GeneralSection> {
                 controller: _hours,
                 enabled: !_saving,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    labelText: 'Duración estimada (horas)'),
+                decoration: InputDecoration(
+                    labelText: tr.constructorDuracion),
               ),
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _language,
-                decoration: const InputDecoration(labelText: 'Idioma'),
+                decoration: InputDecoration(labelText: tr.constructorIdioma),
                 items: [
                   for (final l in CourseLanguage.all)
                     DropdownMenuItem(
@@ -474,7 +476,7 @@ class _StatusRowState extends State<_StatusRow> {
       children: [
         Row(
           children: [
-            const Text('Estado: ',
+            Text(tr.constructorEstado,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
             StatusChip(
               label: course.statusLabel,
@@ -499,7 +501,7 @@ class _StatusRowState extends State<_StatusRow> {
             if (!course.isPublished)
               ElevatedButton.icon(
                 icon: const Icon(Icons.publish_outlined, size: 18),
-                label: const Text('Publicar'),
+                label: Text(tr.constructorPublicar),
                 onPressed: _working
                     ? null
                     : () => _run(() => data.publishCourse(course.id)),
@@ -507,15 +509,14 @@ class _StatusRowState extends State<_StatusRow> {
             if (course.status != CourseStatus.archived)
               OutlinedButton.icon(
                 icon: const Icon(Icons.archive_outlined, size: 18),
-                label: const Text('Archivar'),
+                label: Text(tr.constructorArchivar),
                 onPressed: _working
                     ? null
                     : () async {
                         final ok = await confirmDialog(
                           context,
-                          'Archivar curso',
-                          'Deja de asignarse a estudiantes nuevos, pero quienes '
-                              'ya tienen avance no se bloquean.',
+                          tr.constructorArchivarCurso,
+                          tr.constructorArchivarTexto,
                         );
                         if (ok) await _run(() => data.archiveCourse(course.id));
                       },
@@ -541,7 +542,7 @@ class _StatusRowState extends State<_StatusRow> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Lecciones a completar:',
+          Text(tr.constructorLeccionesCompletar,
               style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
           for (final lesson in lessons)
             Padding(
@@ -602,7 +603,7 @@ class _CategorySectionState extends State<_CategorySection> {
           .saveCourseMeta(widget.course.id, _meta);
       if (!mounted) return;
       setState(() => _saving = false);
-      showSuccessCheck(context, 'Categorización guardada ✓');
+      showSuccessCheck(context, tr.constructorCategorizacionGuardada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -625,7 +626,7 @@ class _CategorySectionState extends State<_CategorySection> {
           ErrorBanner(_error!),
           const SizedBox(height: 12),
         ],
-        const SectionTitle('Laboratorio'),
+        SectionTitle(tr.comunLaboratorio),
         HoverCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -633,13 +634,13 @@ class _CategorySectionState extends State<_CategorySection> {
               const Icon(Icons.science_outlined, color: AppColors.gold),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(lab ?? 'Sin laboratorio (curso especial)'),
+                child: Text(lab ?? tr.constructorSinLab),
               ),
             ],
           ),
         ),
         _chips(
-          'Etiquetas',
+          tr.constructorEtiquetas,
           [for (final tag in courseTags) (tag, tag)],
           _meta.tags,
         ),
@@ -655,15 +656,15 @@ class _CategorySectionState extends State<_CategorySection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _chips(
-                'Competencias que desarrolla (métricas de impacto)',
+                tr.constructorCompetencias,
                 [for (final c in catalogs.competencies) (c.code, c.name)],
                 _meta.competencies,
               ),
               _chips(
-                'ODS relacionados',
+                tr.constructorOdsRelacionados,
                 [
                   for (final o in catalogs.ods)
-                    (o.code, 'ODS ${o.number}: ${o.title}')
+                    (o.code, tr.odsEtiqueta(o.number, o.title))
                 ],
                 _meta.ods,
               ),
@@ -671,43 +672,42 @@ class _CategorySectionState extends State<_CategorySection> {
           ),
         ),
         _EditableList(
-          title: 'Objetivos del curso',
+          title: tr.constructorObjetivosCurso,
           items: _meta.byCategory(null),
-          hint: 'p. ej. Comprender los fundamentos de la IA aplicada',
+          hint: tr.constructorObjetivosPista,
           onAdd: (text) => _addObjective(null, text),
           onRemove: _removeObjective,
         ),
-        const SectionTitle('Objetivos para la Ruta de Impacto'),
-        const Padding(
+        SectionTitle(tr.constructorObjetivosRuta),
+        Padding(
           padding: EdgeInsets.only(bottom: 8),
           child: Text(
-              'Si este curso se vincula a un módulo de un laboratorio, estos '
-              'objetivos se agregan automáticamente a los de esa fase.',
+              tr.constructorObjetivosRutaTexto,
               style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
         ),
         _EditableList(
-          title: 'Objetivos de Emprendimiento',
+          title: tr.constructorObjetivosEmprendimiento,
           items: _meta.byCategory('entrepreneurship'),
-          hint: 'p. ej. Identificar oportunidades de IA en proyectos sociales',
+          hint: tr.constructorObjetivosEmprendimientoPista,
           onAdd: (text) => _addObjective('entrepreneurship', text),
           onRemove: _removeObjective,
         ),
         _EditableList(
-          title: 'Objetivos Empresariales',
+          title: tr.constructorObjetivosEmpresariales,
           items: _meta.byCategory('business'),
-          hint: 'p. ej. Comprender los fundamentos del aprendizaje automático',
+          hint: tr.constructorObjetivosEmpresarialesPista,
           onAdd: (text) => _addObjective('business', text),
           onRemove: _removeObjective,
         ),
         _StringList(
-          title: 'Resultados de aprendizaje',
+          title: tr.constructorResultados,
           items: _meta.learningOutcomes,
-          hint: 'p. ej. Construye un prototipo con datos reales',
+          hint: tr.constructorResultadosPista,
           onChanged: () => setState(() {}),
         ),
-        const SectionTitle('Prerrequisitos'),
-        const Text(
-          'Cursos que el estudiante debería completar antes (o ninguno).',
+        SectionTitle(tr.constructorPrerrequisitos),
+        Text(
+          tr.constructorPrerrequisitosTexto,
           style: TextStyle(color: AppColors.textMuted, fontSize: 13),
         ),
         const SizedBox(height: 8),
@@ -719,7 +719,7 @@ class _CategorySectionState extends State<_CategorySection> {
                 .where((x) => x.id != widget.course.id && !x.isRutaExpo)
                 .toList();
             if (others.isEmpty) {
-              return const Text('No hay otros cursos disponibles.',
+              return Text(tr.constructorSinOtrosCursos,
                   style:
                       TextStyle(color: AppColors.textMuted, fontSize: 12.5));
             }
@@ -835,23 +835,23 @@ class _BuilderSectionState extends State<_BuilderSection> {
           spacing: 12,
           runSpacing: 8,
           children: [
-            const SectionTitle('Constructor del curso'),
+            SectionTitle(tr.constructorDelCurso),
             ElevatedButton.icon(
               icon: const Icon(Icons.create_new_folder_outlined, size: 18),
-              label: const Text('Nuevo módulo'),
+              label: Text(tr.constructorNuevoModulo),
               onPressed: _working
                   ? null
                   : () async {
                       final title = await promptText(
-                          context, 'Nuevo módulo', 'Título del módulo');
+                          context, tr.constructorNuevoModulo, tr.constructorTituloModulo);
                       if (title == null || title.isEmpty) return;
                       await _run(() => data.createModule(course.id, title));
                     },
             ),
           ],
         ),
-        const Text(
-          'Arrastre con el ícono ⠿ para reordenar módulos y lecciones.',
+        Text(
+          tr.constructorArrastre,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
         ),
         if (_error != null) ...[
@@ -860,9 +860,9 @@ class _BuilderSectionState extends State<_BuilderSection> {
         ],
         const SizedBox(height: 12),
         if (course.modules.isEmpty)
-          const EmptyState(
+          EmptyState(
               icon: Icons.view_agenda_outlined,
-              message: 'Cree el primer módulo para empezar.')
+              message: tr.constructorPrimerModulo)
         else
           ReorderableListView.builder(
             shrinkWrap: true,
@@ -921,19 +921,19 @@ class _BuilderSectionState extends State<_BuilderSection> {
                     color: AppColors.gold, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Módulo ${mi + 1}: ${module.title}',
+                  child: Text(tr.constructorModuloTitulo(mi + 1, module.title),
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),
                   color: AppColors.gold,
-                  tooltip: 'Renombrar módulo',
+                  tooltip: tr.constructorRenombrarModulo,
                   onPressed: _working
                       ? null
                       : () async {
                           final title = await promptText(context,
-                              'Renombrar módulo', 'Título', module.title);
+                              tr.constructorRenombrarModulo, tr.comunTitulo, module.title);
                           if (title == null || title.isEmpty) return;
                           await _run(() => data.renameModule(module.id, title,
                               courseId: course.id));
@@ -942,7 +942,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline, size: 20),
                   color: AppColors.gold,
-                  tooltip: 'Agregar lección',
+                  tooltip: tr.constructorAgregarLeccion,
                   onPressed: _working
                       ? null
                       : () => showLessonEditor(context,
@@ -951,15 +951,15 @@ class _BuilderSectionState extends State<_BuilderSection> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 18),
                   color: AppColors.statusCritical,
-                  tooltip: 'Eliminar módulo',
+                  tooltip: tr.constructorEliminarModulo,
                   onPressed: _working
                       ? null
                       : () async {
                           final ok = await confirmDoubleDialog(
                             context,
-                            'Eliminar módulo',
-                            'Va a eliminar "${module.title}" con sus '
-                                '${module.lessons.length} lecciones.',
+                            tr.constructorEliminarModulo,
+                            tr.constructorEliminarModuloTexto(
+                                module.title, module.lessons.length),
                           );
                           if (ok) {
                             await _run(() => data.deleteModule(module.id,
@@ -971,9 +971,9 @@ class _BuilderSectionState extends State<_BuilderSection> {
             ),
           ),
           if (module.lessons.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(48, 4, 16, 12),
-              child: Text('Sin lecciones — usa + para agregar contenido.',
+              child: Text(tr.constructorSinLecciones,
                   style:
                       TextStyle(color: AppColors.textMuted, fontSize: 12)),
             )
@@ -1043,7 +1043,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 16),
             color: AppColors.textSecondary,
-            tooltip: 'Editar ${lessonTypeLabel(lesson.type).toLowerCase()}',
+            tooltip: tr.constructorEditarTipo(lessonTypeLabel(lesson.type).toLowerCase()),
             onPressed: _working
                 ? null
                 : () => showLessonEditor(context,
@@ -1054,12 +1054,12 @@ class _BuilderSectionState extends State<_BuilderSection> {
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 16),
             color: AppColors.statusCritical,
-            tooltip: 'Eliminar lección',
+            tooltip: tr.constructorEliminarLeccion,
             onPressed: _working
                 ? null
                 : () async {
-                    final ok = await confirmDialog(context, 'Eliminar lección',
-                        '¿Eliminar "${lesson.title}"?');
+                    final ok = await confirmDialog(context, tr.constructorEliminarLeccion,
+                        tr.constructorEliminarLeccionTexto(lesson.title));
                     if (ok) {
                       await _run(() =>
                           data.deleteLesson(lesson.id, courseId: course.id));
@@ -1116,7 +1116,7 @@ class _CertificateSectionState extends State<_CertificateSection> {
       });
       if (!mounted) return;
       setState(() => _saving = false);
-      showSuccessCheck(context, 'Guardado ✓');
+      showSuccessCheck(context, tr.comunGuardado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1132,19 +1132,16 @@ class _CertificateSectionState extends State<_CertificateSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle('Certificado'),
+        SectionTitle(tr.cursoCertificado),
         if (_error != null) ...[
           ErrorBanner(_error!),
           const SizedBox(height: 12),
         ],
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('¿Este curso cuenta para certificado?'),
-          subtitle: const Text(
-              'Se ve un sello en el curso y sus horas cuentan para el '
-              'certificado de la Ruta de Impacto del laboratorio (el PDF lo '
-              'emite el LXD al completar toda la Ruta, no por curso '
-              'individual)',
+          title: Text(tr.constructorCuentaCertificado),
+          subtitle: Text(
+              tr.constructorCuentaCertificadoTexto,
               style: TextStyle(fontSize: 12)),
           value: _generates,
           activeThumbColor: AppColors.gold,
@@ -1158,7 +1155,7 @@ class _CertificateSectionState extends State<_CertificateSection> {
               enabled: !_saving,
               keyboardType: TextInputType.number,
               decoration:
-                  const InputDecoration(labelText: 'Horas certificadas')),
+                  InputDecoration(labelText: tr.constructorHorasCertificadas)),
         ],
         const SizedBox(height: 20),
         _SaveButton(saving: _saving, onPressed: _save),
@@ -1221,7 +1218,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
       });
       if (!mounted) return;
       setState(() => _saving = false);
-      showSuccessCheck(context, 'Guardado ✓');
+      showSuccessCheck(context, tr.comunGuardado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1256,8 +1253,8 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
   }
 
   String _fmt(String? iso) => iso == null
-      ? 'Sin definir'
-      : DateFormat('d MMM yyyy').format(DateTime.parse(iso));
+      ? tr.constructorSinDefinir
+      : fechaCorta(DateTime.parse(iso));
 
   @override
   Widget build(BuildContext context) {
@@ -1269,7 +1266,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionTitle('Disponibilidad'),
+        SectionTitle(tr.perfilDisponibilidad),
         if (_error != null) ...[
           ErrorBanner(_error!),
           const SizedBox(height: 12),
@@ -1279,14 +1276,14 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
             final cards = [
               _dateCard(
                 icon: Icons.event_available,
-                label: 'Apertura: ${_fmt(_openDate)}',
+                label: tr.constructorApertura(_fmt(_openDate)),
                 onTap: () => _pickDate(isOpen: true),
                 onClear:
                     _openDate == null ? null : () => setState(() => _openDate = null),
               ),
               _dateCard(
                 icon: Icons.event_busy,
-                label: 'Cierre: ${_fmt(_closeDate)}',
+                label: tr.constructorCierre(_fmt(_closeDate)),
                 onTap: () => _pickDate(isOpen: false),
                 onClear: _closeDate == null
                     ? null
@@ -1312,9 +1309,9 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           },
         ),
         if (invalidWindow)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 8),
-            child: Text('El curso no puede cerrar antes de abrir.',
+            child: Text(tr.constructorCierreAntes,
                 style:
                     TextStyle(fontSize: 12, color: AppColors.statusCritical)),
           ),
@@ -1323,21 +1320,21 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           controller: _maxStudents,
           enabled: !_saving,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-              labelText: 'Máximo de estudiantes (0 = sin límite)'),
+          decoration: InputDecoration(
+              labelText: tr.constructorMaximo),
         ),
         const SizedBox(height: 4),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(_visible ? 'Visible' : 'Oculto'),
-          subtitle: const Text(
-              'Los cursos ocultos no aparecen para asignación',
+          title: Text(_visible ? tr.constructorVisible : tr.constructorOculto),
+          subtitle: Text(
+              tr.constructorOcultosTexto,
               style: TextStyle(fontSize: 12)),
           value: _visible,
           activeThumbColor: AppColors.gold,
           onChanged: _saving ? null : (v) => setState(() => _visible = v),
         ),
-        const SectionTitle('Patrocinio'),
+        SectionTitle(tr.constructorPatrocinio),
         data.users(role: Roles.company).when(
               loading: () => const CardListSkeleton(count: 1, height: 60),
               error: (e) => ErrorBanner(e),
@@ -1345,11 +1342,11 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
                 isExpanded: true,
                 initialValue:
                     companies.any((c) => c.id == _sponsorId) ? _sponsorId : null,
-                decoration: const InputDecoration(
-                    labelText: 'Empresa patrocinadora del curso (opcional)'),
+                decoration: InputDecoration(
+                    labelText: tr.constructorEmpresaPatrocinadora),
                 items: [
-                  const DropdownMenuItem<String?>(
-                      value: null, child: Text('Ninguna')),
+                  DropdownMenuItem<String?>(
+                      value: null, child: Text(tr.constructorNinguna)),
                   for (final company in companies)
                     DropdownMenuItem<String?>(
                       value: company.id,
@@ -1363,9 +1360,8 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
               ),
             ),
         const SizedBox(height: 10),
-        const Text(
-          'Las horas de formación completadas en cursos patrocinados '
-          'alimentan las métricas de impacto de la empresa.',
+        Text(
+          tr.constructorPatrocinioTexto,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
         ),
         const SizedBox(height: 20),
@@ -1392,7 +1388,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           if (onClear != null)
             IconButton(
               icon: const Icon(Icons.clear, size: 16),
-              tooltip: 'Quitar fecha',
+              tooltip: tr.constructorQuitarFecha,
               onPressed: _saving ? null : onClear,
             ),
         ],
@@ -1414,7 +1410,7 @@ class _SaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ElevatedButton.icon(
         icon: const Icon(Icons.save_outlined, size: 18),
-        label: Text(saving ? 'Guardando…' : 'Guardar'),
+        label: Text(saving ? tr.comunGuardando : tr.comunGuardar),
         onPressed: saving ? null : onPressed,
       );
 }
@@ -1517,7 +1513,7 @@ class _EditableList extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close, size: 16),
                   color: AppColors.textMuted,
-                  tooltip: 'Quitar',
+                  tooltip: tr.comunQuitar,
                   onPressed: () => onRemove(item),
                 ),
               ],
@@ -1525,7 +1521,7 @@ class _EditableList extends StatelessWidget {
           ),
         OutlinedButton.icon(
           icon: const Icon(Icons.add, size: 16),
-          label: const Text('Agregar'),
+          label: Text(tr.comunAgregar),
           onPressed: () async {
             final text = await promptText(context, title, hint);
             if (text != null && text.isNotEmpty) onAdd(text);
@@ -1570,7 +1566,7 @@ class _StringList extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close, size: 16),
                   color: AppColors.textMuted,
-                  tooltip: 'Quitar',
+                  tooltip: tr.comunQuitar,
                   onPressed: () {
                     items.removeAt(i);
                     onChanged();
@@ -1581,7 +1577,7 @@ class _StringList extends StatelessWidget {
           ),
         OutlinedButton.icon(
           icon: const Icon(Icons.add, size: 16),
-          label: const Text('Agregar'),
+          label: Text(tr.comunAgregar),
           onPressed: () async {
             final text = await promptText(context, title, hint);
             if (text != null && text.isNotEmpty) {
@@ -1616,10 +1612,10 @@ Future<String?> promptText(
     ),
     actionsBuilder: (ctx) => [
       TextButton(
-          onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          onPressed: () => Navigator.pop(ctx), child: Text(tr.comunCancelar)),
       ElevatedButton(
           onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-          child: const Text('Aceptar')),
+          child: Text(tr.comunAceptar)),
     ],
   );
 }

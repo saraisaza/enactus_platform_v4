@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
@@ -10,6 +10,7 @@ import '../../services/api_errors.dart';
 import '../../services/pdf_service.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/calendar_view.dart';
@@ -31,42 +32,42 @@ class LxdPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: 'Portal LXD',
+      portalTitle: tr.lxdPortal,
       tabs: [
         PortalTab(
-            label: 'Mis Estudiantes',
-            shortLabel: 'Estudiantes',
+            label: tr.tabMisEstudiantes,
+            shortLabel: tr.tabEstudiantesCorto,
             destacada: true,
             icon: Icons.groups_outlined,
             builder: (_) => const _LxdStudents()),
         PortalTab(
-            label: 'Proyectos',
+            label: tr.tabProyectosCorto,
             icon: Icons.lightbulb_outline,
             builder: (_) => const _LxdProjects()),
         PortalTab(
-            label: 'Calendario',
+            label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _LxdCalendar()),
         PortalTab(
-            label: 'Mis Cursos',
-            shortLabel: 'Cursos',
+            label: tr.tabMisCursos,
+            shortLabel: tr.tabCursosCorto,
             destacada: true,
             icon: Icons.video_library_outlined,
             builder: (_) => const _LxdCourses()),
         PortalTab(
-            label: 'Calificaciones',
-            shortLabel: 'Calificar',
+            label: tr.tabCalificaciones,
+            shortLabel: tr.tabCalificarCorto,
             destacada: true,
             icon: Icons.grading_outlined,
             builder: (_) => const _LxdGrading()),
         PortalTab(
-            label: 'Certificaciones',
+            label: tr.tabCertificaciones,
             icon: Icons.workspace_premium_outlined,
             builder: (_) => const _LxdCertificates()),
         PortalTab(
-            label: 'Mi Perfil',
-            shortLabel: 'Perfil',
+            label: tr.tabMiPerfil,
+            shortLabel: tr.tabPerfilCorto,
             icon: Icons.person_outline,
             builder: (_) => const _LxdProfile()),
       ],
@@ -98,16 +99,16 @@ class _LxdStudentsState extends State<_LxdStudents> {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Mis Estudiantes',
-      subtitle: 'Estudiantes inscritos en cursos que usted creó',
+      title: tr.tabMisEstudiantes,
+      subtitle: tr.lxdEstudiantesSubtitulo,
       children: [
         ConstrainedBox(
           // Un máximo, no un ancho fijo: en un teléfono tiene que poder
           // encogerse.
           constraints: const BoxConstraints(maxWidth: 320),
           child: TextField(
-            decoration: const InputDecoration(
-              labelText: 'Filtrar por nombre o institución',
+            decoration: InputDecoration(
+              labelText: tr.lxdFiltrarNombre,
               prefixIcon: Icon(Icons.search, size: 20),
               isDense: true,
             ),
@@ -140,9 +141,9 @@ class _LxdStudentsState extends State<_LxdStudents> {
 
   Widget _table(BuildContext context, List<AppUser> students) {
     if (students.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
           icon: Icons.groups_outlined,
-          message: 'No hay estudiantes inscritos en sus cursos.');
+          message: tr.lxdSinEstudiantes);
     }
 
     // Ocho columnas no caben en un teléfono: se apilan en tarjetas.
@@ -167,13 +168,13 @@ class _LxdStudentsState extends State<_LxdStudents> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Estudiante')),
-            DataColumn(label: Text('Proyecto')),
-            DataColumn(label: Text('Etapa')),
-            DataColumn(label: Text('Necesidad')),
-            DataColumn(label: Text('Institución')),
-            DataColumn(label: Text('Progreso')),
+          columns: [
+            DataColumn(label: Text(tr.comunEstudiante)),
+            DataColumn(label: Text(tr.busquedaTipoProyecto)),
+            DataColumn(label: Text(tr.comunEtapa)),
+            DataColumn(label: Text(tr.lxdNecesidad)),
+            DataColumn(label: Text(tr.comunInstitucion)),
+            DataColumn(label: Text(tr.comunProgreso)),
           ],
           rows: [for (final s in students) _row(s)],
         ),
@@ -202,7 +203,7 @@ class _LxdStudentsState extends State<_LxdStudents> {
             width: 120,
             child: ThinProgressBar(
                 value: progress,
-                tooltip: 'Promedio de todos sus cursos'))),
+                tooltip: tr.lxdPromedioCursos))),
       ],
     );
   }
@@ -211,17 +212,17 @@ class _LxdStudentsState extends State<_LxdStudents> {
 /// Qué tanto acompañamiento necesita, según su avance. Es una lectura del
 /// número, no un dato guardado: se calcula igual en la tabla y en la tarjeta.
 String _need(double progress) => progress < 0.3
-    ? 'Acompañamiento urgente'
+    ? tr.lxdAcompanamientoUrgente
     : progress < 0.7
-        ? 'Seguimiento regular'
-        : 'Autónomo';
+        ? tr.lxdSeguimientoRegular
+        : tr.lxdAutonomo;
 
 String _summary(AppUser s) => [
       s.name,
       if (s.university.isNotEmpty) s.university,
-      'Proyecto: ${s.team?.projectName ?? '—'}',
-      'Avance: ${((s.overallProgress?.ratio ?? 0) * 100).round()}%',
-      if (s.sponsorName != null) 'Empresa: ${s.sponsorName}',
+      tr.lxdResumenProyecto(s.team?.projectName ?? '—'),
+      tr.lxdResumenAvance(((s.overallProgress?.ratio ?? 0) * 100).round()),
+      if (s.sponsorName != null) tr.lxdResumenEmpresa(s.sponsorName!),
     ].join('\n');
 
 class _StudentCard extends StatelessWidget {
@@ -268,7 +269,7 @@ class _StudentCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           ThinProgressBar(
-              value: progress, tooltip: 'Promedio de todos sus cursos'),
+              value: progress, tooltip: tr.lxdPromedioCursos),
         ],
       ),
     );
@@ -292,8 +293,8 @@ class _LxdProjects extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Proyectos',
-      subtitle: 'Equipos y avance en la Ruta de Impacto de sus estudiantes',
+      title: tr.tabProyectosCorto,
+      subtitle: tr.lxdProyectosSubtitulo,
       children: [
         data.users(role: 'student,alumni', include: 'team,progress').when(
               loading: () => const CardListSkeleton(count: 3),
@@ -310,10 +311,10 @@ class _LxdProjects extends StatelessWidget {
                 }
 
                 if (counts.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                       icon: Icons.lightbulb_outline,
                       message:
-                          'Ninguno de sus estudiantes tiene proyecto asignado todavía.');
+                          tr.lxdSinProyectos);
                 }
 
                 return Column(
@@ -381,8 +382,8 @@ class _LxdCalendar extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Calendario',
-      subtitle: 'Agende las sesiones sincrónicas de sus cursos Open Learning',
+      title: tr.tabCalendario,
+      subtitle: tr.lxdCalendarioSubtitulo,
       children: [
         combine2(data.calendarEvents, data.coursesWithStats).when(
           loading: () => const CardSkeleton(height: 320),
@@ -448,13 +449,12 @@ class _LxdCourses extends StatelessWidget {
     final lxd = context.watch<AuthProvider>().currentUser!;
 
     return TabBody(
-      title: 'Mis Cursos',
-      subtitle: 'Cursos que usted creó — eduXaction (asignados o no a un '
-          'laboratorio) y Open Learning',
+      title: tr.tabMisCursos,
+      subtitle: tr.lxdCursosSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Nuevo curso'),
+          label: Text(tr.lxdNuevoCurso),
           onPressed: () => showDialog<void>(
             context: context,
             builder: (_) => const _NewCourseDialog(),
@@ -472,9 +472,9 @@ class _LxdCourses extends StatelessWidget {
                 ? all.where((c) => c.creatorId == lxd.id).toList()
                 : all;
             if (mine.isEmpty) {
-              return const EmptyState(
+              return EmptyState(
                   icon: Icons.video_library_outlined,
-                  message: 'Aún no ha creado ningún curso. Cree el primero.');
+                  message: tr.lxdSinCursos);
             }
             return Column(
               children: [
@@ -515,7 +515,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
   Future<void> _create() async {
     if (_name.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('Póngale un nombre al curso.'));
+          _error = ValidationError(tr.lxdNombreCurso));
       return;
     }
     setState(() {
@@ -551,7 +551,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
     final data = context.watch<DataProvider>();
 
     return AlertDialog(
-      title: const Text('Nuevo curso', style: TextStyle(fontSize: 18)),
+      title: Text(tr.lxdNuevoCurso, style: TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: SingleChildScrollView(
@@ -564,16 +564,15 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                 autofocus: true,
                 enabled: !_creating,
                 decoration:
-                    const InputDecoration(labelText: 'Nombre del curso'),
+                    InputDecoration(labelText: tr.lxdNombreDelCurso),
               ),
               const SizedBox(height: 14),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Curso de Open Learning',
+                title: Text(tr.lxdCursoOpenLearning,
                     style: TextStyle(fontSize: 14)),
-                subtitle: const Text(
-                    'Se asigna directo a estudiantes externos, sin '
-                    'laboratorio ni Ruta de Impacto',
+                subtitle: Text(
+                    tr.lxdCursoOpenLearningTexto,
                     style: TextStyle(fontSize: 12)),
                 value: _isOpenLearning,
                 activeThumbColor: AppColors.gold,
@@ -588,19 +587,18 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                 const SizedBox(height: 8),
                 data.laboratories.when(
                   loading: () => const Skeleton(height: 48),
-                  error: (_) => const Text(
-                      'No se pudieron cargar los laboratorios. Puede '
-                      'asignarlo después desde el constructor.',
+                  error: (_) => Text(
+                      tr.lxdLabsNoCargan,
                       style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12.5)),
                   data: (labs) => DropdownButtonFormField<String>(
                     isExpanded: true,
                     initialValue: _labId,
-                    decoration: const InputDecoration(
-                        labelText: 'Laboratorio (opcional)'),
+                    decoration: InputDecoration(
+                        labelText: tr.lxdLaboratorioOpcional),
                     items: [
-                      const DropdownMenuItem(
-                          value: null, child: Text('Sin asignar por ahora')),
+                      DropdownMenuItem(
+                          value: null, child: Text(tr.lxdSinAsignarAun)),
                       for (final lab in labs)
                         DropdownMenuItem(
                             value: lab.id, child: Text(lab.name)),
@@ -621,10 +619,10 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
       actions: [
         TextButton(
             onPressed: _creating ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
+            child: Text(tr.comunCancelar)),
         ElevatedButton(
           onPressed: _creating ? null : _create,
-          child: Text(_creating ? 'Creando…' : 'Crear y abrir constructor'),
+          child: Text(_creating ? tr.comunCreando : tr.lxdCrearAbrir),
         ),
       ],
     );
@@ -709,18 +707,18 @@ class _CourseAdminCard extends StatelessWidget {
             spacing: 16,
             runSpacing: 6,
             children: [
-              _miniStat(Icons.people_outline, '${stats.enrolled} inscritos'),
+              _miniStat(Icons.people_outline, tr.lxdInscritos(stats.enrolled)),
               _miniStat(Icons.check_circle_outline,
-                  '${stats.completed} completados'),
+                  tr.lxdCompletados(stats.completed)),
               _miniStat(Icons.trending_up,
-                  '${(stats.avgProgress * 100).round()}% avance'),
+                  tr.lxdAvance((stats.avgProgress * 100).round())),
               _miniStat(
                   Icons.grade_outlined,
                   stats.avgGrade == null
-                      ? 'Sin notas'
-                      : 'Promedio ${stats.avgGrade!.toStringAsFixed(1)}'),
+                      ? tr.lxdSinNotas
+                      : tr.lxdPromedio(decimal(stats.avgGrade!))),
               _miniStat(
-                  Icons.hourglass_empty, '${stats.pending} pendientes'),
+                  Icons.hourglass_empty, tr.lxdPendientes(stats.pending)),
             ],
           ),
           // Un curso de eduXaction sin vincular no le llega a nadie aunque
@@ -741,8 +739,8 @@ class _CourseAdminCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                       course.linkedModule == null
-                          ? 'Sin vincular a ningún módulo todavía'
-                          : 'Vinculado a: ${course.linkedModule}',
+                          ? tr.lxdSinVincular
+                          : tr.lxdVinculadoA(course.linkedModule!),
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
                 ),
@@ -759,7 +757,7 @@ class _CourseAdminCard extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 icon: const Icon(Icons.build_outlined, size: 16),
-                label: const Text('Constructor'),
+                label: Text(tr.lxdConstructor),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -768,7 +766,7 @@ class _CourseAdminCard extends StatelessWidget {
               ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.insights_outlined, size: 16),
-                label: const Text('Seguimiento'),
+                label: Text(tr.lxdSeguimiento),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -778,7 +776,7 @@ class _CourseAdminCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 19),
                 color: AppColors.statusCritical,
-                tooltip: 'Eliminar curso',
+                tooltip: tr.lxdEliminarCurso,
                 onPressed: () => _delete(context),
               ),
             ],
@@ -792,15 +790,14 @@ class _CourseAdminCard extends StatelessWidget {
     final data = context.read<DataProvider>();
     final confirmed = await confirmDoubleDialog(
       context,
-      'Eliminar curso',
-      'Va a eliminar "${course.name}" con todos sus módulos, lecciones y '
-          'configuración.',
+      tr.lxdEliminarCurso,
+      tr.lxdEliminarCursoTexto(course.name),
     );
     if (!confirmed || !context.mounted) return;
 
     try {
       await data.deleteCourse(course.id);
-      if (context.mounted) showSuccessCheck(context, 'Curso eliminado');
+      if (context.mounted) showSuccessCheck(context, tr.lxdCursoEliminado);
     } on ApiException catch (e) {
       // El servidor rechaza con 409 si está vinculado a una Ruta o si hay
       // estudiantes con avance: borrarlo dejaría el módulo de la fase
@@ -837,16 +834,16 @@ class _LxdGrading extends StatelessWidget {
             lxd.role == 'admin' || lxd.role == 'superadmin';
 
     return TabBody(
-      title: 'Calificaciones',
-      subtitle: 'Entregas de estudiantes en sus cursos',
+      title: tr.tabCalificaciones,
+      subtitle: tr.lxdCalificacionesSubtitulo,
       children: [
         // El permiso lo decide el Admin y lo verifica el servidor. Acá solo
         // se explica por qué no hay nada que hacer.
         if (!canGradeAnything)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: StatusChip(
-                label: 'Su Admin no le ha dado permiso de calificar todavía',
+                label: tr.lxdSinPermisoCalificar,
                 color: AppColors.statusWarning,
                 icon: Icons.lock_outline),
           ),
@@ -856,9 +853,9 @@ class _LxdGrading extends StatelessWidget {
           error: (e) => ErrorState(e, onRetry: data.reloadSubmissions),
           data: (all) {
             if (all.isEmpty) {
-              return const EmptyState(
+              return EmptyState(
                   icon: Icons.grading_outlined,
-                  message: 'No hay entregas para calificar.');
+                  message: tr.lxdSinEntregas);
             }
             final sorted = [...all]
               ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
@@ -904,7 +901,7 @@ class _SubmissionRow extends StatelessWidget {
                       [
                         s.authorLabel,
                         if (s.courseName != null) s.courseName!,
-                        DateFormat('d MMM yyyy').format(s.submittedAt),
+                        fechaCorta(s.submittedAt),
                       ].join(' · '),
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 12),
@@ -927,9 +924,9 @@ class _SubmissionRow extends StatelessWidget {
                 ),
                 child: Text(!s.isGraded && s.feedback.isEmpty
                     ? (s.gradingMode == GradingMode.review
-                        ? 'Revisar'
-                        : 'Calificar')
-                    : 'Editar'),
+                        ? tr.foroRevisar
+                        : tr.quizCalificar)
+                    : tr.comunEditar),
               );
             if (caja.maxWidth < 520) {
               return Column(
@@ -1011,20 +1008,20 @@ class _GradeDialogState extends State<_GradeDialog> {
   (double?, String?) _resolveGrade() {
     switch (_mode) {
       case GradingMode.passfail:
-        if (_passed == null) return (null, 'Elija aprobado o reprobado.');
+        if (_passed == null) return (null, tr.calificarElija);
         return (_passed! ? 100 : 0, null);
       case GradingMode.review:
         return (null, null);
       case GradingMode.points100:
         final g = _numero(_grade.text);
         if (g == null || g < 0 || g > 100) {
-          return (null, 'El puntaje va de 0 a 100.');
+          return (null, tr.calificarPuntajeRango);
         }
         return (g, null);
       default:
         final g = _numero(_grade.text);
         if (g == null || g < 0 || g > 5) {
-          return (null, 'La nota va de 0.0 a 5.0.');
+          return (null, tr.calificarNotaRango);
         }
         return (g, null);
     }
@@ -1052,7 +1049,7 @@ class _GradeDialogState extends State<_GradeDialog> {
           );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Entrega calificada ✓');
+      showSuccessCheck(context, tr.calificarEntregaCalificada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1066,7 +1063,7 @@ class _GradeDialogState extends State<_GradeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Calificar: ${widget.submission.taskName}',
+      title: Text(tr.calificarTitulo(widget.submission.taskName),
           style: const TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
@@ -1081,7 +1078,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                   isExpanded: true,
                   initialValue: _mode,
                   decoration:
-                      const InputDecoration(labelText: 'Escala de calificación'),
+                      InputDecoration(labelText: tr.calificarEscala),
                   items: [
                     for (final mode in [
                       GradingMode.points100,
@@ -1102,9 +1099,9 @@ class _GradeDialogState extends State<_GradeDialog> {
                     spacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text('Resultado:'),
+                      Text(tr.calificarResultado),
                       ChoiceChip(
-                        label: const Text('Aprobado'),
+                        label: Text(tr.calificacionAprobado),
                         selected: _passed == true,
                         selectedColor:
                             AppColors.statusGood.withValues(alpha: 0.25),
@@ -1113,7 +1110,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                             : (_) => setState(() => _passed = true),
                       ),
                       ChoiceChip(
-                        label: const Text('Reprobado'),
+                        label: Text(tr.calificacionReprobado),
                         selected: _passed == false,
                         selectedColor:
                             AppColors.statusCritical.withValues(alpha: 0.25),
@@ -1123,9 +1120,8 @@ class _GradeDialogState extends State<_GradeDialog> {
                       ),
                     ],
                   ),
-                GradingMode.review => const Text(
-                    'Esta actividad es de solo revisión: deja su '
-                    'retroalimentación sin nota.',
+                GradingMode.review => Text(
+                    tr.calificarSoloRevision,
                     style:
                         TextStyle(color: AppColors.textMuted, fontSize: 13)),
                 GradingMode.points100 => TextField(
@@ -1134,7 +1130,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration:
-                        const InputDecoration(labelText: 'Puntaje (0 - 100)'),
+                        InputDecoration(labelText: tr.calificarPuntaje),
                   ),
                 _ => TextField(
                     controller: _grade,
@@ -1144,7 +1140,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration:
-                        const InputDecoration(labelText: 'Nota (0.0 - 5.0)'),
+                        InputDecoration(labelText: tr.calificarNota),
                   ),
               },
               const SizedBox(height: 12),
@@ -1153,7 +1149,7 @@ class _GradeDialogState extends State<_GradeDialog> {
                 enabled: !_saving,
                 maxLines: 3,
                 decoration:
-                    const InputDecoration(labelText: 'Retroalimentación'),
+                    InputDecoration(labelText: tr.calificarRetroalimentacion),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -1166,10 +1162,10 @@ class _GradeDialogState extends State<_GradeDialog> {
       actions: [
         TextButton(
             onPressed: _saving ? null : () => Navigator.pop(context),
-            child: const Text('Cancelar')),
+            child: Text(tr.comunCancelar)),
         ElevatedButton(
           onPressed: _saving ? null : _save,
-          child: Text(_saving ? 'Guardando…' : 'Guardar'),
+          child: Text(_saving ? tr.comunGuardando : tr.comunGuardar),
         ),
       ],
     );
@@ -1249,7 +1245,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
         _labId = null;
         _available = const [];
       });
-      showSuccessCheck(context, 'Certificado ${cert.code} emitido 🏆');
+      showSuccessCheck(context, tr.certificadoEmitido(cert.code));
       if (mounted) await PdfService.ver(context, cert);
     } on ApiException catch (e) {
       // El servidor responde 409 con el detalle de QUÉ falta si la Ruta no
@@ -1272,26 +1268,24 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
         lxd.role == 'superadmin';
 
     return TabBody(
-      title: 'Certificaciones',
-      subtitle: 'El certificado se emite al completar la Ruta de Impacto '
-          'completa de un laboratorio (ya no hay certificado por curso)',
+      title: tr.tabCertificaciones,
+      subtitle: tr.certificacionesSubtitulo,
       children: [
         if (!canIssue)
-          const StatusChip(
-              label: 'Su Admin no le ha dado permiso de calificar en '
-                  'eduXaction: no puede emitir certificados todavía',
+          StatusChip(
+              label: tr.certificacionesSinPermiso,
               color: AppColors.statusWarning,
               icon: Icons.lock_outline)
         else
           _issueCard(data),
-        const SectionTitle('Certificados emitidos'),
+        SectionTitle(tr.certificacionesEmitidos),
         data.certificates.when(
           loading: () => const CardListSkeleton(count: 2, height: 58),
           error: (e) => ErrorState(e, onRetry: data.reloadCertificates),
           data: (certs) => certs.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.workspace_premium_outlined,
-                  message: 'Aún no se han emitido certificados.')
+                  message: tr.certificacionesVacio)
               : Column(
                   children: [
                     for (final cert in certs)
@@ -1311,7 +1305,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Emitir nuevo certificado',
+          Text(tr.certificacionesEmitirNuevo,
               style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 14),
           data.users(role: 'student,alumni').when(
@@ -1334,7 +1328,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                         isExpanded: true,
                         initialValue: _studentId,
                         decoration:
-                            const InputDecoration(labelText: 'Estudiante'),
+                            InputDecoration(labelText: tr.comunEstudiante),
                         items: [
                           for (final s in students)
                             DropdownMenuItem(
@@ -1348,8 +1342,8 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                       child: DropdownButtonFormField<String>(
                         isExpanded: true,
                         initialValue: _labId,
-                        decoration: const InputDecoration(
-                            labelText: 'Laboratorio (Ruta completa)'),
+                        decoration: InputDecoration(
+                            labelText: tr.certificacionesLabRuta),
                         items: [
                           for (final lab in _available)
                             DropdownMenuItem(
@@ -1363,7 +1357,7 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                     ),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.workspace_premium, size: 18),
-                      label: Text(_issuing ? 'Emitiendo…' : 'Emitir'),
+                      label: Text(_issuing ? tr.certificacionesEmitiendo : tr.certificacionesEmitir),
                       onPressed:
                           _studentId == null || _labId == null || _issuing
                               ? null
@@ -1375,18 +1369,17 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
           // Mientras se comprueba no se dice que no hay nada: eso sería una
           // mentira a medias.
           if (_checking)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 10),
-              child: Text('Comprobando su Ruta de Impacto…',
+              child: Text(tr.certificacionesComprobando,
                   style:
                       TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
             )
           else if (_studentId != null && _available.isEmpty && _error == null)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 10),
               child: StatusChip(
-                  label: 'Este estudiante aún no completó la Ruta de '
-                      'Impacto de ningún laboratorio',
+                  label: tr.certificacionesNoCompleto,
                   color: AppColors.statusWarning,
                   icon: Icons.warning_amber_outlined),
             ),
@@ -1414,9 +1407,9 @@ class _CertificateRow extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-                '${cert.studentName} · Ruta de Impacto ${cert.laboratoryName} '
-                '· ${cert.code}'
-                '${cert.hours > 0 ? ' · ${cert.hours} h' : ''}',
+                tr.certificadoLinea(
+                        cert.studentName, cert.laboratoryName, cert.code) +
+                    (cert.hours > 0 ? ' · ${cert.hours} h' : ''),
                 style: const TextStyle(fontSize: 13.5)),
           ),
           OutlinedButton.icon(
@@ -1442,8 +1435,8 @@ class _LxdProfile extends StatelessWidget {
     final lxd = context.watch<AuthProvider>().currentUser!;
 
     return TabBody(
-      title: 'Mi Perfil',
-      subtitle: 'Información visible para administradores y estudiantes',
+      title: tr.tabMiPerfil,
+      subtitle: tr.lxdPerfilSubtitulo,
       children: [
         HoverCard(
           padding: const EdgeInsets.all(24),
@@ -1456,23 +1449,23 @@ class _LxdProfile extends StatelessWidget {
               Text(lxd.email,
                   style: const TextStyle(
                       color: AppColors.textMuted, fontSize: 13)),
-              _row('Ciudad', lxd.city),
+              _row(tr.perfilCiudad, lxd.city),
               const Divider(height: 32),
               // Los dos permisos, tal como los ve el servidor. Solo el Admin
               // los cambia, y cada cambio queda en el registro de auditoría.
-              _row('Permiso de calificar · Open Learning',
-                  lxd.canGradeOpenLearning ? 'Activado' : 'Desactivado'),
-              _row('Permiso de calificar · eduXaction',
-                  lxd.canGradeEnactus ? 'Activado' : 'Desactivado'),
+              _row(tr.lxdPermisoOL,
+                  lxd.canGradeOpenLearning ? tr.comunActivado : tr.comunDesactivado),
+              _row(tr.lxdPermisoEduxaction,
+                  lxd.canGradeEnactus ? tr.comunActivado : tr.comunDesactivado),
               const Divider(height: 32),
-              for (final field in const [
-                ('Empresa', 'company'),
-                ('Cargo', 'position'),
-                ('Especialidad', 'specialty'),
-                ('Idiomas', 'languages'),
-                ('Disponibilidad', 'availability'),
-                ('Experiencia', 'experience'),
-                ('Intereses', 'interests'),
+              for (final field in [
+                (tr.rolEmpresa, 'company'),
+                (tr.perfilCargo, 'position'),
+                (tr.perfilEspecialidad, 'specialty'),
+                (tr.perfilIdiomas, 'languages'),
+                (tr.perfilDisponibilidad, 'availability'),
+                (tr.perfilExperiencia, 'experience'),
+                (tr.perfilIntereses, 'interests'),
               ])
                 _row(field.$1, lxd.profileField(field.$2)),
             ],

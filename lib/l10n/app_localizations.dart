@@ -5209,6 +5209,1626 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'estudiantes'**
   String get mapaSufijoEstudiantes;
+
+  /// No description provided for @lxdPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal LXD'**
+  String get lxdPortal;
+
+  /// No description provided for @tabMisEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Estudiantes'**
+  String get tabMisEstudiantes;
+
+  /// No description provided for @tabEstudiantesCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes'**
+  String get tabEstudiantesCorto;
+
+  /// No description provided for @tabCalificaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificaciones'**
+  String get tabCalificaciones;
+
+  /// No description provided for @tabCalificarCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar'**
+  String get tabCalificarCorto;
+
+  /// No description provided for @tabCertificaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificaciones'**
+  String get tabCertificaciones;
+
+  /// No description provided for @lxdEstudiantesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes inscritos en cursos que usted creó'**
+  String get lxdEstudiantesSubtitulo;
+
+  /// No description provided for @lxdFiltrarNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por nombre o institución'**
+  String get lxdFiltrarNombre;
+
+  /// No description provided for @lxdSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay estudiantes inscritos en sus cursos.'**
+  String get lxdSinEstudiantes;
+
+  /// No description provided for @comunEstudiante.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiante'**
+  String get comunEstudiante;
+
+  /// No description provided for @comunEtapa.
+  ///
+  /// In es, this message translates to:
+  /// **'Etapa'**
+  String get comunEtapa;
+
+  /// No description provided for @lxdNecesidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesidad'**
+  String get lxdNecesidad;
+
+  /// No description provided for @comunInstitucion.
+  ///
+  /// In es, this message translates to:
+  /// **'Institución'**
+  String get comunInstitucion;
+
+  /// No description provided for @comunProgreso.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso'**
+  String get comunProgreso;
+
+  /// No description provided for @lxdPromedioCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio de todos sus cursos'**
+  String get lxdPromedioCursos;
+
+  /// No description provided for @lxdAcompanamientoUrgente.
+  ///
+  /// In es, this message translates to:
+  /// **'Acompañamiento urgente'**
+  String get lxdAcompanamientoUrgente;
+
+  /// No description provided for @lxdSeguimientoRegular.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento regular'**
+  String get lxdSeguimientoRegular;
+
+  /// No description provided for @lxdAutonomo.
+  ///
+  /// In es, this message translates to:
+  /// **'Autónomo'**
+  String get lxdAutonomo;
+
+  /// No description provided for @lxdResumenAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance: {porcentaje}%'**
+  String lxdResumenAvance(Object porcentaje);
+
+  /// No description provided for @lxdResumenEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa: {empresa}'**
+  String lxdResumenEmpresa(Object empresa);
+
+  /// No description provided for @lxdProyectosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipos y avance en la Ruta de Impacto de sus estudiantes'**
+  String get lxdProyectosSubtitulo;
+
+  /// No description provided for @lxdSinProyectos.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguno de sus estudiantes tiene proyecto asignado todavía.'**
+  String get lxdSinProyectos;
+
+  /// No description provided for @lxdCalendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agende las sesiones sincrónicas de sus cursos Open Learning'**
+  String get lxdCalendarioSubtitulo;
+
+  /// No description provided for @lxdCursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos que usted creó — eduXaction (asignados o no a un laboratorio) y Open Learning'**
+  String get lxdCursosSubtitulo;
+
+  /// No description provided for @lxdNuevoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo curso'**
+  String get lxdNuevoCurso;
+
+  /// No description provided for @lxdSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no ha creado ningún curso. Cree el primero.'**
+  String get lxdSinCursos;
+
+  /// No description provided for @lxdNombreCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Póngale un nombre al curso.'**
+  String get lxdNombreCurso;
+
+  /// No description provided for @lxdNombreDelCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del curso'**
+  String get lxdNombreDelCurso;
+
+  /// No description provided for @lxdCursoOpenLearning.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso de Open Learning'**
+  String get lxdCursoOpenLearning;
+
+  /// No description provided for @lxdCursoOpenLearningTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Se asigna directo a estudiantes externos, sin laboratorio ni Ruta de Impacto'**
+  String get lxdCursoOpenLearningTexto;
+
+  /// No description provided for @lxdLabsNoCargan.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar los laboratorios. Puede asignarlo después desde el constructor.'**
+  String get lxdLabsNoCargan;
+
+  /// No description provided for @lxdLaboratorioOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio (opcional)'**
+  String get lxdLaboratorioOpcional;
+
+  /// No description provided for @lxdSinAsignarAun.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin asignar por ahora'**
+  String get lxdSinAsignarAun;
+
+  /// No description provided for @comunCreando.
+  ///
+  /// In es, this message translates to:
+  /// **'Creando…'**
+  String get comunCreando;
+
+  /// No description provided for @lxdCrearAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear y abrir constructor'**
+  String get lxdCrearAbrir;
+
+  /// No description provided for @lxdInscritos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} inscritos'**
+  String lxdInscritos(Object cantidad);
+
+  /// No description provided for @lxdCompletados.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} completados'**
+  String lxdCompletados(Object cantidad);
+
+  /// No description provided for @lxdAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'{porcentaje}% avance'**
+  String lxdAvance(Object porcentaje);
+
+  /// No description provided for @lxdSinNotas.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin notas'**
+  String get lxdSinNotas;
+
+  /// No description provided for @lxdPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio {nota}'**
+  String lxdPromedio(Object nota);
+
+  /// No description provided for @lxdPendientes.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} pendientes'**
+  String lxdPendientes(Object cantidad);
+
+  /// No description provided for @lxdSinVincular.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin vincular a ningún módulo todavía'**
+  String get lxdSinVincular;
+
+  /// No description provided for @lxdVinculadoA.
+  ///
+  /// In es, this message translates to:
+  /// **'Vinculado a: {modulo}'**
+  String lxdVinculadoA(Object modulo);
+
+  /// No description provided for @lxdConstructor.
+  ///
+  /// In es, this message translates to:
+  /// **'Constructor'**
+  String get lxdConstructor;
+
+  /// No description provided for @lxdSeguimiento.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento'**
+  String get lxdSeguimiento;
+
+  /// No description provided for @lxdEliminarCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar curso'**
+  String get lxdEliminarCurso;
+
+  /// No description provided for @lxdEliminarCursoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Va a eliminar \"{nombre}\" con todos sus módulos, lecciones y configuración.'**
+  String lxdEliminarCursoTexto(Object nombre);
+
+  /// No description provided for @lxdCursoEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso eliminado'**
+  String get lxdCursoEliminado;
+
+  /// No description provided for @lxdCalificacionesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas de estudiantes en sus cursos'**
+  String get lxdCalificacionesSubtitulo;
+
+  /// No description provided for @lxdSinPermisoCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Su Admin no le ha dado permiso de calificar todavía'**
+  String get lxdSinPermisoCalificar;
+
+  /// No description provided for @lxdSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay entregas para calificar.'**
+  String get lxdSinEntregas;
+
+  /// No description provided for @calificarElija.
+  ///
+  /// In es, this message translates to:
+  /// **'Elija aprobado o reprobado.'**
+  String get calificarElija;
+
+  /// No description provided for @calificarPuntajeRango.
+  ///
+  /// In es, this message translates to:
+  /// **'El puntaje va de 0 a 100.'**
+  String get calificarPuntajeRango;
+
+  /// No description provided for @calificarNotaRango.
+  ///
+  /// In es, this message translates to:
+  /// **'La nota va de 0.0 a 5.0.'**
+  String get calificarNotaRango;
+
+  /// No description provided for @calificarEntregaCalificada.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega calificada ✓'**
+  String get calificarEntregaCalificada;
+
+  /// No description provided for @calificarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar: {tarea}'**
+  String calificarTitulo(Object tarea);
+
+  /// No description provided for @calificarEscala.
+  ///
+  /// In es, this message translates to:
+  /// **'Escala de calificación'**
+  String get calificarEscala;
+
+  /// No description provided for @calificarResultado.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultado:'**
+  String get calificarResultado;
+
+  /// No description provided for @calificarSoloRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta actividad es de solo revisión: deja su retroalimentación sin nota.'**
+  String get calificarSoloRevision;
+
+  /// No description provided for @calificarPuntaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntaje (0 - 100)'**
+  String get calificarPuntaje;
+
+  /// No description provided for @calificarNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota (0.0 - 5.0)'**
+  String get calificarNota;
+
+  /// No description provided for @calificarRetroalimentacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Retroalimentación'**
+  String get calificarRetroalimentacion;
+
+  /// No description provided for @certificadoEmitido.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado {codigo} emitido 🏆'**
+  String certificadoEmitido(Object codigo);
+
+  /// No description provided for @certificacionesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)'**
+  String get certificacionesSubtitulo;
+
+  /// No description provided for @certificacionesSinPermiso.
+  ///
+  /// In es, this message translates to:
+  /// **'Su Admin no le ha dado permiso de calificar en eduXaction: no puede emitir certificados todavía'**
+  String get certificacionesSinPermiso;
+
+  /// No description provided for @certificacionesEmitidos.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificados emitidos'**
+  String get certificacionesEmitidos;
+
+  /// No description provided for @certificacionesVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no se han emitido certificados.'**
+  String get certificacionesVacio;
+
+  /// No description provided for @certificacionesEmitirNuevo.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitir nuevo certificado'**
+  String get certificacionesEmitirNuevo;
+
+  /// No description provided for @certificacionesLabRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio (Ruta completa)'**
+  String get certificacionesLabRuta;
+
+  /// No description provided for @certificacionesEmitiendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitiendo…'**
+  String get certificacionesEmitiendo;
+
+  /// No description provided for @certificacionesEmitir.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitir'**
+  String get certificacionesEmitir;
+
+  /// No description provided for @certificacionesComprobando.
+  ///
+  /// In es, this message translates to:
+  /// **'Comprobando su Ruta de Impacto…'**
+  String get certificacionesComprobando;
+
+  /// No description provided for @certificacionesNoCompleto.
+  ///
+  /// In es, this message translates to:
+  /// **'Este estudiante aún no completó la Ruta de Impacto de ningún laboratorio'**
+  String get certificacionesNoCompleto;
+
+  /// No description provided for @lxdPerfilSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Información visible para administradores y estudiantes'**
+  String get lxdPerfilSubtitulo;
+
+  /// No description provided for @lxdPermisoOL.
+  ///
+  /// In es, this message translates to:
+  /// **'Permiso de calificar · Open Learning'**
+  String get lxdPermisoOL;
+
+  /// No description provided for @comunActivado.
+  ///
+  /// In es, this message translates to:
+  /// **'Activado'**
+  String get comunActivado;
+
+  /// No description provided for @comunDesactivado.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivado'**
+  String get comunDesactivado;
+
+  /// No description provided for @lxdPermisoEduxaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Permiso de calificar · eduXaction'**
+  String get lxdPermisoEduxaction;
+
+  /// No description provided for @perfilCargo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargo'**
+  String get perfilCargo;
+
+  /// No description provided for @perfilEspecialidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Especialidad'**
+  String get perfilEspecialidad;
+
+  /// No description provided for @perfilIdiomas.
+  ///
+  /// In es, this message translates to:
+  /// **'Idiomas'**
+  String get perfilIdiomas;
+
+  /// No description provided for @perfilDisponibilidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponibilidad'**
+  String get perfilDisponibilidad;
+
+  /// No description provided for @perfilExperiencia.
+  ///
+  /// In es, this message translates to:
+  /// **'Experiencia'**
+  String get perfilExperiencia;
+
+  /// No description provided for @perfilIntereses.
+  ///
+  /// In es, this message translates to:
+  /// **'Intereses'**
+  String get perfilIntereses;
+
+  /// No description provided for @lxdResumenProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyecto: {proyecto}'**
+  String lxdResumenProyecto(Object proyecto);
+
+  /// No description provided for @certificadoLinea.
+  ///
+  /// In es, this message translates to:
+  /// **'{estudiante} · Ruta de Impacto {laboratorio} · {codigo}'**
+  String certificadoLinea(Object estudiante, Object laboratorio, Object codigo);
+
+  /// No description provided for @constructorInfoGeneral.
+  ///
+  /// In es, this message translates to:
+  /// **'Información general'**
+  String get constructorInfoGeneral;
+
+  /// No description provided for @constructorCategorizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorización y objetivos'**
+  String get constructorCategorizacion;
+
+  /// No description provided for @constructorDelCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Constructor del curso'**
+  String get constructorDelCurso;
+
+  /// No description provided for @constructorEvaluacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Evaluación y certificado'**
+  String get constructorEvaluacion;
+
+  /// No description provided for @constructorRestricciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Restricciones y patrocinio'**
+  String get constructorRestricciones;
+
+  /// No description provided for @constructorTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Constructor de Curso'**
+  String get constructorTitulo;
+
+  /// No description provided for @comunVolver.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver'**
+  String get comunVolver;
+
+  /// No description provided for @constructorHerramienta.
+  ///
+  /// In es, this message translates to:
+  /// **'el constructor de módulos y lecciones'**
+  String get constructorHerramienta;
+
+  /// No description provided for @constructorNecesitaNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'El curso necesita un nombre.'**
+  String get constructorNecesitaNombre;
+
+  /// No description provided for @constructorGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso guardado ✓'**
+  String get constructorGuardado;
+
+  /// No description provided for @constructorSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subtítulo'**
+  String get constructorSubtitulo;
+
+  /// No description provided for @constructorDescCorta.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción corta'**
+  String get constructorDescCorta;
+
+  /// No description provided for @constructorDescCompleta.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción completa'**
+  String get constructorDescCompleta;
+
+  /// No description provided for @constructorPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagen de portada'**
+  String get constructorPortada;
+
+  /// No description provided for @constructorYaPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tiene portada. Subir otra la reemplaza.'**
+  String get constructorYaPortada;
+
+  /// No description provided for @constructorNivel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel'**
+  String get constructorNivel;
+
+  /// No description provided for @constructorDuracion.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración estimada (horas)'**
+  String get constructorDuracion;
+
+  /// No description provided for @constructorIdioma.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma'**
+  String get constructorIdioma;
+
+  /// No description provided for @constructorEstado.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado: '**
+  String get constructorEstado;
+
+  /// No description provided for @constructorPublicar.
+  ///
+  /// In es, this message translates to:
+  /// **'Publicar'**
+  String get constructorPublicar;
+
+  /// No description provided for @constructorArchivar.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar'**
+  String get constructorArchivar;
+
+  /// No description provided for @constructorArchivarCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar curso'**
+  String get constructorArchivarCurso;
+
+  /// No description provided for @constructorArchivarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Deja de asignarse a estudiantes nuevos, pero quienes ya tienen avance no se bloquean.'**
+  String get constructorArchivarTexto;
+
+  /// No description provided for @constructorLeccionesCompletar.
+  ///
+  /// In es, this message translates to:
+  /// **'Lecciones a completar:'**
+  String get constructorLeccionesCompletar;
+
+  /// No description provided for @constructorCategorizacionGuardada.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorización guardada ✓'**
+  String get constructorCategorizacionGuardada;
+
+  /// No description provided for @constructorSinLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin laboratorio (curso especial)'**
+  String get constructorSinLab;
+
+  /// No description provided for @constructorEtiquetas.
+  ///
+  /// In es, this message translates to:
+  /// **'Etiquetas'**
+  String get constructorEtiquetas;
+
+  /// No description provided for @constructorCompetencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Competencias que desarrolla (métricas de impacto)'**
+  String get constructorCompetencias;
+
+  /// No description provided for @constructorOdsRelacionados.
+  ///
+  /// In es, this message translates to:
+  /// **'ODS relacionados'**
+  String get constructorOdsRelacionados;
+
+  /// No description provided for @constructorObjetivosCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos del curso'**
+  String get constructorObjetivosCurso;
+
+  /// No description provided for @constructorObjetivosPista.
+  ///
+  /// In es, this message translates to:
+  /// **'p. ej. Comprender los fundamentos de la IA aplicada'**
+  String get constructorObjetivosPista;
+
+  /// No description provided for @constructorObjetivosRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos para la Ruta de Impacto'**
+  String get constructorObjetivosRuta;
+
+  /// No description provided for @constructorObjetivosRutaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Si este curso se vincula a un módulo de un laboratorio, estos objetivos se agregan automáticamente a los de esa fase.'**
+  String get constructorObjetivosRutaTexto;
+
+  /// No description provided for @constructorObjetivosEmprendimiento.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos de Emprendimiento'**
+  String get constructorObjetivosEmprendimiento;
+
+  /// No description provided for @constructorObjetivosEmprendimientoPista.
+  ///
+  /// In es, this message translates to:
+  /// **'p. ej. Identificar oportunidades de IA en proyectos sociales'**
+  String get constructorObjetivosEmprendimientoPista;
+
+  /// No description provided for @constructorObjetivosEmpresariales.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos Empresariales'**
+  String get constructorObjetivosEmpresariales;
+
+  /// No description provided for @constructorObjetivosEmpresarialesPista.
+  ///
+  /// In es, this message translates to:
+  /// **'p. ej. Comprender los fundamentos del aprendizaje automático'**
+  String get constructorObjetivosEmpresarialesPista;
+
+  /// No description provided for @constructorResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultados de aprendizaje'**
+  String get constructorResultados;
+
+  /// No description provided for @constructorResultadosPista.
+  ///
+  /// In es, this message translates to:
+  /// **'p. ej. Construye un prototipo con datos reales'**
+  String get constructorResultadosPista;
+
+  /// No description provided for @constructorPrerrequisitos.
+  ///
+  /// In es, this message translates to:
+  /// **'Prerrequisitos'**
+  String get constructorPrerrequisitos;
+
+  /// No description provided for @constructorPrerrequisitosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos que el estudiante debería completar antes (o ninguno).'**
+  String get constructorPrerrequisitosTexto;
+
+  /// No description provided for @constructorSinOtrosCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay otros cursos disponibles.'**
+  String get constructorSinOtrosCursos;
+
+  /// No description provided for @constructorNuevoModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo módulo'**
+  String get constructorNuevoModulo;
+
+  /// No description provided for @constructorTituloModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Título del módulo'**
+  String get constructorTituloModulo;
+
+  /// No description provided for @constructorArrastre.
+  ///
+  /// In es, this message translates to:
+  /// **'Arrastre con el ícono ⠿ para reordenar módulos y lecciones.'**
+  String get constructorArrastre;
+
+  /// No description provided for @constructorPrimerModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cree el primer módulo para empezar.'**
+  String get constructorPrimerModulo;
+
+  /// No description provided for @constructorModuloTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulo {numero}: {titulo}'**
+  String constructorModuloTitulo(Object numero, Object titulo);
+
+  /// No description provided for @constructorRenombrarModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Renombrar módulo'**
+  String get constructorRenombrarModulo;
+
+  /// No description provided for @constructorAgregarLeccion.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar lección'**
+  String get constructorAgregarLeccion;
+
+  /// No description provided for @constructorEliminarModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar módulo'**
+  String get constructorEliminarModulo;
+
+  /// No description provided for @constructorSinLecciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin lecciones — use + para agregar contenido.'**
+  String get constructorSinLecciones;
+
+  /// No description provided for @constructorEditarTipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar {tipo}'**
+  String constructorEditarTipo(Object tipo);
+
+  /// No description provided for @constructorEliminarLeccion.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar lección'**
+  String get constructorEliminarLeccion;
+
+  /// No description provided for @constructorEliminarLeccionTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar \"{titulo}\"?'**
+  String constructorEliminarLeccionTexto(Object titulo);
+
+  /// No description provided for @comunGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardado ✓'**
+  String get comunGuardado;
+
+  /// No description provided for @constructorCuentaCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Este curso cuenta para certificado?'**
+  String get constructorCuentaCertificado;
+
+  /// No description provided for @constructorCuentaCertificadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Se ve un sello en el curso y sus horas cuentan para el certificado de la Ruta de Impacto del laboratorio (el PDF lo emite el LXD al completar toda la Ruta, no por curso individual)'**
+  String get constructorCuentaCertificadoTexto;
+
+  /// No description provided for @constructorHorasCertificadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas certificadas'**
+  String get constructorHorasCertificadas;
+
+  /// No description provided for @constructorSinDefinir.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin definir'**
+  String get constructorSinDefinir;
+
+  /// No description provided for @constructorApertura.
+  ///
+  /// In es, this message translates to:
+  /// **'Apertura: {fecha}'**
+  String constructorApertura(Object fecha);
+
+  /// No description provided for @constructorCierre.
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre: {fecha}'**
+  String constructorCierre(Object fecha);
+
+  /// No description provided for @constructorCierreAntes.
+  ///
+  /// In es, this message translates to:
+  /// **'El curso no puede cerrar antes de abrir.'**
+  String get constructorCierreAntes;
+
+  /// No description provided for @constructorMaximo.
+  ///
+  /// In es, this message translates to:
+  /// **'Máximo de estudiantes (0 = sin límite)'**
+  String get constructorMaximo;
+
+  /// No description provided for @constructorVisible.
+  ///
+  /// In es, this message translates to:
+  /// **'Visible'**
+  String get constructorVisible;
+
+  /// No description provided for @constructorOculto.
+  ///
+  /// In es, this message translates to:
+  /// **'Oculto'**
+  String get constructorOculto;
+
+  /// No description provided for @constructorOcultosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Los cursos ocultos no aparecen para asignación'**
+  String get constructorOcultosTexto;
+
+  /// No description provided for @constructorPatrocinio.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrocinio'**
+  String get constructorPatrocinio;
+
+  /// No description provided for @constructorEmpresaPatrocinadora.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa patrocinadora del curso (opcional)'**
+  String get constructorEmpresaPatrocinadora;
+
+  /// No description provided for @constructorNinguna.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna'**
+  String get constructorNinguna;
+
+  /// No description provided for @constructorPatrocinioTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Las horas de formación completadas en cursos patrocinados alimentan las métricas de impacto de la empresa.'**
+  String get constructorPatrocinioTexto;
+
+  /// No description provided for @constructorQuitarFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar fecha'**
+  String get constructorQuitarFecha;
+
+  /// No description provided for @comunAgregar.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar'**
+  String get comunAgregar;
+
+  /// No description provided for @comunAceptar.
+  ///
+  /// In es, this message translates to:
+  /// **'Aceptar'**
+  String get comunAceptar;
+
+  /// No description provided for @constructorEliminarModuloTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Va a eliminar \"{modulo}\" con sus {cantidad} lecciones.'**
+  String constructorEliminarModuloTexto(Object modulo, int cantidad);
+
+  /// No description provided for @quizTipoMultiple.
+  ///
+  /// In es, this message translates to:
+  /// **'Selección múltiple'**
+  String get quizTipoMultiple;
+
+  /// No description provided for @quizTipoVerdaderoFalso.
+  ///
+  /// In es, this message translates to:
+  /// **'Verdadero / Falso'**
+  String get quizTipoVerdaderoFalso;
+
+  /// No description provided for @quizTipoCorta.
+  ///
+  /// In es, this message translates to:
+  /// **'Respuesta corta'**
+  String get quizTipoCorta;
+
+  /// No description provided for @quizTipoOrdenar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenar'**
+  String get quizTipoOrdenar;
+
+  /// No description provided for @quizTipoCompletar.
+  ///
+  /// In es, this message translates to:
+  /// **'Completar'**
+  String get quizTipoCompletar;
+
+  /// No description provided for @leccionDescartarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?'**
+  String get leccionDescartarTexto;
+
+  /// No description provided for @leccionNecesitaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'La lección necesita un título.'**
+  String get leccionNecesitaTitulo;
+
+  /// No description provided for @leccionEnlaceNecesitaUrl.
+  ///
+  /// In es, this message translates to:
+  /// **'Una lección de tipo enlace necesita su URL.'**
+  String get leccionEnlaceNecesitaUrl;
+
+  /// No description provided for @leccionEspereRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'Espere a que termine la revisión del video.'**
+  String get leccionEspereRevision;
+
+  /// No description provided for @leccionSubidaCancelada.
+  ///
+  /// In es, this message translates to:
+  /// **'Se canceló la subida. Si la lección ya tenía video, sigue igual.'**
+  String get leccionSubidaCancelada;
+
+  /// No description provided for @leccionEnlaceYoutube.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlace del video de YouTube'**
+  String get leccionEnlaceYoutube;
+
+  /// No description provided for @leccionYoutubeEncontrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Video de YouTube encontrado. Se guarda solo su id ({id}), no el enlace.'**
+  String leccionYoutubeEncontrado(Object id);
+
+  /// No description provided for @leccionEnlaceVimeo.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlace de Vimeo: se guarda tal cual y se ve con el reproductor de Vimeo.'**
+  String get leccionEnlaceVimeo;
+
+  /// No description provided for @leccionYaTieneVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección ya tiene un video propio cargado. Pegar un enlace lo reemplaza.'**
+  String get leccionYaTieneVideo;
+
+  /// No description provided for @leccionPegueEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Pegue el enlace tal como lo copia de YouTube: sirven watch?v=, youtu.be, shorts y embed. También se acepta Vimeo.'**
+  String get leccionPegueEnlace;
+
+  /// No description provided for @leccionNueva.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva lección'**
+  String get leccionNueva;
+
+  /// No description provided for @leccionEditar.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar lección'**
+  String get leccionEditar;
+
+  /// No description provided for @leccionSubiendo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subiendo…'**
+  String get leccionSubiendo;
+
+  /// No description provided for @leccionPegarYoutube.
+  ///
+  /// In es, this message translates to:
+  /// **'Pegar link de YouTube'**
+  String get leccionPegarYoutube;
+
+  /// No description provided for @leccionSubirVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir video'**
+  String get leccionSubirVideo;
+
+  /// No description provided for @leccionDuracionMinutos.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración (minutos)'**
+  String get leccionDuracionMinutos;
+
+  /// No description provided for @leccionArchivoDescargable.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo descargable'**
+  String get leccionArchivoDescargable;
+
+  /// No description provided for @leccionArchivoActual.
+  ///
+  /// In es, this message translates to:
+  /// **'Actual: {archivo}'**
+  String leccionArchivoActual(Object archivo);
+
+  /// No description provided for @leccionPreguntasEncuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Preguntas de la encuesta (sin calificación)'**
+  String get leccionPreguntasEncuesta;
+
+  /// No description provided for @leccionPreguntasQuiz.
+  ///
+  /// In es, this message translates to:
+  /// **'Preguntas (las califica el servidor)'**
+  String get leccionPreguntasQuiz;
+
+  /// No description provided for @leccionPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'Pregunta'**
+  String get leccionPregunta;
+
+  /// No description provided for @leccionSinPreguntas.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin preguntas todavía. Una lección de quiz sin preguntas se guarda, pero quien la abra recibe un aviso en vez de una nota.'**
+  String get leccionSinPreguntas;
+
+  /// No description provided for @leccionPreguntaNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'Pregunta {numero}'**
+  String leccionPreguntaNumero(Object numero);
+
+  /// No description provided for @leccionQuitarPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar pregunta'**
+  String get leccionQuitarPregunta;
+
+  /// No description provided for @leccionEnunciado.
+  ///
+  /// In es, this message translates to:
+  /// **'Enunciado'**
+  String get leccionEnunciado;
+
+  /// No description provided for @leccionQuitarOpcion.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar opción'**
+  String get leccionQuitarOpcion;
+
+  /// No description provided for @leccionOpcion.
+  ///
+  /// In es, this message translates to:
+  /// **'Opción'**
+  String get leccionOpcion;
+
+  /// No description provided for @leccionRespuestaCorrecta.
+  ///
+  /// In es, this message translates to:
+  /// **'Respuesta correcta:'**
+  String get leccionRespuestaCorrecta;
+
+  /// No description provided for @leccionRespuestaFlexible.
+  ///
+  /// In es, this message translates to:
+  /// **'Respuesta correcta (se comparan tildes y mayúsculas de forma flexible)'**
+  String get leccionRespuestaFlexible;
+
+  /// No description provided for @leccionPalabraCompleta.
+  ///
+  /// In es, this message translates to:
+  /// **'Palabra o frase que completa el enunciado'**
+  String get leccionPalabraCompleta;
+
+  /// No description provided for @leccionOrdenCorrecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Elementos en el orden CORRECTO — así se guardan, y así se califica quien los ordene igual:'**
+  String get leccionOrdenCorrecto;
+
+  /// No description provided for @leccionQuitarElemento.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar elemento'**
+  String get leccionQuitarElemento;
+
+  /// No description provided for @leccionElemento.
+  ///
+  /// In es, this message translates to:
+  /// **'Elemento'**
+  String get leccionElemento;
+
+  /// No description provided for @leccionInstrucciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Instrucciones de la actividad'**
+  String get leccionInstrucciones;
+
+  /// No description provided for @leccionFechaSinDefinir.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha límite: sin definir'**
+  String get leccionFechaSinDefinir;
+
+  /// No description provided for @leccionMaxArchivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Máx. archivos'**
+  String get leccionMaxArchivos;
+
+  /// No description provided for @leccionPedirAlgo.
+  ///
+  /// In es, this message translates to:
+  /// **'La actividad tiene que pedir al menos texto o archivo: si no, no hay nada que entregar.'**
+  String get leccionPedirAlgo;
+
+  /// No description provided for @leccionTiposEntregable.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipos de entregable aceptados (ninguno = cualquiera)'**
+  String get leccionTiposEntregable;
+
+  /// No description provided for @leccionCalificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificación'**
+  String get leccionCalificacion;
+
+  /// No description provided for @leccionRubrica.
+  ///
+  /// In es, this message translates to:
+  /// **'Rúbrica (criterios y puntos)'**
+  String get leccionRubrica;
+
+  /// No description provided for @leccionCriterio.
+  ///
+  /// In es, this message translates to:
+  /// **'Criterio'**
+  String get leccionCriterio;
+
+  /// No description provided for @leccionPuntos.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntos'**
+  String get leccionPuntos;
+
+  /// No description provided for @leccionQuitarCriterio.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar criterio'**
+  String get leccionQuitarCriterio;
+
+  /// No description provided for @leccionTotalPuntos.
+  ///
+  /// In es, this message translates to:
+  /// **'Total: {total} puntos'**
+  String leccionTotalPuntos(Object total);
+
+  /// No description provided for @leccionOpcionNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'Opción {numero}'**
+  String leccionOpcionNumero(Object numero);
+
+  /// No description provided for @leccionOpcionCorrecta.
+  ///
+  /// In es, this message translates to:
+  /// **'Opción {numero} (correcta)'**
+  String leccionOpcionCorrecta(Object numero);
+
+  /// No description provided for @glosarioDelModuloCon.
+  ///
+  /// In es, this message translates to:
+  /// **'Glosario del módulo · {terminos}'**
+  String glosarioDelModuloCon(Object terminos);
+
+  /// No description provided for @glosarioEditorVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Este módulo todavía no tiene términos. Los que agregue aparecen al final de las lecciones que marque y al final del módulo.'**
+  String get glosarioEditorVacio;
+
+  /// No description provided for @glosarioAgregarTermino.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar término'**
+  String get glosarioAgregarTermino;
+
+  /// No description provided for @glosarioArrastrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Arrastrar para reordenar «{palabra}»'**
+  String glosarioArrastrar(Object palabra);
+
+  /// No description provided for @glosarioTieneImagen.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiene imagen'**
+  String get glosarioTieneImagen;
+
+  /// No description provided for @glosarioSinLeccion.
+  ///
+  /// In es, this message translates to:
+  /// **'No está marcado en ninguna lección'**
+  String get glosarioSinLeccion;
+
+  /// No description provided for @glosarioEditarPalabra.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar «{palabra}»'**
+  String glosarioEditarPalabra(Object palabra);
+
+  /// No description provided for @glosarioEliminarPalabra.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar «{palabra}»'**
+  String glosarioEliminarPalabra(Object palabra);
+
+  /// No description provided for @glosarioEliminarTermino.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar término'**
+  String get glosarioEliminarTermino;
+
+  /// No description provided for @glosarioEliminarTerminoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar «{palabra}» del glosario? También se quita de los relacionados de otros términos y del repaso de los estudiantes.'**
+  String glosarioEliminarTerminoTexto(Object palabra);
+
+  /// No description provided for @glosarioPalabraObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'La palabra es obligatoria.'**
+  String get glosarioPalabraObligatoria;
+
+  /// No description provided for @glosarioYaExiste.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe «{palabra}» en este módulo.'**
+  String glosarioYaExiste(Object palabra);
+
+  /// No description provided for @glosarioYaExisteEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existe «{palabra}» en el módulo «{modulo}».'**
+  String glosarioYaExisteEn(Object palabra, Object modulo);
+
+  /// No description provided for @glosarioDescartarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay cambios sin guardar en este término. ¿Desea salir de todas formas?'**
+  String get glosarioDescartarTexto;
+
+  /// No description provided for @glosarioTerminoAgregado.
+  ///
+  /// In es, this message translates to:
+  /// **'Término agregado ✓'**
+  String get glosarioTerminoAgregado;
+
+  /// No description provided for @glosarioNuevoTermino.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo término'**
+  String get glosarioNuevoTermino;
+
+  /// No description provided for @glosarioEditarTermino.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar término'**
+  String get glosarioEditarTermino;
+
+  /// No description provided for @glosarioModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulo: {modulo}'**
+  String glosarioModulo(Object modulo);
+
+  /// No description provided for @glosarioPalabraCampo.
+  ///
+  /// In es, this message translates to:
+  /// **'Palabra o expresión *'**
+  String get glosarioPalabraCampo;
+
+  /// No description provided for @glosarioDefinicionCorta.
+  ///
+  /// In es, this message translates to:
+  /// **'Definición corta *'**
+  String get glosarioDefinicionCorta;
+
+  /// No description provided for @glosarioDefinicionObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'La definición corta es obligatoria.'**
+  String get glosarioDefinicionObligatoria;
+
+  /// No description provided for @glosarioDefinicionAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Una o dos frases. Es lo que se ve en la tarjeta y al pasar el mouse sobre la palabra.'**
+  String get glosarioDefinicionAyuda;
+
+  /// No description provided for @glosarioExplicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Explicación ampliada (opcional)'**
+  String get glosarioExplicacion;
+
+  /// No description provided for @glosarioEjemploOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejemplo (opcional)'**
+  String get glosarioEjemploOpcional;
+
+  /// No description provided for @glosarioImagenOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagen (opcional)'**
+  String get glosarioImagenOpcional;
+
+  /// No description provided for @glosarioQuitarImagen.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar imagen'**
+  String get glosarioQuitarImagen;
+
+  /// No description provided for @glosarioPngJpg.
+  ///
+  /// In es, this message translates to:
+  /// **'PNG o JPG.'**
+  String get glosarioPngJpg;
+
+  /// No description provided for @glosarioLeccionesDonde.
+  ///
+  /// In es, this message translates to:
+  /// **'Lecciones donde aparece'**
+  String get glosarioLeccionesDonde;
+
+  /// No description provided for @glosarioModuloSinLecciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Este módulo todavía no tiene lecciones.'**
+  String get glosarioModuloSinLecciones;
+
+  /// No description provided for @glosarioRelacionadosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Términos relacionados'**
+  String get glosarioRelacionadosTitulo;
+
+  /// No description provided for @glosarioRelacionadosAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando el curso tenga más términos, podrá relacionarlos acá.'**
+  String get glosarioRelacionadosAyuda;
+
+  /// No description provided for @glosarioDeOtroModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'De otro módulo'**
+  String get glosarioDeOtroModulo;
+
+  /// No description provided for @seguimientoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento del Curso'**
+  String get seguimientoTitulo;
+
+  /// No description provided for @seguimientoInscritos.
+  ///
+  /// In es, this message translates to:
+  /// **'Inscritos'**
+  String get seguimientoInscritos;
+
+  /// No description provided for @seguimientoCompletados.
+  ///
+  /// In es, this message translates to:
+  /// **'Completados'**
+  String get seguimientoCompletados;
+
+  /// No description provided for @seguimientoAvancePromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance promedio'**
+  String get seguimientoAvancePromedio;
+
+  /// No description provided for @seguimientoNotaPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota promedio'**
+  String get seguimientoNotaPromedio;
+
+  /// No description provided for @seguimientoSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay estudiantes asignados a este curso.\nEl admin los asigna desde su portal.'**
+  String get seguimientoSinEstudiantes;
+
+  /// No description provided for @seguimientoAnaliticas.
+  ///
+  /// In es, this message translates to:
+  /// **'Analíticas'**
+  String get seguimientoAnaliticas;
+
+  /// No description provided for @seguimientoNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get seguimientoNota;
+
+  /// No description provided for @seguimientoUltimaActividad.
+  ///
+  /// In es, this message translates to:
+  /// **'Última actividad'**
+  String get seguimientoUltimaActividad;
+
+  /// No description provided for @seguimientoEstado.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get seguimientoEstado;
+
+  /// No description provided for @seguimientoComentarios.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentarios'**
+  String get seguimientoComentarios;
+
+  /// No description provided for @seguimientoCompletado.
+  ///
+  /// In es, this message translates to:
+  /// **'Completado'**
+  String get seguimientoCompletado;
+
+  /// No description provided for @seguimientoSinIniciar.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin iniciar'**
+  String get seguimientoSinIniciar;
+
+  /// No description provided for @seguimientoNotaPrivada.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota privada: {nota}'**
+  String seguimientoNotaPrivada(Object nota);
+
+  /// No description provided for @seguimientoAgregarComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar comentario privado'**
+  String get seguimientoAgregarComentario;
+
+  /// No description provided for @seguimientoComentariosDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentarios privados — {nombre}'**
+  String seguimientoComentariosDe(Object nombre);
+
+  /// No description provided for @seguimientoRetroObservaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Retroalimentación y observaciones'**
+  String get seguimientoRetroObservaciones;
+
+  /// No description provided for @seguimientoSoloDocentes.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo para el equipo docente. El estudiante NO la ve.'**
+  String get seguimientoSoloDocentes;
+
+  /// No description provided for @seguimientoAvanceCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance del curso'**
+  String get seguimientoAvanceCurso;
+
+  /// No description provided for @comunSinDatos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos'**
+  String get comunSinDatos;
+
+  /// No description provided for @seguimientoAvanceUniversidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance promedio por universidad (%)'**
+  String get seguimientoAvanceUniversidad;
+
+  /// No description provided for @seguimientoRiesgo.
+  ///
+  /// In es, this message translates to:
+  /// **'Riesgo de abandono (sin iniciar)'**
+  String get seguimientoRiesgo;
+
+  /// No description provided for @seguimientoTiempoPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo promedio invertido'**
+  String get seguimientoTiempoPromedio;
+
+  /// No description provided for @seguimientoAvancePatrocinados.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance de patrocinados'**
+  String get seguimientoAvancePatrocinados;
+
+  /// No description provided for @seguimientoLeccionesTotales.
+  ///
+  /// In es, this message translates to:
+  /// **'Lecciones totales'**
+  String get seguimientoLeccionesTotales;
+
+  /// No description provided for @glosarioApareceEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Aparece en {cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}'**
+  String glosarioApareceEn(int cantidad);
+
+  /// No description provided for @seguimientoNotaYActividad.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota: {nota}  ·  {actividad}'**
+  String seguimientoNotaYActividad(Object nota, Object actividad);
 }
 
 class _AppLocalizationsDelegate

@@ -3069,4 +3069,954 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mapaSufijoEstudiantes => 'estudiantes';
+
+  @override
+  String get lxdPortal => 'Portal LXD';
+
+  @override
+  String get tabMisEstudiantes => 'Mis Estudiantes';
+
+  @override
+  String get tabEstudiantesCorto => 'Estudiantes';
+
+  @override
+  String get tabCalificaciones => 'Calificaciones';
+
+  @override
+  String get tabCalificarCorto => 'Calificar';
+
+  @override
+  String get tabCertificaciones => 'Certificaciones';
+
+  @override
+  String get lxdEstudiantesSubtitulo =>
+      'Estudiantes inscritos en cursos que usted creó';
+
+  @override
+  String get lxdFiltrarNombre => 'Filtrar por nombre o institución';
+
+  @override
+  String get lxdSinEstudiantes => 'No hay estudiantes inscritos en sus cursos.';
+
+  @override
+  String get comunEstudiante => 'Estudiante';
+
+  @override
+  String get comunEtapa => 'Etapa';
+
+  @override
+  String get lxdNecesidad => 'Necesidad';
+
+  @override
+  String get comunInstitucion => 'Institución';
+
+  @override
+  String get comunProgreso => 'Progreso';
+
+  @override
+  String get lxdPromedioCursos => 'Promedio de todos sus cursos';
+
+  @override
+  String get lxdAcompanamientoUrgente => 'Acompañamiento urgente';
+
+  @override
+  String get lxdSeguimientoRegular => 'Seguimiento regular';
+
+  @override
+  String get lxdAutonomo => 'Autónomo';
+
+  @override
+  String lxdResumenAvance(Object porcentaje) {
+    return 'Avance: $porcentaje%';
+  }
+
+  @override
+  String lxdResumenEmpresa(Object empresa) {
+    return 'Empresa: $empresa';
+  }
+
+  @override
+  String get lxdProyectosSubtitulo =>
+      'Equipos y avance en la Ruta de Impacto de sus estudiantes';
+
+  @override
+  String get lxdSinProyectos =>
+      'Ninguno de sus estudiantes tiene proyecto asignado todavía.';
+
+  @override
+  String get lxdCalendarioSubtitulo =>
+      'Agende las sesiones sincrónicas de sus cursos Open Learning';
+
+  @override
+  String get lxdCursosSubtitulo =>
+      'Cursos que usted creó — eduXaction (asignados o no a un laboratorio) y Open Learning';
+
+  @override
+  String get lxdNuevoCurso => 'Nuevo curso';
+
+  @override
+  String get lxdSinCursos => 'Aún no ha creado ningún curso. Cree el primero.';
+
+  @override
+  String get lxdNombreCurso => 'Póngale un nombre al curso.';
+
+  @override
+  String get lxdNombreDelCurso => 'Nombre del curso';
+
+  @override
+  String get lxdCursoOpenLearning => 'Curso de Open Learning';
+
+  @override
+  String get lxdCursoOpenLearningTexto =>
+      'Se asigna directo a estudiantes externos, sin laboratorio ni Ruta de Impacto';
+
+  @override
+  String get lxdLabsNoCargan =>
+      'No se pudieron cargar los laboratorios. Puede asignarlo después desde el constructor.';
+
+  @override
+  String get lxdLaboratorioOpcional => 'Laboratorio (opcional)';
+
+  @override
+  String get lxdSinAsignarAun => 'Sin asignar por ahora';
+
+  @override
+  String get comunCreando => 'Creando…';
+
+  @override
+  String get lxdCrearAbrir => 'Crear y abrir constructor';
+
+  @override
+  String lxdInscritos(Object cantidad) {
+    return '$cantidad inscritos';
+  }
+
+  @override
+  String lxdCompletados(Object cantidad) {
+    return '$cantidad completados';
+  }
+
+  @override
+  String lxdAvance(Object porcentaje) {
+    return '$porcentaje% avance';
+  }
+
+  @override
+  String get lxdSinNotas => 'Sin notas';
+
+  @override
+  String lxdPromedio(Object nota) {
+    return 'Promedio $nota';
+  }
+
+  @override
+  String lxdPendientes(Object cantidad) {
+    return '$cantidad pendientes';
+  }
+
+  @override
+  String get lxdSinVincular => 'Sin vincular a ningún módulo todavía';
+
+  @override
+  String lxdVinculadoA(Object modulo) {
+    return 'Vinculado a: $modulo';
+  }
+
+  @override
+  String get lxdConstructor => 'Constructor';
+
+  @override
+  String get lxdSeguimiento => 'Seguimiento';
+
+  @override
+  String get lxdEliminarCurso => 'Eliminar curso';
+
+  @override
+  String lxdEliminarCursoTexto(Object nombre) {
+    return 'Va a eliminar \"$nombre\" con todos sus módulos, lecciones y configuración.';
+  }
+
+  @override
+  String get lxdCursoEliminado => 'Curso eliminado';
+
+  @override
+  String get lxdCalificacionesSubtitulo =>
+      'Entregas de estudiantes en sus cursos';
+
+  @override
+  String get lxdSinPermisoCalificar =>
+      'Su Admin no le ha dado permiso de calificar todavía';
+
+  @override
+  String get lxdSinEntregas => 'No hay entregas para calificar.';
+
+  @override
+  String get calificarElija => 'Elija aprobado o reprobado.';
+
+  @override
+  String get calificarPuntajeRango => 'El puntaje va de 0 a 100.';
+
+  @override
+  String get calificarNotaRango => 'La nota va de 0.0 a 5.0.';
+
+  @override
+  String get calificarEntregaCalificada => 'Entrega calificada ✓';
+
+  @override
+  String calificarTitulo(Object tarea) {
+    return 'Calificar: $tarea';
+  }
+
+  @override
+  String get calificarEscala => 'Escala de calificación';
+
+  @override
+  String get calificarResultado => 'Resultado:';
+
+  @override
+  String get calificarSoloRevision =>
+      'Esta actividad es de solo revisión: deja su retroalimentación sin nota.';
+
+  @override
+  String get calificarPuntaje => 'Puntaje (0 - 100)';
+
+  @override
+  String get calificarNota => 'Nota (0.0 - 5.0)';
+
+  @override
+  String get calificarRetroalimentacion => 'Retroalimentación';
+
+  @override
+  String certificadoEmitido(Object codigo) {
+    return 'Certificado $codigo emitido 🏆';
+  }
+
+  @override
+  String get certificacionesSubtitulo =>
+      'El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)';
+
+  @override
+  String get certificacionesSinPermiso =>
+      'Su Admin no le ha dado permiso de calificar en eduXaction: no puede emitir certificados todavía';
+
+  @override
+  String get certificacionesEmitidos => 'Certificados emitidos';
+
+  @override
+  String get certificacionesVacio => 'Aún no se han emitido certificados.';
+
+  @override
+  String get certificacionesEmitirNuevo => 'Emitir nuevo certificado';
+
+  @override
+  String get certificacionesLabRuta => 'Laboratorio (Ruta completa)';
+
+  @override
+  String get certificacionesEmitiendo => 'Emitiendo…';
+
+  @override
+  String get certificacionesEmitir => 'Emitir';
+
+  @override
+  String get certificacionesComprobando => 'Comprobando su Ruta de Impacto…';
+
+  @override
+  String get certificacionesNoCompleto =>
+      'Este estudiante aún no completó la Ruta de Impacto de ningún laboratorio';
+
+  @override
+  String get lxdPerfilSubtitulo =>
+      'Información visible para administradores y estudiantes';
+
+  @override
+  String get lxdPermisoOL => 'Permiso de calificar · Open Learning';
+
+  @override
+  String get comunActivado => 'Activado';
+
+  @override
+  String get comunDesactivado => 'Desactivado';
+
+  @override
+  String get lxdPermisoEduxaction => 'Permiso de calificar · eduXaction';
+
+  @override
+  String get perfilCargo => 'Cargo';
+
+  @override
+  String get perfilEspecialidad => 'Especialidad';
+
+  @override
+  String get perfilIdiomas => 'Idiomas';
+
+  @override
+  String get perfilDisponibilidad => 'Disponibilidad';
+
+  @override
+  String get perfilExperiencia => 'Experiencia';
+
+  @override
+  String get perfilIntereses => 'Intereses';
+
+  @override
+  String lxdResumenProyecto(Object proyecto) {
+    return 'Proyecto: $proyecto';
+  }
+
+  @override
+  String certificadoLinea(
+    Object estudiante,
+    Object laboratorio,
+    Object codigo,
+  ) {
+    return '$estudiante · Ruta de Impacto $laboratorio · $codigo';
+  }
+
+  @override
+  String get constructorInfoGeneral => 'Información general';
+
+  @override
+  String get constructorCategorizacion => 'Categorización y objetivos';
+
+  @override
+  String get constructorDelCurso => 'Constructor del curso';
+
+  @override
+  String get constructorEvaluacion => 'Evaluación y certificado';
+
+  @override
+  String get constructorRestricciones => 'Restricciones y patrocinio';
+
+  @override
+  String get constructorTitulo => 'Constructor de Curso';
+
+  @override
+  String get comunVolver => 'Volver';
+
+  @override
+  String get constructorHerramienta => 'el constructor de módulos y lecciones';
+
+  @override
+  String get constructorNecesitaNombre => 'El curso necesita un nombre.';
+
+  @override
+  String get constructorGuardado => 'Curso guardado ✓';
+
+  @override
+  String get constructorSubtitulo => 'Subtítulo';
+
+  @override
+  String get constructorDescCorta => 'Descripción corta';
+
+  @override
+  String get constructorDescCompleta => 'Descripción completa';
+
+  @override
+  String get constructorPortada => 'Imagen de portada';
+
+  @override
+  String get constructorYaPortada =>
+      'Ya tiene portada. Subir otra la reemplaza.';
+
+  @override
+  String get constructorNivel => 'Nivel';
+
+  @override
+  String get constructorDuracion => 'Duración estimada (horas)';
+
+  @override
+  String get constructorIdioma => 'Idioma';
+
+  @override
+  String get constructorEstado => 'Estado: ';
+
+  @override
+  String get constructorPublicar => 'Publicar';
+
+  @override
+  String get constructorArchivar => 'Archivar';
+
+  @override
+  String get constructorArchivarCurso => 'Archivar curso';
+
+  @override
+  String get constructorArchivarTexto =>
+      'Deja de asignarse a estudiantes nuevos, pero quienes ya tienen avance no se bloquean.';
+
+  @override
+  String get constructorLeccionesCompletar => 'Lecciones a completar:';
+
+  @override
+  String get constructorCategorizacionGuardada => 'Categorización guardada ✓';
+
+  @override
+  String get constructorSinLab => 'Sin laboratorio (curso especial)';
+
+  @override
+  String get constructorEtiquetas => 'Etiquetas';
+
+  @override
+  String get constructorCompetencias =>
+      'Competencias que desarrolla (métricas de impacto)';
+
+  @override
+  String get constructorOdsRelacionados => 'ODS relacionados';
+
+  @override
+  String get constructorObjetivosCurso => 'Objetivos del curso';
+
+  @override
+  String get constructorObjetivosPista =>
+      'p. ej. Comprender los fundamentos de la IA aplicada';
+
+  @override
+  String get constructorObjetivosRuta => 'Objetivos para la Ruta de Impacto';
+
+  @override
+  String get constructorObjetivosRutaTexto =>
+      'Si este curso se vincula a un módulo de un laboratorio, estos objetivos se agregan automáticamente a los de esa fase.';
+
+  @override
+  String get constructorObjetivosEmprendimiento =>
+      'Objetivos de Emprendimiento';
+
+  @override
+  String get constructorObjetivosEmprendimientoPista =>
+      'p. ej. Identificar oportunidades de IA en proyectos sociales';
+
+  @override
+  String get constructorObjetivosEmpresariales => 'Objetivos Empresariales';
+
+  @override
+  String get constructorObjetivosEmpresarialesPista =>
+      'p. ej. Comprender los fundamentos del aprendizaje automático';
+
+  @override
+  String get constructorResultados => 'Resultados de aprendizaje';
+
+  @override
+  String get constructorResultadosPista =>
+      'p. ej. Construye un prototipo con datos reales';
+
+  @override
+  String get constructorPrerrequisitos => 'Prerrequisitos';
+
+  @override
+  String get constructorPrerrequisitosTexto =>
+      'Cursos que el estudiante debería completar antes (o ninguno).';
+
+  @override
+  String get constructorSinOtrosCursos => 'No hay otros cursos disponibles.';
+
+  @override
+  String get constructorNuevoModulo => 'Nuevo módulo';
+
+  @override
+  String get constructorTituloModulo => 'Título del módulo';
+
+  @override
+  String get constructorArrastre =>
+      'Arrastre con el ícono ⠿ para reordenar módulos y lecciones.';
+
+  @override
+  String get constructorPrimerModulo => 'Cree el primer módulo para empezar.';
+
+  @override
+  String constructorModuloTitulo(Object numero, Object titulo) {
+    return 'Módulo $numero: $titulo';
+  }
+
+  @override
+  String get constructorRenombrarModulo => 'Renombrar módulo';
+
+  @override
+  String get constructorAgregarLeccion => 'Agregar lección';
+
+  @override
+  String get constructorEliminarModulo => 'Eliminar módulo';
+
+  @override
+  String get constructorSinLecciones =>
+      'Sin lecciones — use + para agregar contenido.';
+
+  @override
+  String constructorEditarTipo(Object tipo) {
+    return 'Editar $tipo';
+  }
+
+  @override
+  String get constructorEliminarLeccion => 'Eliminar lección';
+
+  @override
+  String constructorEliminarLeccionTexto(Object titulo) {
+    return '¿Eliminar \"$titulo\"?';
+  }
+
+  @override
+  String get comunGuardado => 'Guardado ✓';
+
+  @override
+  String get constructorCuentaCertificado =>
+      '¿Este curso cuenta para certificado?';
+
+  @override
+  String get constructorCuentaCertificadoTexto =>
+      'Se ve un sello en el curso y sus horas cuentan para el certificado de la Ruta de Impacto del laboratorio (el PDF lo emite el LXD al completar toda la Ruta, no por curso individual)';
+
+  @override
+  String get constructorHorasCertificadas => 'Horas certificadas';
+
+  @override
+  String get constructorSinDefinir => 'Sin definir';
+
+  @override
+  String constructorApertura(Object fecha) {
+    return 'Apertura: $fecha';
+  }
+
+  @override
+  String constructorCierre(Object fecha) {
+    return 'Cierre: $fecha';
+  }
+
+  @override
+  String get constructorCierreAntes =>
+      'El curso no puede cerrar antes de abrir.';
+
+  @override
+  String get constructorMaximo => 'Máximo de estudiantes (0 = sin límite)';
+
+  @override
+  String get constructorVisible => 'Visible';
+
+  @override
+  String get constructorOculto => 'Oculto';
+
+  @override
+  String get constructorOcultosTexto =>
+      'Los cursos ocultos no aparecen para asignación';
+
+  @override
+  String get constructorPatrocinio => 'Patrocinio';
+
+  @override
+  String get constructorEmpresaPatrocinadora =>
+      'Empresa patrocinadora del curso (opcional)';
+
+  @override
+  String get constructorNinguna => 'Ninguna';
+
+  @override
+  String get constructorPatrocinioTexto =>
+      'Las horas de formación completadas en cursos patrocinados alimentan las métricas de impacto de la empresa.';
+
+  @override
+  String get constructorQuitarFecha => 'Quitar fecha';
+
+  @override
+  String get comunAgregar => 'Agregar';
+
+  @override
+  String get comunAceptar => 'Aceptar';
+
+  @override
+  String constructorEliminarModuloTexto(Object modulo, int cantidad) {
+    return 'Va a eliminar \"$modulo\" con sus $cantidad lecciones.';
+  }
+
+  @override
+  String get quizTipoMultiple => 'Selección múltiple';
+
+  @override
+  String get quizTipoVerdaderoFalso => 'Verdadero / Falso';
+
+  @override
+  String get quizTipoCorta => 'Respuesta corta';
+
+  @override
+  String get quizTipoOrdenar => 'Ordenar';
+
+  @override
+  String get quizTipoCompletar => 'Completar';
+
+  @override
+  String get leccionDescartarTexto =>
+      'Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?';
+
+  @override
+  String get leccionNecesitaTitulo => 'La lección necesita un título.';
+
+  @override
+  String get leccionEnlaceNecesitaUrl =>
+      'Una lección de tipo enlace necesita su URL.';
+
+  @override
+  String get leccionEspereRevision =>
+      'Espere a que termine la revisión del video.';
+
+  @override
+  String get leccionSubidaCancelada =>
+      'Se canceló la subida. Si la lección ya tenía video, sigue igual.';
+
+  @override
+  String get leccionEnlaceYoutube => 'Enlace del video de YouTube';
+
+  @override
+  String leccionYoutubeEncontrado(Object id) {
+    return 'Video de YouTube encontrado. Se guarda solo su id ($id), no el enlace.';
+  }
+
+  @override
+  String get leccionEnlaceVimeo =>
+      'Enlace de Vimeo: se guarda tal cual y se ve con el reproductor de Vimeo.';
+
+  @override
+  String get leccionYaTieneVideo =>
+      'Esta lección ya tiene un video propio cargado. Pegar un enlace lo reemplaza.';
+
+  @override
+  String get leccionPegueEnlace =>
+      'Pegue el enlace tal como lo copia de YouTube: sirven watch?v=, youtu.be, shorts y embed. También se acepta Vimeo.';
+
+  @override
+  String get leccionNueva => 'Nueva lección';
+
+  @override
+  String get leccionEditar => 'Editar lección';
+
+  @override
+  String get leccionSubiendo => 'Subiendo…';
+
+  @override
+  String get leccionPegarYoutube => 'Pegar link de YouTube';
+
+  @override
+  String get leccionSubirVideo => 'Subir video';
+
+  @override
+  String get leccionDuracionMinutos => 'Duración (minutos)';
+
+  @override
+  String get leccionArchivoDescargable => 'Archivo descargable';
+
+  @override
+  String leccionArchivoActual(Object archivo) {
+    return 'Actual: $archivo';
+  }
+
+  @override
+  String get leccionPreguntasEncuesta =>
+      'Preguntas de la encuesta (sin calificación)';
+
+  @override
+  String get leccionPreguntasQuiz => 'Preguntas (las califica el servidor)';
+
+  @override
+  String get leccionPregunta => 'Pregunta';
+
+  @override
+  String get leccionSinPreguntas =>
+      'Sin preguntas todavía. Una lección de quiz sin preguntas se guarda, pero quien la abra recibe un aviso en vez de una nota.';
+
+  @override
+  String leccionPreguntaNumero(Object numero) {
+    return 'Pregunta $numero';
+  }
+
+  @override
+  String get leccionQuitarPregunta => 'Quitar pregunta';
+
+  @override
+  String get leccionEnunciado => 'Enunciado';
+
+  @override
+  String get leccionQuitarOpcion => 'Quitar opción';
+
+  @override
+  String get leccionOpcion => 'Opción';
+
+  @override
+  String get leccionRespuestaCorrecta => 'Respuesta correcta:';
+
+  @override
+  String get leccionRespuestaFlexible =>
+      'Respuesta correcta (se comparan tildes y mayúsculas de forma flexible)';
+
+  @override
+  String get leccionPalabraCompleta =>
+      'Palabra o frase que completa el enunciado';
+
+  @override
+  String get leccionOrdenCorrecto =>
+      'Elementos en el orden CORRECTO — así se guardan, y así se califica quien los ordene igual:';
+
+  @override
+  String get leccionQuitarElemento => 'Quitar elemento';
+
+  @override
+  String get leccionElemento => 'Elemento';
+
+  @override
+  String get leccionInstrucciones => 'Instrucciones de la actividad';
+
+  @override
+  String get leccionFechaSinDefinir => 'Fecha límite: sin definir';
+
+  @override
+  String get leccionMaxArchivos => 'Máx. archivos';
+
+  @override
+  String get leccionPedirAlgo =>
+      'La actividad tiene que pedir al menos texto o archivo: si no, no hay nada que entregar.';
+
+  @override
+  String get leccionTiposEntregable =>
+      'Tipos de entregable aceptados (ninguno = cualquiera)';
+
+  @override
+  String get leccionCalificacion => 'Calificación';
+
+  @override
+  String get leccionRubrica => 'Rúbrica (criterios y puntos)';
+
+  @override
+  String get leccionCriterio => 'Criterio';
+
+  @override
+  String get leccionPuntos => 'Puntos';
+
+  @override
+  String get leccionQuitarCriterio => 'Quitar criterio';
+
+  @override
+  String leccionTotalPuntos(Object total) {
+    return 'Total: $total puntos';
+  }
+
+  @override
+  String leccionOpcionNumero(Object numero) {
+    return 'Opción $numero';
+  }
+
+  @override
+  String leccionOpcionCorrecta(Object numero) {
+    return 'Opción $numero (correcta)';
+  }
+
+  @override
+  String glosarioDelModuloCon(Object terminos) {
+    return 'Glosario del módulo · $terminos';
+  }
+
+  @override
+  String get glosarioEditorVacio =>
+      'Este módulo todavía no tiene términos. Los que agregue aparecen al final de las lecciones que marque y al final del módulo.';
+
+  @override
+  String get glosarioAgregarTermino => 'Agregar término';
+
+  @override
+  String glosarioArrastrar(Object palabra) {
+    return 'Arrastrar para reordenar «$palabra»';
+  }
+
+  @override
+  String get glosarioTieneImagen => 'Tiene imagen';
+
+  @override
+  String get glosarioSinLeccion => 'No está marcado en ninguna lección';
+
+  @override
+  String glosarioEditarPalabra(Object palabra) {
+    return 'Editar «$palabra»';
+  }
+
+  @override
+  String glosarioEliminarPalabra(Object palabra) {
+    return 'Eliminar «$palabra»';
+  }
+
+  @override
+  String get glosarioEliminarTermino => 'Eliminar término';
+
+  @override
+  String glosarioEliminarTerminoTexto(Object palabra) {
+    return '¿Eliminar «$palabra» del glosario? También se quita de los relacionados de otros términos y del repaso de los estudiantes.';
+  }
+
+  @override
+  String get glosarioPalabraObligatoria => 'La palabra es obligatoria.';
+
+  @override
+  String glosarioYaExiste(Object palabra) {
+    return 'Ya existe «$palabra» en este módulo.';
+  }
+
+  @override
+  String glosarioYaExisteEn(Object palabra, Object modulo) {
+    return 'Ya existe «$palabra» en el módulo «$modulo».';
+  }
+
+  @override
+  String get glosarioDescartarTexto =>
+      'Hay cambios sin guardar en este término. ¿Desea salir de todas formas?';
+
+  @override
+  String get glosarioTerminoAgregado => 'Término agregado ✓';
+
+  @override
+  String get glosarioNuevoTermino => 'Nuevo término';
+
+  @override
+  String get glosarioEditarTermino => 'Editar término';
+
+  @override
+  String glosarioModulo(Object modulo) {
+    return 'Módulo: $modulo';
+  }
+
+  @override
+  String get glosarioPalabraCampo => 'Palabra o expresión *';
+
+  @override
+  String get glosarioDefinicionCorta => 'Definición corta *';
+
+  @override
+  String get glosarioDefinicionObligatoria =>
+      'La definición corta es obligatoria.';
+
+  @override
+  String get glosarioDefinicionAyuda =>
+      'Una o dos frases. Es lo que se ve en la tarjeta y al pasar el mouse sobre la palabra.';
+
+  @override
+  String get glosarioExplicacion => 'Explicación ampliada (opcional)';
+
+  @override
+  String get glosarioEjemploOpcional => 'Ejemplo (opcional)';
+
+  @override
+  String get glosarioImagenOpcional => 'Imagen (opcional)';
+
+  @override
+  String get glosarioQuitarImagen => 'Quitar imagen';
+
+  @override
+  String get glosarioPngJpg => 'PNG o JPG.';
+
+  @override
+  String get glosarioLeccionesDonde => 'Lecciones donde aparece';
+
+  @override
+  String get glosarioModuloSinLecciones =>
+      'Este módulo todavía no tiene lecciones.';
+
+  @override
+  String get glosarioRelacionadosTitulo => 'Términos relacionados';
+
+  @override
+  String get glosarioRelacionadosAyuda =>
+      'Cuando el curso tenga más términos, podrá relacionarlos acá.';
+
+  @override
+  String get glosarioDeOtroModulo => 'De otro módulo';
+
+  @override
+  String get seguimientoTitulo => 'Seguimiento del Curso';
+
+  @override
+  String get seguimientoInscritos => 'Inscritos';
+
+  @override
+  String get seguimientoCompletados => 'Completados';
+
+  @override
+  String get seguimientoAvancePromedio => 'Avance promedio';
+
+  @override
+  String get seguimientoNotaPromedio => 'Nota promedio';
+
+  @override
+  String get seguimientoSinEstudiantes =>
+      'Aún no hay estudiantes asignados a este curso.\nEl admin los asigna desde su portal.';
+
+  @override
+  String get seguimientoAnaliticas => 'Analíticas';
+
+  @override
+  String get seguimientoNota => 'Nota';
+
+  @override
+  String get seguimientoUltimaActividad => 'Última actividad';
+
+  @override
+  String get seguimientoEstado => 'Estado';
+
+  @override
+  String get seguimientoComentarios => 'Comentarios';
+
+  @override
+  String get seguimientoCompletado => 'Completado';
+
+  @override
+  String get seguimientoSinIniciar => 'Sin iniciar';
+
+  @override
+  String seguimientoNotaPrivada(Object nota) {
+    return 'Nota privada: $nota';
+  }
+
+  @override
+  String get seguimientoAgregarComentario => 'Agregar comentario privado';
+
+  @override
+  String seguimientoComentariosDe(Object nombre) {
+    return 'Comentarios privados — $nombre';
+  }
+
+  @override
+  String get seguimientoRetroObservaciones =>
+      'Retroalimentación y observaciones';
+
+  @override
+  String get seguimientoSoloDocentes =>
+      'Solo para el equipo docente. El estudiante NO la ve.';
+
+  @override
+  String get seguimientoAvanceCurso => 'Avance del curso';
+
+  @override
+  String get comunSinDatos => 'Sin datos';
+
+  @override
+  String get seguimientoAvanceUniversidad =>
+      'Avance promedio por universidad (%)';
+
+  @override
+  String get seguimientoRiesgo => 'Riesgo de abandono (sin iniciar)';
+
+  @override
+  String get seguimientoTiempoPromedio => 'Tiempo promedio invertido';
+
+  @override
+  String get seguimientoAvancePatrocinados => 'Avance de patrocinados';
+
+  @override
+  String get seguimientoLeccionesTotales => 'Lecciones totales';
+
+  @override
+  String glosarioApareceEn(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad lecciones',
+      one: '1 lección',
+    );
+    return 'Aparece en $_temp0';
+  }
+
+  @override
+  String seguimientoNotaYActividad(Object nota, Object actividad) {
+    return 'Nota: $nota  ·  $actividad';
+  }
 }

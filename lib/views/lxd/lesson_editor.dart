@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/authoring.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../utils/youtube.dart';
 import '../../widgets/async_states.dart';
@@ -31,22 +33,23 @@ IconData lessonTypeIcon(LessonType t) => switch (t) {
     };
 
 String lessonTypeLabel(LessonType t) => switch (t) {
-      LessonType.video => 'Video',
+      LessonType.video => tr.tipoArchivoVideo,
       LessonType.pdf => 'PDF',
-      LessonType.resource => 'Recurso',
-      LessonType.link => 'Enlace',
-      LessonType.quiz => 'Quiz',
-      LessonType.activity => 'Actividad',
-      LessonType.survey => 'Encuesta',
+      LessonType.resource => tr.leccionTipoRecurso,
+      LessonType.link => tr.leccionTipoEnlace,
+      LessonType.quiz => tr.leccionTipoQuiz,
+      LessonType.activity => tr.leccionTipoActividad,
+      LessonType.survey => tr.leccionTipoEncuesta,
     };
 
-const quizKinds = [
-  ('multiple', 'Selección múltiple'),
-  ('truefalse', 'Verdadero / Falso'),
-  ('short', 'Respuesta corta'),
-  ('order', 'Ordenar'),
-  ('fill', 'Completar'),
-];
+/// Tipos de pregunta: `(identificador de la API, rótulo en el idioma activo)`.
+List<(String, String)> get quizKinds => [
+      ('multiple', tr.quizTipoMultiple),
+      ('truefalse', tr.quizTipoVerdaderoFalso),
+      ('short', tr.quizTipoCorta),
+      ('order', tr.quizTipoOrdenar),
+      ('fill', tr.quizTipoCompletar),
+    ];
 
 /// Abre el constructor de lecciones.
 ///
@@ -160,8 +163,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   Future<void> _salir() async {
     if (_saving) return;
     if (_hayCambios &&
-        !await confirmDialog(context, 'Descartar cambios',
-            'Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?')) {
+        !await confirmDialog(context, tr.formularioDescartarTitulo,
+            tr.leccionDescartarTexto)) {
       return;
     }
     // [_cerrar] además descarta la lección que se creó para subirle un video
@@ -264,12 +267,12 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('La lección necesita un título.'));
+          ValidationError(tr.leccionNecesitaTitulo));
       return;
     }
     if (_type == LessonType.link && _externalUrl.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('Una lección de tipo enlace necesita su URL.'));
+          ValidationError(tr.leccionEnlaceNecesitaUrl));
       return;
     }
     // Antes de crear nada: un enlace o un archivo inválido detectado DESPUÉS
@@ -277,8 +280,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     final subir = _type == LessonType.video && _mode == VideoSourceMode.upload;
     if (subir) {
       if (_upload.checking) {
-        setState(() => _error = const ValidationError(
-            'Espere a que termine la revisión del video.'));
+        setState(() => _error = ValidationError(
+            tr.leccionEspereRevision));
         return;
       }
       final problema = _upload.file == null ? null : _upload.problem;
@@ -324,7 +327,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
       if (!mounted) return;
       setState(() => _saving = false);
       showAppSnack(context,
-          'Se canceló la subida. Si la lección ya tenía video, sigue igual.');
+          tr.leccionSubidaCancelada);
     } on ConflictError catch (e) {
       if (!mounted) return;
       setState(() {
@@ -466,7 +469,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             keyboardType: TextInputType.url,
             autocorrect: false,
             decoration: InputDecoration(
-              labelText: 'Enlace del video de YouTube',
+              labelText: tr.leccionEnlaceYoutube,
               hintText: 'https://www.youtube.com/watch?v=…',
               prefixIcon: const Icon(Icons.smart_display_outlined),
               suffixIcon: link.kind == VideoLinkKind.youtube ||
@@ -478,23 +481,18 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               helperMaxLines: 3,
               helperText: switch (link.kind) {
                 VideoLinkKind.youtube =>
-                  'Video de YouTube encontrado. Se guarda solo su id '
-                      '(${link.youtubeId}), no el enlace.',
+                  tr.leccionYoutubeEncontrado(link.youtubeId ?? ''),
                 VideoLinkKind.vimeo =>
-                  'Enlace de Vimeo: se guarda tal cual y se ve con el '
-                      'reproductor de Vimeo.',
+                  tr.leccionEnlaceVimeo,
                 _ when tieneArchivo =>
-                  'Esta lección ya tiene un video propio cargado. Pegar un '
-                      'enlace lo reemplaza.',
-                _ => 'Pegue el enlace tal como lo copia de YouTube: sirven '
-                    'watch?v=, youtu.be, shorts y embed. También se acepta '
-                    'Vimeo.',
+                  tr.leccionYaTieneVideo,
+                _ => tr.leccionPegueEnlace,
               },
             ),
           ),
           if (link.kind == VideoLinkKind.youtube) ...[
             const SizedBox(height: 12),
-            const Text('Vista previa — así lo verán los estudiantes:',
+            Text(tr.subidaVistaPreviaAsi,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             const SizedBox(height: 6),
             // Reproducirlo acá es la única forma de enterarse ANTES de
@@ -504,7 +502,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               key: ValueKey('preview-${link.youtubeId}'),
               videoId: link.youtubeId!,
               title: _title.text.trim().isEmpty
-                  ? 'Vista previa'
+                  ? tr.subidaVistaPrevia
                   : _title.text.trim(),
             ),
           ],
@@ -535,7 +533,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
       );
 
   Widget _construir(BuildContext context) {
-    final title = _isNew ? 'Nueva lección' : 'Editar lección';
+    final title = _isNew ? tr.leccionNueva : tr.leccionEditar;
     final subiendo = _upload.uploading;
     final actions = [
       TextButton(
@@ -544,15 +542,15 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             : _saving
                 ? null
                 : _salir,
-        child: Text(subiendo ? 'Cancelar subida' : 'Cancelar'),
+        child: Text(subiendo ? tr.subidaCancelar : tr.comunCancelar),
       ),
       ElevatedButton(
         onPressed: _saving ? null : _save,
         child: Text(subiendo
-            ? 'Subiendo…'
+            ? tr.leccionSubiendo
             : _saving
-                ? 'Guardando…'
-                : 'Guardar'),
+                ? tr.comunGuardando
+                : tr.comunGuardar),
       ),
     ];
 
@@ -576,7 +574,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 elevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Cerrar',
+                  tooltip: tr.comunCerrar,
                   onPressed: _saving ? null : _salir,
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
@@ -652,14 +650,14 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         TextField(
           controller: _title,
           enabled: !_saving,
-          decoration: const InputDecoration(labelText: 'Título'),
+          decoration: InputDecoration(labelText: tr.comunTitulo),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _desc,
           enabled: !_saving,
           maxLines: 2,
-          decoration: const InputDecoration(labelText: 'Descripción'),
+          decoration: InputDecoration(labelText: tr.comunDescripcion),
         ),
         const SizedBox(height: 12),
         ..._typeFields(),
@@ -683,16 +681,16 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             width: double.infinity,
             child: SegmentedButton<VideoSourceMode>(
               key: const ValueKey('origen-del-video'),
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: VideoSourceMode.youtube,
                   icon: Icon(Icons.smart_display_outlined),
-                  label: Text('Pegar link de YouTube'),
+                  label: Text(tr.leccionPegarYoutube),
                 ),
                 ButtonSegment(
                   value: VideoSourceMode.upload,
                   icon: Icon(Icons.upload_file),
-                  label: Text('Subir video'),
+                  label: Text(tr.leccionSubirVideo),
                 ),
               ],
               selected: {_mode},
@@ -728,13 +726,13 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             enabled: !_saving,
             keyboardType: TextInputType.number,
             decoration:
-                const InputDecoration(labelText: 'Duración (minutos)'),
+                InputDecoration(labelText: tr.leccionDuracionMinutos),
           ),
         ];
       case LessonType.pdf:
       case LessonType.resource:
         return [
-          const Text('Archivo descargable',
+          Text(tr.leccionArchivoDescargable,
               style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
           const SizedBox(height: 6),
           if (widget.original?.resourceFileName != null && _resource.isEmpty)
@@ -747,7 +745,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Actual: ${widget.original!.resourceFileName}',
+                      tr.leccionArchivoActual(widget.original!.resourceFileName ?? ''),
                       style: const TextStyle(fontSize: 12.5),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -802,13 +800,13 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           children: [
             Text(
                 _isSurvey
-                    ? 'Preguntas de la encuesta (sin calificación)'
-                    : 'Preguntas (las califica el servidor)',
+                    ? tr.leccionPreguntasEncuesta
+                    : tr.leccionPreguntasQuiz,
                 style: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 14)),
             OutlinedButton.icon(
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('Pregunta'),
+              label: Text(tr.leccionPregunta),
               onPressed: _saving
                   ? null
                   : () => setState(() => _questions.add(QuizQuestionDraft(
@@ -819,9 +817,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         ),
         const SizedBox(height: 8),
         if (_questions.isEmpty)
-          const Text(
-            'Sin preguntas todavía. Una lección de quiz sin preguntas se '
-            'guarda, pero quien la abra recibe un aviso en vez de una nota.',
+          Text(
+            tr.leccionSinPreguntas,
             style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
           ),
         for (var i = 0; i < _questions.length; i++) _questionCard(i),
@@ -849,7 +846,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         children: [
           Row(
             children: [
-              Text('Pregunta ${i + 1}',
+              Text(tr.leccionPreguntaNumero(i + 1),
                   style: const TextStyle(
                       color: AppColors.gold,
                       fontWeight: FontWeight.w700,
@@ -879,7 +876,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 16),
                 color: AppColors.statusCritical,
-                tooltip: 'Quitar pregunta',
+                tooltip: tr.leccionQuitarPregunta,
                 onPressed:
                     _saving ? null : () => setState(() => _questions.removeAt(i)),
               ),
@@ -889,7 +886,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             initialValue: q.question,
             enabled: !_saving,
             decoration:
-                const InputDecoration(labelText: 'Enunciado', isDense: true),
+                InputDecoration(labelText: tr.leccionEnunciado, isDense: true),
             onChanged: (v) => q.question = v,
           ),
           if (problem != null)
@@ -940,22 +937,23 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                     initialValue: q.options[o],
                     enabled: !_saving,
                     decoration: InputDecoration(
-                        labelText: 'Opción ${o + 1}'
-                            '${q.answerIndex == o ? ' (correcta)' : ''}',
+                        labelText: q.answerIndex == o
+                            ? tr.leccionOpcionCorrecta(o + 1)
+                            : tr.leccionOpcionNumero(o + 1),
                         isDense: true),
                     onChanged: (v) => q.options[o] = v,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),
-                  tooltip: 'Quitar opción',
+                  tooltip: tr.leccionQuitarOpcion,
                   onPressed: _saving ? null : () => _removeOption(q, o),
                 ),
               ],
             ),
           TextButton.icon(
             icon: const Icon(Icons.add, size: 14),
-            label: const Text('Opción', style: TextStyle(fontSize: 12)),
+            label: Text(tr.leccionOpcion, style: TextStyle(fontSize: 12)),
             onPressed: _saving ? null : () => setState(() => q.options.add('')),
           ),
         ];
@@ -966,18 +964,18 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Text('Respuesta correcta:',
+              Text(tr.leccionRespuestaCorrecta,
                   style:
                       TextStyle(fontSize: 13, color: AppColors.textMuted)),
               ChoiceChip(
-                label: const Text('Verdadero'),
+                label: Text(tr.quizVerdadero),
                 selected: q.answerIndex == 0,
                 selectedColor: AppColors.statusGood.withValues(alpha: 0.25),
                 onSelected:
                     _saving ? null : (_) => setState(() => q.answerIndex = 0),
               ),
               ChoiceChip(
-                label: const Text('Falso'),
+                label: Text(tr.quizFalso),
                 selected: q.answerIndex == 1,
                 selectedColor:
                     AppColors.statusCritical.withValues(alpha: 0.25),
@@ -995,8 +993,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             enabled: !_saving,
             decoration: InputDecoration(
               labelText: q.kind == 'short'
-                  ? 'Respuesta correcta (se comparan tildes y mayúsculas de forma flexible)'
-                  : 'Palabra o frase que completa el enunciado',
+                  ? tr.leccionRespuestaFlexible
+                  : tr.leccionPalabraCompleta,
               isDense: true,
             ),
             onChanged: (v) => q.answerText = v,
@@ -1004,9 +1002,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         ];
       case 'order':
         return [
-          const Text(
-            'Elementos en el orden CORRECTO — así se guardan, y así se '
-            'califica quien los ordene igual:',
+          Text(
+            tr.leccionOrdenCorrecto,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 6),
@@ -1026,14 +1023,14 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),
-                  tooltip: 'Quitar elemento',
+                  tooltip: tr.leccionQuitarElemento,
                   onPressed: _saving ? null : () => _removeOption(q, o),
                 ),
               ],
             ),
           TextButton.icon(
             icon: const Icon(Icons.add, size: 14),
-            label: const Text('Elemento', style: TextStyle(fontSize: 12)),
+            label: Text(tr.leccionElemento, style: TextStyle(fontSize: 12)),
             onPressed: _saving ? null : () => setState(() => q.options.add('')),
           ),
         ];
@@ -1070,8 +1067,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           initialValue: a.description,
           enabled: !_saving,
           maxLines: 3,
-          decoration: const InputDecoration(
-              labelText: 'Instrucciones de la actividad'),
+          decoration: InputDecoration(
+              labelText: tr.leccionInstrucciones),
           onChanged: (v) => a.description = v,
         ),
         const SizedBox(height: 12),
@@ -1085,16 +1082,16 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               Expanded(
                 child: Text(
                   a.deadline == null
-                      ? 'Fecha límite: sin definir'
-                      : 'Fecha límite: '
-                          '${DateFormat('d MMM yyyy').format(DateTime.parse(a.deadline!))}',
+                      ? tr.leccionFechaSinDefinir
+                      : tr.labFechaLimite(
+                          fechaCorta(DateTime.parse(a.deadline!))),
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
               if (a.deadline != null)
                 IconButton(
                   icon: const Icon(Icons.clear, size: 14),
-                  tooltip: 'Quitar fecha',
+                  tooltip: tr.constructorQuitarFecha,
                   onPressed:
                       _saving ? null : () => setState(() => a.deadline = null),
                 ),
@@ -1109,7 +1106,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               CheckboxListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Archivo obligatorio',
+                title: Text(tr.actividadArchivoObligatorio,
                     style: TextStyle(fontSize: 13)),
                 value: a.requiresFile,
                 activeColor: AppColors.gold,
@@ -1120,7 +1117,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               CheckboxListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Texto obligatorio',
+                title: Text(tr.actividadTextoObligatorio,
                     style: TextStyle(fontSize: 13)),
                 value: a.requiresText,
                 activeColor: AppColors.gold,
@@ -1133,8 +1130,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               initialValue: a.maxFiles.toString(),
               enabled: !_saving,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                  labelText: 'Máx. archivos', isDense: true),
+              decoration: InputDecoration(
+                  labelText: tr.leccionMaxArchivos, isDense: true),
               onChanged: (v) => a.maxFiles = int.tryParse(v) ?? 1,
             );
 
@@ -1151,16 +1148,15 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           },
         ),
         if (!a.requiresFile && !a.requiresText)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 6),
             child: Text(
-              'La actividad tiene que pedir al menos texto o archivo: si no, '
-              'no hay nada que entregar.',
+              tr.leccionPedirAlgo,
               style: TextStyle(fontSize: 12, color: AppColors.statusCritical),
             ),
           ),
         const SizedBox(height: 8),
-        const Text('Tipos de entregable aceptados (ninguno = cualquiera)',
+        Text(tr.leccionTiposEntregable,
             style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
         const SizedBox(height: 6),
         Wrap(
@@ -1185,7 +1181,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         DropdownButtonFormField<String>(
           isExpanded: true,
           initialValue: a.gradingMode,
-          decoration: const InputDecoration(labelText: 'Calificación'),
+          decoration: InputDecoration(labelText: tr.leccionCalificacion),
           items: [
             for (final mode in const [
               GradingMode.points100,
@@ -1205,12 +1201,12 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           spacing: 12,
           runSpacing: 8,
           children: [
-            const Text('Rúbrica (criterios y puntos)',
+            Text(tr.leccionRubrica,
                 style:
                     TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             OutlinedButton.icon(
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('Criterio'),
+              label: Text(tr.leccionCriterio),
               onPressed: _saving
                   ? null
                   : () => setState(
@@ -1230,8 +1226,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                   child: TextFormField(
                     initialValue: a.rubric[i].criterion,
                     enabled: !_saving,
-                    decoration: const InputDecoration(
-                        labelText: 'Criterio', isDense: true),
+                    decoration: InputDecoration(
+                        labelText: tr.leccionCriterio, isDense: true),
                     onChanged: (v) => a.rubric[i].criterion = v,
                   ),
                 ),
@@ -1242,15 +1238,15 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                     initialValue: a.rubric[i].points.toString(),
                     enabled: !_saving,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        labelText: 'Puntos', isDense: true),
+                    decoration: InputDecoration(
+                        labelText: tr.leccionPuntos, isDense: true),
                     onChanged: (v) =>
                         a.rubric[i].points = int.tryParse(v) ?? 0,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),
-                  tooltip: 'Quitar criterio',
+                  tooltip: tr.leccionQuitarCriterio,
                   onPressed: _saving
                       ? null
                       : () => setState(() => a.rubric.removeAt(i)),
@@ -1260,7 +1256,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           ),
         if (a.rubric.isNotEmpty)
           Text(
-            'Total: ${a.totalPoints} puntos',
+            tr.leccionTotalPuntos(a.totalPoints),
             style: const TextStyle(
                 color: AppColors.gold,
                 fontWeight: FontWeight.w700,

@@ -452,7 +452,7 @@ courseRoutes.post('/:id/publish', requireRole(...CONTENT_ROLES), async (c) => {
   const sinVideo = await videoLessonsWithoutSource(db, course.id);
   if (sinVideo.length > 0) {
     throw conflict(
-      'Hay lecciones de video sin enlace ni archivo. Completalas antes de publicar.',
+      'Hay lecciones de video sin enlace ni archivo. Complételas antes de publicar.',
       { lessons: sinVideo },
     );
   }
@@ -498,7 +498,7 @@ courseRoutes.delete('/:id', requireRole(...CONTENT_ROLES), async (c) => {
 
   if (blocked) {
     throw conflict(
-      'Este curso no se puede borrar porque está en uso. Archivalo en su lugar: ' +
+      'Este curso no se puede borrar porque está en uso. Archívelo en su lugar: ' +
         'deja de asignarse a estudiantes nuevos, pero quienes ya tienen progreso no se bloquean.',
       { ...blockers, suggestedAction: 'POST /courses/:id/archive' },
     );

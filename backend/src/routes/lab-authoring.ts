@@ -189,7 +189,7 @@ labAuthoringRoutes.delete('/:id', async (c) => {
   if ((blockers?.students ?? 0) > 0 || (blockers?.certificates ?? 0) > 0) {
     throw conflict(
       'Este laboratorio no se puede borrar porque tiene gente adentro. ' +
-        'Quitá primero a sus estudiantes.',
+        'Quite primero a sus estudiantes.',
       blockers,
     );
   }

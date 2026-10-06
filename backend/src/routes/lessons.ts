@@ -853,7 +853,7 @@ lessonRoutes.put('/:id/quiz', requireRole(...CONTENT_ROLES), async (c) => {
   const problems = quizProblems(body.questions, isSurvey);
   if (problems.length > 0) {
     throw conflict(
-      'Hay preguntas incompletas. Revisalas antes de guardar.',
+      'Hay preguntas incompletas. Revíselas antes de guardar.',
       { problems },
     );
   }
@@ -920,7 +920,7 @@ function quizProblems(
 
     if (q.kind === 'multiple' || q.kind === 'order') {
       if (q.options.some((o) => o === '')) {
-        add(at, 'Hay opciones sin texto. Completalas o quitalas.');
+        add(at, 'Hay opciones sin texto. Complételas o quítelas.');
       } else if (q.options.length < 2) {
         add(
           at,

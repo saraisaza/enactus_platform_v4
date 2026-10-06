@@ -36,7 +36,7 @@ adminRoutes.patch('/users/:id/can-grade', async (c) => {
   const actor = currentUser(c);
   const body = canGradeBody.parse(await c.req.json());
   if (body.canGradeOpenLearning === undefined && body.canGradeEnactus === undefined) {
-    throw conflict('No enviaste ningún permiso para cambiar.');
+    throw conflict('No envió ningún permiso para cambiar.');
   }
 
   const db = c.get('db');

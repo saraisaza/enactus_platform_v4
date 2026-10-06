@@ -45,7 +45,7 @@ const createBody = z
       .default([]),
   })
   .refine((b) => Boolean(b.courseId) !== Boolean(b.rutaModuleId), {
-    message: 'Indicá exactamente uno: courseId o rutaModuleId.',
+    message: 'Indique exactamente uno: courseId o rutaModuleId.',
   });
 
 const gradeBody = z.object({
@@ -309,6 +309,8 @@ submissionRoutes.post('/:id/grade', requireCanGrade, async (c) => {
       userId: submission.studentId,
       title: 'Entrega calificada',
       body: `"${submission.taskName}" tiene nueva retroalimentación.`,
+      kind: 'entrega_calificada',
+      params: { tarea: submission.taskName },
     });
   }
 
@@ -355,6 +357,8 @@ submissionRoutes.post('/:id/review', async (c) => {
       userId: submission.studentId,
       title: 'Entrega revisada',
       body: `"${submission.taskName}" tiene un comentario nuevo de su Mentor.`,
+      kind: 'entrega_revisada',
+      params: { tarea: submission.taskName },
     });
   }
 

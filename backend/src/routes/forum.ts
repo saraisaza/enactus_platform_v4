@@ -522,6 +522,7 @@ forumRoutes.post('/:id/report', async (c) => {
         userId: m.id,
         title: 'Nuevo reporte en el foro',
         body: 'Alguien reportó contenido del foro. Revíselo en Foro › Reportes.',
+        kind: 'foro_reporte',
       })),
     );
   }

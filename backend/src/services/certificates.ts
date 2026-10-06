@@ -219,7 +219,9 @@ export async function issueRutaCertificate(
   await db.insert(notifications).values({
     userId: student.id,
     title: 'Nuevo certificado',
-    body: `Recibiste el certificado por completar la Ruta de Impacto de ${lab.name}.`,
+    body: `Recibió el certificado por completar la Ruta de Impacto de ${lab.name}.`,
+    kind: 'certificado_nuevo',
+    params: { laboratorio: lab.name },
   });
 
   await db.insert(auditLog).values({

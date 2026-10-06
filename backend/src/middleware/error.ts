@@ -3,6 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import { ZodError } from 'zod';
 
 import { env } from '../env';
+import { idiomaDe, traducir } from '../i18n';
 import { AppError } from '../lib/errors';
 
 /**
@@ -11,17 +12,21 @@ import { AppError } from '../lib/errors';
  *   { "error": { "code": "forbidden", "message": "…", "details": … } }
  *
  * `code` es el identificador estable que el cliente Flutter mira para decidir
- * qué hacer; `message` es para la persona. Nunca sale un detalle interno de
+ * qué hacer; `message` es para la persona, en el idioma que pide
+ * `Accept-Language` (ver `src/i18n`). Nunca sale un detalle interno de
  * PostgreSQL: un error inesperado se registra completo en el log del servidor
  * y al cliente le llega un mensaje genérico.
  */
 export function onError(error: Error, c: Context): Response {
+  const idioma = idiomaDe(c);
+  const t = (mensaje: string) => traducir(mensaje, idioma);
+
   if (error instanceof AppError) {
     return c.json(
       {
         error: {
           code: error.code,
-          message: error.message,
+          message: t(error.message),
           ...(error.details === undefined ? {} : { details: error.details }),
         },
       },
@@ -34,10 +39,10 @@ export function onError(error: Error, c: Context): Response {
       {
         error: {
           code: 'validation_error',
-          message: 'Los datos enviados no son válidos.',
+          message: t('Los datos enviados no son válidos.'),
           details: error.issues.map((i) => ({
             field: i.path.join('.'),
-            message: i.message,
+            message: t(i.message),
           })),
         },
       },
@@ -58,7 +63,7 @@ export function onError(error: Error, c: Context): Response {
       {
         error: {
           code: 'not_found',
-          message: 'No encontramos lo que busca: el identificador no es válido.',
+          message: t('No encontramos lo que busca: el identificador no es válido.'),
         },
       },
       404,
@@ -75,7 +80,7 @@ export function onError(error: Error, c: Context): Response {
       {
         error: {
           code: 'invalid_json',
-          message: 'El cuerpo de la petición no es JSON válido.',
+          message: t('El cuerpo de la petición no es JSON válido.'),
         },
       },
       400,
@@ -84,7 +89,7 @@ export function onError(error: Error, c: Context): Response {
 
   if (error instanceof HTTPException) {
     return c.json(
-      { error: { code: 'http_error', message: error.message } },
+      { error: { code: 'http_error', message: t(error.message) } },
       error.status,
     );
   }
@@ -95,7 +100,7 @@ export function onError(error: Error, c: Context): Response {
     {
       error: {
         code: 'internal_error',
-        message: 'Ocurrió un error inesperado.',
+        message: t('Ocurrió un error inesperado.'),
         ...(env.NODE_ENV === 'production'
           ? {}
           : { details: { name: error.name, message: error.message } }),
@@ -147,7 +152,10 @@ export function onNotFound(c: Context): Response {
     {
       error: {
         code: 'not_found',
-        message: `No existe la ruta ${c.req.method} ${c.req.path}.`,
+        message: traducir(
+          `No existe la ruta ${c.req.method} ${c.req.path}.`,
+          idiomaDe(c),
+        ),
       },
     },
     404,

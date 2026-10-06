@@ -22,6 +22,13 @@ const bodySchema = z.object({
   heroSubtitle: z.string().trim().default(''),
   bannerText: z.string().trim().default(''),
   aboutText: z.string().trim().default(''),
+  // Los textos en inglés son opcionales SIN valor por defecto: un cliente que
+  // no los conoce (una versión vieja de la app) los deja como estaban, en vez
+  // de borrarlos al guardar el resto.
+  heroTitleEn: z.string().trim().optional(),
+  heroSubtitleEn: z.string().trim().optional(),
+  bannerTextEn: z.string().trim().optional(),
+  aboutTextEn: z.string().trim().optional(),
   meetingLink: z.string().trim().default(''),
   statStudents: z.number().int().min(0).default(0),
   statProjects: z.number().int().min(0).default(0),
@@ -35,6 +42,10 @@ const DEFAULTS = {
   heroSubtitle: '',
   bannerText: '',
   aboutText: '',
+  heroTitleEn: '',
+  heroSubtitleEn: '',
+  bannerTextEn: '',
+  aboutTextEn: '',
   meetingLink: '',
   statStudents: 0,
   statProjects: 0,

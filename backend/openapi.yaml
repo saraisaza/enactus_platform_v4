@@ -17,6 +17,11 @@ info:
     entero en el servidor y llega genérico al cliente — nunca un detalle
     interno de PostgreSQL.
 
+    **Idioma.** `message` sale en el idioma que pide la cabecera
+    `Accept-Language`: inglés si el primer idioma de la lista es inglés,
+    español en cualquier otro caso (y sin cabecera). Solo se traducen los
+    mensajes del servidor; los datos que escriben las personas salen tal cual.
+
     **Dos criterios que conviene tener presentes al leer:**
 
     - Pedir por id un recurso que existe pero está fuera del alcance del rol
@@ -252,11 +257,19 @@ paths:
         La galería viene dos veces: `galleryImages` como lista de URLs ya
         firmadas —lo que consume la portada, que no sabe qué es un id— y
         `gallery` como `{id, url}`, para poder administrarla desde el panel.
+
+        Los textos del hero, el banner y «Sobre nosotros» vienen también en
+        inglés (`heroTitleEn`, `heroSubtitleEn`, `bannerTextEn`,
+        `aboutTextEn`). Vacíos, la portada en inglés muestra los de español.
       responses:
         '200': { description: Contenido del sitio }
     patch:
       tags: [content]
       summary: Editar el contenido (solo admin/superadmin)
+      description: |
+        Los campos en inglés (`heroTitleEn`, `heroSubtitleEn`, `bannerTextEn`,
+        `aboutTextEn`) son opcionales: si no vienen, quedan como estaban. Así
+        un cliente que no los conoce no los borra al guardar lo demás.
       responses:
         '200': { description: Actualizado }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -2357,7 +2370,12 @@ paths:
     get:
       tags: [content]
       summary: Notificaciones propias
-      description: Siempre las del usuario de la sesión; no hay parámetro para pedir las de otro.
+      description: |
+        Siempre las del usuario de la sesión; no hay parámetro para pedir las de otro.
+
+        Cada aviso trae `title` y `body` en español y, si se generó con tipo,
+        `kind` y `params`: con eso la app lo muestra en el idioma de quien lo
+        lee. Los avisos anteriores a los idiomas tienen `kind: null`.
       responses: { '200': { description: Página con el conteo de no leídas } }
     post:
       tags: [content]
@@ -2391,6 +2409,19 @@ paths:
                   items: { type: string, format: uuid }
                 title: { type: string, minLength: 1 }
                 body: { type: string }
+                kind:
+                  type: string
+                  enum: [mentor_comento, solicitud_patrocinados]
+                  description: |
+                    Qué aviso es, para que quien lo recibe lo lea en su idioma.
+                    Sin `kind`, el aviso se muestra con su título y su texto tal
+                    cual. Los tipos que genera el servidor (`entrega_calificada`,
+                    `entrega_revisada`, `foro_reporte`, `certificado_nuevo`) no
+                    se aceptan acá.
+                params:
+                  type: object
+                  additionalProperties: { type: string, maxLength: 300 }
+                  description: Lo que cambia dentro del texto, p. ej. `{ "tarea": "Informe final" }`.
       responses:
         '201':
           description: Enviado
@@ -2454,6 +2485,13 @@ paths:
               properties:
                 title: { type: string, minLength: 1, maxLength: 120 }
                 body: { type: string, maxLength: 500 }
+                kind:
+                  type: string
+                  enum: [mentor_comento, solicitud_patrocinados]
+                params:
+                  type: object
+                  additionalProperties: { type: string, maxLength: 300 }
+                  description: El servidor agrega `remitente` y `correo` de quien lo manda.
       responses:
         '201':
           description: Enviado

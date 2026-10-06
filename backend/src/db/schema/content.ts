@@ -5,6 +5,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -98,8 +99,18 @@ export const notifications = pgTable(
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    /** El texto en español: lo que muestra una app que no conoce [kind]. */
     title: text().notNull(),
     body: text().notNull().default(''),
+    /**
+     * Qué aviso es (`entrega_calificada`, `certificado_nuevo`…): con esto la
+     * app arma el texto en el idioma de QUIEN LO LEE, que no tiene por qué ser
+     * el de quien lo generó. `null` en los avisos anteriores a los idiomas y
+     * en los que escribe una persona (BuscaTalento): esos se muestran tal cual.
+     */
+    kind: text(),
+    /** Lo que cambia dentro del texto (`{ "tarea": "Informe final" }`). */
+    params: jsonb().$type<Record<string, string>>(),
     readAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
@@ -303,6 +314,15 @@ export const siteContent = pgTable(
     heroSubtitle: text().notNull().default(''),
     bannerText: text().notNull().default(''),
     aboutText: text().notNull().default(''),
+    /**
+     * Los mismos textos en inglés, para quien ve la portada en inglés. Los
+     * escribe el equipo, igual que los de español; vacío = se muestra el de
+     * español.
+     */
+    heroTitleEn: text().notNull().default(''),
+    heroSubtitleEn: text().notNull().default(''),
+    bannerTextEn: text().notNull().default(''),
+    aboutTextEn: text().notNull().default(''),
     /** Link genérico de videollamada para los módulos de mentoría. */
     meetingLink: text().notNull().default(''),
     /** Cifras curadas a mano por el equipo, no calculadas. */

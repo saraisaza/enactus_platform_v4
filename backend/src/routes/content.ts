@@ -8,6 +8,7 @@ import {
   evidences,
   notifications,
 } from '../db/schema';
+import { TIPOS_DESDE_LA_APP } from '../lib/avisos';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
 import { parcial } from '../lib/parcial';
@@ -382,6 +383,16 @@ notificationRoutes.get('/', async (c) => {
   });
 });
 
+/**
+ * El tipo de aviso que manda la app, para que quien lo recibe lo lea en su
+ * idioma (ver `lib/avisos.ts`). Opcional: un aviso sin tipo se muestra con su
+ * título y su texto, tal como se escribieron.
+ */
+const tipoDeAviso = {
+  kind: z.enum(TIPOS_DESDE_LA_APP).optional(),
+  params: z.record(z.string(), z.string().max(300)).optional(),
+};
+
 const notifyBody = z.object({
   userIds: z
     .array(z.uuid())
@@ -389,6 +400,7 @@ const notifyBody = z.object({
     .max(200, 'Son demasiados destinatarios para un solo aviso.'),
   title: z.string().trim().min(1, 'El aviso necesita un título.'),
   body: z.string().trim().default(''),
+  ...tipoDeAviso,
 });
 
 /**
@@ -429,6 +441,8 @@ notificationRoutes.post('/', async (c) => {
         userId,
         title: body.title,
         body: body.body,
+        kind: body.kind ?? null,
+        params: body.kind ? (body.params ?? {}) : null,
       })),
     )
     .returning({ id: notifications.id });
@@ -514,6 +528,7 @@ notificationRoutes.post('/admins', async (c) => {
     .object({
       title: z.string().trim().min(1, 'El aviso necesita un título.').max(120),
       body: z.string().trim().max(500).default(''),
+      ...tipoDeAviso,
     })
     .parse(await c.req.json());
 
@@ -533,6 +548,12 @@ notificationRoutes.post('/admins', async (c) => {
       userId: a.id,
       title: body.title,
       body: `${body.body}\n\n— ${user.name} (${user.email})`.trim(),
+      // La firma también va en los datos, para que la app la agregue al texto
+      // que arma en el idioma de quien lee. La pone el servidor, no quien pide.
+      kind: body.kind ?? null,
+      params: body.kind
+        ? { ...(body.params ?? {}), remitente: user.name, correo: user.email }
+        : null,
     })),
   );
 

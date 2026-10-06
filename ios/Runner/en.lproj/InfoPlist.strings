@@ -1,0 +1,8 @@
+/*
+  Los avisos de permisos en inglés. En español van en Info.plist, que es el
+  idioma de desarrollo (CFBundleDevelopmentRegion = es).
+*/
+"NSAppleMusicUsageDescription" = "eduXaction accesses your audio library only if you choose to attach an audio file.";
+"NSCameraUsageDescription" = "eduXaction uses the camera only when you decide to take a photo to attach to a submission, a piece of evidence or your profile photo.";
+"NSMicrophoneUsageDescription" = "eduXaction uses the microphone only if you record a video to attach to a submission or a piece of evidence.";
+"NSPhotoLibraryUsageDescription" = "eduXaction accesses your photos only when you choose one to attach to a submission, a piece of evidence or your profile photo.";

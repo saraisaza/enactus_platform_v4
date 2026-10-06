@@ -1456,4 +1456,970 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subidaArchivoSubido => 'uploaded file';
+
+  @override
+  String get portadaIniciarSesion => 'Sign in';
+
+  @override
+  String get portadaEstudiantesActivos => 'Active students';
+
+  @override
+  String get portadaProyectosImpacto => 'Impact projects';
+
+  @override
+  String get portadaLaboratorios => 'Laboratories';
+
+  @override
+  String get portadaUniversidadesAliadas => 'Partner universities';
+
+  @override
+  String get portadaAreasConocimiento => 'Fields of knowledge';
+
+  @override
+  String get portadaNuestrosLaboratorios => 'Our Laboratories';
+
+  @override
+  String get portadaAreasTexto =>
+      'Fields of knowledge in which we train our teams';
+
+  @override
+  String get portadaGaleria => 'Gallery';
+
+  @override
+  String get portadaNuestroTrabajo => 'Our work in pictures';
+
+  @override
+  String get portadaMomentos =>
+      'Moments from the eduXaction Colombia community';
+
+  @override
+  String get portadaListo => 'Ready to get involved? 💛';
+
+  @override
+  String get portadaListoTexto =>
+      'Whether you are a student, mentor, company or donor: there is a place for you at eduXaction Colombia.';
+
+  @override
+  String get portadaQuieroUnirme => 'I want to join';
+
+  @override
+  String get portadaExpoLugar => 'Santa Marta · July 2026';
+
+  @override
+  String get portadaExpoTitulo => 'National Expo 2026 Champions';
+
+  @override
+  String get portadaExpoTexto =>
+      'Santa Marta, July 2026 — our teams on their way to the eduXaction World Cup in São Paulo';
+
+  @override
+  String get portadaExpoPie =>
+      'eduXaction Colombia delegation · National Expo 2026';
+
+  @override
+  String get portadaEntrar => 'Enter the platform';
+
+  @override
+  String get tabDashboard => 'Dashboard';
+
+  @override
+  String get tabInicioCorto => 'Home';
+
+  @override
+  String get tabCalendario => 'Calendar';
+
+  @override
+  String get tabMisCursos => 'My Courses';
+
+  @override
+  String get tabCursosCorto => 'Courses';
+
+  @override
+  String get tabLaboratorios => 'Laboratories';
+
+  @override
+  String get tabRutaCorto => 'Path';
+
+  @override
+  String get tabDirectorioProyectos => 'Project Directory';
+
+  @override
+  String get tabProyectosCorto => 'Projects';
+
+  @override
+  String get tabForo => 'Forum';
+
+  @override
+  String get tabCertificados => 'Certificates';
+
+  @override
+  String get tabMiPerfil => 'My Profile';
+
+  @override
+  String get tabPerfilCorto => 'Profile';
+
+  @override
+  String portalDe(Object rol) {
+    return '$rol Portal';
+  }
+
+  @override
+  String get certificadosMisTitulo => 'My Certificates';
+
+  @override
+  String get certificadosMisSubtitulo =>
+      'Certificates issued by your LXDs when you complete an Impact Path';
+
+  @override
+  String get certificadosVacio =>
+      'You do not have any certificates yet.\nComplete your courses to earn them.';
+
+  @override
+  String certificadoRutaDe(Object laboratorio) {
+    return 'Impact Path · $laboratorio';
+  }
+
+  @override
+  String get certificadoVerPdf => 'View PDF';
+
+  @override
+  String get comunCompartir => 'Share';
+
+  @override
+  String perfilMiembroDesde(Object anio) {
+    return 'Active member since $anio';
+  }
+
+  @override
+  String get perfilMiembroComunidad => 'Community member';
+
+  @override
+  String get perfilBuscarPortal => 'Search the portal';
+
+  @override
+  String get perfilDatosPersonales => 'Personal information';
+
+  @override
+  String get perfilCedula => 'ID number';
+
+  @override
+  String get perfilTelefonoEtiqueta => 'Phone';
+
+  @override
+  String get perfilCorreoEtiqueta => 'Email';
+
+  @override
+  String get perfilCiudad => 'City';
+
+  @override
+  String get perfilCarrera => 'Degree program';
+
+  @override
+  String get perfilVidaEduxaction => 'eduXaction life';
+
+  @override
+  String get perfilEquipo => 'Team';
+
+  @override
+  String get perfilEmpresaPatrocinadora => 'Sponsoring company';
+
+  @override
+  String get perfilCursosActivos => 'Active courses';
+
+  @override
+  String get perfilLeccionesCompletadas => 'Lessons completed';
+
+  @override
+  String get perfilEditar => 'Edit profile';
+
+  @override
+  String get perfilSinProyecto => 'You do not have a project assigned yet.';
+
+  @override
+  String get perfilMiProyecto => 'MY PROJECT';
+
+  @override
+  String get certificadosVacioRuta =>
+      'You do not have any certificates yet. Complete an Impact Path to earn your first one.';
+
+  @override
+  String certificadosFaltaPoco(Object nombre) {
+    return 'You are close to your first certificate: \"$nombre\".';
+  }
+
+  @override
+  String leccionesDeTotal(Object completadas, Object total) {
+    return '$completadas of $total lessons';
+  }
+
+  @override
+  String get certificadoDescargar => 'Download certificate';
+
+  @override
+  String get perfilSeleccioneFoto => 'Select a photo';
+
+  @override
+  String get perfilFotoFormato => 'Use a JPG or PNG photo.';
+
+  @override
+  String get perfilFotoPesada =>
+      'The photo is larger than 25 MB. Choose a lighter one.';
+
+  @override
+  String get perfilTelefonoInvalido =>
+      'Enter a valid phone number (at least 7 digits).';
+
+  @override
+  String get perfilActualizado => 'Profile updated ✓';
+
+  @override
+  String get perfilSubiendoFoto => 'Uploading photo…';
+
+  @override
+  String get perfilCambiarFoto => 'Change profile photo';
+
+  @override
+  String get perfilAsignaAdmin =>
+      'ID number, university, team, project and sponsoring company are assigned by your administrator.';
+
+  @override
+  String certificadoEmitidoDetalle(Object fecha, Object emisor, Object codigo) {
+    return 'Issued on $fecha · By: $emisor · Code: $codigo';
+  }
+
+  @override
+  String certificadoEmitidoEl(Object fecha) {
+    return 'Issued on $fecha';
+  }
+
+  @override
+  String get dashboardSinProyecto => 'You do not have a project assigned yet';
+
+  @override
+  String get dashboardTodoPorEmpezar => 'Everything is ready to start';
+
+  @override
+  String get dashboardSinCursos =>
+      'You do not have any courses assigned yet. When your administrator assigns you one, your progress will appear here.';
+
+  @override
+  String get comunActualizar => 'Refresh';
+
+  @override
+  String get dashboardProgresoGeneral => 'Overall progress';
+
+  @override
+  String get dashboardTodoCompletado =>
+      'You have completed all your assigned courses.';
+
+  @override
+  String get dashboardContinueDonde => 'PICK UP WHERE YOU LEFT OFF';
+
+  @override
+  String get comunContinuar => 'Continue';
+
+  @override
+  String get dashboardProgresoPorCurso => 'Progress by course';
+
+  @override
+  String dashboardContinuarCurso(Object nombre) {
+    return 'Continue \"$nombre\"';
+  }
+
+  @override
+  String get cursoRutaNationalExpo => 'National Expo Path';
+
+  @override
+  String get dashboardChecklistExpo => 'National Expo checklist';
+
+  @override
+  String get dashboardPendientes => 'To-dos';
+
+  @override
+  String get dashboardAlDia => 'You are all caught up! You have no to-dos.';
+
+  @override
+  String get dashboardChecklistTitulo => 'NATIONAL EXPO PATH checklist';
+
+  @override
+  String get dashboardActividadReciente => 'Recent activity';
+
+  @override
+  String get dashboardSinCalificadas =>
+      'You do not have any graded submissions yet.';
+
+  @override
+  String get dashboardSuProyecto => 'Your project';
+
+  @override
+  String get calendarioNoTrajo => 'We could not load your events.';
+
+  @override
+  String get calendarioCargando => 'Loading your events…';
+
+  @override
+  String get calendarioSubtitulo =>
+      'Live sessions from your courses and events from your Impact Path.';
+
+  @override
+  String get calendarioProximos => 'Upcoming events';
+
+  @override
+  String get calendarioSinProximos => 'You have no upcoming events.';
+
+  @override
+  String get calendarioAgendaDespejada => 'Clear schedule';
+
+  @override
+  String get calendarioAgendaDespejadaTexto =>
+      'You have no sessions or deadlines scheduled this month.';
+
+  @override
+  String get comunActualizado => 'Refreshed';
+
+  @override
+  String cursoHorasEstimadas(Object horas) {
+    return '$horas h estimated';
+  }
+
+  @override
+  String cursoMinutosEstimados(Object minutos) {
+    return '$minutos min estimated';
+  }
+
+  @override
+  String get cursosAsignados => 'Assigned courses';
+
+  @override
+  String get cursosCargando => 'Loading your courses…';
+
+  @override
+  String get cursosNoTrajo => 'We could not load your courses.';
+
+  @override
+  String get cursosSubtitulo =>
+      'Laboratory courses assigned by your administrator, plus your team\'s preparation path for National Expo.';
+
+  @override
+  String get cursosBuscar => 'Search for a course or laboratory';
+
+  @override
+  String get cursosSinAsignados => 'No assigned courses';
+
+  @override
+  String get cursosSinAsignadosTexto =>
+      'You do not have any courses assigned by your administrator yet.';
+
+  @override
+  String get cursosNingunoCoincide =>
+      'No course matches your search. Try another term.';
+
+  @override
+  String get comunLimpiarBusqueda => 'Clear search';
+
+  @override
+  String cursoModulos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad modules',
+      one: '1 module',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cursoLecciones(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad lessons',
+      one: '1 lesson',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cursoCertificado => 'Certificate';
+
+  @override
+  String cursoProgresoDetalle(Object hechas, Object total, Object porcentaje) {
+    return '$hechas of $total lessons · $porcentaje%';
+  }
+
+  @override
+  String get cursoTrabajoEquipo => 'Teamwork';
+
+  @override
+  String get comunComenzar => 'Start';
+
+  @override
+  String dashboardSemanaDel(Object desde, Object hasta) {
+    return 'Week of $desde to $hasta';
+  }
+
+  @override
+  String dashboardHola(Object nombre) {
+    return 'Hello, $nombre';
+  }
+
+  @override
+  String dashboardProyecto(Object proyecto) {
+    return 'Project $proyecto';
+  }
+
+  @override
+  String dashboardCursosActivos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad active courses',
+      one: '1 active course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardLaboratorios(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad laboratories',
+      one: '1 laboratory',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardFaseVencida(Object fase) {
+    return 'Overdue phase: $fase';
+  }
+
+  @override
+  String dashboardConfirmarMentoria(Object fase) {
+    return 'Confirm mentoring: $fase';
+  }
+
+  @override
+  String get comunFase => 'Phase';
+
+  @override
+  String dashboardCalificadoEl(Object fecha) {
+    return 'Graded on $fecha';
+  }
+
+  @override
+  String cursoDocente(Object docente) {
+    return 'Instructor: $docente';
+  }
+
+  @override
+  String get cursoGeneraCertificado => 'Awards a certificate';
+
+  @override
+  String get cursoObjetivos => 'Objectives';
+
+  @override
+  String get cursoSoloLectura =>
+      'You are viewing another student\'s progress — read-only mode.';
+
+  @override
+  String get cursoSinContenido =>
+      'This course does not have any published content yet.';
+
+  @override
+  String get cursoMisEntregas => 'My submissions';
+
+  @override
+  String get leccionVideoYoutube => 'YouTube video';
+
+  @override
+  String get leccionCompletada => 'Completed';
+
+  @override
+  String get leccionMarcarPendiente => 'Mark as pending';
+
+  @override
+  String get leccionMarcarCompletada => 'Mark as completed';
+
+  @override
+  String get rutaCompletada => 'You completed the Impact Path! 🎉';
+
+  @override
+  String get leccionCompletadaExclama => 'Lesson completed!';
+
+  @override
+  String get cursoNoPuedeResponder =>
+      'You are viewing another student\'s progress — you cannot answer on their behalf.';
+
+  @override
+  String get leccionSinMaterial =>
+      'This lesson does not have any material uploaded yet.';
+
+  @override
+  String get leccionSinEnlace => 'This lesson does not have a valid link.';
+
+  @override
+  String get leccionEnlaceNoAbre => 'The link could not be opened.';
+
+  @override
+  String get quizCalificar => 'Grade';
+
+  @override
+  String get quizCalificando => 'Grading…';
+
+  @override
+  String get quizSinPreguntas => 'This quiz does not have any questions yet.';
+
+  @override
+  String quizAprobado(Object puntaje) {
+    return 'Passed! $puntaje%';
+  }
+
+  @override
+  String quizPuntaje(Object puntaje) {
+    return 'Score: $puntaje% (minimum 60%)';
+  }
+
+  @override
+  String get quizVerdadero => 'True';
+
+  @override
+  String get quizFalso => 'False';
+
+  @override
+  String get quizCompleteFrase => 'Complete the sentence…';
+
+  @override
+  String get quizSuRespuesta => 'Your answer…';
+
+  @override
+  String get quizUseFlechas => 'Use the arrows to reorder:';
+
+  @override
+  String encuestaNombreTarea(Object leccion) {
+    return 'Survey: $leccion';
+  }
+
+  @override
+  String get encuestaGracias => 'Thank you for answering!';
+
+  @override
+  String get comunEnviar => 'Send';
+
+  @override
+  String get encuestaOpinion => 'Your opinion helps us improve 💛';
+
+  @override
+  String get actividadArchivoObligatorio => 'File required';
+
+  @override
+  String get actividadTextoObligatorio => 'Text required';
+
+  @override
+  String get actividadRubrica => 'Grading rubric';
+
+  @override
+  String get actividadSuEntrega => 'Your submission';
+
+  @override
+  String actividadRetroalimentacion(Object retro) {
+    return 'Feedback: $retro';
+  }
+
+  @override
+  String get actividadEntregar => 'Submit activity';
+
+  @override
+  String get actividadNuevaEntrega => 'New submission';
+
+  @override
+  String get actividadRequiereTexto =>
+      'This activity requires a written answer.';
+
+  @override
+  String get actividadRequiereArchivo =>
+      'This activity requires an attached file.';
+
+  @override
+  String get actividadEntregada => 'Activity submitted ✓';
+
+  @override
+  String actividadEntregarTitulo(Object leccion) {
+    return 'Submit: $leccion';
+  }
+
+  @override
+  String get actividadRespuestaObligatoria => 'Your answer (required)';
+
+  @override
+  String get actividadComentarioOpcional => 'Comment (optional)';
+
+  @override
+  String get actividadSinEntregas =>
+      'You have not made any submissions in this course yet.';
+
+  @override
+  String get actividadEntregaLibre => 'New open submission';
+
+  @override
+  String get actividadPongaNombre => 'Give the submission a name.';
+
+  @override
+  String get actividadEntregaEnviada => 'Submission sent ✓';
+
+  @override
+  String get actividadNombreTarea => 'Task name';
+
+  @override
+  String get comunComentario => 'Comment';
+
+  @override
+  String actividadLimite(Object fecha) {
+    return 'Due: $fecha';
+  }
+
+  @override
+  String labsEnLaRed(Object cantidad) {
+    return '$cantidad in the network';
+  }
+
+  @override
+  String get labsQueEs =>
+      'A laboratory is a work area of eduXaction Colombia: it brings together a phased Impact Path, courses and an LXD who guides it. Open yours to see what comes next.';
+
+  @override
+  String get labsSinAsignados => 'No laboratories assigned';
+
+  @override
+  String get labsSinAsignadosTexto =>
+      'Your administrator has not assigned you a laboratory yet. Without one you do not have an Impact Path or field courses.';
+
+  @override
+  String get labsOtros => 'OTHER LABORATORIES IN THE NETWORK';
+
+  @override
+  String get labsSolicite =>
+      'Ask your administrator to assign you one if your project needs it.';
+
+  @override
+  String get rutaEntregaVencida => 'OVERDUE';
+
+  @override
+  String get rutaEnCurso => 'IN PROGRESS';
+
+  @override
+  String rutaFaseCompletaDe(Object total) {
+    return 'Phase $total of $total complete';
+  }
+
+  @override
+  String rutaFaseEnCursoDe(Object fase, Object total) {
+    return 'Phase $fase of $total in progress';
+  }
+
+  @override
+  String get rutaSinModulos => 'No modules yet';
+
+  @override
+  String rutaModulosFraccion(Object hechos, Object total) {
+    return '$hechos/$total modules';
+  }
+
+  @override
+  String rutaFases(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad phases',
+      one: '1 phase',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rutaCursos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad courses',
+      one: '1 course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rutaSinLxd => 'No LXD assigned';
+
+  @override
+  String rutaLxd(Object nombre) {
+    return 'LXD: $nombre';
+  }
+
+  @override
+  String get comunEntrar => 'Enter';
+
+  @override
+  String get rutaUnEquipo => '1 team in the network';
+
+  @override
+  String rutaEquipos(Object cantidad) {
+    return '$cantidad teams in the network';
+  }
+
+  @override
+  String get labNoEncontrado => 'Laboratory not found';
+
+  @override
+  String get labNoEncontradoTexto =>
+      'It may no longer exist or the link may be mistyped.';
+
+  @override
+  String get labsTodos => 'All laboratories';
+
+  @override
+  String get rutaMayus => 'IMPACT PATH';
+
+  @override
+  String get rutaFasesEnOrden =>
+      'Phases open in order. Your LXD publishes the content of each one.';
+
+  @override
+  String get rutaSuAvance => 'Your progress';
+
+  @override
+  String rutaFaseDe(Object fase, Object total) {
+    return 'Phase $fase of $total';
+  }
+
+  @override
+  String rutaModulosDeTotal(Object hechos, Object total) {
+    return '$hechos of $total modules';
+  }
+
+  @override
+  String get rutaFasesEnRuta => 'Phases in the path';
+
+  @override
+  String get rutaModulosPublicados => 'Published modules';
+
+  @override
+  String get rutaCursosLab => 'Laboratory courses';
+
+  @override
+  String get rutaHorasEstimadas => 'Estimated hours';
+
+  @override
+  String get rutaSinFases =>
+      'This laboratory does not have any published phases yet.';
+
+  @override
+  String rutaFaseNumero(Object numero) {
+    return 'Phase $numero';
+  }
+
+  @override
+  String get rutaEstadoCompleta => 'Complete';
+
+  @override
+  String get rutaEstadoVencida => 'Overdue';
+
+  @override
+  String get rutaEstadoDisponible => 'Available';
+
+  @override
+  String get rutaEstadoBloqueada => 'Locked';
+
+  @override
+  String rutaSeAbreCuando(Object fase) {
+    return 'Opens when you complete Phase $fase';
+  }
+
+  @override
+  String get rutaLxdPublicara =>
+      'Your LXD will publish the content of this phase.';
+
+  @override
+  String get rutaLxdNoPublico =>
+      'Your LXD has not published the content of this phase yet.';
+
+  @override
+  String get rutaSinModulosPublicados => 'No published modules';
+
+  @override
+  String get rutaEmpezarFase => 'Start the phase';
+
+  @override
+  String get rutaContinuarFase => 'Continue the phase';
+
+  @override
+  String get rutaSinCursos =>
+      'This laboratory does not have any published courses yet. Your LXD will open them along with Phase 1.';
+
+  @override
+  String get rutaSuLxd => 'Your LXD';
+
+  @override
+  String get rutaLabSinLxd =>
+      'This laboratory does not have an LXD assigned yet.';
+
+  @override
+  String get rutaLxdNombreLargo => 'Learning Experience Designer';
+
+  @override
+  String get rutaSinHorario => 'No schedule published';
+
+  @override
+  String get rutaAgendarMentoria => 'Schedule mentoring';
+
+  @override
+  String get rutaLxdSinDisponibilidad =>
+      'Your LXD has not published their availability yet.';
+
+  @override
+  String rutaDisponibilidadDe(Object nombre) {
+    return '$nombre\'s availability';
+  }
+
+  @override
+  String rutaEscribale(Object nombre) {
+    return 'Write to them to arrange the exact time with $nombre.';
+  }
+
+  @override
+  String get rutaEscribirCorreo => 'Write an email';
+
+  @override
+  String get rutaSubtitulo =>
+      'Your laboratory\'s phases, their objectives and what remains to reach National Expo.';
+
+  @override
+  String get rutaSinLab => 'No laboratory assigned';
+
+  @override
+  String get rutaSinLabTexto =>
+      'Your administrator has not assigned you any laboratory yet.';
+
+  @override
+  String get rutaLabSinFases => 'Laboratory without phases';
+
+  @override
+  String rutaLabSinFasesTexto(Object laboratorio) {
+    return 'The $laboratorio has not published its phases yet. Your LXD will open them when the content is ready.';
+  }
+
+  @override
+  String get rutaVerOtroLab => 'View another laboratory';
+
+  @override
+  String get rutaEstadoSinAbrir => 'Not open yet';
+
+  @override
+  String get rutaEstadoEnCurso => 'In progress';
+
+  @override
+  String rutaModuloNumero(Object numero) {
+    return 'Module $numero';
+  }
+
+  @override
+  String rutaCompleteAnterior(Object modulo) {
+    return 'Complete the previous module to unlock \"$modulo\".';
+  }
+
+  @override
+  String get rutaBloqueado => 'Locked';
+
+  @override
+  String get rutaModuloMentoria => 'Mentoring module';
+
+  @override
+  String get rutaSinContenido => 'No content yet';
+
+  @override
+  String rutaElementos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rutaCompleto => 'Complete';
+
+  @override
+  String get rutaMetaAnio => 'GOAL FOR THE YEAR';
+
+  @override
+  String get rutaSinEquipo => 'You do not belong to a team yet.';
+
+  @override
+  String get rutaChecklistEquipo => 'Team checklist';
+
+  @override
+  String get rutaModulo => 'Module';
+
+  @override
+  String get rutaModuloNoExiste =>
+      'This module no longer exists or the link is mistyped.';
+
+  @override
+  String get rutaEntregasLecturas => 'Submissions and readings';
+
+  @override
+  String get rutaModuloSinContenido =>
+      'Your administrator has not added content to this module yet.';
+
+  @override
+  String get rutaEstaFase => 'this phase';
+
+  @override
+  String rutaReunase(Object fase) {
+    return 'Meet with your mentor to close $fase.';
+  }
+
+  @override
+  String get rutaSinEnlaceReunion =>
+      'Your administrator has not set up the meeting link yet.';
+
+  @override
+  String get rutaEntrega => 'Submission';
+
+  @override
+  String get rutaLecturaSinMaterial =>
+      'This reading does not have any material yet.';
+
+  @override
+  String labsAsignadosEnRed(int asignados, Object total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      asignados,
+      locale: localeName,
+      other: '$asignados laboratories assigned',
+      one: '1 laboratory assigned',
+    );
+    return '$_temp0 · $total in the network';
+  }
+
+  @override
+  String rutaFechaPrevista(Object fecha) {
+    return 'Date set by the laboratory: $fecha';
+  }
+
+  @override
+  String rutaEntregaVencidaEl(Object fecha) {
+    return 'Overdue: $fecha';
+  }
+
+  @override
+  String rutaEntregaEl(Object fecha) {
+    return 'Due: $fecha';
+  }
+
+  @override
+  String rutaAsuntoMentoria(Object laboratorio) {
+    return 'Mentoring - $laboratorio';
+  }
 }

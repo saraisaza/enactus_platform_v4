@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/charts.dart';
@@ -36,20 +37,20 @@ class StudentDashboardView extends StatelessWidget {
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
     final sunday = monday.add(const Duration(days: 6));
-    final eyebrow = monday.month == sunday.month
-        ? 'Semana del ${DateFormat('d', 'es').format(monday)} al '
-            '${DateFormat("d 'de' MMMM", 'es').format(sunday)}'
-        : 'Semana del ${DateFormat("d 'de' MMM", 'es').format(monday)} al '
-            '${DateFormat("d 'de' MMM", 'es').format(sunday)}';
+    // "Semana del 5 al 11 de octubre"; en inglés siempre con el mes en las
+    // dos fechas ("Week of Oct 5 to Oct 11").
+    final eyebrow = monday.month == sunday.month && Idioma.instancia.codigo == 'es'
+        ? tr.dashboardSemanaDel(dia(monday), diaMes(sunday))
+        : tr.dashboardSemanaDel(diaMesCorto(monday), diaMesCorto(sunday));
 
     return ContentScreenShell(
       eyebrow: eyebrow,
-      title: 'Hola, ${student.name.split(' ').first}',
+      title: tr.dashboardHola(student.name.split(' ').first),
       subtitle: team != null
-          ? 'Proyecto ${team.projectName}'
-              '${student.university.isEmpty ? '' : ' · ${student.university}'}'
-          : 'Aún no tiene proyecto asignado',
-      searchHint: 'Buscar en el portal',
+          ? tr.dashboardProyecto(team.projectName) +
+              (student.university.isEmpty ? '' : ' · ${student.university}')
+          : tr.dashboardSinProyecto,
+      searchHint: tr.perfilBuscarPortal,
       trailingBuilder: (context, colors, isDark) =>
           _OverallProgress(student: student, colors: colors),
       bodyBuilder: (context, colors, isDark) => data.courses.when(
@@ -59,10 +60,9 @@ class StudentDashboardView extends StatelessWidget {
           if (courses.isEmpty) {
             return EmptyState(
               icon: Icons.school_outlined,
-              title: 'Todo por empezar',
-              message: 'Aún no tiene cursos asignados. Cuando su administrador '
-                  'le asigne uno, su progreso aparecerá aquí.',
-              primaryLabel: 'Actualizar',
+              title: tr.dashboardTodoPorEmpezar,
+              message: tr.dashboardSinCursos,
+              primaryLabel: tr.comunActualizar,
               onPrimary: data.reloadCourses,
               colors: colors,
             );
@@ -126,18 +126,20 @@ class _OverallProgress extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Progreso general',
+                Text(tr.dashboardProgresoGeneral,
                     style: TextStyle(fontSize: 13, color: colors.text3)),
                 const SizedBox(height: 4),
-                Text('$doneLessons de $totalLessons lecciones',
+                Text(tr.leccionesDeTotal(doneLessons, totalLessons),
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: colors.text)),
                 const SizedBox(height: 4),
                 Text(
-                    '${courses?.length ?? 0} cursos activos'
-                    '${labCount == null ? '' : ' · $labCount laboratorios'}',
+                    tr.dashboardCursosActivos(courses?.length ?? 0) +
+                        (labCount == null
+                            ? ''
+                            : ' · ${tr.dashboardLaboratorios(labCount)}'),
                     style: TextStyle(fontSize: 12.5, color: colors.text3)),
               ],
             ),
@@ -238,7 +240,7 @@ class _ContinueCard extends StatelessWidget {
             Icon(Icons.check_circle_outline, color: colors.goldInk, size: 28),
             const SizedBox(width: 14),
             Expanded(
-              child: Text('Ya completó todos sus cursos asignados.',
+              child: Text(tr.dashboardTodoCompletado,
                   style: TextStyle(fontSize: 14, color: colors.text2)),
             ),
           ],
@@ -278,7 +280,7 @@ class _ContinueCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('CONTINÚE DONDE IBA',
+                    Text(tr.dashboardContinueDonde,
                         style: TextStyle(
                             fontSize: 12,
                             letterSpacing: 12 * 0.16,
@@ -317,7 +319,7 @@ class _ContinueCard extends StatelessWidget {
                       ThinProgressBar(value: progress.ratio, color: accent),
                       const SizedBox(height: 6),
                       Text(
-                          '${progress.completedLessons} de ${progress.totalLessons} lecciones',
+                          tr.leccionesDeTotal(progress.completedLessons, progress.totalLessons),
                           style:
                               TextStyle(fontSize: 12.5, color: colors.text3)),
                     ],
@@ -326,7 +328,7 @@ class _ContinueCard extends StatelessWidget {
                 const SizedBox(width: 20),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.play_arrow, size: 19),
-                  label: const Text('Continuar'),
+                  label: Text(tr.comunContinuar),
                   onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -363,7 +365,7 @@ class _CourseProgressCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Progreso por curso'.toUpperCase(),
+          Text(tr.dashboardProgresoPorCurso.toUpperCase(),
               style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
@@ -452,7 +454,8 @@ class _PendingCard extends StatelessWidget {
               icon: Icons.warning_amber_rounded,
               color: AppColors.statusCritical,
               title:
-                  'Fase vencida: ${phase.title.isEmpty ? 'Fase' : phase.title}',
+                  tr.dashboardFaseVencida(
+                      phase.title.isEmpty ? tr.comunFase : phase.title),
               meta: lab.laboratoryName,
               onTap: () => Navigator.pushNamed(context,
                   '${AppRoutes.forRole(student.role)}/lab/${lab.laboratoryId}'),
@@ -465,7 +468,8 @@ class _PendingCard extends StatelessWidget {
                 icon: Icons.diversity_3,
                 color: AppColors.gold,
                 title:
-                    'Confirmar mentoría: ${phase.title.isEmpty ? 'Fase' : phase.title}',
+                    tr.dashboardConfirmarMentoria(
+                        phase.title.isEmpty ? tr.comunFase : phase.title),
                 meta: lab.laboratoryName,
                 onTap: () => Navigator.pushNamed(
                     context,
@@ -484,9 +488,9 @@ class _PendingCard extends StatelessWidget {
       toContinue.add(_PendingRow(
         icon: Icons.play_circle_outline,
         color: labColorFor(course.laboratoryId ?? ''),
-        title: 'Continuar "${course.name}"',
+        title: tr.dashboardContinuarCurso(course.name),
         meta: course.laboratoryName ??
-            (course.isRutaExpo ? 'Ruta National Expo' : 'Open Learning'),
+            (course.isRutaExpo ? tr.cursoRutaNationalExpo : 'Open Learning'),
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -504,7 +508,7 @@ class _PendingCard extends StatelessWidget {
           icon: Icons.description_outlined,
           color: AppColors.textMuted,
           title: item.label,
-          meta: 'Checklist National Expo',
+          meta: tr.dashboardChecklistExpo,
           onTap: () => _showChecklistDialog(context, colors, group.checklist),
         ));
       }
@@ -524,14 +528,14 @@ class _PendingCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Pendientes'.toUpperCase(),
+          Text(tr.dashboardPendientes.toUpperCase(),
               style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
                   color: colors.text)),
           const SizedBox(height: 14),
           if (items.isEmpty)
-            Text('¡Está al día! No tiene pendientes.',
+            Text(tr.dashboardAlDia,
                 style: TextStyle(fontSize: 13.5, color: colors.text3))
           else
             for (final item in items)
@@ -590,7 +594,7 @@ void _showChecklistDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       backgroundColor: colors.surface,
-      title: const Text('Checklist RUTA NATIONAL EXPO'),
+      title: Text(tr.dashboardChecklistTitulo),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Column(
@@ -622,7 +626,7 @@ void _showChecklistDialog(
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+            onPressed: () => Navigator.pop(ctx), child: Text(tr.comunCerrar)),
       ],
     ),
   );
@@ -647,7 +651,7 @@ class _RecentActivityCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Actividad reciente'.toUpperCase(),
+          Text(tr.dashboardActividadReciente.toUpperCase(),
               style: displayHeading(
                   fontSize: 24,
                   fontWeight: AppWeights.display,
@@ -671,7 +675,7 @@ class _RecentActivityCard extends StatelessWidget {
       ..sort((a, b) => b.gradedAt!.compareTo(a.gradedAt!));
 
     if (graded.isEmpty) {
-      return Text('Aún no tiene entregas calificadas.',
+      return Text(tr.dashboardSinCalificadas,
           style: TextStyle(fontSize: 13.5, color: colors.text3));
     }
 
@@ -716,9 +720,11 @@ class _RecentActivityCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: colors.text)),
                   Text(
-                      'Calificado el '
-                      '${DateFormat('d MMM yyyy', 'es').format(submission.gradedAt!)}'
-                      '${course?.creatorName == null ? '' : ' · ${course!.creatorName}'}',
+                      tr.dashboardCalificadoEl(
+                              fechaCorta(submission.gradedAt!)) +
+                          (course?.creatorName == null
+                              ? ''
+                              : ' · ${course!.creatorName}'),
                       style: TextStyle(fontSize: 12, color: colors.text3)),
                 ],
               ),
@@ -779,7 +785,7 @@ class _ProjectCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Su proyecto'.toUpperCase(),
+            Text(tr.dashboardSuProyecto.toUpperCase(),
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

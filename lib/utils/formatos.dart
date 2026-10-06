@@ -50,6 +50,13 @@ String diaSemanaCorto(DateTime d) => DateFormat('EEE', _loc).format(d);
 String diaSemanaLargo(DateTime d) =>
     _f("EEEE d 'de' MMMM", 'EEEE, MMMM d').format(d);
 
+/// "LUN", "MAR", … "DOM" / "MON", … "SUN": encabezados de un calendario
+/// que empieza el lunes.
+List<String> diasDeLaSemana() => [
+      for (var i = 0; i < 7; i++)
+        diaSemanaCorto(DateTime(2024, 1, 1 + i)).toUpperCase(),
+    ];
+
 /// "3:00 p. m." / "3:00 PM".
 String hora(DateTime d) => DateFormat('h:mm a', _loc).format(d);
 

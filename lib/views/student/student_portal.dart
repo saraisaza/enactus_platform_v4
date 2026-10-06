@@ -1,9 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -12,6 +12,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../models/progress.dart';
 import '../../widgets/app_image.dart';
@@ -52,51 +53,51 @@ class StudentPortal extends StatelessWidget {
 
     final tabs = [
       PortalTab(
-          label: 'Dashboard',
-          shortLabel: 'Inicio',
+          label: tr.tabDashboard,
+          shortLabel: tr.tabInicioCorto,
           destacada: true,
           icon: Icons.dashboard_outlined,
           builder: (_) => const StudentDashboardView()),
       PortalTab(
-          label: 'Calendario',
+          label: tr.tabCalendario,
           destacada: true,
           icon: Icons.calendar_month_outlined,
           builder: (_) => const StudentCalendarView()),
       PortalTab(
-          label: 'Mis Cursos',
-          shortLabel: 'Cursos',
+          label: tr.tabMisCursos,
+          shortLabel: tr.tabCursosCorto,
           destacada: true,
           icon: Icons.school_outlined,
           builder: (_) => const StudentCoursesView()),
       if (isEnactus) ...[
         PortalTab(
             id: tabLaboratorios,
-            label: 'Laboratorios',
+            label: tr.tabLaboratorios,
             icon: Icons.science_outlined,
             builder: (_) => const LabsView()),
         PortalTab(
-            label: 'Ruta de Impacto',
-            shortLabel: 'Ruta',
+            label: tr.rutaDeImpacto,
+            shortLabel: tr.tabRutaCorto,
             destacada: true,
             icon: Icons.emoji_events_outlined,
             builder: (_) => const RutaImpactoShortcut()),
         PortalTab(
-            label: 'Directorio de Proyectos',
-            shortLabel: 'Proyectos',
+            label: tr.tabDirectorioProyectos,
+            shortLabel: tr.tabProyectosCorto,
             icon: Icons.explore_outlined,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
-            label: 'Foro',
+            label: tr.tabForo,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
       ],
       PortalTab(
-          label: 'Certificados',
+          label: tr.tabCertificados,
           icon: Icons.workspace_premium_outlined,
           builder: (_) => const _StudentCertificates()),
       PortalTab(
-          label: 'Mi Perfil',
-          shortLabel: 'Perfil',
+          label: tr.tabMiPerfil,
+          shortLabel: tr.tabPerfilCorto,
           icon: Icons.person_outline,
           builder: (_) => const _StudentProfile()),
     ];
@@ -110,7 +111,7 @@ class StudentPortal extends StatelessWidget {
       // Mismo portal para estudiante y alumni (ver Roles.isStudentLike):
       // solo cambia el título visible, según lo pidió el usuario ("que se
       // llame alumni").
-      portalTitle: 'Portal ${Roles.label(student.role)}',
+      portalTitle: tr.portalDe(Roles.label(student.role)),
       tabs: tabs,
       initialSelectedIndex: wantedTabIndex >= 0 ? wantedTabIndex : 0,
       contentOverride: showLabDetail ? LabDetailBody(labId: openLabId!) : null,
@@ -130,8 +131,8 @@ class _StudentCertificates extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Mis Certificados',
-      subtitle: 'Certificados emitidos por sus LXD al completar una Ruta de Impacto',
+      title: tr.certificadosMisTitulo,
+      subtitle: tr.certificadosMisSubtitulo,
       children: [
         // `/certificates` ya devuelve solo los propios cuando quien pregunta es
         // un estudiante: el alcance lo decide el servidor, no un filtro acá.
@@ -146,10 +147,10 @@ class _StudentCertificates extends StatelessWidget {
 
   Widget _certificateList(List<Certificate> certs) {
     if (certs.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
           icon: Icons.workspace_premium_outlined,
           message:
-              'Aún no tiene certificados.\nComplete sus cursos para obtenerlos.');
+              tr.certificadosVacio);
     }
     return Column(
       children: [
@@ -194,12 +195,14 @@ class _StudentCertificates extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      'Ruta de Impacto · ${cert.laboratoryName}',
+                                      tr.certificadoRutaDe(cert.laboratoryName),
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w700)),
                                   Text(
-                                    'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)} · '
-                                    'Por: ${cert.issuerName} · Código: ${cert.code}',
+                                    tr.certificadoEmitidoDetalle(
+                                        fechaCorta(cert.issuedAt),
+                                        cert.issuerName,
+                                        cert.code),
                                     style: const TextStyle(
                                         color: AppColors.textMuted,
                                         fontSize: 12),
@@ -217,13 +220,13 @@ class _StudentCertificates extends StatelessWidget {
                           OutlinedButton.icon(
                             icon:
                                 const Icon(Icons.picture_as_pdf, size: 16),
-                            label: const Text('Ver PDF'),
+                            label: Text(tr.certificadoVerPdf),
                             onPressed: () => PdfService.ver(context, cert),
                           ),
                           ElevatedButton.icon(
                             icon: Icon(kIsWeb ? Icons.download : Icons.ios_share,
                                 size: 16),
-                            label: Text(kIsWeb ? 'Descargar' : 'Compartir'),
+                            label: Text(kIsWeb ? tr.comunDescargar : tr.comunCompartir),
                             onPressed: () => PdfService.download(cert),
                           ),
                         ];
@@ -284,13 +287,13 @@ class _StudentProfile extends StatelessWidget {
         team == null ? null : data.projectById(team.projectId).valueOrNull;
 
     final eyebrow = student.joinedAt != null
-        ? 'Miembro activo desde ${student.joinedAt!.year}'
-        : 'Miembro de la comunidad';
+        ? tr.perfilMiembroDesde(student.joinedAt!.year)
+        : tr.perfilMiembroComunidad;
 
     return ContentScreenShell(
       eyebrow: eyebrow,
-      title: 'Mi Perfil',
-      searchHint: 'Buscar en el portal',
+      title: tr.tabMiPerfil,
+      searchHint: tr.perfilBuscarPortal,
       bodyBuilder: (context, colors, isDark) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,29 +305,29 @@ class _StudentProfile extends StatelessWidget {
             const SizedBox(height: 20),
             LayoutBuilder(builder: (context, c) {
               final personal = _GroupCard(
-                title: 'Datos personales',
+                title: tr.perfilDatosPersonales,
                 icon: Icons.badge_outlined,
                 rows: [
-                  ('Cédula', student.cedula),
-                  ('Teléfono', student.phone),
-                  ('Correo', student.email),
-                  ('Ciudad', student.city),
-                  ('Carrera', student.career),
+                  (tr.perfilCedula, student.cedula),
+                  (tr.perfilTelefonoEtiqueta, student.phone),
+                  (tr.perfilCorreoEtiqueta, student.email),
+                  (tr.perfilCiudad, student.city),
+                  (tr.perfilCarrera, student.career),
                 ],
                 colors: colors,
               );
               final enactusLife = _GroupCard(
-                title: 'Vida eduXaction',
+                title: tr.perfilVidaEduxaction,
                 icon: Icons.workspaces_outlined,
                 rows: [
-                  ('Universidad', student.university),
-                  ('Equipo', team?.groupName ?? ''),
+                  (tr.universidadEtiqueta, student.university),
+                  (tr.perfilEquipo, team?.groupName ?? ''),
                   // Los laboratorios solo existen en eduXaction: para una
                   // cuenta de Open Learning la fila no se dibuja, en vez de
                   // mostrarla vacía como si le faltara un dato.
                   if (student.isEnactusStudent)
-                    ('Laboratorios', _labNames(data)),
-                  ('Empresa patrocinadora', student.sponsorName ?? ''),
+                    (tr.tabLaboratorios, _labNames(data)),
+                  (tr.perfilEmpresaPatrocinadora, student.sponsorName ?? ''),
                 ],
                 colors: colors,
               );
@@ -410,14 +413,14 @@ class _ProfileStats extends StatelessWidget {
             : 0;
 
         final tiles = [
-          _ProfileStat(value: '${courses.length}', label: 'Cursos activos'),
+          _ProfileStat(value: '${courses.length}', label: tr.perfilCursosActivos),
           _ProfileStat(
               value: '$doneLessons/$totalLessons',
-              label: 'Lecciones completadas'),
+              label: tr.perfilLeccionesCompletadas),
           _ProfileStat(
               value: labCount == null ? '—' : '$labCount',
-              label: 'Laboratorios'),
-          _ProfileStat(value: '${certs.length}', label: 'Certificados'),
+              label: tr.tabLaboratorios),
+          _ProfileStat(value: '${certs.length}', label: tr.tabCertificados),
         ];
 
         return LayoutBuilder(builder: (context, c) {
@@ -560,7 +563,7 @@ class _IdentityBand extends StatelessWidget {
     final botonEditar = OutlinedButton.icon(
       onPressed: () => showEditProfileDialog(context, student, colors),
       icon: const Icon(Icons.edit_outlined, size: 19),
-      label: const Text('Editar perfil'),
+      label: Text(tr.perfilEditar),
       style: OutlinedButton.styleFrom(
           foregroundColor: colors.goldInk,
           side: BorderSide(color: colors.goldInk)),
@@ -800,7 +803,7 @@ class _ProjectCard extends StatelessWidget {
           border: Border.all(color: colors.border),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: Text('Aún no tiene proyecto asignado.',
+        child: Text(tr.perfilSinProyecto,
             style: TextStyle(fontSize: 13.5, color: colors.text3)),
       );
     }
@@ -856,7 +859,7 @@ class _ProjectCard extends StatelessWidget {
                 Positioned(
                   left: 18,
                   top: 16,
-                  child: Text('MI PROYECTO',
+                  child: Text(tr.perfilMiProyecto,
                       style: TextStyle(
                           fontSize: 11.5,
                           letterSpacing: 11.5 * 0.16,
@@ -963,7 +966,7 @@ class _CertificatesCard extends StatelessWidget {
               Icon(Icons.workspace_premium_outlined, size: 19, color: colors.goldInk),
               const SizedBox(width: 10),
               Expanded(
-                child: Text('Certificados'.toUpperCase(),
+                child: Text(tr.tabCertificados.toUpperCase(),
                     style: displayHeading(
                         fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
               ),
@@ -1026,9 +1029,8 @@ class _NoCertificatesYet extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 300),
               child: Text(
                   closest == null
-                      ? 'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.'
-                      : 'Le falta poco para su primer certificado: '
-                          '"${closest.name}".',
+                      ? tr.certificadosVacioRuta
+                      : tr.certificadosFaltaPoco(closest.name),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13.5, color: colors.text2)),
             ),
@@ -1039,8 +1041,7 @@ class _NoCertificatesYet extends StatelessWidget {
                 child: ThinProgressBar(
                   value: closestProgress.ratio,
                   color: labColorFor(closest.laboratoryId ?? ''),
-                  tooltip: '${closestProgress.completedLessons} '
-                      'de ${closestProgress.totalLessons} lecciones',
+                  tooltip: tr.leccionesDeTotal(closestProgress.completedLessons, closestProgress.totalLessons),
                 ),
               ),
             ],
@@ -1073,20 +1074,20 @@ class _CertificateRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Ruta de Impacto · ${cert.laboratoryName}',
+                  Text(tr.certificadoRutaDe(cert.laboratoryName),
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: colors.text)),
                   Text(
-                      'Emitido el ${DateFormat('d MMM yyyy').format(cert.issuedAt)}',
+                      tr.certificadoEmitidoEl(fechaCorta(cert.issuedAt)),
                       style: TextStyle(fontSize: 12, color: colors.text3)),
                 ],
               ),
             ),
             IconButton(
               icon: Icon(Icons.download_outlined, color: colors.goldInk),
-              tooltip: 'Descargar certificado',
+              tooltip: tr.certificadoDescargar,
               onPressed: () => PdfService.download(cert),
             ),
           ],
@@ -1147,7 +1148,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
 
   Future<void> _pickAvatar() async {
     final result = await FilePicker.pickFiles(
-      dialogTitle: 'Seleccione una foto',
+      dialogTitle: tr.perfilSeleccioneFoto,
       type: FileType.image,
       // En iOS, cualquier valor mayor que 0 entrega JPEG en vez del HEIC
       // original del iPhone. Antes el HEIC se subía etiquetado como JPEG y en
@@ -1159,13 +1160,13 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     final file = result?.files.singleOrNull;
     if (file == null || !mounted) return;
     if (_contentTypeOf(file.name).isEmpty) {
-      setState(() => _error = const ValidationError(
-          'Use una foto en JPG o PNG.'));
+      setState(() => _error = ValidationError(
+          tr.perfilFotoFormato));
       return;
     }
     if (file.size > 25 * 1024 * 1024) {
-      setState(() => _error = const ValidationError(
-          'La foto pesa más de 25 MB. Elija una más liviana.'));
+      setState(() => _error = ValidationError(
+          tr.perfilFotoPesada));
       return;
     }
     final bytes = file.bytes ?? await file.xFile.readAsBytes();
@@ -1219,8 +1220,8 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     final phone = _phone.text.trim();
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.length < 7) {
-      setState(() => _error = const ValidationError(
-          'Ingrese un teléfono válido (mínimo 7 dígitos).'));
+      setState(() => _error = ValidationError(
+          tr.perfilTelefonoInvalido));
       return;
     }
 
@@ -1236,7 +1237,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       });
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Perfil actualizado ✓');
+      showSuccessCheck(context, tr.perfilActualizado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1255,12 +1256,12 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
         _avatarKey != widget.student.avatarS3Key;
 
     return AdaptiveFormShell(
-      title: 'Editar perfil',
+      title: tr.perfilEditar,
       maxWidth: 420,
       saving: busy,
       dirty: cambiado,
       onCancel: () => Navigator.pop(context),
-      savingLabel: _uploading ? 'Subiendo foto…' : 'Guardando…',
+      savingLabel: _uploading ? tr.perfilSubiendoFoto : tr.comunGuardando,
       onSave: _save,
       child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1271,7 +1272,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 // medía 28 dp: con el dedo había que acertarle).
                 child: Semantics(
                   button: true,
-                  label: 'Cambiar foto de perfil',
+                  label: tr.perfilCambiarFoto,
                   child: GestureDetector(
                     onTap: busy ? null : _pickAvatar,
                     child: Stack(
@@ -1333,7 +1334,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 autofillHints: const [AutofillHints.telephoneNumber],
                 textInputAction: TextInputAction.next,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(labelText: 'Teléfono'),
+                decoration: InputDecoration(labelText: tr.perfilTelefonoEtiqueta),
               ),
               const SizedBox(height: 14),
               TextField(
@@ -1341,12 +1342,11 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 enabled: !busy,
                 textInputAction: TextInputAction.done,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(labelText: 'Carrera'),
+                decoration: InputDecoration(labelText: tr.perfilCarrera),
               ),
               const SizedBox(height: 6),
-              const Text(
-                  'Cédula, universidad, equipo, proyecto y empresa patrocinadora '
-                  'los asigna su administrador.',
+              Text(
+                  tr.perfilAsignaAdmin,
                   style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
               if (_error != null) ...[
                 const SizedBox(height: 12),

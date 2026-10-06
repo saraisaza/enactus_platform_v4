@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
@@ -54,9 +55,9 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
     final error = eventsState.errorOrNull;
     if (error != null) {
       return ContentScreenShell(
-        eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
-        title: 'Calendario',
-        subtitle: 'No pudimos traer sus eventos.',
+        eyebrow: mesAnio(_visibleMonth),
+        title: tr.tabCalendario,
+        subtitle: tr.calendarioNoTrajo,
         bodyBuilder: (context, colors, isDark) =>
             ErrorState(error, onRetry: data.reloadCalendarEvents),
       );
@@ -65,9 +66,9 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
     final events = eventsState.valueOrNull;
     if (events == null) {
       return ContentScreenShell(
-        eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
-        title: 'Calendario',
-        subtitle: 'Cargando sus eventos…',
+        eyebrow: mesAnio(_visibleMonth),
+        title: tr.tabCalendario,
+        subtitle: tr.calendarioCargando,
         bodyBuilder: (context, colors, isDark) =>
             const CardListSkeleton(count: 3, height: 96),
       );
@@ -85,10 +86,10 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
       ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
     return ContentScreenShell(
-      eyebrow: DateFormat('MMMM yyyy', 'es').format(_visibleMonth),
-      title: 'Calendario',
-      subtitle: 'Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.',
-      searchHint: 'Buscar en el portal',
+      eyebrow: mesAnio(_visibleMonth),
+      title: tr.tabCalendario,
+      subtitle: tr.calendarioSubtitulo,
+      searchHint: tr.perfilBuscarPortal,
       trailingBuilder: (context, colors, isDark) => Wrap(
         spacing: 18,
         runSpacing: 8,
@@ -131,7 +132,7 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                       onPressed: () => _changeMonth(-1)),
                   Expanded(
                     child: Text(
-                        DateFormat('MMMM yyyy', 'es').format(_visibleMonth).toUpperCase(),
+                        mesAnio(_visibleMonth).toUpperCase(),
                         textAlign: TextAlign.center,
                         style: displayHeading(
                             fontSize: 20, fontWeight: AppWeights.display, color: colors.text)),
@@ -158,12 +159,12 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Próximos eventos'.toUpperCase(),
+              Text(tr.calendarioProximos.toUpperCase(),
                   style: displayHeading(
                       fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
               const SizedBox(height: 14),
               if (upcoming.isEmpty)
-                Text('No tiene próximos eventos.',
+                Text(tr.calendarioSinProximos,
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
               else
                 for (final e in upcoming) _UpcomingRow(event: e, colors: colors),
@@ -174,10 +175,10 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
         if (monthEvents.isEmpty && upcoming.isEmpty) {
           return EmptyState(
             icon: Icons.event_busy_outlined,
-            title: 'Agenda despejada',
-            message: 'No tiene sesiones ni entregas programadas este mes.',
-            primaryLabel: 'Actualizar',
-            onPrimary: () => showAppSnack(context, 'Actualizado'),
+            title: tr.calendarioAgendaDespejada,
+            message: tr.calendarioAgendaDespejadaTexto,
+            primaryLabel: tr.comunActualizar,
+            onPrimary: () => showAppSnack(context, tr.comunActualizado),
             colors: colors,
           );
         }
@@ -224,7 +225,7 @@ class _MonthGrid extends StatelessWidget {
       children: [
         Row(
           children: [
-            for (final w in const ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'])
+            for (final w in diasDeLaSemana())
               Expanded(
                 child: Text(w,
                     textAlign: TextAlign.center,
@@ -367,7 +368,7 @@ class _UpcomingRow extends StatelessWidget {
                     Text('${event.startsAt.day}',
                         style: displayHeading(
                             fontSize: 22, fontWeight: AppWeights.display, color: color)),
-                    Text(DateFormat('EEE', 'es').format(event.startsAt).toUpperCase(),
+                    Text(diaSemanaCorto(event.startsAt).toUpperCase(),
                         style: TextStyle(
                             fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),
                   ],
@@ -385,7 +386,7 @@ class _UpcomingRow extends StatelessWidget {
                             color: hover ? colors.goldInk : colors.text)),
                     const SizedBox(height: 2),
                     Text(
-                        '${DateFormat('h:mm a').format(event.startsAt)}'
+                        '${hora(event.startsAt)}'
                         '${event.guests.isEmpty ? '' : ' · ${event.guests}'}',
                         style: TextStyle(fontSize: 12, color: colors.text3)),
                   ],
@@ -422,7 +423,7 @@ Future<void> showEventsDialog(
             children: [
               Row(
                 children: [
-                  Text(DateFormat("EEEE d 'de' MMMM", 'es').format(events.first.startsAt),
+                  Text(diaSemanaLargo(events.first.startsAt),
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w700, color: colors.text)),
                   const Spacer(),
@@ -477,7 +478,7 @@ class _EventDetailTile extends StatelessWidget {
                 child: Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: colors.text)),
               ),
-              Text(DateFormat('h:mm a').format(event.startsAt),
+              Text(hora(event.startsAt),
                   style: TextStyle(color: colors.text3, fontSize: 12)),
             ],
           ),
@@ -498,7 +499,7 @@ class _EventDetailTile extends StatelessWidget {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             icon: const Icon(Icons.videocam_outlined, size: 16),
-            label: const Text('Unirse a la reunión'),
+            label: Text(tr.calendarioUnirse),
             // En la app de Meet o Zoom si está instalada, no en un
             // navegador dentro de eduXaction.
             onPressed: hasLink ? () => abrirReunion(context, event.meetLink) : null,

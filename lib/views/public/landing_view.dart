@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
@@ -62,7 +64,7 @@ class LandingView extends StatelessWidget {
                 SizedBox(width: isCompact ? 8 : 16),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.login, size: 18),
-                  label: const Text('Iniciar sesión'),
+                  label: Text(tr.portadaIniciarSesion),
                   onPressed: () =>
                       Navigator.pushNamed(context, AppRoutes.login),
                 ),
@@ -112,19 +114,19 @@ class LandingView extends StatelessWidget {
                         _AnimatedCounter(
                             icon: Icons.groups_outlined,
                             value: content.statStudents,
-                            label: 'Estudiantes activos'),
+                            label: tr.portadaEstudiantesActivos),
                         _AnimatedCounter(
                             icon: Icons.lightbulb_outline,
                             value: content.statProjects,
-                            label: 'Proyectos de impacto'),
+                            label: tr.portadaProyectosImpacto),
                         _AnimatedCounter(
                             icon: Icons.science_outlined,
                             value: content.statLabs,
-                            label: 'Laboratorios'),
+                            label: tr.portadaLaboratorios),
                         _AnimatedCounter(
                             icon: Icons.school_outlined,
                             value: content.statUniversities,
-                            label: 'Universidades aliadas'),
+                            label: tr.portadaUniversidadesAliadas),
                       ],
                     ),
                   ),
@@ -170,13 +172,13 @@ class LandingView extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 40),
-                          child: _Eyebrow('Áreas de conocimiento'),
+                          child: _Eyebrow(tr.portadaAreasConocimiento),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 6, bottom: 6),
-                          child: Text('Nuestros Laboratorios'.toUpperCase(),
+                          child: Text(tr.portadaNuestrosLaboratorios.toUpperCase(),
                               style: displayHeading(
                                   fontSize: 30,
                                   fontWeight: AppWeights.display,
@@ -185,8 +187,8 @@ class LandingView extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: isCompact ? 24 : 0),
-                          child: const Text(
-                              'Áreas de conocimiento donde formamos a nuestros equipos',
+                          child: Text(
+                              tr.portadaAreasTexto,
                               textAlign: TextAlign.center,
                               style: TextStyle(color: AppColors.textMuted)),
                         ),
@@ -249,13 +251,13 @@ class LandingView extends StatelessWidget {
                   // Galería: fotos que el Admin sube desde "Contenido
                   // página". Se oculta por completo si no hay ninguna.
                   if (content.galleryImages.isNotEmpty) ...[
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 8),
-                      child: _Eyebrow('Galería'),
+                      child: _Eyebrow(tr.portadaGaleria),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 6, bottom: 6),
-                      child: Text('Nuestro trabajo en imágenes'.toUpperCase(),
+                      child: Text(tr.portadaNuestroTrabajo.toUpperCase(),
                           style: displayHeading(
                               fontSize: 30,
                               fontWeight: AppWeights.display,
@@ -264,8 +266,8 @@ class LandingView extends StatelessWidget {
                     Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: isCompact ? 24 : 0),
-                      child: const Text(
-                          'Momentos de la comunidad eduXaction Colombia',
+                      child: Text(
+                          tr.portadaMomentos,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: AppColors.textMuted)),
                     ),
@@ -323,7 +325,7 @@ class LandingView extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Text('¿Listo para sumarse? 💛'.toUpperCase(),
+                        Text(tr.portadaListo.toUpperCase(),
                             textAlign: TextAlign.center,
                             style: displayHeading(
                                 fontSize: 24,
@@ -332,9 +334,8 @@ class LandingView extends StatelessWidget {
                         const SizedBox(height: 10),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 480),
-                          child: const Text(
-                            'Sin importar si es estudiante, mentor, empresa o donante: '
-                            'hay un lugar para usted en eduXaction Colombia.',
+                          child: Text(
+                            tr.portadaListoTexto,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -345,7 +346,7 @@ class LandingView extends StatelessWidget {
                         const SizedBox(height: 22),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.favorite_outline, size: 18),
-                          label: const Text('Quiero unirme'),
+                          label: Text(tr.portadaQuieroUnirme),
                           onPressed: () => showContactDialog(context),
                         ),
                       ],
@@ -414,17 +415,17 @@ class _ExpoShowcase extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(40, 44, 40, 8),
       child: Column(
         children: [
-          const _Eyebrow('Santa Marta · julio 2026'),
+          _Eyebrow(tr.portadaExpoLugar),
           const SizedBox(height: 6),
-          Text('Campeones National Expo 2026'.toUpperCase(),
+          Text(tr.portadaExpoTitulo.toUpperCase(),
               textAlign: TextAlign.center,
               style: displayHeading(
                   fontSize: 30,
                   fontWeight: AppWeights.display,
                   color: AppColors.textPrimary)),
           const SizedBox(height: 6),
-          const Text(
-              'Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo',
+          Text(
+              tr.portadaExpoTexto,
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textMuted)),
           const SizedBox(height: 26),
@@ -438,7 +439,7 @@ class _ExpoShowcase extends StatelessWidget {
                   aspectRatio: 1600 / 1107,
                   height: photoHeight,
                   fillWidth: !wide,
-                  caption: 'Delegación eduXaction Colombia · National Expo 2026',
+                  caption: tr.portadaExpoPie,
                 ),
               ),
               Entrance(
@@ -692,7 +693,7 @@ class _HeroContent extends StatelessWidget {
             const SizedBox(height: 28),
             ElevatedButton.icon(
               icon: const Icon(Icons.arrow_forward, size: 18),
-              label: const Text('Entrar a la plataforma'),
+              label: Text(tr.portadaEntrar),
               onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
             ),
           ],
@@ -742,7 +743,7 @@ class _AnimatedCounter extends StatelessWidget {
             duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => Text(
-              v.round().toString(),
+              entero(v),
               style: displayHeading(
                   fontSize: 36,
                   color: AppColors.gold,

@@ -2,10 +2,10 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
@@ -14,6 +14,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
@@ -70,23 +71,18 @@ class LabsView extends StatelessWidget {
 
         return ContentScreenShell(
           eyebrow: myLabs.isEmpty
-              ? '${allLabs.length} en la red'
-              : '${myLabs.length} ${myLabs.length == 1 ? 'laboratorio asignado' : 'laboratorios asignados'} '
-                  '· ${allLabs.length} en la red',
-          title: 'Laboratorios',
+              ? tr.labsEnLaRed(allLabs.length)
+              : tr.labsAsignadosEnRed(myLabs.length, allLabs.length),
+          title: tr.tabLaboratorios,
           subtitle:
-              'Un laboratorio es un área de trabajo de eduXaction Colombia: '
-              'reúne una Ruta de Impacto por fases, cursos y un LXD que la '
-              'acompaña. Entre al suyo para ver qué sigue.',
+              tr.labsQueEs,
           bodyBuilder: (context, colors, isDark) {
             if (myLabs.isEmpty) {
               return EmptyState(
                 icon: Icons.science_outlined,
-                title: 'Sin laboratorios asignados',
-                message: 'Su administrador todavía no le ha asignado un '
-                    'laboratorio. Sin uno no tiene Ruta de Impacto ni cursos '
-                    'de área.',
-                primaryLabel: 'Actualizar',
+                title: tr.labsSinAsignados,
+                message: tr.labsSinAsignadosTexto,
+                primaryLabel: tr.comunActualizar,
                 onPrimary: data.reloadLaboratories,
                 colors: colors,
               );
@@ -101,14 +97,14 @@ class LabsView extends StatelessWidget {
                     colors: colors),
                 if (otherLabs.isNotEmpty) ...[
                   const SizedBox(height: 36),
-                  Text('OTROS LABORATORIOS DE LA RED',
+                  Text(tr.labsOtros,
                       style: displayHeading(
                           fontSize: 30,
                           fontWeight: AppWeights.display,
                           color: colors.text)),
                   const SizedBox(height: 6),
                   Text(
-                      'Solicite a su administrador que le asigne uno si su proyecto lo necesita.',
+                      tr.labsSolicite,
                       style: TextStyle(fontSize: 13.5, color: colors.text3)),
                   const SizedBox(height: 16),
                   _OtherLabsGrid(labs: otherLabs, colors: colors),
@@ -130,8 +126,8 @@ class _LabsShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ContentScreenShell(
-        eyebrow: 'Laboratorios',
-        title: 'Laboratorios',
+        eyebrow: tr.tabLaboratorios,
+        title: tr.tabLaboratorios,
         bodyBuilder: (context, colors, isDark) => child,
       );
 }
@@ -296,7 +292,7 @@ class _LabCard extends StatelessWidget {
                                 decoration: BoxDecoration(
                                     color: tinta.withValues(alpha: 0.16),
                                     borderRadius: BorderRadius.circular(999)),
-                                child: Text(overdue ? 'ENTREGA VENCIDA' : 'EN CURSO',
+                                child: Text(overdue ? tr.rutaEntregaVencida : tr.rutaEnCurso,
                                     style: TextStyle(
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w600,
@@ -351,14 +347,14 @@ class _LabCard extends StatelessWidget {
                         children: [
                           Text(
                               allComplete
-                                  ? 'Fase $phaseCount de $phaseCount completa'
-                                  : 'Fase $currentPhaseDisplay de $phaseCount en curso',
+                                  ? tr.rutaFaseCompletaDe(phaseCount)
+                                  : tr.rutaFaseEnCursoDe(currentPhaseDisplay, phaseCount),
                               style: TextStyle(fontSize: 12, color: colors.text3)),
                           const SizedBox(height: 2),
                           Text(
                               modules.total == 0
-                                  ? 'Sin módulos aún'
-                                  : '${modules.done}/${modules.total} módulos',
+                                  ? tr.rutaSinModulos
+                                  : tr.rutaModulosFraccion(modules.done, modules.total),
                               style: TextStyle(fontSize: 12, color: colors.text3)),
                         ],
                       ),
@@ -368,9 +364,9 @@ class _LabCard extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _MetaChip(icon: Icons.route, label: '$phaseCount fases', colors: colors),
-                        _MetaChip(icon: Icons.school, label: '${courses.length} cursos', colors: colors),
-                        _MetaChip(icon: Icons.schedule, label: '$hours h estimadas', colors: colors),
+                        _MetaChip(icon: Icons.route, label: tr.rutaFases(phaseCount), colors: colors),
+                        _MetaChip(icon: Icons.school, label: tr.rutaCursos(courses.length), colors: colors),
+                        _MetaChip(icon: Icons.schedule, label: tr.cursoHorasEstimadas(hours), colors: colors),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -390,7 +386,7 @@ class _LabCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text(lxd == null ? 'Sin LXD asignado' : 'LXD: ${lxd.name}',
+                          child: Text(lxd == null ? tr.rutaSinLxd : tr.rutaLxd(lxd.name),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontSize: 12.5, color: colors.text3)),
@@ -405,7 +401,7 @@ class _LabCard extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
                           ),
                           icon: const Icon(Icons.arrow_forward, size: 17),
-                          label: const Text('Entrar', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          label: Text(tr.comunEntrar, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),
@@ -530,7 +526,7 @@ class _OtherLabCard extends StatelessWidget {
                             style: TextStyle(fontSize: 12.5, color: colors.text3)),
                       ],
                       const SizedBox(height: 8),
-                      Text(teams == 1 ? '1 equipo en la red' : '$teams equipos en la red',
+                      Text(teams == 1 ? tr.rutaUnEquipo : tr.rutaEquipos(teams),
                           style: TextStyle(fontSize: 11.5, color: colors.text3)),
                     ],
                   ),
@@ -592,10 +588,10 @@ class _LabDetailBodyState extends State<LabDetailBody> {
             child: e is NotFoundError
                 ? EmptyState(
                     icon: Icons.science_outlined,
-                    title: 'Laboratorio no encontrado',
+                    title: tr.labNoEncontrado,
                     message:
-                        'Puede que ya no exista o que el enlace esté mal escrito.',
-                    primaryLabel: 'Todos los laboratorios',
+                        tr.labNoEncontradoTexto,
+                    primaryLabel: tr.labsTodos,
                     onPrimary: () => _goBack(student),
                     colors: colors,
                   )
@@ -661,14 +657,14 @@ class _LabDetailBodyState extends State<LabDetailBody> {
                     hours: hours,
                     colors: colors),
                 const SizedBox(height: 32),
-                Text('RUTA DE IMPACTO',
+                Text(tr.rutaMayus,
                     style: displayHeading(
                         fontSize: 34,
                         fontWeight: AppWeights.display,
                         color: colors.text)),
                 const SizedBox(height: 4),
                 Text(
-                    'Las fases se abren en orden. Su LXD publica el contenido de cada una.',
+                    tr.rutaFasesEnOrden,
                     style: TextStyle(fontSize: 13.5, color: colors.text3)),
                 const SizedBox(height: 18),
                 _PhaseCardsGrid(
@@ -729,7 +725,7 @@ class _BackButton extends StatelessWidget {
             children: [
               Icon(Icons.arrow_back, size: 18, color: hover ? colors.goldInk : colors.text2),
               const SizedBox(width: 8),
-              Text('Todos los laboratorios',
+              Text(tr.labsTodos,
                   style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
             ],
           ),
@@ -855,13 +851,13 @@ class _LabIdentityBand extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Su avance',
+                              Text(tr.rutaSuAvance,
                                   style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75))),
                               const SizedBox(height: 4),
-                              Text('Fase $currentPhaseDisplay de $totalPhases',
+                              Text(tr.rutaFaseDe(currentPhaseDisplay, totalPhases),
                                   style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: Colors.white)),
                               const SizedBox(height: 2),
-                              Text('${modules.done} de ${modules.total} módulos',
+                              Text(tr.rutaModulosDeTotal(modules.done, modules.total),
                                   style: TextStyle(fontSize: 12.5, color: Colors.white.withValues(alpha: 0.85))),
                             ],
                           ),
@@ -895,10 +891,10 @@ class _LabStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      (value: '$phaseCount', label: 'Fases en la ruta', primary: true),
-      (value: '${modules.total}', label: 'Módulos publicados', primary: false),
-      (value: '$courseCount', label: 'Cursos del laboratorio', primary: false),
-      (value: '$hours h', label: 'Horas estimadas', primary: false),
+      (value: '$phaseCount', label: tr.rutaFasesEnRuta, primary: true),
+      (value: '${modules.total}', label: tr.rutaModulosPublicados, primary: false),
+      (value: '$courseCount', label: tr.rutaCursosLab, primary: false),
+      (value: '$hours h', label: tr.rutaHorasEstimadas, primary: false),
     ];
     return LayoutBuilder(builder: (context, c) {
       final perRow = c.maxWidth > 700 ? 4 : 2;
@@ -954,7 +950,7 @@ class _PhaseCardsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (phases.isEmpty) {
       return Text(
-          'Este laboratorio todavía no tiene fases publicadas.',
+          tr.rutaSinFases,
           style: TextStyle(fontSize: 13.5, color: colors.text3));
     }
     return LayoutBuilder(builder: (context, c) {
@@ -1002,7 +998,7 @@ class _PhaseDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = labColorFor(labId);
-    final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
+    final title = phase.title.isEmpty ? tr.rutaFaseNumero(index + 1) : phase.title;
 
     // Los cuatro estados salen del servidor: el desbloqueo, la completitud y
     // el estado de la fecha. Antes se recalculaban acá, cada uno con su
@@ -1021,16 +1017,16 @@ class _PhaseDetailCard extends StatelessWidget {
           AppColors.statusGood.withValues(alpha: 0.16),
           AppColors.statusGood,
           Icons.check_circle,
-          'Completa'
+          tr.rutaEstadoCompleta
         ),
       _PhaseUiState.overdue => (
           colors.alertInk.withValues(alpha: 0.16),
           colors.alertInk,
           Icons.warning_amber_rounded,
-          'Vencida'
+          tr.rutaEstadoVencida
         ),
-      _PhaseUiState.available => (colors.goldSoft, colors.goldInk, Icons.lock_open, 'Disponible'),
-      _PhaseUiState.locked => (colors.surface2, colors.text3, Icons.lock_outline, 'Bloqueada'),
+      _PhaseUiState.available => (colors.goldSoft, colors.goldInk, Icons.lock_open, tr.rutaEstadoDisponible),
+      _PhaseUiState.locked => (colors.surface2, colors.text3, Icons.lock_outline, tr.rutaEstadoBloqueada),
     };
 
     final (circleBg, circleBorder, circleTextColor) = switch (state) {
@@ -1048,8 +1044,8 @@ class _PhaseDetailCard extends StatelessWidget {
     final showModules = state != _PhaseUiState.locked;
 
     String lockedReason() => !phase.isUnlocked
-        ? 'Se abre cuando complete la Fase $index'
-        : 'Su LXD publicará el contenido de esta fase.';
+        ? tr.rutaSeAbreCuando(index)
+        : tr.rutaLxdPublicara;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
@@ -1099,7 +1095,7 @@ class _PhaseDetailCard extends StatelessWidget {
             Text(
                 phase.description.isNotEmpty
                     ? phase.description
-                    : 'Su LXD aún no ha publicado el contenido de esta fase.',
+                    : tr.rutaLxdNoPublico,
                 style: TextStyle(fontSize: 13.5, height: 1.5, color: colors.text2)),
           ],
           const SizedBox(height: 14),
@@ -1129,7 +1125,7 @@ class _PhaseDetailCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(total == 0 ? 'Sin módulos publicados' : '$done de $total módulos',
+                Text(total == 0 ? tr.rutaSinModulosPublicados : tr.rutaModulosDeTotal(done, total),
                     style: TextStyle(fontSize: 11.5, color: colors.text3)),
                 if (total > 0)
                   Text('${(done / total * 100).round()}%', style: TextStyle(fontSize: 11.5, color: colors.text3)),
@@ -1156,11 +1152,12 @@ class _PhaseDetailCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                       state == _PhaseUiState.locked
-                          ? 'Fecha prevista por el laboratorio: '
-                              '${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
+                          ? tr.rutaFechaPrevista(fechaCorta(phase.deadlineDate!))
                           : (state == _PhaseUiState.overdue
-                              ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
-                              : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'),
+                              ? tr.rutaEntregaVencidaEl(
+                                  fechaCorta(phase.deadlineDate!))
+                              : tr.rutaEntregaEl(
+                                  fechaCorta(phase.deadlineDate!))),
                       style: TextStyle(
                           fontSize: 12.5,
                           color: state == _PhaseUiState.overdue ? colors.alertInk : colors.text3)),
@@ -1186,7 +1183,7 @@ class _PhaseDetailCard extends StatelessWidget {
                               moduleIndex: nextIndex == -1 ? 0 : nextIndex)));
                 },
                 icon: const Icon(Icons.play_arrow, size: 18),
-                label: Text(done == 0 ? 'Empezar la fase' : 'Continuar la fase'),
+                label: Text(done == 0 ? tr.rutaEmpezarFase : tr.rutaContinuarFase),
               ),
             ),
           ],
@@ -1249,7 +1246,7 @@ class _LabCoursesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _DetailCard(
       icon: Icons.school_outlined,
-      title: 'Cursos del laboratorio',
+      title: tr.rutaCursosLab,
       colors: colors,
       child: courses.isEmpty
           ? DashedRRectBorder(
@@ -1263,8 +1260,7 @@ class _LabCoursesCard extends StatelessWidget {
                     Icon(Icons.library_books_outlined, size: 30, color: colors.text3),
                     const SizedBox(height: 12),
                     Text(
-                        'Este laboratorio todavía no tiene cursos publicados. '
-                        'Su LXD los abrirá junto con la Fase 1.',
+                        tr.rutaSinCursos,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: colors.text2)),
                   ],
@@ -1373,10 +1369,10 @@ class _LabLxdCard extends StatelessWidget {
     final lxd = this.lxd;
     return _DetailCard(
       icon: Icons.diversity_3,
-      title: 'Su LXD',
+      title: tr.rutaSuLxd,
       colors: colors,
       child: lxd == null
-          ? Text('Este laboratorio todavía no tiene un LXD asignado.',
+          ? Text(tr.rutaLabSinLxd,
               style: TextStyle(fontSize: 13.5, color: colors.text3))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1407,7 +1403,7 @@ class _LabLxdCard extends StatelessWidget {
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: colors.text)),
-                            Text('Learning Experience Designer',
+                            Text(tr.rutaLxdNombreLargo,
                                 style: TextStyle(fontSize: 12.5, color: colors.text3)),
                           ],
                         ),
@@ -1420,7 +1416,7 @@ class _LabLxdCard extends StatelessWidget {
                 _LxdInfoRow(
                     icon: Icons.schedule,
                     text: lxd.availability.isEmpty
-                        ? 'Sin horario publicado'
+                        ? tr.rutaSinHorario
                         : lxd.availability,
                     colors: colors),
                 const SizedBox(height: 10),
@@ -1468,7 +1464,7 @@ class _ScheduleMentoriaButton extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: enabled ? () => _showDialog(context, availability) : null,
             icon: const Icon(Icons.event_available, size: 18),
-            label: const Text('Agendar mentoría'),
+            label: Text(tr.rutaAgendarMentoria),
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.goldInk,
               side: BorderSide(color: enabled ? colors.goldInk : colors.border),
@@ -1478,7 +1474,7 @@ class _ScheduleMentoriaButton extends StatelessWidget {
         if (!enabled)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text('Su LXD todavía no publicó su disponibilidad.',
+            child: Text(tr.rutaLxdSinDisponibilidad,
                 style: TextStyle(fontSize: 12, color: colors.text3)),
           ),
       ],
@@ -1489,34 +1485,35 @@ class _ScheduleMentoriaButton extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Agendar mentoría', style: TextStyle(fontSize: 18)),
+        title: Text(tr.rutaAgendarMentoria, style: TextStyle(fontSize: 18)),
         content: SizedBox(
           width: 380,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Disponibilidad de ${lxd.name}',
+              Text(tr.rutaDisponibilidadDe(lxd.name),
                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               const SizedBox(height: 6),
               Text(availability, style: const TextStyle(fontSize: 13.5, height: 1.5)),
               const SizedBox(height: 16),
-              Text('Escríbale para coordinar el horario exacto de ${lab.name}.',
+              Text(tr.rutaEscribale(lab.name),
                   style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr.comunCerrar)),
           ElevatedButton.icon(
             icon: const Icon(Icons.mail_outline, size: 16),
-            label: const Text('Escribir correo'),
+            label: Text(tr.rutaEscribirCorreo),
             onPressed: () {
               Navigator.pop(ctx);
               launchUrl(Uri(
                   scheme: 'mailto',
                   path: lxd.email,
-                  query: 'subject=${Uri.encodeComponent('Mentoría - ${lab.name}')}'));
+                  query:
+                      'subject=${Uri.encodeComponent(tr.rutaAsuntoMentoria(lab.name))}'));
             },
           ),
         ],
@@ -1554,13 +1551,12 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
 
     return ContentScreenShell(
       eyebrow: team == null
-          ? 'Ruta de Impacto'
+          ? tr.rutaDeImpacto
           : '${team.groupName}'
               '${student.university.isEmpty ? '' : ' · ${student.university}'}',
-      title: 'Ruta de Impacto',
-      subtitle: 'Las fases de su laboratorio, sus objetivos y lo que falta '
-          'para llegar a National Expo.',
-      searchHint: 'Buscar en el portal',
+      title: tr.rutaDeImpacto,
+      subtitle: tr.rutaSubtitulo,
+      searchHint: tr.perfilBuscarPortal,
       bodyBuilder: (context, colors, isDark) => data.rutaProgress.when(
         loading: () => const CardListSkeleton(count: 3),
         // Un Open Learning recibe 403 acá y eso es lo que se muestra: la
@@ -1572,9 +1568,9 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
           if (labs.isEmpty) {
             return EmptyState(
               icon: Icons.route_outlined,
-              title: 'Sin laboratorio asignado',
+              title: tr.rutaSinLab,
               message:
-                  'Su administrador aún no le ha asignado ningún laboratorio.',
+                  tr.rutaSinLabTexto,
               colors: colors,
             );
           }
@@ -1606,12 +1602,10 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
               if (!hasContent)
                 EmptyState(
                   icon: Icons.route_outlined,
-                  title: 'Laboratorio sin fases',
+                  title: tr.rutaLabSinFases,
                   message:
-                      'El ${selected.laboratoryName} todavía no ha publicado '
-                      'sus fases. Su LXD las abrirá cuando el contenido esté '
-                      'listo.',
-                  primaryLabel: labs.length > 1 ? 'Ver otro laboratorio' : null,
+                      tr.rutaLabSinFasesTexto(selected.laboratoryName),
+                  primaryLabel: labs.length > 1 ? tr.rutaVerOtroLab : null,
                   onPrimary: labs.length > 1
                       ? () => setState(() {
                             final idx = labs.indexOf(selected);
@@ -1742,7 +1736,7 @@ class _PhaseRow extends StatelessWidget {
     final unlocked = phase.isUnlocked;
     final complete = phase.isComplete;
     final deadlineStatus = phase.deadlineStatus;
-    final title = phase.title.isEmpty ? 'Fase ${index + 1}' : phase.title;
+    final title = phase.title.isEmpty ? tr.rutaFaseNumero(index + 1) : phase.title;
     // Token de alerta (README `design_handoff_portal_estudiante`, sección
     // "Tokens de diseño"): nunca un literal hex suelto por tema.
     final alertColor = colors.alertInk;
@@ -1754,13 +1748,13 @@ class _PhaseRow extends StatelessWidget {
 
     final (chipBg, chipColor, chipIcon, chipLabel) = complete
         ? (AppColors.statusGood.withValues(alpha: 0.15), AppColors.statusGood, Icons.check_circle,
-            'Completa')
+            tr.rutaEstadoCompleta)
         : !unlocked
-            ? (colors.surface2, colors.text3, Icons.lock_outline, 'Sin abrir')
+            ? (colors.surface2, colors.text3, Icons.lock_outline, tr.rutaEstadoSinAbrir)
             : deadlineStatus == DeadlineStatus.overdue
                 ? (alertColor.withValues(alpha: 0.16), alertColor, Icons.warning_amber_rounded,
-                    'Vencida')
-                : (colors.goldSoft, colors.goldInk, Icons.play_circle_outline, 'En curso');
+                    tr.rutaEstadoVencida)
+                : (colors.goldSoft, colors.goldInk, Icons.play_circle_outline, tr.rutaEstadoEnCurso);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1902,8 +1896,10 @@ class _PhaseRow extends StatelessWidget {
                         Expanded(
                           child: Text(
                               deadlineStatus == DeadlineStatus.overdue
-                                  ? 'Entrega vencida: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}'
-                                  : 'Entrega: ${DateFormat('d MMM yyyy', 'es').format(phase.deadlineDate!)}',
+                                  ? tr.rutaEntregaVencidaEl(
+                                      fechaCorta(phase.deadlineDate!))
+                                  : tr.rutaEntregaEl(
+                                      fechaCorta(phase.deadlineDate!)),
                               style: TextStyle(
                                   fontSize: 12.5,
                                   color: deadlineStatus == DeadlineStatus.overdue
@@ -1944,7 +1940,7 @@ class _ModuleSummaryRow extends StatelessWidget {
     final unlocked = module.isUnlocked;
     final complete = module.isComplete;
     final title =
-        module.title.isEmpty ? 'Módulo ${moduleIndex + 1}' : module.title;
+        module.title.isEmpty ? tr.rutaModuloNumero(moduleIndex + 1) : module.title;
     final totalItems = module.totalItems;
 
     final (iconBg, iconColor) = complete
@@ -1965,7 +1961,7 @@ class _ModuleSummaryRow extends StatelessWidget {
                         phaseIndex: phaseIndex,
                         moduleIndex: moduleIndex)))
             : showAppSnack(
-                context, 'Complete el módulo anterior para desbloquear "$title".'),
+                context, tr.rutaCompleteAnterior(title)),
         child: MouseRegion(
           cursor: unlocked ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
           child: Container(
@@ -2002,18 +1998,18 @@ class _ModuleSummaryRow extends StatelessWidget {
                           style: TextStyle(fontSize: 13.5, color: colors.text)),
                       Text(
                           !unlocked
-                              ? 'Bloqueado'
+                              ? tr.rutaBloqueado
                               : (module.isMentorshipModule
-                                  ? 'Módulo de mentoría'
+                                  ? tr.rutaModuloMentoria
                                   : (module.isEmpty
-                                      ? 'Sin contenido aún'
-                                      : '$totalItems elemento(s)')),
+                                      ? tr.rutaSinContenido
+                                      : tr.rutaElementos(totalItems))),
                           style: TextStyle(fontSize: 11.5, color: colors.text3)),
                     ],
                   ),
                 ),
                 Text(
-                    complete ? 'Completo' : (!unlocked ? 'Bloqueado' : 'Pendiente'),
+                    complete ? tr.rutaCompleto : (!unlocked ? tr.rutaBloqueado : tr.calificacionPendiente),
                     style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w600, color: iconColor)),
               ],
@@ -2062,7 +2058,7 @@ class _ExpoCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('META DEL AÑO',
+                    Text(tr.rutaMetaAnio,
                         style: TextStyle(
                             fontSize: 11.5,
                             letterSpacing: 11.5 * 0.16,
@@ -2082,7 +2078,7 @@ class _ExpoCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
             child: group == null
-                ? Text('Aún no pertenece a un equipo.',
+                ? Text(tr.rutaSinEquipo,
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2092,7 +2088,7 @@ class _ExpoCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Flexible(
-                            child: Text('Checklist del equipo',
+                            child: Text(tr.rutaChecklistEquipo,
                                 style: TextStyle(fontSize: 12.5, color: colors.text3)),
                           ),
                           Text('$done/$total',
@@ -2175,7 +2171,7 @@ class ModuleDetailScreen extends StatelessWidget {
       error: (e) => Scaffold(
         body: Column(
           children: [
-            const AppHeader(portalTitle: 'Módulo'),
+            AppHeader(portalTitle: tr.rutaModulo),
             Expanded(child: ErrorState(e, onRetry: data.reloadRutaProgress)),
           ],
         ),
@@ -2190,15 +2186,15 @@ class ModuleDetailScreen extends StatelessWidget {
             : null;
 
         if (module == null || phase == null) {
-          return const Scaffold(
+          return Scaffold(
             body: Column(
               children: [
-                AppHeader(portalTitle: 'Módulo'),
+                AppHeader(portalTitle: tr.rutaModulo),
                 Expanded(
                   child: EmptyState(
                       icon: Icons.inbox_outlined,
                       message:
-                          'Este módulo ya no existe o el enlace está mal escrito.'),
+                          tr.rutaModuloNoExiste),
                 ),
               ],
             ),
@@ -2224,7 +2220,7 @@ class _ModuleBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = module.title.isEmpty ? 'Módulo ${index + 1}' : module.title;
+    final title = module.title.isEmpty ? tr.rutaModuloNumero(index + 1) : module.title;
 
     return Scaffold(
       body: Column(
@@ -2260,12 +2256,12 @@ class _ModuleBody extends StatelessWidget {
                         if (module.isMentorshipModule)
                           _MeetingCard(phaseTitle: phase.title),
                         if (module.courses.isNotEmpty) ...[
-                          const SectionTitle('Cursos asignados'),
+                          SectionTitle(tr.cursosAsignados),
                           for (final course in module.courses)
                             _ModuleCourseRow(course: course),
                         ],
                         if (module.ownLessons.isNotEmpty) ...[
-                          const SectionTitle('Entregas y lecturas'),
+                          SectionTitle(tr.rutaEntregasLecturas),
                           for (final lesson in module.ownLessons)
                             _OwnLessonRow(
                                 moduleId: module.moduleId, lesson: lesson),
@@ -2273,10 +2269,10 @@ class _ModuleBody extends StatelessWidget {
                         // "Sin contenido aún" no es lo mismo que "pendiente":
                         // acá no hay nada que la persona pueda hacer.
                         if (module.isEmpty && !module.isMentorshipModule)
-                          const EmptyState(
+                          EmptyState(
                               icon: Icons.inbox_outlined,
                               message:
-                                  'Su administrador aún no agregó contenido a este módulo.'),
+                                  tr.rutaModuloSinContenido),
                       ],
                     ),
                   ),
@@ -2303,7 +2299,7 @@ class _MeetingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final link = data.siteContent.valueOrNull?.meetingLink ?? '';
-    final title = phaseTitle.isEmpty ? 'esta fase' : phaseTitle;
+    final title = phaseTitle.isEmpty ? tr.rutaEstaFase : phaseTitle;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -2318,20 +2314,20 @@ class _MeetingCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Módulo de mentoría',
+                  Text(tr.rutaModuloMentoria,
                       style:
                           TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 4),
-                  Text('Reúnase con su mentor para cerrar $title.',
+                  Text(tr.rutaReunase(title),
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
                   // Sin enlace configurado el botón queda apagado y se dice
                   // por qué, en vez de abrir una pestaña en blanco.
                   if (link.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
-                          'Su administrador todavía no configuró el enlace de la reunión.',
+                          tr.rutaSinEnlaceReunion,
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 12)),
                     ),
@@ -2340,7 +2336,7 @@ class _MeetingCard extends StatelessWidget {
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.video_call, size: 18),
-              label: const Text('Unirse a la reunión'),
+              label: Text(tr.calendarioUnirse),
               onPressed: link.isEmpty
                   ? null
                   : () => abrirReunion(context, link),
@@ -2386,8 +2382,7 @@ class _ModuleCourseRow extends StatelessWidget {
                   const SizedBox(height: 4),
                   ThinProgressBar(
                     value: course.ratio,
-                    tooltip: '${course.completedLessons} de '
-                        '${course.totalLessons} lecciones',
+                    tooltip: tr.leccionesDeTotal(course.completedLessons, course.totalLessons),
                   ),
                 ],
               ),
@@ -2442,7 +2437,7 @@ class _OwnLessonRow extends StatelessWidget {
                               : AppColors.textPrimary)),
                   Text(
                       lesson.isActivity
-                          ? 'Entrega'
+                          ? tr.rutaEntrega
                           : lessonTypeLabel(lesson.type),
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
@@ -2479,7 +2474,7 @@ class _OwnLessonRow extends StatelessWidget {
         await abrirRecurso(context, url, titulo: lesson.title);
       } else {
         if (context.mounted) {
-          showAppSnack(context, 'Esta lectura todavía no tiene material.');
+          showAppSnack(context, tr.rutaLecturaSinMaterial);
         }
         return;
       }
@@ -2541,7 +2536,7 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
       await data.toggleRutaLessonIfPending(widget.lesson.id);
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Entrega enviada ✓');
+      showSuccessCheck(context, tr.actividadEntregaEnviada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -2562,8 +2557,8 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
       saving: _sending,
       dirty: _comment.text.trim().isNotEmpty || _files.isNotEmpty,
       onCancel: () => Navigator.pop(context),
-      saveLabel: 'Enviar',
-      savingLabel: 'Enviando…',
+      saveLabel: tr.comunEnviar,
+      savingLabel: tr.comunEnviando,
       onSave: _send,
       child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2581,7 +2576,7 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
                   enabled: !_sending,
                   maxLines: 3,
                   onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(labelText: 'Comentario')),
+                  decoration: InputDecoration(labelText: tr.comunComentario)),
               const SizedBox(height: 12),
               FileUploadField(
                 purpose: 'submission',

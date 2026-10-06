@@ -2593,6 +2593,1548 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'archivo subido'**
   String get subidaArchivoSubido;
+
+  /// No description provided for @portadaIniciarSesion.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar sesión'**
+  String get portadaIniciarSesion;
+
+  /// No description provided for @portadaEstudiantesActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes activos'**
+  String get portadaEstudiantesActivos;
+
+  /// No description provided for @portadaProyectosImpacto.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyectos de impacto'**
+  String get portadaProyectosImpacto;
+
+  /// No description provided for @portadaLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorios'**
+  String get portadaLaboratorios;
+
+  /// No description provided for @portadaUniversidadesAliadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Universidades aliadas'**
+  String get portadaUniversidadesAliadas;
+
+  /// No description provided for @portadaAreasConocimiento.
+  ///
+  /// In es, this message translates to:
+  /// **'Áreas de conocimiento'**
+  String get portadaAreasConocimiento;
+
+  /// No description provided for @portadaNuestrosLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuestros Laboratorios'**
+  String get portadaNuestrosLaboratorios;
+
+  /// No description provided for @portadaAreasTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Áreas de conocimiento donde formamos a nuestros equipos'**
+  String get portadaAreasTexto;
+
+  /// No description provided for @portadaGaleria.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería'**
+  String get portadaGaleria;
+
+  /// No description provided for @portadaNuestroTrabajo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuestro trabajo en imágenes'**
+  String get portadaNuestroTrabajo;
+
+  /// No description provided for @portadaMomentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Momentos de la comunidad eduXaction Colombia'**
+  String get portadaMomentos;
+
+  /// No description provided for @portadaListo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Listo para sumarse? 💛'**
+  String get portadaListo;
+
+  /// No description provided for @portadaListoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin importar si es estudiante, mentor, empresa o donante: hay un lugar para usted en eduXaction Colombia.'**
+  String get portadaListoTexto;
+
+  /// No description provided for @portadaQuieroUnirme.
+  ///
+  /// In es, this message translates to:
+  /// **'Quiero unirme'**
+  String get portadaQuieroUnirme;
+
+  /// No description provided for @portadaExpoLugar.
+  ///
+  /// In es, this message translates to:
+  /// **'Santa Marta · julio 2026'**
+  String get portadaExpoLugar;
+
+  /// No description provided for @portadaExpoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Campeones National Expo 2026'**
+  String get portadaExpoTitulo;
+
+  /// No description provided for @portadaExpoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo'**
+  String get portadaExpoTexto;
+
+  /// No description provided for @portadaExpoPie.
+  ///
+  /// In es, this message translates to:
+  /// **'Delegación eduXaction Colombia · National Expo 2026'**
+  String get portadaExpoPie;
+
+  /// No description provided for @portadaEntrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrar a la plataforma'**
+  String get portadaEntrar;
+
+  /// No description provided for @tabDashboard.
+  ///
+  /// In es, this message translates to:
+  /// **'Dashboard'**
+  String get tabDashboard;
+
+  /// No description provided for @tabInicioCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio'**
+  String get tabInicioCorto;
+
+  /// No description provided for @tabCalendario.
+  ///
+  /// In es, this message translates to:
+  /// **'Calendario'**
+  String get tabCalendario;
+
+  /// No description provided for @tabMisCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Cursos'**
+  String get tabMisCursos;
+
+  /// No description provided for @tabCursosCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos'**
+  String get tabCursosCorto;
+
+  /// No description provided for @tabLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorios'**
+  String get tabLaboratorios;
+
+  /// No description provided for @tabRutaCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta'**
+  String get tabRutaCorto;
+
+  /// No description provided for @tabDirectorioProyectos.
+  ///
+  /// In es, this message translates to:
+  /// **'Directorio de Proyectos'**
+  String get tabDirectorioProyectos;
+
+  /// No description provided for @tabProyectosCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyectos'**
+  String get tabProyectosCorto;
+
+  /// No description provided for @tabForo.
+  ///
+  /// In es, this message translates to:
+  /// **'Foro'**
+  String get tabForo;
+
+  /// No description provided for @tabCertificados.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificados'**
+  String get tabCertificados;
+
+  /// No description provided for @tabMiPerfil.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi Perfil'**
+  String get tabMiPerfil;
+
+  /// No description provided for @tabPerfilCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil'**
+  String get tabPerfilCorto;
+
+  /// No description provided for @portalDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal {rol}'**
+  String portalDe(Object rol);
+
+  /// No description provided for @certificadosMisTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Certificados'**
+  String get certificadosMisTitulo;
+
+  /// No description provided for @certificadosMisSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificados emitidos por sus LXD al completar una Ruta de Impacto'**
+  String get certificadosMisSubtitulo;
+
+  /// No description provided for @certificadosVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene certificados.\nComplete sus cursos para obtenerlos.'**
+  String get certificadosVacio;
+
+  /// No description provided for @certificadoRutaDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta de Impacto · {laboratorio}'**
+  String certificadoRutaDe(Object laboratorio);
+
+  /// No description provided for @certificadoVerPdf.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver PDF'**
+  String get certificadoVerPdf;
+
+  /// No description provided for @comunCompartir.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get comunCompartir;
+
+  /// No description provided for @perfilMiembroDesde.
+  ///
+  /// In es, this message translates to:
+  /// **'Miembro activo desde {anio}'**
+  String perfilMiembroDesde(Object anio);
+
+  /// No description provided for @perfilMiembroComunidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Miembro de la comunidad'**
+  String get perfilMiembroComunidad;
+
+  /// No description provided for @perfilBuscarPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar en el portal'**
+  String get perfilBuscarPortal;
+
+  /// No description provided for @perfilDatosPersonales.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos personales'**
+  String get perfilDatosPersonales;
+
+  /// No description provided for @perfilCedula.
+  ///
+  /// In es, this message translates to:
+  /// **'Cédula'**
+  String get perfilCedula;
+
+  /// No description provided for @perfilTelefonoEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono'**
+  String get perfilTelefonoEtiqueta;
+
+  /// No description provided for @perfilCorreoEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Correo'**
+  String get perfilCorreoEtiqueta;
+
+  /// No description provided for @perfilCiudad.
+  ///
+  /// In es, this message translates to:
+  /// **'Ciudad'**
+  String get perfilCiudad;
+
+  /// No description provided for @perfilCarrera.
+  ///
+  /// In es, this message translates to:
+  /// **'Carrera'**
+  String get perfilCarrera;
+
+  /// No description provided for @perfilVidaEduxaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Vida eduXaction'**
+  String get perfilVidaEduxaction;
+
+  /// No description provided for @perfilEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipo'**
+  String get perfilEquipo;
+
+  /// No description provided for @perfilEmpresaPatrocinadora.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa patrocinadora'**
+  String get perfilEmpresaPatrocinadora;
+
+  /// No description provided for @perfilCursosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos activos'**
+  String get perfilCursosActivos;
+
+  /// No description provided for @perfilLeccionesCompletadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Lecciones completadas'**
+  String get perfilLeccionesCompletadas;
+
+  /// No description provided for @perfilEditar.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar perfil'**
+  String get perfilEditar;
+
+  /// No description provided for @perfilSinProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene proyecto asignado.'**
+  String get perfilSinProyecto;
+
+  /// No description provided for @perfilMiProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'MI PROYECTO'**
+  String get perfilMiProyecto;
+
+  /// No description provided for @certificadosVacioRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.'**
+  String get certificadosVacioRuta;
+
+  /// No description provided for @certificadosFaltaPoco.
+  ///
+  /// In es, this message translates to:
+  /// **'Le falta poco para su primer certificado: \"{nombre}\".'**
+  String certificadosFaltaPoco(Object nombre);
+
+  /// No description provided for @leccionesDeTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'{completadas} de {total} lecciones'**
+  String leccionesDeTotal(Object completadas, Object total);
+
+  /// No description provided for @certificadoDescargar.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar certificado'**
+  String get certificadoDescargar;
+
+  /// No description provided for @perfilSeleccioneFoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccione una foto'**
+  String get perfilSeleccioneFoto;
+
+  /// No description provided for @perfilFotoFormato.
+  ///
+  /// In es, this message translates to:
+  /// **'Use una foto en JPG o PNG.'**
+  String get perfilFotoFormato;
+
+  /// No description provided for @perfilFotoPesada.
+  ///
+  /// In es, this message translates to:
+  /// **'La foto pesa más de 25 MB. Elija una más liviana.'**
+  String get perfilFotoPesada;
+
+  /// No description provided for @perfilTelefonoInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingrese un teléfono válido (mínimo 7 dígitos).'**
+  String get perfilTelefonoInvalido;
+
+  /// No description provided for @perfilActualizado.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil actualizado ✓'**
+  String get perfilActualizado;
+
+  /// No description provided for @perfilSubiendoFoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Subiendo foto…'**
+  String get perfilSubiendoFoto;
+
+  /// No description provided for @perfilCambiarFoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar foto de perfil'**
+  String get perfilCambiarFoto;
+
+  /// No description provided for @perfilAsignaAdmin.
+  ///
+  /// In es, this message translates to:
+  /// **'Cédula, universidad, equipo, proyecto y empresa patrocinadora los asigna su administrador.'**
+  String get perfilAsignaAdmin;
+
+  /// No description provided for @certificadoEmitidoDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitido el {fecha} · Por: {emisor} · Código: {codigo}'**
+  String certificadoEmitidoDetalle(Object fecha, Object emisor, Object codigo);
+
+  /// No description provided for @certificadoEmitidoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitido el {fecha}'**
+  String certificadoEmitidoEl(Object fecha);
+
+  /// No description provided for @dashboardSinProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene proyecto asignado'**
+  String get dashboardSinProyecto;
+
+  /// No description provided for @dashboardTodoPorEmpezar.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo por empezar'**
+  String get dashboardTodoPorEmpezar;
+
+  /// No description provided for @dashboardSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene cursos asignados. Cuando su administrador le asigne uno, su progreso aparecerá aquí.'**
+  String get dashboardSinCursos;
+
+  /// No description provided for @comunActualizar.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get comunActualizar;
+
+  /// No description provided for @dashboardProgresoGeneral.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso general'**
+  String get dashboardProgresoGeneral;
+
+  /// No description provided for @dashboardTodoCompletado.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya completó todos sus cursos asignados.'**
+  String get dashboardTodoCompletado;
+
+  /// No description provided for @dashboardContinueDonde.
+  ///
+  /// In es, this message translates to:
+  /// **'CONTINÚE DONDE IBA'**
+  String get dashboardContinueDonde;
+
+  /// No description provided for @comunContinuar.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get comunContinuar;
+
+  /// No description provided for @dashboardProgresoPorCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso por curso'**
+  String get dashboardProgresoPorCurso;
+
+  /// No description provided for @dashboardContinuarCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar \"{nombre}\"'**
+  String dashboardContinuarCurso(Object nombre);
+
+  /// No description provided for @cursoRutaNationalExpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta National Expo'**
+  String get cursoRutaNationalExpo;
+
+  /// No description provided for @dashboardChecklistExpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Checklist National Expo'**
+  String get dashboardChecklistExpo;
+
+  /// No description provided for @dashboardPendientes.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendientes'**
+  String get dashboardPendientes;
+
+  /// No description provided for @dashboardAlDia.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Está al día! No tiene pendientes.'**
+  String get dashboardAlDia;
+
+  /// No description provided for @dashboardChecklistTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Checklist RUTA NATIONAL EXPO'**
+  String get dashboardChecklistTitulo;
+
+  /// No description provided for @dashboardActividadReciente.
+  ///
+  /// In es, this message translates to:
+  /// **'Actividad reciente'**
+  String get dashboardActividadReciente;
+
+  /// No description provided for @dashboardSinCalificadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene entregas calificadas.'**
+  String get dashboardSinCalificadas;
+
+  /// No description provided for @dashboardSuProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Su proyecto'**
+  String get dashboardSuProyecto;
+
+  /// No description provided for @calendarioNoTrajo.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos traer sus eventos.'**
+  String get calendarioNoTrajo;
+
+  /// No description provided for @calendarioCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando sus eventos…'**
+  String get calendarioCargando;
+
+  /// No description provided for @calendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.'**
+  String get calendarioSubtitulo;
+
+  /// No description provided for @calendarioProximos.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximos eventos'**
+  String get calendarioProximos;
+
+  /// No description provided for @calendarioSinProximos.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene próximos eventos.'**
+  String get calendarioSinProximos;
+
+  /// No description provided for @calendarioAgendaDespejada.
+  ///
+  /// In es, this message translates to:
+  /// **'Agenda despejada'**
+  String get calendarioAgendaDespejada;
+
+  /// No description provided for @calendarioAgendaDespejadaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene sesiones ni entregas programadas este mes.'**
+  String get calendarioAgendaDespejadaTexto;
+
+  /// No description provided for @comunActualizado.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizado'**
+  String get comunActualizado;
+
+  /// No description provided for @cursoHorasEstimadas.
+  ///
+  /// In es, this message translates to:
+  /// **'{horas} h estimadas'**
+  String cursoHorasEstimadas(Object horas);
+
+  /// No description provided for @cursoMinutosEstimados.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutos} min estimados'**
+  String cursoMinutosEstimados(Object minutos);
+
+  /// No description provided for @cursosAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos asignados'**
+  String get cursosAsignados;
+
+  /// No description provided for @cursosCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando sus cursos…'**
+  String get cursosCargando;
+
+  /// No description provided for @cursosNoTrajo.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos traer sus cursos.'**
+  String get cursosNoTrajo;
+
+  /// No description provided for @cursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.'**
+  String get cursosSubtitulo;
+
+  /// No description provided for @cursosBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar curso o laboratorio'**
+  String get cursosBuscar;
+
+  /// No description provided for @cursosSinAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cursos asignados'**
+  String get cursosSinAsignados;
+
+  /// No description provided for @cursosSinAsignadosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene cursos asignados por su administrador.'**
+  String get cursosSinAsignadosTexto;
+
+  /// No description provided for @cursosNingunoCoincide.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún curso coincide con su búsqueda. Pruebe con otro término.'**
+  String get cursosNingunoCoincide;
+
+  /// No description provided for @comunLimpiarBusqueda.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar búsqueda'**
+  String get comunLimpiarBusqueda;
+
+  /// No description provided for @cursoModulos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 módulo} other{{cantidad} módulos}}'**
+  String cursoModulos(int cantidad);
+
+  /// No description provided for @cursoLecciones.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}'**
+  String cursoLecciones(int cantidad);
+
+  /// No description provided for @cursoCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado'**
+  String get cursoCertificado;
+
+  /// No description provided for @cursoProgresoDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechas} de {total} lecciones · {porcentaje}%'**
+  String cursoProgresoDetalle(Object hechas, Object total, Object porcentaje);
+
+  /// No description provided for @cursoTrabajoEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Trabajo en equipo'**
+  String get cursoTrabajoEquipo;
+
+  /// No description provided for @comunComenzar.
+  ///
+  /// In es, this message translates to:
+  /// **'Comenzar'**
+  String get comunComenzar;
+
+  /// No description provided for @dashboardSemanaDel.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana del {desde} al {hasta}'**
+  String dashboardSemanaDel(Object desde, Object hasta);
+
+  /// No description provided for @dashboardHola.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola, {nombre}'**
+  String dashboardHola(Object nombre);
+
+  /// No description provided for @dashboardProyecto.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyecto {proyecto}'**
+  String dashboardProyecto(Object proyecto);
+
+  /// No description provided for @dashboardCursosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} cursos activos'**
+  String dashboardCursosActivos(int cantidad);
+
+  /// No description provided for @dashboardLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} laboratorios'**
+  String dashboardLaboratorios(int cantidad);
+
+  /// No description provided for @dashboardFaseVencida.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase vencida: {fase}'**
+  String dashboardFaseVencida(Object fase);
+
+  /// No description provided for @dashboardConfirmarMentoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar mentoría: {fase}'**
+  String dashboardConfirmarMentoria(Object fase);
+
+  /// No description provided for @comunFase.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase'**
+  String get comunFase;
+
+  /// No description provided for @dashboardCalificadoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificado el {fecha}'**
+  String dashboardCalificadoEl(Object fecha);
+
+  /// No description provided for @cursoDocente.
+  ///
+  /// In es, this message translates to:
+  /// **'Docente: {docente}'**
+  String cursoDocente(Object docente);
+
+  /// No description provided for @cursoGeneraCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'Genera certificado'**
+  String get cursoGeneraCertificado;
+
+  /// No description provided for @cursoObjetivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos'**
+  String get cursoObjetivos;
+
+  /// No description provided for @cursoSoloLectura.
+  ///
+  /// In es, this message translates to:
+  /// **'Está viendo el progreso de otro estudiante — modo de solo lectura.'**
+  String get cursoSoloLectura;
+
+  /// No description provided for @cursoSinContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Este curso todavía no tiene contenido publicado.'**
+  String get cursoSinContenido;
+
+  /// No description provided for @cursoMisEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis entregas'**
+  String get cursoMisEntregas;
+
+  /// No description provided for @leccionVideoYoutube.
+  ///
+  /// In es, this message translates to:
+  /// **'Video de YouTube'**
+  String get leccionVideoYoutube;
+
+  /// No description provided for @leccionCompletada.
+  ///
+  /// In es, this message translates to:
+  /// **'Completada'**
+  String get leccionCompletada;
+
+  /// No description provided for @leccionMarcarPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar como pendiente'**
+  String get leccionMarcarPendiente;
+
+  /// No description provided for @leccionMarcarCompletada.
+  ///
+  /// In es, this message translates to:
+  /// **'Marcar como completada'**
+  String get leccionMarcarCompletada;
+
+  /// No description provided for @rutaCompletada.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Completó la Ruta de Impacto! 🎉'**
+  String get rutaCompletada;
+
+  /// No description provided for @leccionCompletadaExclama.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Lección completada!'**
+  String get leccionCompletadaExclama;
+
+  /// No description provided for @cursoNoPuedeResponder.
+  ///
+  /// In es, this message translates to:
+  /// **'Está viendo el progreso de otro estudiante — no puede responder en su nombre.'**
+  String get cursoNoPuedeResponder;
+
+  /// No description provided for @leccionSinMaterial.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección todavía no tiene material cargado.'**
+  String get leccionSinMaterial;
+
+  /// No description provided for @leccionSinEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección no tiene un enlace válido.'**
+  String get leccionSinEnlace;
+
+  /// No description provided for @leccionEnlaceNoAbre.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace.'**
+  String get leccionEnlaceNoAbre;
+
+  /// No description provided for @quizCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar'**
+  String get quizCalificar;
+
+  /// No description provided for @quizCalificando.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificando…'**
+  String get quizCalificando;
+
+  /// No description provided for @quizSinPreguntas.
+  ///
+  /// In es, this message translates to:
+  /// **'Este quiz todavía no tiene preguntas.'**
+  String get quizSinPreguntas;
+
+  /// No description provided for @quizAprobado.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Aprobado! {puntaje}%'**
+  String quizAprobado(Object puntaje);
+
+  /// No description provided for @quizPuntaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntaje: {puntaje}% (mínimo 60%)'**
+  String quizPuntaje(Object puntaje);
+
+  /// No description provided for @quizVerdadero.
+  ///
+  /// In es, this message translates to:
+  /// **'Verdadero'**
+  String get quizVerdadero;
+
+  /// No description provided for @quizFalso.
+  ///
+  /// In es, this message translates to:
+  /// **'Falso'**
+  String get quizFalso;
+
+  /// No description provided for @quizCompleteFrase.
+  ///
+  /// In es, this message translates to:
+  /// **'Complete la frase…'**
+  String get quizCompleteFrase;
+
+  /// No description provided for @quizSuRespuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Su respuesta…'**
+  String get quizSuRespuesta;
+
+  /// No description provided for @quizUseFlechas.
+  ///
+  /// In es, this message translates to:
+  /// **'Use las flechas para ordenar:'**
+  String get quizUseFlechas;
+
+  /// No description provided for @encuestaNombreTarea.
+  ///
+  /// In es, this message translates to:
+  /// **'Encuesta: {leccion}'**
+  String encuestaNombreTarea(Object leccion);
+
+  /// No description provided for @encuestaGracias.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Gracias por responder!'**
+  String get encuestaGracias;
+
+  /// No description provided for @comunEnviar.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get comunEnviar;
+
+  /// No description provided for @encuestaOpinion.
+  ///
+  /// In es, this message translates to:
+  /// **'Su opinión nos ayuda a mejorar 💛'**
+  String get encuestaOpinion;
+
+  /// No description provided for @actividadArchivoObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo obligatorio'**
+  String get actividadArchivoObligatorio;
+
+  /// No description provided for @actividadTextoObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Texto obligatorio'**
+  String get actividadTextoObligatorio;
+
+  /// No description provided for @actividadRubrica.
+  ///
+  /// In es, this message translates to:
+  /// **'Rúbrica de evaluación'**
+  String get actividadRubrica;
+
+  /// No description provided for @actividadSuEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Su entrega'**
+  String get actividadSuEntrega;
+
+  /// No description provided for @actividadRetroalimentacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Retroalimentación: {retro}'**
+  String actividadRetroalimentacion(Object retro);
+
+  /// No description provided for @actividadEntregar.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregar actividad'**
+  String get actividadEntregar;
+
+  /// No description provided for @actividadNuevaEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva entrega'**
+  String get actividadNuevaEntrega;
+
+  /// No description provided for @actividadRequiereTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta actividad requiere una respuesta escrita.'**
+  String get actividadRequiereTexto;
+
+  /// No description provided for @actividadRequiereArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta actividad requiere adjuntar un archivo.'**
+  String get actividadRequiereArchivo;
+
+  /// No description provided for @actividadEntregada.
+  ///
+  /// In es, this message translates to:
+  /// **'Actividad entregada ✓'**
+  String get actividadEntregada;
+
+  /// No description provided for @actividadEntregarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregar: {leccion}'**
+  String actividadEntregarTitulo(Object leccion);
+
+  /// No description provided for @actividadRespuestaObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Su respuesta (obligatoria)'**
+  String get actividadRespuestaObligatoria;
+
+  /// No description provided for @actividadComentarioOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentario (opcional)'**
+  String get actividadComentarioOpcional;
+
+  /// No description provided for @actividadSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no ha realizado ninguna entrega en este curso.'**
+  String get actividadSinEntregas;
+
+  /// No description provided for @actividadEntregaLibre.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva entrega libre'**
+  String get actividadEntregaLibre;
+
+  /// No description provided for @actividadPongaNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Póngale un nombre a la entrega.'**
+  String get actividadPongaNombre;
+
+  /// No description provided for @actividadEntregaEnviada.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega enviada ✓'**
+  String get actividadEntregaEnviada;
+
+  /// No description provided for @actividadNombreTarea.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la tarea'**
+  String get actividadNombreTarea;
+
+  /// No description provided for @comunComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentario'**
+  String get comunComentario;
+
+  /// No description provided for @actividadLimite.
+  ///
+  /// In es, this message translates to:
+  /// **'Límite: {fecha}'**
+  String actividadLimite(Object fecha);
+
+  /// No description provided for @labsEnLaRed.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} en la red'**
+  String labsEnLaRed(Object cantidad);
+
+  /// No description provided for @labsQueEs.
+  ///
+  /// In es, this message translates to:
+  /// **'Un laboratorio es un área de trabajo de eduXaction Colombia: reúne una Ruta de Impacto por fases, cursos y un LXD que la acompaña. Entre al suyo para ver qué sigue.'**
+  String get labsQueEs;
+
+  /// No description provided for @labsSinAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin laboratorios asignados'**
+  String get labsSinAsignados;
+
+  /// No description provided for @labsSinAsignadosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Su administrador todavía no le ha asignado un laboratorio. Sin uno no tiene Ruta de Impacto ni cursos de área.'**
+  String get labsSinAsignadosTexto;
+
+  /// No description provided for @labsOtros.
+  ///
+  /// In es, this message translates to:
+  /// **'OTROS LABORATORIOS DE LA RED'**
+  String get labsOtros;
+
+  /// No description provided for @labsSolicite.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicite a su administrador que le asigne uno si su proyecto lo necesita.'**
+  String get labsSolicite;
+
+  /// No description provided for @rutaEntregaVencida.
+  ///
+  /// In es, this message translates to:
+  /// **'ENTREGA VENCIDA'**
+  String get rutaEntregaVencida;
+
+  /// No description provided for @rutaEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'EN CURSO'**
+  String get rutaEnCurso;
+
+  /// No description provided for @rutaFaseCompletaDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase {total} de {total} completa'**
+  String rutaFaseCompletaDe(Object total);
+
+  /// No description provided for @rutaFaseEnCursoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase {fase} de {total} en curso'**
+  String rutaFaseEnCursoDe(Object fase, Object total);
+
+  /// No description provided for @rutaSinModulos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin módulos aún'**
+  String get rutaSinModulos;
+
+  /// No description provided for @rutaModulosFraccion.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechos}/{total} módulos'**
+  String rutaModulosFraccion(Object hechos, Object total);
+
+  /// No description provided for @rutaFases.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 fase} other{{cantidad} fases}}'**
+  String rutaFases(int cantidad);
+
+  /// No description provided for @rutaCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 curso} other{{cantidad} cursos}}'**
+  String rutaCursos(int cantidad);
+
+  /// No description provided for @rutaSinLxd.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin LXD asignado'**
+  String get rutaSinLxd;
+
+  /// No description provided for @rutaLxd.
+  ///
+  /// In es, this message translates to:
+  /// **'LXD: {nombre}'**
+  String rutaLxd(Object nombre);
+
+  /// No description provided for @comunEntrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrar'**
+  String get comunEntrar;
+
+  /// No description provided for @rutaUnEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'1 equipo en la red'**
+  String get rutaUnEquipo;
+
+  /// No description provided for @rutaEquipos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} equipos en la red'**
+  String rutaEquipos(Object cantidad);
+
+  /// No description provided for @labNoEncontrado.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio no encontrado'**
+  String get labNoEncontrado;
+
+  /// No description provided for @labNoEncontradoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede que ya no exista o que el enlace esté mal escrito.'**
+  String get labNoEncontradoTexto;
+
+  /// No description provided for @labsTodos.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los laboratorios'**
+  String get labsTodos;
+
+  /// No description provided for @rutaMayus.
+  ///
+  /// In es, this message translates to:
+  /// **'RUTA DE IMPACTO'**
+  String get rutaMayus;
+
+  /// No description provided for @rutaFasesEnOrden.
+  ///
+  /// In es, this message translates to:
+  /// **'Las fases se abren en orden. Su LXD publica el contenido de cada una.'**
+  String get rutaFasesEnOrden;
+
+  /// No description provided for @rutaSuAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Su avance'**
+  String get rutaSuAvance;
+
+  /// No description provided for @rutaFaseDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase {fase} de {total}'**
+  String rutaFaseDe(Object fase, Object total);
+
+  /// No description provided for @rutaModulosDeTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechos} de {total} módulos'**
+  String rutaModulosDeTotal(Object hechos, Object total);
+
+  /// No description provided for @rutaFasesEnRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Fases en la ruta'**
+  String get rutaFasesEnRuta;
+
+  /// No description provided for @rutaModulosPublicados.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulos publicados'**
+  String get rutaModulosPublicados;
+
+  /// No description provided for @rutaCursosLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Cursos del laboratorio'**
+  String get rutaCursosLab;
+
+  /// No description provided for @rutaHorasEstimadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas estimadas'**
+  String get rutaHorasEstimadas;
+
+  /// No description provided for @rutaSinFases.
+  ///
+  /// In es, this message translates to:
+  /// **'Este laboratorio todavía no tiene fases publicadas.'**
+  String get rutaSinFases;
+
+  /// No description provided for @rutaFaseNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase {numero}'**
+  String rutaFaseNumero(Object numero);
+
+  /// No description provided for @rutaEstadoCompleta.
+  ///
+  /// In es, this message translates to:
+  /// **'Completa'**
+  String get rutaEstadoCompleta;
+
+  /// No description provided for @rutaEstadoVencida.
+  ///
+  /// In es, this message translates to:
+  /// **'Vencida'**
+  String get rutaEstadoVencida;
+
+  /// No description provided for @rutaEstadoDisponible.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible'**
+  String get rutaEstadoDisponible;
+
+  /// No description provided for @rutaEstadoBloqueada.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueada'**
+  String get rutaEstadoBloqueada;
+
+  /// No description provided for @rutaSeAbreCuando.
+  ///
+  /// In es, this message translates to:
+  /// **'Se abre cuando complete la Fase {fase}'**
+  String rutaSeAbreCuando(Object fase);
+
+  /// No description provided for @rutaLxdPublicara.
+  ///
+  /// In es, this message translates to:
+  /// **'Su LXD publicará el contenido de esta fase.'**
+  String get rutaLxdPublicara;
+
+  /// No description provided for @rutaLxdNoPublico.
+  ///
+  /// In es, this message translates to:
+  /// **'Su LXD aún no ha publicado el contenido de esta fase.'**
+  String get rutaLxdNoPublico;
+
+  /// No description provided for @rutaSinModulosPublicados.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin módulos publicados'**
+  String get rutaSinModulosPublicados;
+
+  /// No description provided for @rutaEmpezarFase.
+  ///
+  /// In es, this message translates to:
+  /// **'Empezar la fase'**
+  String get rutaEmpezarFase;
+
+  /// No description provided for @rutaContinuarFase.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar la fase'**
+  String get rutaContinuarFase;
+
+  /// No description provided for @rutaSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Este laboratorio todavía no tiene cursos publicados. Su LXD los abrirá junto con la Fase 1.'**
+  String get rutaSinCursos;
+
+  /// No description provided for @rutaSuLxd.
+  ///
+  /// In es, this message translates to:
+  /// **'Su LXD'**
+  String get rutaSuLxd;
+
+  /// No description provided for @rutaLabSinLxd.
+  ///
+  /// In es, this message translates to:
+  /// **'Este laboratorio todavía no tiene un LXD asignado.'**
+  String get rutaLabSinLxd;
+
+  /// No description provided for @rutaLxdNombreLargo.
+  ///
+  /// In es, this message translates to:
+  /// **'Learning Experience Designer'**
+  String get rutaLxdNombreLargo;
+
+  /// No description provided for @rutaSinHorario.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin horario publicado'**
+  String get rutaSinHorario;
+
+  /// No description provided for @rutaAgendarMentoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar mentoría'**
+  String get rutaAgendarMentoria;
+
+  /// No description provided for @rutaLxdSinDisponibilidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Su LXD todavía no publicó su disponibilidad.'**
+  String get rutaLxdSinDisponibilidad;
+
+  /// No description provided for @rutaDisponibilidadDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponibilidad de {nombre}'**
+  String rutaDisponibilidadDe(Object nombre);
+
+  /// No description provided for @rutaEscribale.
+  ///
+  /// In es, this message translates to:
+  /// **'Escríbale para coordinar el horario exacto de {nombre}.'**
+  String rutaEscribale(Object nombre);
+
+  /// No description provided for @rutaEscribirCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir correo'**
+  String get rutaEscribirCorreo;
+
+  /// No description provided for @rutaSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las fases de su laboratorio, sus objetivos y lo que falta para llegar a National Expo.'**
+  String get rutaSubtitulo;
+
+  /// No description provided for @rutaSinLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin laboratorio asignado'**
+  String get rutaSinLab;
+
+  /// No description provided for @rutaSinLabTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Su administrador aún no le ha asignado ningún laboratorio.'**
+  String get rutaSinLabTexto;
+
+  /// No description provided for @rutaLabSinFases.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio sin fases'**
+  String get rutaLabSinFases;
+
+  /// No description provided for @rutaLabSinFasesTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'El {laboratorio} todavía no ha publicado sus fases. Su LXD las abrirá cuando el contenido esté listo.'**
+  String rutaLabSinFasesTexto(Object laboratorio);
+
+  /// No description provided for @rutaVerOtroLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver otro laboratorio'**
+  String get rutaVerOtroLab;
+
+  /// No description provided for @rutaEstadoSinAbrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin abrir'**
+  String get rutaEstadoSinAbrir;
+
+  /// No description provided for @rutaEstadoEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'En curso'**
+  String get rutaEstadoEnCurso;
+
+  /// No description provided for @rutaModuloNumero.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulo {numero}'**
+  String rutaModuloNumero(Object numero);
+
+  /// No description provided for @rutaCompleteAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Complete el módulo anterior para desbloquear \"{modulo}\".'**
+  String rutaCompleteAnterior(Object modulo);
+
+  /// No description provided for @rutaBloqueado.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueado'**
+  String get rutaBloqueado;
+
+  /// No description provided for @rutaModuloMentoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulo de mentoría'**
+  String get rutaModuloMentoria;
+
+  /// No description provided for @rutaSinContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin contenido aún'**
+  String get rutaSinContenido;
+
+  /// No description provided for @rutaElementos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} elemento(s)'**
+  String rutaElementos(int cantidad);
+
+  /// No description provided for @rutaCompleto.
+  ///
+  /// In es, this message translates to:
+  /// **'Completo'**
+  String get rutaCompleto;
+
+  /// No description provided for @rutaMetaAnio.
+  ///
+  /// In es, this message translates to:
+  /// **'META DEL AÑO'**
+  String get rutaMetaAnio;
+
+  /// No description provided for @rutaSinEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no pertenece a un equipo.'**
+  String get rutaSinEquipo;
+
+  /// No description provided for @rutaChecklistEquipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Checklist del equipo'**
+  String get rutaChecklistEquipo;
+
+  /// No description provided for @rutaModulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulo'**
+  String get rutaModulo;
+
+  /// No description provided for @rutaModuloNoExiste.
+  ///
+  /// In es, this message translates to:
+  /// **'Este módulo ya no existe o el enlace está mal escrito.'**
+  String get rutaModuloNoExiste;
+
+  /// No description provided for @rutaEntregasLecturas.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas y lecturas'**
+  String get rutaEntregasLecturas;
+
+  /// No description provided for @rutaModuloSinContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Su administrador aún no agregó contenido a este módulo.'**
+  String get rutaModuloSinContenido;
+
+  /// No description provided for @rutaEstaFase.
+  ///
+  /// In es, this message translates to:
+  /// **'esta fase'**
+  String get rutaEstaFase;
+
+  /// No description provided for @rutaReunase.
+  ///
+  /// In es, this message translates to:
+  /// **'Reúnase con su mentor para cerrar {fase}.'**
+  String rutaReunase(Object fase);
+
+  /// No description provided for @rutaSinEnlaceReunion.
+  ///
+  /// In es, this message translates to:
+  /// **'Su administrador todavía no configuró el enlace de la reunión.'**
+  String get rutaSinEnlaceReunion;
+
+  /// No description provided for @rutaEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega'**
+  String get rutaEntrega;
+
+  /// No description provided for @rutaLecturaSinMaterial.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lectura todavía no tiene material.'**
+  String get rutaLecturaSinMaterial;
+
+  /// No description provided for @labsAsignadosEnRed.
+  ///
+  /// In es, this message translates to:
+  /// **'{asignados, plural, =1{1 laboratorio asignado} other{{asignados} laboratorios asignados}} · {total} en la red'**
+  String labsAsignadosEnRed(int asignados, Object total);
+
+  /// No description provided for @rutaFechaPrevista.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha prevista por el laboratorio: {fecha}'**
+  String rutaFechaPrevista(Object fecha);
+
+  /// No description provided for @rutaEntregaVencidaEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega vencida: {fecha}'**
+  String rutaEntregaVencidaEl(Object fecha);
+
+  /// No description provided for @rutaEntregaEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega: {fecha}'**
+  String rutaEntregaEl(Object fecha);
+
+  /// No description provided for @rutaAsuntoMentoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Mentoría - {laboratorio}'**
+  String rutaAsuntoMentoria(Object laboratorio);
 }
 
 class _AppLocalizationsDelegate

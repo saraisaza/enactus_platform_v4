@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/glossary.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
@@ -11,6 +11,7 @@ import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
@@ -45,7 +46,7 @@ class CourseDetailView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Curso'),
+          AppHeader(portalTitle: tr.busquedaTipoCurso),
           Expanded(
             child: combine2(
               data.courseById(courseId),
@@ -157,11 +158,11 @@ class _CourseBody extends StatelessWidget {
                         children: [
                           if (course.estimatedHours > 0)
                             _meta(Icons.schedule,
-                                '${course.estimatedHours} h estimadas'),
+                                tr.cursoHorasEstimadas(course.estimatedHours)),
                           _meta(Icons.language, course.language),
                           if (course.generatesCertificate)
                             _meta(Icons.workspace_premium_outlined,
-                                'Genera certificado'),
+                                tr.cursoGeneraCertificado),
                           if (course.laboratoryName != null)
                             _meta(Icons.science_outlined,
                                 course.laboratoryName!),
@@ -170,7 +171,7 @@ class _CourseBody extends StatelessWidget {
                         ],
                       ),
                       if (course.objectives.isNotEmpty) ...[
-                        const SectionTitle('Objetivos'),
+                        SectionTitle(tr.cursoObjetivos),
                         for (final objective in course.objectives)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 4),
@@ -203,15 +204,14 @@ class _CourseBody extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(Icons.visibility_outlined,
                               size: 17, color: AppColors.textMuted),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                                'Está viendo el progreso de otro estudiante — '
-                                'modo de solo lectura.',
+                                tr.cursoSoloLectura,
                                 style: TextStyle(
                                     fontSize: 12.5,
                                     color: AppColors.textMuted)),
@@ -226,15 +226,14 @@ class _CourseBody extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 56, right: 16),
                   child: ThinProgressBar(
                     value: progress.ratio,
-                    tooltip: '${progress.completedLessons} de '
-                        '${progress.totalLessons} lecciones',
+                    tooltip: tr.leccionesDeTotal(progress.completedLessons, progress.totalLessons),
                   ),
                 ),
                 const SizedBox(height: 16),
                 if (course.modules.isEmpty)
-                  const EmptyState(
+                  EmptyState(
                       icon: Icons.menu_book_outlined,
-                      message: 'Este curso todavía no tiene contenido publicado.')
+                      message: tr.cursoSinContenido)
                 else
                   for (final module in course.modules) ...[
                     SectionTitle(module.title),
@@ -287,7 +286,7 @@ class _CourseBody extends StatelessWidget {
                     child: ErrorBanner(error,
                         onRetry: () => data.reloadGlossary(course.id)),
                   ),
-                const SectionTitle('Mis entregas'),
+                SectionTitle(tr.cursoMisEntregas),
                 data.submissions.when(
                   loading: () => const CardListSkeleton(count: 2, height: 90),
                   error: (e) =>
@@ -360,16 +359,16 @@ class _LessonTile extends StatelessWidget {
   String get _subtitle {
     final partes = [
       lesson.youtubeVideoId != null
-          ? 'Video de YouTube'
+          ? tr.leccionVideoYoutube
           : lessonTypeLabel(lesson.type),
       if (lesson.durationMin > 0) '${lesson.durationMin} min',
     ];
     final visto = video?.watchedRatio;
     final resume = video?.resumeAt;
     if (!done && resume != null) {
-      partes.add('Seguir desde ${formatVideoTime(resume)}');
+      partes.add(tr.videoSeguirDesde(formatVideoTime(resume)));
     } else if (visto != null && visto > 0) {
-      partes.add('Visto ${(visto * 100).round()}%');
+      partes.add(tr.videoVisto((visto * 100).round()));
     }
     return partes.join(' · ');
   }
@@ -417,10 +416,10 @@ class _LessonTile extends StatelessWidget {
             ?desplegar,
             Tooltip(
               message: readOnly
-                  ? (done ? 'Completada' : 'Pendiente')
+                  ? (done ? tr.leccionCompletada : tr.calificacionPendiente)
                   : (done
-                      ? 'Marcar como pendiente'
-                      : 'Marcar como completada'),
+                      ? tr.leccionMarcarPendiente
+                      : tr.leccionMarcarCompletada),
               child: IconButton(
                 icon: Icon(
                   done ? Icons.check_circle : Icons.radio_button_unchecked,
@@ -445,9 +444,9 @@ class _LessonTile extends StatelessWidget {
       final impact = await data.toggleLesson(lesson.id, course.id);
       if (!context.mounted) return;
       if (impact.newlyCertifiable != null) {
-        showSuccessCheck(context, '¡Completó la Ruta de Impacto! 🎉');
+        showSuccessCheck(context, tr.rutaCompletada);
       } else if (impact.completed) {
-        showSuccessCheck(context, '¡Lección completada!');
+        showSuccessCheck(context, tr.leccionCompletadaExclama);
       }
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
@@ -463,7 +462,7 @@ class _LessonTile extends StatelessWidget {
             lesson.type == LessonType.survey ||
             lesson.type == LessonType.activity)) {
       showAppSnack(context,
-          'Está viendo el progreso de otro estudiante — no puede responder en su nombre.');
+          tr.cursoNoPuedeResponder);
       return;
     }
 
@@ -507,7 +506,7 @@ class _LessonTile extends StatelessWidget {
   Future<void> _openResource(BuildContext context) async {
     final key = lesson.resourceS3Key;
     if (key == null || key.isEmpty) {
-      showAppSnack(context, 'Esta lección todavía no tiene material cargado.');
+      showAppSnack(context, tr.leccionSinMaterial);
       return;
     }
     final data = context.read<DataProvider>();
@@ -524,14 +523,14 @@ class _LessonTile extends StatelessWidget {
   Future<void> _openExternal(BuildContext context, String? url) async {
     final uri = url == null ? null : Uri.tryParse(url);
     if (uri == null) {
-      showAppSnack(context, 'Esta lección no tiene un enlace válido.');
+      showAppSnack(context, tr.leccionSinEnlace);
       return;
     }
     // En la app: PDF en el visor propio y el resto en el navegador
     // integrado, sin salir de la lección (ver `abrirRecurso`).
     final ok = await abrirRecurso(context, uri.toString(), titulo: lesson.title);
     if (!ok && context.mounted) {
-      showAppSnack(context, 'No se pudo abrir el enlace.');
+      showAppSnack(context, tr.leccionEnlaceNoAbre);
     }
   }
 }
@@ -618,15 +617,15 @@ class _QuizDialogState extends State<_QuizDialog> {
       saving: _sending,
       dirty: _answers.isNotEmpty && result == null,
       onCancel: () => Navigator.pop(context),
-      cancelLabel: 'Cerrar',
-      saveLabel: 'Calificar',
-      savingLabel: 'Calificando…',
+      cancelLabel: tr.comunCerrar,
+      saveLabel: tr.quizCalificar,
+      savingLabel: tr.quizCalificando,
       onSave: allAnswered && quiz.isNotEmpty && result == null ? _submit : null,
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (quiz.isEmpty)
-                const Text('Este quiz todavía no tiene preguntas.',
+                Text(tr.quizSinPreguntas,
                     style: TextStyle(color: AppColors.textMuted)),
               for (var i = 0; i < quiz.length; i++) ...[
                 Row(
@@ -657,8 +656,8 @@ class _QuizDialogState extends State<_QuizDialog> {
               if (result != null)
                 StatusChip(
                   label: result.passed
-                      ? '¡Aprobado! ${result.score}%'
-                      : 'Puntaje: ${result.score}% (mínimo 60%)',
+                      ? tr.quizAprobado(result.score)
+                      : tr.quizPuntaje(result.score),
                   color: result.passed
                       ? AppColors.statusGood
                       : AppColors.statusCritical,
@@ -701,7 +700,7 @@ class _QuizDialogState extends State<_QuizDialog> {
           Wrap(
             spacing: 8,
             children: [
-              for (final (value, label) in [(0, 'Verdadero'), (1, 'Falso')])
+              for (final (value, label) in [(0, tr.quizVerdadero), (1, tr.quizFalso)])
                 ChoiceChip(
                   label: Text(label),
                   selected: _answers[question.id] == value,
@@ -720,8 +719,8 @@ class _QuizDialogState extends State<_QuizDialog> {
             enabled: !locked,
             decoration: InputDecoration(
               hintText: question.kind == 'fill'
-                  ? 'Complete la frase…'
-                  : 'Su respuesta…',
+                  ? tr.quizCompleteFrase
+                  : tr.quizSuRespuesta,
               isDense: true,
             ),
             onChanged: (v) => setState(() => _answers[question.id] = v),
@@ -731,7 +730,7 @@ class _QuizDialogState extends State<_QuizDialog> {
         final current =
             _order.putIfAbsent(question.id, () => [...question.options]..shuffle());
         return [
-          const Text('Use las flechas para ordenar:',
+          Text(tr.quizUseFlechas,
               style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
           for (var o = 0; o < current.length; o++)
             Padding(
@@ -821,14 +820,14 @@ class _SurveyDialogState extends State<_SurveyDialog> {
       await data.createSubmission(
         courseId: widget.course.id,
         lessonId: widget.lesson.id,
-        taskName: 'Encuesta: ${widget.lesson.title}',
+        taskName: tr.encuestaNombreTarea(widget.lesson.title),
         comment: body,
       );
       // Responder la encuesta la da por vista.
       await data.toggleLessonIfPending(widget.lesson.id, widget.course.id);
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, '¡Gracias por responder!');
+      showSuccessCheck(context, tr.encuestaGracias);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -848,13 +847,13 @@ class _SurveyDialogState extends State<_SurveyDialog> {
       saving: _sending,
       dirty: _answers.values.any((v) => v.trim().isNotEmpty),
       onCancel: () => Navigator.pop(context),
-      saveLabel: 'Enviar',
-      savingLabel: 'Enviando…',
+      saveLabel: tr.comunEnviar,
+      savingLabel: tr.comunEnviando,
       onSave: _send,
       child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Su opinión nos ayuda a mejorar 💛',
+              Text(tr.encuestaOpinion,
                   style:
                       TextStyle(color: AppColors.textMuted, fontSize: 13)),
               const SizedBox(height: 12),
@@ -865,8 +864,8 @@ class _SurveyDialogState extends State<_SurveyDialog> {
                 TextField(
                   enabled: !_sending,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                      hintText: 'Su respuesta…', isDense: true),
+                  decoration: InputDecoration(
+                      hintText: tr.quizSuRespuesta, isDense: true),
                   onChanged: (v) =>
                       setState(() => _answers[questions[i].id] = v),
                 ),
@@ -921,20 +920,20 @@ class _ActivityDialog extends StatelessWidget {
                   if (deadline != null)
                     StatusChip(
                       label:
-                          'Límite: ${DateFormat('d MMM yyyy').format(deadline)}',
+                          tr.actividadLimite(fechaCorta(deadline)),
                       color: overdue
                           ? AppColors.statusCritical
                           : AppColors.statusWarning,
                       icon: Icons.schedule,
                     ),
                   if (activity.requiresFile)
-                    const StatusChip(
-                        label: 'Archivo obligatorio',
+                    StatusChip(
+                        label: tr.actividadArchivoObligatorio,
                         color: AppColors.slateLight,
                         icon: Icons.attach_file),
                   if (activity.requiresText)
-                    const StatusChip(
-                        label: 'Texto obligatorio',
+                    StatusChip(
+                        label: tr.actividadTextoObligatorio,
                         color: AppColors.slateLight,
                         icon: Icons.notes),
                   StatusChip(
@@ -945,7 +944,7 @@ class _ActivityDialog extends StatelessWidget {
                 ],
               ),
               if (activity.rubric.isNotEmpty) ...[
-                const SectionTitle('Rúbrica de evaluación'),
+                SectionTitle(tr.actividadRubrica),
                 for (final item in activity.rubric)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
@@ -964,7 +963,7 @@ class _ActivityDialog extends StatelessWidget {
                   ),
               ],
               if (mine.isNotEmpty) ...[
-                const SectionTitle('Su entrega'),
+                SectionTitle(tr.actividadSuEntrega),
                 for (final submission in mine)
                   HoverCard(
                     padding: const EdgeInsets.all(12),
@@ -975,8 +974,7 @@ class _ActivityDialog extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                  DateFormat('d MMM yyyy, h:mm a')
-                                      .format(submission.submittedAt),
+                                  fechaHora(submission.submittedAt),
                                   style: const TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 12)),
@@ -999,7 +997,7 @@ class _ActivityDialog extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
-                                'Retroalimentación: ${submission.feedback}',
+                                tr.actividadRetroalimentacion(submission.feedback),
                                 style: const TextStyle(
                                     color: AppColors.gold, fontSize: 13)),
                           ),
@@ -1014,10 +1012,10 @@ class _ActivityDialog extends StatelessWidget {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar')),
+            child: Text(tr.comunCerrar)),
         ElevatedButton.icon(
           icon: const Icon(Icons.upload_file, size: 16),
-          label: Text(mine.isEmpty ? 'Entregar actividad' : 'Nueva entrega'),
+          label: Text(mine.isEmpty ? tr.actividadEntregar : tr.actividadNuevaEntrega),
           onPressed: () {
             Navigator.pop(context);
             showSubmitActivityDialog(context, course, lesson, activity);
@@ -1063,13 +1061,13 @@ class _SubmitDialogState extends State<_SubmitDialog> {
 
   Future<void> _send() async {
     if (widget.config.requiresText && _comment.text.trim().isEmpty) {
-      setState(() => _error = const ValidationError(
-          'Esta actividad requiere una respuesta escrita.'));
+      setState(() => _error = ValidationError(
+          tr.actividadRequiereTexto));
       return;
     }
     if (widget.config.requiresFile && _files.isEmpty) {
-      setState(() => _error = const ValidationError(
-          'Esta actividad requiere adjuntar un archivo.'));
+      setState(() => _error = ValidationError(
+          tr.actividadRequiereArchivo));
       return;
     }
 
@@ -1088,7 +1086,7 @@ class _SubmitDialogState extends State<_SubmitDialog> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Actividad entregada ✓');
+      showSuccessCheck(context, tr.actividadEntregada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1102,14 +1100,14 @@ class _SubmitDialogState extends State<_SubmitDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Entregar: ${widget.lesson.title}',
+      title: tr.actividadEntregarTitulo(widget.lesson.title),
       maxWidth: 460,
       saving: _sending,
       // Lo escrito y los archivos ya subidos no se pierden por un toque.
       dirty: _comment.text.trim().isNotEmpty || _files.isNotEmpty,
       onCancel: () => Navigator.pop(context),
-      saveLabel: 'Enviar',
-      savingLabel: 'Enviando…',
+      saveLabel: tr.comunEnviar,
+      savingLabel: tr.comunEnviando,
       onSave: _send,
       child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1122,8 +1120,8 @@ class _SubmitDialogState extends State<_SubmitDialog> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: widget.config.requiresText
-                      ? 'Su respuesta (obligatoria)'
-                      : 'Comentario (opcional)',
+                      ? tr.actividadRespuestaObligatoria
+                      : tr.actividadComentarioOpcional,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1164,9 +1162,9 @@ class _SubmissionsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (submissions.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 8),
-            child: Text('Todavía no ha realizado ninguna entrega en este curso.',
+            child: Text(tr.actividadSinEntregas,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
           ),
         for (final submission in submissions)
@@ -1178,7 +1176,7 @@ class _SubmissionsSection extends StatelessWidget {
           const SizedBox(height: 8),
           ElevatedButton.icon(
             icon: const Icon(Icons.upload_file, size: 18),
-            label: const Text('Nueva entrega libre'),
+            label: Text(tr.actividadEntregaLibre),
             onPressed: () => showDialog<void>(
               context: context,
               builder: (_) => _FreeSubmissionDialog(course: course),
@@ -1234,10 +1232,10 @@ class _SubmissionCard extends StatelessWidget {
             _AttachmentRow(file: file),
           if (submission.feedback.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text('Retroalimentación: ${submission.feedback}',
+            Text(tr.actividadRetroalimentacion(submission.feedback),
                 style: const TextStyle(color: AppColors.gold, fontSize: 13)),
           ],
-          Text(DateFormat('d MMM yyyy').format(submission.submittedAt),
+          Text(fechaCorta(submission.submittedAt),
               style: const TextStyle(
                   color: AppColors.textMuted, fontSize: 11)),
         ],
@@ -1320,7 +1318,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
   Future<void> _send() async {
     if (_task.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('Póngale un nombre a la entrega.'));
+          ValidationError(tr.actividadPongaNombre));
       return;
     }
     setState(() {
@@ -1336,7 +1334,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
           );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, 'Entrega enviada ✓');
+      showSuccessCheck(context, tr.actividadEntregaEnviada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1350,15 +1348,15 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Nueva entrega',
+      title: tr.actividadNuevaEntrega,
       maxWidth: 440,
       saving: _sending,
       dirty: _task.text.trim().isNotEmpty ||
           _comment.text.trim().isNotEmpty ||
           _files.isNotEmpty,
       onCancel: () => Navigator.pop(context),
-      saveLabel: 'Enviar',
-      savingLabel: 'Enviando…',
+      saveLabel: tr.comunEnviar,
+      savingLabel: tr.comunEnviando,
       onSave: _send,
       child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1367,8 +1365,8 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   controller: _task,
                   enabled: !_sending,
                   onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(
-                      labelText: 'Nombre de la tarea')),
+                  decoration: InputDecoration(
+                      labelText: tr.actividadNombreTarea)),
               const SizedBox(height: 12),
               TextField(
                   controller: _comment,
@@ -1376,7 +1374,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   maxLines: 3,
                   onChanged: (_) => setState(() {}),
                   decoration:
-                      const InputDecoration(labelText: 'Comentario')),
+                      InputDecoration(labelText: tr.comunComentario)),
               const SizedBox(height: 12),
               FileUploadField(
                 purpose: 'submission',

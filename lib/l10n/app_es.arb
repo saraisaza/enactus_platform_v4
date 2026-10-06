@@ -728,5 +728,549 @@
       "nombre": {}
     }
   },
-  "subidaArchivoSubido": "archivo subido"
+  "subidaArchivoSubido": "archivo subido",
+  "portadaIniciarSesion": "Iniciar sesión",
+  "portadaEstudiantesActivos": "Estudiantes activos",
+  "portadaProyectosImpacto": "Proyectos de impacto",
+  "portadaLaboratorios": "Laboratorios",
+  "portadaUniversidadesAliadas": "Universidades aliadas",
+  "portadaAreasConocimiento": "Áreas de conocimiento",
+  "portadaNuestrosLaboratorios": "Nuestros Laboratorios",
+  "portadaAreasTexto": "Áreas de conocimiento donde formamos a nuestros equipos",
+  "portadaGaleria": "Galería",
+  "portadaNuestroTrabajo": "Nuestro trabajo en imágenes",
+  "portadaMomentos": "Momentos de la comunidad eduXaction Colombia",
+  "portadaListo": "¿Listo para sumarse? 💛",
+  "portadaListoTexto": "Sin importar si es estudiante, mentor, empresa o donante: hay un lugar para usted en eduXaction Colombia.",
+  "portadaQuieroUnirme": "Quiero unirme",
+  "portadaExpoLugar": "Santa Marta · julio 2026",
+  "portadaExpoTitulo": "Campeones National Expo 2026",
+  "portadaExpoTexto": "Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo",
+  "portadaExpoPie": "Delegación eduXaction Colombia · National Expo 2026",
+  "portadaEntrar": "Entrar a la plataforma",
+  "tabDashboard": "Dashboard",
+  "tabInicioCorto": "Inicio",
+  "tabCalendario": "Calendario",
+  "tabMisCursos": "Mis Cursos",
+  "tabCursosCorto": "Cursos",
+  "tabLaboratorios": "Laboratorios",
+  "tabRutaCorto": "Ruta",
+  "tabDirectorioProyectos": "Directorio de Proyectos",
+  "tabProyectosCorto": "Proyectos",
+  "tabForo": "Foro",
+  "tabCertificados": "Certificados",
+  "tabMiPerfil": "Mi Perfil",
+  "tabPerfilCorto": "Perfil",
+  "portalDe": "Portal {rol}",
+  "@portalDe": {
+    "placeholders": {
+      "rol": {}
+    }
+  },
+  "certificadosMisTitulo": "Mis Certificados",
+  "certificadosMisSubtitulo": "Certificados emitidos por sus LXD al completar una Ruta de Impacto",
+  "certificadosVacio": "Aún no tiene certificados.\nComplete sus cursos para obtenerlos.",
+  "certificadoRutaDe": "Ruta de Impacto · {laboratorio}",
+  "@certificadoRutaDe": {
+    "placeholders": {
+      "laboratorio": {}
+    }
+  },
+  "certificadoVerPdf": "Ver PDF",
+  "comunCompartir": "Compartir",
+  "perfilMiembroDesde": "Miembro activo desde {anio}",
+  "@perfilMiembroDesde": {
+    "placeholders": {
+      "anio": {}
+    }
+  },
+  "perfilMiembroComunidad": "Miembro de la comunidad",
+  "perfilBuscarPortal": "Buscar en el portal",
+  "perfilDatosPersonales": "Datos personales",
+  "perfilCedula": "Cédula",
+  "perfilTelefonoEtiqueta": "Teléfono",
+  "perfilCorreoEtiqueta": "Correo",
+  "perfilCiudad": "Ciudad",
+  "perfilCarrera": "Carrera",
+  "perfilVidaEduxaction": "Vida eduXaction",
+  "perfilEquipo": "Equipo",
+  "perfilEmpresaPatrocinadora": "Empresa patrocinadora",
+  "perfilCursosActivos": "Cursos activos",
+  "perfilLeccionesCompletadas": "Lecciones completadas",
+  "perfilEditar": "Editar perfil",
+  "perfilSinProyecto": "Aún no tiene proyecto asignado.",
+  "perfilMiProyecto": "MI PROYECTO",
+  "certificadosVacioRuta": "Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.",
+  "certificadosFaltaPoco": "Le falta poco para su primer certificado: \"{nombre}\".",
+  "@certificadosFaltaPoco": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "leccionesDeTotal": "{completadas} de {total} lecciones",
+  "@leccionesDeTotal": {
+    "placeholders": {
+      "completadas": {},
+      "total": {}
+    }
+  },
+  "certificadoDescargar": "Descargar certificado",
+  "perfilSeleccioneFoto": "Seleccione una foto",
+  "perfilFotoFormato": "Use una foto en JPG o PNG.",
+  "perfilFotoPesada": "La foto pesa más de 25 MB. Elija una más liviana.",
+  "perfilTelefonoInvalido": "Ingrese un teléfono válido (mínimo 7 dígitos).",
+  "perfilActualizado": "Perfil actualizado ✓",
+  "perfilSubiendoFoto": "Subiendo foto…",
+  "perfilCambiarFoto": "Cambiar foto de perfil",
+  "perfilAsignaAdmin": "Cédula, universidad, equipo, proyecto y empresa patrocinadora los asigna su administrador.",
+  "certificadoEmitidoDetalle": "Emitido el {fecha} · Por: {emisor} · Código: {codigo}",
+  "@certificadoEmitidoDetalle": {
+    "placeholders": {
+      "fecha": {},
+      "emisor": {},
+      "codigo": {}
+    }
+  },
+  "certificadoEmitidoEl": "Emitido el {fecha}",
+  "@certificadoEmitidoEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "dashboardSinProyecto": "Aún no tiene proyecto asignado",
+  "dashboardTodoPorEmpezar": "Todo por empezar",
+  "dashboardSinCursos": "Aún no tiene cursos asignados. Cuando su administrador le asigne uno, su progreso aparecerá aquí.",
+  "comunActualizar": "Actualizar",
+  "dashboardProgresoGeneral": "Progreso general",
+  "dashboardTodoCompletado": "Ya completó todos sus cursos asignados.",
+  "dashboardContinueDonde": "CONTINÚE DONDE IBA",
+  "comunContinuar": "Continuar",
+  "dashboardProgresoPorCurso": "Progreso por curso",
+  "dashboardContinuarCurso": "Continuar \"{nombre}\"",
+  "@dashboardContinuarCurso": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "cursoRutaNationalExpo": "Ruta National Expo",
+  "dashboardChecklistExpo": "Checklist National Expo",
+  "dashboardPendientes": "Pendientes",
+  "dashboardAlDia": "¡Está al día! No tiene pendientes.",
+  "dashboardChecklistTitulo": "Checklist RUTA NATIONAL EXPO",
+  "dashboardActividadReciente": "Actividad reciente",
+  "dashboardSinCalificadas": "Aún no tiene entregas calificadas.",
+  "dashboardSuProyecto": "Su proyecto",
+  "calendarioNoTrajo": "No pudimos traer sus eventos.",
+  "calendarioCargando": "Cargando sus eventos…",
+  "calendarioSubtitulo": "Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.",
+  "calendarioProximos": "Próximos eventos",
+  "calendarioSinProximos": "No tiene próximos eventos.",
+  "calendarioAgendaDespejada": "Agenda despejada",
+  "calendarioAgendaDespejadaTexto": "No tiene sesiones ni entregas programadas este mes.",
+  "comunActualizado": "Actualizado",
+  "cursoHorasEstimadas": "{horas} h estimadas",
+  "@cursoHorasEstimadas": {
+    "placeholders": {
+      "horas": {}
+    }
+  },
+  "cursoMinutosEstimados": "{minutos} min estimados",
+  "@cursoMinutosEstimados": {
+    "placeholders": {
+      "minutos": {}
+    }
+  },
+  "cursosAsignados": "Cursos asignados",
+  "cursosCargando": "Cargando sus cursos…",
+  "cursosNoTrajo": "No pudimos traer sus cursos.",
+  "cursosSubtitulo": "Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.",
+  "cursosBuscar": "Buscar curso o laboratorio",
+  "cursosSinAsignados": "Sin cursos asignados",
+  "cursosSinAsignadosTexto": "Aún no tiene cursos asignados por su administrador.",
+  "cursosNingunoCoincide": "Ningún curso coincide con su búsqueda. Pruebe con otro término.",
+  "comunLimpiarBusqueda": "Limpiar búsqueda",
+  "cursoModulos": "{cantidad, plural, =1{1 módulo} other{{cantidad} módulos}}",
+  "@cursoModulos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "cursoLecciones": "{cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}",
+  "@cursoLecciones": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "cursoCertificado": "Certificado",
+  "cursoProgresoDetalle": "{hechas} de {total} lecciones · {porcentaje}%",
+  "@cursoProgresoDetalle": {
+    "placeholders": {
+      "hechas": {},
+      "total": {},
+      "porcentaje": {}
+    }
+  },
+  "cursoTrabajoEquipo": "Trabajo en equipo",
+  "comunComenzar": "Comenzar",
+  "dashboardSemanaDel": "Semana del {desde} al {hasta}",
+  "@dashboardSemanaDel": {
+    "placeholders": {
+      "desde": {},
+      "hasta": {}
+    }
+  },
+  "dashboardHola": "Hola, {nombre}",
+  "@dashboardHola": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "dashboardProyecto": "Proyecto {proyecto}",
+  "@dashboardProyecto": {
+    "placeholders": {
+      "proyecto": {}
+    }
+  },
+  "dashboardCursosActivos": "{cantidad} cursos activos",
+  "@dashboardCursosActivos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardLaboratorios": "{cantidad} laboratorios",
+  "@dashboardLaboratorios": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardFaseVencida": "Fase vencida: {fase}",
+  "@dashboardFaseVencida": {
+    "placeholders": {
+      "fase": {}
+    }
+  },
+  "dashboardConfirmarMentoria": "Confirmar mentoría: {fase}",
+  "@dashboardConfirmarMentoria": {
+    "placeholders": {
+      "fase": {}
+    }
+  },
+  "comunFase": "Fase",
+  "dashboardCalificadoEl": "Calificado el {fecha}",
+  "@dashboardCalificadoEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "cursoDocente": "Docente: {docente}",
+  "@cursoDocente": {
+    "placeholders": {
+      "docente": {}
+    }
+  },
+  "cursoGeneraCertificado": "Genera certificado",
+  "cursoObjetivos": "Objetivos",
+  "cursoSoloLectura": "Está viendo el progreso de otro estudiante — modo de solo lectura.",
+  "cursoSinContenido": "Este curso todavía no tiene contenido publicado.",
+  "cursoMisEntregas": "Mis entregas",
+  "leccionVideoYoutube": "Video de YouTube",
+  "leccionCompletada": "Completada",
+  "leccionMarcarPendiente": "Marcar como pendiente",
+  "leccionMarcarCompletada": "Marcar como completada",
+  "rutaCompletada": "¡Completó la Ruta de Impacto! 🎉",
+  "leccionCompletadaExclama": "¡Lección completada!",
+  "cursoNoPuedeResponder": "Está viendo el progreso de otro estudiante — no puede responder en su nombre.",
+  "leccionSinMaterial": "Esta lección todavía no tiene material cargado.",
+  "leccionSinEnlace": "Esta lección no tiene un enlace válido.",
+  "leccionEnlaceNoAbre": "No se pudo abrir el enlace.",
+  "quizCalificar": "Calificar",
+  "quizCalificando": "Calificando…",
+  "quizSinPreguntas": "Este quiz todavía no tiene preguntas.",
+  "quizAprobado": "¡Aprobado! {puntaje}%",
+  "@quizAprobado": {
+    "placeholders": {
+      "puntaje": {}
+    }
+  },
+  "quizPuntaje": "Puntaje: {puntaje}% (mínimo 60%)",
+  "@quizPuntaje": {
+    "placeholders": {
+      "puntaje": {}
+    }
+  },
+  "quizVerdadero": "Verdadero",
+  "quizFalso": "Falso",
+  "quizCompleteFrase": "Complete la frase…",
+  "quizSuRespuesta": "Su respuesta…",
+  "quizUseFlechas": "Use las flechas para ordenar:",
+  "encuestaNombreTarea": "Encuesta: {leccion}",
+  "@encuestaNombreTarea": {
+    "placeholders": {
+      "leccion": {}
+    }
+  },
+  "encuestaGracias": "¡Gracias por responder!",
+  "comunEnviar": "Enviar",
+  "encuestaOpinion": "Su opinión nos ayuda a mejorar 💛",
+  "actividadArchivoObligatorio": "Archivo obligatorio",
+  "actividadTextoObligatorio": "Texto obligatorio",
+  "actividadRubrica": "Rúbrica de evaluación",
+  "actividadSuEntrega": "Su entrega",
+  "actividadRetroalimentacion": "Retroalimentación: {retro}",
+  "@actividadRetroalimentacion": {
+    "placeholders": {
+      "retro": {}
+    }
+  },
+  "actividadEntregar": "Entregar actividad",
+  "actividadNuevaEntrega": "Nueva entrega",
+  "actividadRequiereTexto": "Esta actividad requiere una respuesta escrita.",
+  "actividadRequiereArchivo": "Esta actividad requiere adjuntar un archivo.",
+  "actividadEntregada": "Actividad entregada ✓",
+  "actividadEntregarTitulo": "Entregar: {leccion}",
+  "@actividadEntregarTitulo": {
+    "placeholders": {
+      "leccion": {}
+    }
+  },
+  "actividadRespuestaObligatoria": "Su respuesta (obligatoria)",
+  "actividadComentarioOpcional": "Comentario (opcional)",
+  "actividadSinEntregas": "Todavía no ha realizado ninguna entrega en este curso.",
+  "actividadEntregaLibre": "Nueva entrega libre",
+  "actividadPongaNombre": "Póngale un nombre a la entrega.",
+  "actividadEntregaEnviada": "Entrega enviada ✓",
+  "actividadNombreTarea": "Nombre de la tarea",
+  "comunComentario": "Comentario",
+  "actividadLimite": "Límite: {fecha}",
+  "@actividadLimite": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "labsEnLaRed": "{cantidad} en la red",
+  "@labsEnLaRed": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "labsQueEs": "Un laboratorio es un área de trabajo de eduXaction Colombia: reúne una Ruta de Impacto por fases, cursos y un LXD que la acompaña. Entre al suyo para ver qué sigue.",
+  "labsSinAsignados": "Sin laboratorios asignados",
+  "labsSinAsignadosTexto": "Su administrador todavía no le ha asignado un laboratorio. Sin uno no tiene Ruta de Impacto ni cursos de área.",
+  "labsOtros": "OTROS LABORATORIOS DE LA RED",
+  "labsSolicite": "Solicite a su administrador que le asigne uno si su proyecto lo necesita.",
+  "rutaEntregaVencida": "ENTREGA VENCIDA",
+  "rutaEnCurso": "EN CURSO",
+  "rutaFaseCompletaDe": "Fase {total} de {total} completa",
+  "@rutaFaseCompletaDe": {
+    "placeholders": {
+      "total": {}
+    }
+  },
+  "rutaFaseEnCursoDe": "Fase {fase} de {total} en curso",
+  "@rutaFaseEnCursoDe": {
+    "placeholders": {
+      "fase": {},
+      "total": {}
+    }
+  },
+  "rutaSinModulos": "Sin módulos aún",
+  "rutaModulosFraccion": "{hechos}/{total} módulos",
+  "@rutaModulosFraccion": {
+    "placeholders": {
+      "hechos": {},
+      "total": {}
+    }
+  },
+  "rutaFases": "{cantidad, plural, =1{1 fase} other{{cantidad} fases}}",
+  "@rutaFases": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "rutaCursos": "{cantidad, plural, =1{1 curso} other{{cantidad} cursos}}",
+  "@rutaCursos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "rutaSinLxd": "Sin LXD asignado",
+  "rutaLxd": "LXD: {nombre}",
+  "@rutaLxd": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "comunEntrar": "Entrar",
+  "rutaUnEquipo": "1 equipo en la red",
+  "rutaEquipos": "{cantidad} equipos en la red",
+  "@rutaEquipos": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "labNoEncontrado": "Laboratorio no encontrado",
+  "labNoEncontradoTexto": "Puede que ya no exista o que el enlace esté mal escrito.",
+  "labsTodos": "Todos los laboratorios",
+  "rutaMayus": "RUTA DE IMPACTO",
+  "rutaFasesEnOrden": "Las fases se abren en orden. Su LXD publica el contenido de cada una.",
+  "rutaSuAvance": "Su avance",
+  "rutaFaseDe": "Fase {fase} de {total}",
+  "@rutaFaseDe": {
+    "placeholders": {
+      "fase": {},
+      "total": {}
+    }
+  },
+  "rutaModulosDeTotal": "{hechos} de {total} módulos",
+  "@rutaModulosDeTotal": {
+    "placeholders": {
+      "hechos": {},
+      "total": {}
+    }
+  },
+  "rutaFasesEnRuta": "Fases en la ruta",
+  "rutaModulosPublicados": "Módulos publicados",
+  "rutaCursosLab": "Cursos del laboratorio",
+  "rutaHorasEstimadas": "Horas estimadas",
+  "rutaSinFases": "Este laboratorio todavía no tiene fases publicadas.",
+  "rutaFaseNumero": "Fase {numero}",
+  "@rutaFaseNumero": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "rutaEstadoCompleta": "Completa",
+  "rutaEstadoVencida": "Vencida",
+  "rutaEstadoDisponible": "Disponible",
+  "rutaEstadoBloqueada": "Bloqueada",
+  "rutaSeAbreCuando": "Se abre cuando complete la Fase {fase}",
+  "@rutaSeAbreCuando": {
+    "placeholders": {
+      "fase": {}
+    }
+  },
+  "rutaLxdPublicara": "Su LXD publicará el contenido de esta fase.",
+  "rutaLxdNoPublico": "Su LXD aún no ha publicado el contenido de esta fase.",
+  "rutaSinModulosPublicados": "Sin módulos publicados",
+  "rutaEmpezarFase": "Empezar la fase",
+  "rutaContinuarFase": "Continuar la fase",
+  "rutaSinCursos": "Este laboratorio todavía no tiene cursos publicados. Su LXD los abrirá junto con la Fase 1.",
+  "rutaSuLxd": "Su LXD",
+  "rutaLabSinLxd": "Este laboratorio todavía no tiene un LXD asignado.",
+  "rutaLxdNombreLargo": "Learning Experience Designer",
+  "rutaSinHorario": "Sin horario publicado",
+  "rutaAgendarMentoria": "Agendar mentoría",
+  "rutaLxdSinDisponibilidad": "Su LXD todavía no publicó su disponibilidad.",
+  "rutaDisponibilidadDe": "Disponibilidad de {nombre}",
+  "@rutaDisponibilidadDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "rutaEscribale": "Escríbale para coordinar el horario exacto de {nombre}.",
+  "@rutaEscribale": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "rutaEscribirCorreo": "Escribir correo",
+  "rutaSubtitulo": "Las fases de su laboratorio, sus objetivos y lo que falta para llegar a National Expo.",
+  "rutaSinLab": "Sin laboratorio asignado",
+  "rutaSinLabTexto": "Su administrador aún no le ha asignado ningún laboratorio.",
+  "rutaLabSinFases": "Laboratorio sin fases",
+  "rutaLabSinFasesTexto": "El {laboratorio} todavía no ha publicado sus fases. Su LXD las abrirá cuando el contenido esté listo.",
+  "@rutaLabSinFasesTexto": {
+    "placeholders": {
+      "laboratorio": {}
+    }
+  },
+  "rutaVerOtroLab": "Ver otro laboratorio",
+  "rutaEstadoSinAbrir": "Sin abrir",
+  "rutaEstadoEnCurso": "En curso",
+  "rutaModuloNumero": "Módulo {numero}",
+  "@rutaModuloNumero": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "rutaCompleteAnterior": "Complete el módulo anterior para desbloquear \"{modulo}\".",
+  "@rutaCompleteAnterior": {
+    "placeholders": {
+      "modulo": {}
+    }
+  },
+  "rutaBloqueado": "Bloqueado",
+  "rutaModuloMentoria": "Módulo de mentoría",
+  "rutaSinContenido": "Sin contenido aún",
+  "rutaElementos": "{cantidad} elemento(s)",
+  "@rutaElementos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "rutaCompleto": "Completo",
+  "rutaMetaAnio": "META DEL AÑO",
+  "rutaSinEquipo": "Aún no pertenece a un equipo.",
+  "rutaChecklistEquipo": "Checklist del equipo",
+  "rutaModulo": "Módulo",
+  "rutaModuloNoExiste": "Este módulo ya no existe o el enlace está mal escrito.",
+  "rutaEntregasLecturas": "Entregas y lecturas",
+  "rutaModuloSinContenido": "Su administrador aún no agregó contenido a este módulo.",
+  "rutaEstaFase": "esta fase",
+  "rutaReunase": "Reúnase con su mentor para cerrar {fase}.",
+  "@rutaReunase": {
+    "placeholders": {
+      "fase": {}
+    }
+  },
+  "rutaSinEnlaceReunion": "Su administrador todavía no configuró el enlace de la reunión.",
+  "rutaEntrega": "Entrega",
+  "rutaLecturaSinMaterial": "Esta lectura todavía no tiene material.",
+  "labsAsignadosEnRed": "{asignados, plural, =1{1 laboratorio asignado} other{{asignados} laboratorios asignados}} · {total} en la red",
+  "@labsAsignadosEnRed": {
+    "placeholders": {
+      "asignados": {
+        "type": "int"
+      },
+      "total": {}
+    }
+  },
+  "rutaFechaPrevista": "Fecha prevista por el laboratorio: {fecha}",
+  "@rutaFechaPrevista": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "rutaEntregaVencidaEl": "Entrega vencida: {fecha}",
+  "@rutaEntregaVencidaEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "rutaEntregaEl": "Entrega: {fecha}",
+  "@rutaEntregaEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "rutaAsuntoMentoria": "Mentoría - {laboratorio}",
+  "@rutaAsuntoMentoria": {
+    "placeholders": {
+      "laboratorio": {}
+    }
+  }
 }

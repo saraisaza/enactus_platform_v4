@@ -3,11 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
@@ -15,9 +17,9 @@ import '../../widgets/portal_shell.dart';
 import 'course_detail_view.dart';
 
 String _durationLabel(Course course) {
-  if (course.estimatedHours > 0) return '${course.estimatedHours} h estimadas';
+  if (course.estimatedHours > 0) return tr.cursoHorasEstimadas(course.estimatedHours);
   final minutes = course.lessonCount * 15;
-  return minutes < 60 ? '$minutes min estimados' : '${(minutes / 60).toStringAsFixed(1)} h estimadas';
+  return minutes < 60 ? tr.cursoMinutosEstimados(minutes) : tr.cursoHorasEstimadas(decimal(minutes / 60));
 }
 
 /// Mis Cursos — rediseño de alta fidelidad según
@@ -44,16 +46,16 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
     // directamente. Antes esto era `coursesForStudent(student)` recorriendo
     // Hive entero y agregando a mano la Ruta National Expo.
     return data.courses.when(
-      loading: () => const ContentScreenShell(
-        eyebrow: 'Cursos asignados',
-        title: 'Mis Cursos',
-        subtitle: 'Cargando sus cursos…',
+      loading: () => ContentScreenShell(
+        eyebrow: tr.cursosAsignados,
+        title: tr.tabMisCursos,
+        subtitle: tr.cursosCargando,
         bodyBuilder: _loadingBody,
       ),
       error: (e) => ContentScreenShell(
-        eyebrow: 'Cursos asignados',
-        title: 'Mis Cursos',
-        subtitle: 'No pudimos traer sus cursos.',
+        eyebrow: tr.cursosAsignados,
+        title: tr.tabMisCursos,
+        subtitle: tr.cursosNoTrajo,
         bodyBuilder: (context, colors, isDark) =>
             ErrorState(e, onRetry: data.reloadCourses),
       ),
@@ -87,21 +89,20 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
         .toList();
 
     return ContentScreenShell(
-      eyebrow: labNames.isEmpty ? 'Cursos asignados' : labNames.join(' · '),
-      title: 'Mis Cursos',
-      subtitle: 'Cursos de laboratorio asignados por su administrador, más la '
-          'ruta de preparación de su equipo para National Expo.',
-      searchHint: 'Buscar curso o laboratorio',
+      eyebrow: labNames.isEmpty ? tr.cursosAsignados : labNames.join(' · '),
+      title: tr.tabMisCursos,
+      subtitle: tr.cursosSubtitulo,
+      searchHint: tr.cursosBuscar,
       onSearchChanged: (v) => setState(() => _query = v),
       bodyBuilder: (context, colors, isDark) {
         if (courses.isEmpty) {
           return EmptyState(
             icon: Icons.school_outlined,
-            title: 'Sin cursos asignados',
+            title: tr.cursosSinAsignados,
             message: allCourses.isEmpty
-                ? 'Aún no tiene cursos asignados por su administrador.'
-                : 'Ningún curso coincide con su búsqueda. Pruebe con otro término.',
-            primaryLabel: allCourses.isEmpty ? null : 'Limpiar búsqueda',
+                ? tr.cursosSinAsignadosTexto
+                : tr.cursosNingunoCoincide,
+            primaryLabel: allCourses.isEmpty ? null : tr.comunLimpiarBusqueda,
             onPrimary:
                 allCourses.isEmpty ? null : () => setState(() => _query = ''),
             colors: colors,
@@ -173,7 +174,7 @@ class _CourseCard extends StatelessWidget {
     final tinta = inkSobre(accent);
     final compacto = context.isCompact;
     final labLabel =
-        course.isRutaExpo ? 'Ruta National Expo' : (course.laboratoryName ?? '');
+        course.isRutaExpo ? tr.cursoRutaNationalExpo : (course.laboratoryName ?? '');
 
     void open() => Navigator.push(
         context,
@@ -260,16 +261,16 @@ class _CourseCard extends StatelessWidget {
                       spacing: 7,
                       runSpacing: 7,
                       children: [
-                        _MetaChip(icon: Icons.view_module, label: '${course.modules.length} módulos', colors: colors),
-                        _MetaChip(icon: Icons.play_lesson, label: '$totalLessons lecciones', colors: colors),
+                        _MetaChip(icon: Icons.view_module, label: tr.cursoModulos(course.modules.length), colors: colors),
+                        _MetaChip(icon: Icons.play_lesson, label: tr.cursoLecciones(totalLessons), colors: colors),
                         _MetaChip(icon: Icons.signal_cellular_alt, label: course.levelLabel, colors: colors),
                         _MetaChip(icon: Icons.schedule, label: _durationLabel(course), colors: colors),
                         if (course.generatesCertificate)
-                          _MetaChip(icon: Icons.workspace_premium, label: 'Certificado', colors: colors),
+                          _MetaChip(icon: Icons.workspace_premium, label: tr.cursoCertificado, colors: colors),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    Text('$done de $totalLessons lecciones · ${(progress * 100).round()}%',
+                    Text(tr.cursoProgresoDetalle(done, totalLessons, (progress * 100).round()),
                         style: TextStyle(fontSize: 12, color: colors.text3)),
                     const SizedBox(height: 6),
                     ThinProgressBar(value: progress, color: accent),
@@ -281,8 +282,8 @@ class _CourseCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                               course.isRutaExpo
-                                  ? 'Trabajo en equipo'
-                                  : 'Docente: ${course.creatorName ?? '—'}',
+                                  ? tr.cursoTrabajoEquipo
+                                  : tr.cursoDocente(course.creatorName ?? '—'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontSize: 12.5, color: colors.text3)),
@@ -297,7 +298,7 @@ class _CourseCard extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
                           ),
                           icon: const Icon(Icons.arrow_forward, size: 17),
-                          label: Text(progress > 0 ? 'Continuar' : 'Comenzar',
+                          label: Text(progress > 0 ? tr.comunContinuar : tr.comunComenzar,
                               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                         ),
                       ],

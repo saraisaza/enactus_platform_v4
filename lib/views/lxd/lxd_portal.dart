@@ -16,6 +16,7 @@ import '../../widgets/async_states.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../../widgets/submission_attachment.dart';
 import 'course_editor_view.dart';
 import 'course_tracking_view.dart';
 
@@ -961,6 +962,7 @@ class _SubmissionRow extends StatelessWidget {
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
+          for (final file in s.files) SubmissionAttachmentRow(file: file),
         ],
       ),
     );

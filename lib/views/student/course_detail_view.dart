@@ -20,6 +20,7 @@ import '../../widgets/file_upload_field.dart';
 import '../../widgets/file_viewer.dart';
 import '../../widgets/glosario.dart';
 import '../../widgets/lesson_visuals.dart';
+import '../../widgets/submission_attachment.dart';
 import '../../widgets/video_player_dialog.dart';
 import '../../widgets/youtube_lesson_player.dart';
 import '../../widgets/visor_pdf.dart';
@@ -1229,7 +1230,7 @@ class _SubmissionCard extends StatelessWidget {
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
           for (final file in submission.files)
-            _AttachmentRow(file: file),
+            SubmissionAttachmentRow(file: file),
           if (submission.feedback.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(tr.actividadRetroalimentacion(submission.feedback),
@@ -1239,55 +1240,6 @@ class _SubmissionCard extends StatelessWidget {
               style: const TextStyle(
                   color: AppColors.textMuted, fontSize: 11)),
         ],
-      ),
-    );
-  }
-}
-
-/// Un adjunto, que se abre pidiendo su URL firmada al servidor.
-class _AttachmentRow extends StatelessWidget {
-  final SubmissionFile file;
-  const _AttachmentRow({required this.file});
-
-  Future<void> _open(BuildContext context) async {
-    final data = context.read<DataProvider>();
-    try {
-      final url = await data.resolveFileUrl(file.s3Key);
-      if (!context.mounted) return;
-      await FileViewer.show(context,
-          url: url, fileName: file.fileName, s3Key: file.s3Key);
-    } on ApiException catch (e) {
-      if (context.mounted) showAppSnack(context, e.message);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: InkWell(
-        onTap: () => _open(context),
-        // 48 dp de alto tocable: el texto de 12 px solo medía ~18 dp y había
-        // que acertarle al subrayado.
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.insert_drive_file_outlined,
-                size: 14, color: AppColors.gold),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(file.fileName,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 12,
-                      decoration: TextDecoration.underline)),
-            ),
-          ],
-        ),
-        ),
       ),
     );
   }

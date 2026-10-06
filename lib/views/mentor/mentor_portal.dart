@@ -15,6 +15,7 @@ import '../../widgets/async_states.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../../widgets/submission_attachment.dart';
 import '../shared/communication_resources_view.dart';
 import '../shared/lab_detail_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectsDirectoryView;
@@ -420,6 +421,8 @@ class _SubmissionCard extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis),
           ],
+          for (final file in submission.files)
+            SubmissionAttachmentRow(file: file),
           if (submission.feedback.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(

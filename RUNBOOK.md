@@ -590,6 +590,28 @@ cada 15 minutos) no mira la IP y sigue funcionando igual.
 
 ---
 
+## Idioma de las respuestas (español / inglés)
+
+La app manda `Accept-Language: es` o `en`, y el servidor escribe sus mensajes
+de error en ese idioma (ver `docs/idiomas/README.md`). Para que funcione, la
+cabecera tiene que **llegar** a la Lambda: si CloudFront o API Gateway la
+filtran, todo sigue funcionando, pero los errores salen siempre en español.
+
+**Comprobarlo en cada entorno después de desplegar:**
+
+```bash
+curl -s https://staging-api.eduxaction.com/auth/me -H 'Accept-Language: en'
+# {"error":{"code":"unauthorized","message":"The Authorization header is missing."}}
+curl -s https://staging-api.eduxaction.com/auth/me
+# {"error":{"code":"unauthorized","message":"Falta el encabezado Authorization."}}
+```
+
+Si la primera sale en español, a la distribución de la API le falta reenviar
+`Accept-Language` al origen (política de *origin request* de CloudFront). Ese
+cambio lo hace quien administra CloudFront.
+
+---
+
 ## Preparar una base de producción
 
 `db:seed` siembra datos de DEMOSTRACIÓN y **está bloqueado en producción**

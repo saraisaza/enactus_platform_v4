@@ -1,0 +1,1466 @@
+clave,español,inglés,dónde se usa
+idiomaEspanol,Español,Español,widgets/selector_idioma.dart
+idiomaIngles,English,English,widgets/selector_idioma.dart
+idiomaSelector,Idioma,Language,widgets/selector_idioma.dart
+arranqueSinServidor,Esta compilación no tiene configurada la dirección del servidor. Compílela con tool/build_movil.sh.,This build has no server address configured. Build it with tool/build_movil.sh.,main.dart
+arranqueAbriendoSesion,Abriendo su sesión…,Opening your session…,main.dart
+ingresoCredencialesIncorrectas,Correo o contraseña incorrectos.,Incorrect email or password.,views/auth/login_view.dart
+ingresoBienvenida,Bienvenido de nuevo,Welcome back,views/auth/login_view.dart
+ingresoSubtitulo,Ingrese con la cuenta creada por su administrador,Sign in with the account your administrator created for you,views/auth/login_view.dart
+ingresoCorreo,Correo electrónico,Email,views/admin/admin_users.dart views/auth/login_view.dart views/company/company_portal.dart widgets/contact_dialog.dart
+ingresoContrasena,Contraseña,Password,views/admin/admin_users.dart views/auth/login_view.dart views/company/company_portal.dart widgets/cuenta.dart
+ingresoMostrarContrasena,Mostrar contraseña,Show password,views/auth/login_view.dart widgets/cuenta.dart
+ingresoOcultarContrasena,Ocultar contraseña,Hide password,views/auth/login_view.dart widgets/cuenta.dart
+ingresoIngresar,Ingresar,Sign in,views/auth/login_view.dart
+ingresoVolverAlInicio,← Volver al inicio,← Back to home,views/auth/login_view.dart
+comunPoliticaPrivacidad,Política de privacidad,Privacy policy,views/auth/login_view.dart widgets/app_header.dart widgets/cuenta.dart
+noEncontradaTitulo,Página no encontrada,Page not found,views/public/not_found_view.dart
+noEncontradaTexto,La página que busca no existe o fue movida.,The page you are looking for does not exist or has been moved.,views/public/not_found_view.dart
+comunVolverAlInicio,Volver al inicio,Back to home,views/public/not_found_view.dart
+sinConexionTitulo,Sin conexión,No connection,views/public/sin_conexion_view.dart
+sinConexionTexto,No pudimos comunicarnos con eduXaction para abrir su sesión. Revise su conexión a internet e intente de nuevo: su sesión sigue guardada.,We couldn't reach eduXaction to open your session. Check your internet connection and try again: your session is still saved.,views/public/sin_conexion_view.dart
+sinConexionComprobando,Comprobando su sesión…,Checking your session…,views/public/sin_conexion_view.dart
+comunReintentar,Reintentar,Try again,views/public/sin_conexion_view.dart widgets/async_states.dart widgets/lesson_video_shell.dart
+sinConexionOtraCuenta,Entrar con otra cuenta,Sign in with another account,views/public/sin_conexion_view.dart
+pendienteTitulo,Disponible próximamente,Coming soon,views/public/pending_portal_view.dart
+pendienteTexto,"Estamos conectando este portal con el nuevo sistema. Preferimos tenerlo bien hecho antes que a medias: mientras tanto, no verá información que pueda estar desactualizada.","We are connecting this portal to the new system. We would rather get it right than do it halfway: in the meantime, you will not see information that might be out of date.",views/public/pending_portal_view.dart
+pendienteSesionActiva,Su sesión sigue activa como {nombre} · {rol},Your session is still active as {nombre} · {rol},views/public/pending_portal_view.dart
+comunIrAlInicio,Ir al inicio,Go to home,views/public/pending_portal_view.dart widgets/app_header.dart
+comunCerrarSesion,Cerrar sesión,Sign out,views/public/pending_portal_view.dart widgets/app_header.dart
+etapaValidacion,Validación,Validation,models/models.dart
+etapaPrototipo,Prototipo,Prototype,models/models.dart
+etapaPiloto,Piloto,Pilot,models/models.dart
+etapaEscalamiento,Escalamiento,Scaling,models/models.dart
+etapaIdeacion,Ideación,Ideation,models/models.dart
+rolLider,Líder,Leader,models/models.dart
+rolInvestigacion,Investigación,Research,models/models.dart
+rolFinanzas,Finanzas,Finance,models/models.dart
+rolComunicaciones,Comunicaciones,Communications,models/models.dart
+rolDiseno,Diseño,Design,models/models.dart
+rolOperaciones,Operaciones,Operations,models/models.dart
+rolIntegrante,Integrante,Member,models/models.dart
+categoriaEmpresarial,Empresarial,Business,models/models.dart models/progress.dart
+categoriaEmprendimiento,Emprendimiento,Entrepreneurship,models/models.dart models/progress.dart
+nivelIntermedio,Intermedio,Intermediate,models/models.dart
+nivelAvanzado,Avanzado,Advanced,models/models.dart
+nivelBasico,Básico,Basic,models/models.dart
+estadoPublicado,Publicado,Published,models/models.dart
+estadoArchivado,Archivado,Archived,models/models.dart
+estadoBorrador,Borrador,Draft,models/models.dart views/admin/student_assignments_dialog.dart
+odsEtiqueta,ODS {numero}: {titulo},SDG {numero}: {titulo},models/models.dart views/lxd/course_editor_view.dart
+idiomaCursoIngles,Inglés,English,models/models.dart
+idiomaCursoPortugues,Portugués,Portuguese,models/models.dart
+idiomaCursoEspanol,Español,Spanish,models/models.dart
+tipoArchivoVideo,Video,Video,models/models.dart views/lxd/lesson_editor.dart widgets/lesson_visuals.dart widgets/uploaded_lesson_player.dart
+tipoArchivoDocumento,Documento,Document,models/models.dart
+tipoArchivoImagen,Imagen,Image,models/models.dart
+calificacionAprobadoReprobado,Aprobado / Reprobado,Pass / Fail,models/models.dart
+calificacionSoloRevision,Solo revisión,Review only,models/models.dart
+calificacionEscala5,Escala 0-5,Scale 0-5,models/models.dart
+calificacionPuntaje100,Puntaje 0-100,Score 0-100,models/models.dart
+calificacionPendiente,Pendiente,Pending,models/models.dart views/student/course_detail_view.dart views/student/ruta_impacto_view.dart
+calificacionAprobado,Aprobado,Passed,models/models.dart views/lxd/lxd_portal.dart
+calificacionReprobado,Reprobado,Failed,models/models.dart views/lxd/lxd_portal.dart
+calificacionRevisado,Revisado,Reviewed,models/models.dart
+entregaGrupal,Entrega grupal,Group submission,models/models.dart
+evidenciaFoto,Foto,Photo,models/models.dart widgets/file_upload_field.dart
+evidenciaTestimonio,Testimonio,Testimonial,models/models.dart
+evidenciaReporte,Reporte,Report,models/models.dart
+evidenciaHistoria,Historia,Story,models/models.dart
+foroCategoriaAvance,Avance,Progress,models/models.dart
+foroCategoriaRecurso,Recurso,Resource,models/models.dart
+foroCategoriaAnuncio,Anuncio,Announcement,models/models.dart
+foroCategoriaPregunta,Pregunta,Question,models/models.dart
+eventoSesionOpenLearning,Sesión Open Learning,Open Learning session,models/models.dart
+rutaDeImpacto,Ruta de Impacto,Impact Path,models/models.dart views/admin/lab_ruta_editor.dart views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart views/student/student_portal.dart
+eventoMentoria,Mentoría,Mentoring,models/models.dart views/admin/lab_ruta_editor.dart widgets/calendar_view.dart
+ods1,Fin de la pobreza,No poverty,l10n/catalogos.dart
+ods2,Hambre cero,Zero hunger,l10n/catalogos.dart
+ods3,Salud y bienestar,Good health and well-being,l10n/catalogos.dart
+ods4,Educación de calidad,Quality education,l10n/catalogos.dart
+ods5,Igualdad de género,Gender equality,l10n/catalogos.dart
+ods6,Agua limpia y saneamiento,Clean water and sanitation,l10n/catalogos.dart
+ods7,Energía asequible y no contaminante,Affordable and clean energy,l10n/catalogos.dart
+ods8,Trabajo decente y crecimiento económico,Decent work and economic growth,l10n/catalogos.dart
+ods9,"Industria, innovación e infraestructura","Industry, innovation and infrastructure",l10n/catalogos.dart
+ods10,Reducción de las desigualdades,Reduced inequalities,l10n/catalogos.dart
+ods11,Ciudades y comunidades sostenibles,Sustainable cities and communities,l10n/catalogos.dart
+ods12,Producción y consumo responsables,Responsible consumption and production,l10n/catalogos.dart
+ods13,Acción por el clima,Climate action,l10n/catalogos.dart
+ods14,Vida submarina,Life below water,l10n/catalogos.dart
+ods15,Vida de ecosistemas terrestres,Life on land,l10n/catalogos.dart
+ods16,"Paz, justicia e instituciones sólidas","Peace, justice and strong institutions",l10n/catalogos.dart
+ods17,Alianzas para lograr los objetivos,Partnerships for the goals,l10n/catalogos.dart
+competenciaLeadership,Liderazgo,Leadership,l10n/catalogos.dart
+competenciaInnovation,Innovación,Innovation,l10n/catalogos.dart
+competenciaEntrepreneurship,Emprendimiento,Entrepreneurship,l10n/catalogos.dart
+competenciaFinance,Finanzas,Finance,l10n/catalogos.dart
+competenciaCommunication,Comunicación,Communication,l10n/catalogos.dart
+competenciaPitch,Pitch,Pitch,l10n/catalogos.dart
+competenciaSustainability,Sostenibilidad,Sustainability,l10n/catalogos.dart
+competenciaArtificialIntelligence,Inteligencia Artificial,Artificial Intelligence,l10n/catalogos.dart
+competenciaTeamwork,Trabajo en equipo,Teamwork,l10n/catalogos.dart
+competenciaUserCenteredDesign,Diseño Centrado en el Usuario,User-Centered Design,l10n/catalogos.dart
+competenciaProjectManagement,Gestión de Proyectos,Project Management,l10n/catalogos.dart
+competenciaImpactMeasurement,Medición de Impacto,Impact Measurement,l10n/catalogos.dart
+errorSubidaFallo,"No se pudo subir el archivo ({status}). Si el problema persiste, avise al equipo técnico.","The file could not be uploaded ({status}). If the problem continues, let the technical team know.",services/api_service.dart
+errorSubidaLenta,La subida tardó demasiado. Intente con una conexión más estable.,The upload took too long. Try again with a more stable connection.,services/api_service.dart
+errorServidorLento,El servidor tardó demasiado en responder.,The server took too long to respond.,services/api_service.dart
+errorRespuestaInesperadaServidor,El servidor devolvió una respuesta inesperada.,The server returned an unexpected response.,services/api_service.dart
+errorDatosNoValidos,Los datos enviados no son válidos.,The data sent is not valid.,services/api_service.dart
+errorSesionExpirada,Su sesión expiró. Inicie sesión de nuevo.,Your session has expired. Please sign in again.,services/api_errors.dart services/api_service.dart
+errorSinPermiso,No tiene permiso para ver esto.,You do not have permission to see this.,services/api_errors.dart services/api_service.dart
+errorNoEncontrado,No encontramos lo que busca.,We could not find what you are looking for.,services/api_errors.dart services/api_service.dart
+errorOperacionNoPosible,La operación no se puede hacer en este momento.,This operation cannot be done right now.,services/api_service.dart
+errorArchivoGrande,El archivo es demasiado grande.,The file is too large.,services/api_service.dart
+errorDemasiadosIntentos,Demasiados intentos. Espere un momento.,Too many attempts. Please wait a moment.,services/api_service.dart
+errorServidorIntente,El servidor tuvo un problema. Intente de nuevo.,The server had a problem. Please try again.,services/api_service.dart
+errorRespuestaInesperada,Respuesta inesperada del servidor.,Unexpected response from the server.,services/api_service.dart
+certificadoTitulo,CERTIFICADO DE FINALIZACIÓN,CERTIFICATE OF COMPLETION,services/pdf_service.dart
+certificadoSeCertifica,Se certifica que,This certifies that,services/pdf_service.dart
+certificadoCompleto,completó la Ruta de Impacto del laboratorio,completed the Impact Path of the laboratory,services/pdf_service.dart
+certificadoIntensidad,Intensidad: {horas} horas certificadas,Duration: {horas} certified hours,services/pdf_service.dart
+certificadoEmitidoPor,Emitido por,Issued by,services/pdf_service.dart
+certificadoFechaEmision,Fecha de emisión,Date of issue,services/pdf_service.dart
+certificadoCodigo,Código de verificación: {codigo},Verification code: {codigo},services/pdf_service.dart
+certificadoPie,eduXaction Colombia · Entidad sin ánimo de lucro · Bogotá D. C.,eduXaction Colombia · Non-profit organization · Bogotá D.C.,services/pdf_service.dart
+certificadoTituloVisor,Certificado · {laboratorio},Certificate · {laboratorio},services/pdf_service.dart
+certificadoArchivo,certificado_{codigo}.pdf,certificate_{codigo}.pdf,services/pdf_service.dart
+errorSubidaInterrumpida,No se pudo subir el archivo: la conexión se interrumpió.,The file could not be uploaded: the connection was interrupted.,services/upload_io.dart services/upload_web.dart
+errorSubidaTardo,La subida tardó demasiado.,The upload took too long.,services/upload_io.dart services/upload_web.dart
+errorSubidaCancelada,La subida se canceló.,The upload was canceled.,services/upload_web.dart services/video_upload/upload_types.dart
+errorVideoConexionNoResponde,La conexión dejó de responder mientras subía el video.,The connection stopped responding while the video was uploading.,services/video_upload/video_platform_io.dart services/video_upload/video_platform_web.dart
+errorVideoConexionCortada,Se cortó la conexión mientras subía el video.,The connection dropped while the video was uploading.,services/video_upload/video_platform_io.dart services/video_upload/video_platform_web.dart
+videoNavegadorNoAbre,Este navegador no pudo abrir el video. Puede estar dañado; vuelva a exportarlo como MP4 (H.264 con audio AAC).,This browser could not open the video. It may be damaged; export it again as MP4 (H.264 with AAC audio).,services/video_upload/video_upload_controller.dart
+videoPortadaPesada,La portada pesa {peso} y el máximo es 5 MB.,The cover image is {peso} and the maximum is 5 MB.,services/video_upload/video_upload_controller.dart
+videoParteRechazada,El almacenamiento rechazó una parte del video ({status}).,Storage rejected part of the video ({status}).,services/video_upload/video_uploader.dart
+mp4SoloMp4,Solo se aceptan videos MP4 (H.264 con audio AAC).,Only MP4 videos are accepted (H.264 with AAC audio).,services/video_upload/mp4_inspector.dart
+mp4SoloMp4Ext,Solo se aceptan videos MP4 (H.264 con audio AAC); este archivo es .{ext}. Expórtelo como MP4 y vuelva a intentar.,Only MP4 videos are accepted (H.264 with AAC audio); this file is .{ext}. Export it as MP4 and try again.,services/video_upload/mp4_inspector.dart
+mp4Vacio,El archivo está vacío.,The file is empty.,services/video_upload/mp4_inspector.dart
+mp4Pesado,"El video pesa {peso} y el máximo es 500 MB. Comprímalo (por ejemplo con HandBrake, ajuste «Fast 1080p30») y vuelva a intentar.","The video is {peso} and the maximum is 500 MB. Compress it (for example with HandBrake, preset “Fast 1080p30”) and try again.",services/video_upload/mp4_inspector.dart
+mp4Danado,No se pudo leer el MP4: el archivo está incompleto o dañado. Vuelva a exportarlo.,The MP4 could not be read: the file is incomplete or damaged. Export it again.,services/video_upload/mp4_inspector.dart
+mp4NoEsMp4,Este archivo no es un MP4 aunque se llame así. Expórtelo como MP4 (H.264 con audio AAC).,This file is not an MP4 even though it is named like one. Export it as MP4 (H.264 with AAC audio).,services/video_upload/mp4_inspector.dart
+mp4SinIndice,"No se pudo leer el MP4: le falta el índice del video, así que está incompleto o dañado. Vuelva a exportarlo.","The MP4 could not be read: it is missing the video index, so it is incomplete or damaged. Export it again.",services/video_upload/mp4_inspector.dart
+mp4SoloAudio,Este archivo no tiene imagen: parece ser solo audio.,This file has no picture: it seems to be audio only.,services/video_upload/mp4_inspector.dart
+mp4Drm,Este video está protegido contra copia (DRM) y no se puede reproducir en la plataforma.,This video is copy-protected (DRM) and cannot be played on the platform.,services/video_upload/mp4_inspector.dart
+mp4Hevc,"Este MP4 está en H.265 (HEVC), el formato con el que graba el iPhone, y muchos navegadores no lo reproducen. Expórtelo en H.264: en el iPhone, Ajustes › Cámara › Formatos › «Más compatible»; en la computadora, con HandBrake y el ajuste «Fast 1080p30».","This MP4 is in H.265 (HEVC), the format the iPhone records in, and many browsers cannot play it. Export it in H.264: on the iPhone, Settings › Camera › Formats › “Most Compatible”; on a computer, with HandBrake and the “Fast 1080p30” preset.",services/video_upload/mp4_inspector.dart
+mp4Mpeg4Parte2,MPEG-4 Parte 2,MPEG-4 Part 2,services/video_upload/mp4_inspector.dart
+mp4FormatoVideo,"Este MP4 usa el formato de video {nombre}, que no todos los navegadores reproducen. Expórtelo en H.264 con audio AAC.","This MP4 uses the {nombre} video format, which not all browsers can play. Export it in H.264 with AAC audio.",services/video_upload/mp4_inspector.dart
+mp4PcmSinComprimir,PCM sin comprimir,Uncompressed PCM,services/video_upload/mp4_inspector.dart
+mp4FormatoAudio,"El audio de este MP4 está en {nombre}, y no todos los navegadores lo reproducen. Expórtelo con audio AAC.","The audio in this MP4 is in {nombre}, and not all browsers can play it. Export it with AAC audio.",services/video_upload/mp4_inspector.dart
+errorSinSesion,No hay una sesión activa.,There is no active session.,providers/data_provider.dart
+errorRespuestaInesperadaRecibida,Recibimos una respuesta inesperada del servidor.,We received an unexpected response from the server.,providers/data_provider.dart
+rolSuperAdmin,Super Admin,Super Admin,utils/constants.dart
+rolAdministrador,Administrador,Administrator,utils/constants.dart
+rolEstudiante,Estudiante,Student,utils/constants.dart
+rolAlumni,Alumni,Alumni,utils/constants.dart
+rolMentor,Mentor,Mentor,utils/constants.dart views/company/company_portal.dart
+rolAsesorAcademico,Asesor Académico,Academic Advisor,utils/constants.dart
+rolEmpresa,Empresa,Company,utils/constants.dart views/admin/admin_users.dart views/lxd/lxd_portal.dart views/shared/user_detail_view.dart
+rolDonante,Donante,Donor,utils/constants.dart views/shared/user_detail_view.dart
+pieInstitucional,"Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.","Non-profit organization. Founded in 2021. Bogotá D.C., Colombia.",utils/constants.dart
+youtubeNoEsVideo,"Ese enlace es de YouTube, pero no de un video (parece un canal o una lista). Abra el video y copie su enlace.","That link is from YouTube, but not for a video (it looks like a channel or a playlist). Open the video and copy its link.",utils/youtube.dart
+youtubePegueEnlace,"Pegue el enlace de un video de YouTube, por ejemplo https://www.youtube.com/watch?v=… o https://youtu.be/…","Paste the link to a YouTube video, for example https://www.youtube.com/watch?v=… or https://youtu.be/…",utils/youtube.dart
+errorSinConexion,No pudimos conectar con el servidor. Revise su conexión.,We could not connect to the server. Check your connection.,services/api_errors.dart
+errorServidorMomento,El servidor tuvo un problema. Intente de nuevo en un momento.,The server had a problem. Please try again in a moment.,services/api_errors.dart
+pieLema,Formamos líderes que transforman comunidades 💛,We develop leaders who transform communities 💛,widgets/app_footer.dart
+pieDerechos,© {anio} eduXaction Colombia — Todos los derechos reservados,© {anio} eduXaction Colombia — All rights reserved,widgets/app_footer.dart
+pieHechoEn,Hecho con 💛 en Bogotá,Made with 💛 in Bogotá,widgets/app_footer.dart
+comunMenu,Menú,Menu,widgets/app_header.dart
+comunBuscar,Buscar,Search,widgets/app_header.dart
+busquedaTipoCurso,Curso,Course,views/student/course_detail_view.dart widgets/app_header.dart widgets/calendar_view.dart
+busquedaTipoProyecto,Proyecto,Project,views/admin/admin_management.dart views/lxd/lxd_portal.dart views/shared/projects_directory_view.dart widgets/app_header.dart
+busquedaEtapa,Etapa: {etapa},Stage: {etapa},widgets/app_header.dart
+comunCerrar,Cerrar,Close,views/admin/admin_users.dart views/lxd/lesson_editor.dart views/shared/foro_moderacion.dart views/student/course_detail_view.dart views/student/ruta_impacto_view.dart views/student/student_dashboard_view.dart widgets/app_header.dart widgets/common.dart widgets/cuenta.dart widgets/file_viewer.dart widgets/glosario.dart widgets/normas_comunidad.dart widgets/video_player_dialog.dart
+busquedaPista,"Buscar estudiantes, cursos, proyectos…","Search students, courses, projects…",widgets/app_header.dart
+busquedaEscriba,Escriba para buscar,Type to search,widgets/app_header.dart
+comunSinResultados,Sin resultados,No results,widgets/app_header.dart
+cuentaMiCuenta,Mi cuenta,My account,widgets/app_header.dart
+cuentaMiPerfil,Mi perfil,My profile,widgets/app_header.dart
+cuentaAcerca,Acerca de eduXaction,About eduXaction,widgets/app_header.dart
+cuentaEliminar,Eliminar mi cuenta,Delete my account,widgets/app_header.dart widgets/cuenta.dart
+notificacionesTitulo,Notificaciones,Notifications,widgets/app_header.dart
+notificacionesVacio,Sin notificaciones,No notifications,widgets/app_header.dart
+contactoEnviado,¡Mensaje enviado! Nos pondremos en contacto pronto.,Message sent! We will be in touch soon.,widgets/contact_dialog.dart
+contactoError,No pudimos enviar su mensaje. Intente de nuevo en un momento.,We could not send your message. Please try again in a moment.,widgets/contact_dialog.dart
+contactoTitulo,Contáctenos,Contact us,widgets/contact_dialog.dart
+contactoTexto,Cuéntenos quién es y qué le gustaría hacer con nosotros.,Tell us who you are and what you would like to do with us.,widgets/contact_dialog.dart
+comunNombre,Nombre,Name,views/admin/admin_management.dart views/admin/admin_users.dart widgets/contact_dialog.dart
+comunRequerido,Requerido,Required,widgets/contact_dialog.dart
+comunCorreoInvalido,Correo inválido,Invalid email,widgets/contact_dialog.dart
+contactoMensaje,Mensaje,Message,views/shared/talent_search_view.dart widgets/contact_dialog.dart
+contactoMensajePista,"¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)","How would you like to get involved? (student, mentor, company, donor...)",widgets/contact_dialog.dart
+comunCancelar,Cancelar,Cancel,views/admin/admin_users.dart views/lxd/course_editor_view.dart views/lxd/course_tracking_view.dart views/lxd/lesson_editor.dart views/lxd/lxd_portal.dart views/shared/foro_moderacion.dart widgets/calendar_view.dart widgets/common.dart widgets/contact_dialog.dart widgets/normas_comunidad.dart
+comunEnviando,Enviando…,Sending…,views/student/course_detail_view.dart views/student/ruta_impacto_view.dart widgets/contact_dialog.dart
+contactoEnviar,Enviar mensaje,Send message,widgets/contact_dialog.dart
+cuentaPrivacidadError,No pudimos abrir la política de privacidad. Revise su conexión e intente de nuevo.,We could not open the privacy policy. Check your connection and try again.,widgets/cuenta.dart
+cuentaEscribaContrasena,Escriba su contraseña para confirmar.,Enter your password to confirm.,widgets/cuenta.dart
+cuentaSolicitudRecibida,Solicitud recibida,Request received,widgets/cuenta.dart
+cuentaDesactivada,Su cuenta quedó desactivada y se cerró la sesión en todos sus dispositivos. En un plazo máximo de {dias} días borraremos sus datos personales.,Your account has been deactivated and you have been signed out on all your devices. Within {dias} days at most we will delete your personal data.,widgets/cuenta.dart
+comunEntendido,Entendido,Got it,widgets/cuenta.dart
+cuentaEliminando,Eliminando…,Deleting…,widgets/cuenta.dart
+cuentaQuePasa,Esto es lo que pasa si elimina su cuenta:,This is what happens if you delete your account:,widgets/cuenta.dart
+cuentaPunto1,Deja de funcionar de inmediato y se cierra la sesión en todos sus dispositivos.,It stops working immediately and you are signed out on all your devices.,widgets/cuenta.dart
+cuentaPunto2,"En un plazo máximo de 30 días borramos sus datos personales: nombre, correo, teléfono, cédula, ciudad, foto y perfil.","Within 30 days at most we delete your personal data: name, email, phone, ID number, city, photo and profile.",widgets/cuenta.dart
+cuentaPunto3,"Lo que publicó en el foro y sus entregas se conservan a nombre de «Cuenta eliminada», para no borrar el trabajo de su equipo.","What you posted in the forum and your submissions are kept under the name “Deleted account”, so your team's work is not erased.",widgets/cuenta.dart
+cuentaPunto4,"Si tiene certificados, descárguelos antes: al borrar sus datos dejan de mostrar su nombre.","If you have certificates, download them first: once your data is deleted they no longer show your name.",widgets/cuenta.dart
+cuentaParaConfirmar,Para confirmar que es usted.,To confirm that it is you.,widgets/cuenta.dart
+cuentaAcercaTexto,"Formamos líderes que transforman comunidades 💛
+{pie}","We develop leaders who transform communities 💛
+{pie}",widgets/cuenta.dart
+cuentaNormas,Normas de la comunidad,Community guidelines,widgets/cuenta.dart widgets/normas_comunidad.dart
+cuentaEscribanos,Escríbanos,Write to us,widgets/cuenta.dart
+cuentaLicencias,Licencias de software,Software licenses,widgets/cuenta.dart
+cuentaDerechos,"© {anio} eduXaction Colombia — Todos los derechos reservados
+Hecho con 💛 en Bogotá","© {anio} eduXaction Colombia — All rights reserved
+Made with 💛 in Bogotá",widgets/cuenta.dart
+portalMas,Más,More,widgets/portal_shell.dart
+portalMasOpciones,Más opciones,More options,widgets/portal_shell.dart
+etapaDeTotal,Etapa {actual} de {total},Stage {actual} of {total},widgets/portal_shell.dart
+etapaFinal,Etapa final,Final stage,widgets/portal_shell.dart
+etapaSigue,Sigue: {etapa},Next: {etapa},widgets/portal_shell.dart
+universidadCargando,Cargando universidades…,Loading universities…,widgets/university_picker.dart
+universidadFueraCatalogo,(universidad fuera del catálogo),(university not in the catalog),widgets/university_picker.dart
+universidadOtra,Otra (¿cuál?),Other (which one?),widgets/university_picker.dart
+universidadCual,¿Cuál institución?,Which institution?,widgets/university_picker.dart
+universidadCualAyuda,El nombre oficial completo. Queda en la lista para las próximas inscripciones.,The full official name. It stays on the list for future sign-ups.,widgets/university_picker.dart
+mapaNoCarga,No se pudo cargar el mapa,The map could not be loaded,widgets/colombia_map.dart
+mapaCifras,Las cifras y el listado siguen disponibles a la derecha.,The figures and the list are still available on the right.,widgets/colombia_map.dart
+mapaEstudiantesPorCiudad,ESTUDIANTES POR CIUDAD,STUDENTS BY CITY,widgets/colombia_map.dart
+perfilRol,Rol: {rol},Role: {rol},widgets/app_header.dart
+perfilCorreo,Correo: {correo},Email: {correo},widgets/app_header.dart
+perfilTelefono,Teléfono: {telefono},Phone: {telefono},widgets/app_header.dart
+perfilUniversidad,Universidad: {universidad},University: {universidad},widgets/app_header.dart
+universidadEtiqueta,Universidad,University,views/admin/admin_management.dart views/student/student_portal.dart widgets/university_picker.dart
+universidadNinguna,Sin universidad,No university,widgets/university_picker.dart
+comunConfirmar,Confirmar,Confirm,widgets/common.dart
+comunNoSeDeshace,Esta acción no se puede deshacer.,This action cannot be undone.,widgets/common.dart
+comunEscribaParaConfirmar,Escriba {palabra} para confirmar,Type {palabra} to confirm,widgets/common.dart
+comunEliminarDefinitivamente,Eliminar definitivamente,Delete permanently,widgets/common.dart
+formularioDescartarTitulo,Descartar cambios,Discard changes,views/lxd/glossary_editor.dart views/lxd/lesson_editor.dart widgets/common.dart
+formularioDescartarTexto,Lo que escribió en este formulario no se ha guardado. ¿Desea salir de todas formas?,What you wrote in this form has not been saved. Do you want to leave anyway?,widgets/common.dart
+escritorioTitulo,Mejor desde un computador,Better on a computer,widgets/common.dart
+escritorioTexto,"Desde el teléfono, {herramienta} es difícil de usar y es fácil equivocarse: tiene listas para ordenar, tablas y formularios largos. Le recomendamos abrirlo en eduxaction.com desde un computador.","On a phone, {herramienta} is hard to use and it is easy to make mistakes: it has lists to reorder, tables and long forms. We recommend opening it at eduxaction.com on a computer.",widgets/common.dart
+escritorioContinuar,Continuar de todas formas,Continue anyway,widgets/common.dart
+eventoSesionSincronica,Sesión sincrónica,Live session,widgets/calendar_view.dart
+eventoRutaImpacto,Evento Ruta de Impacto,Impact Path event,widgets/calendar_view.dart
+calendarioMesAnterior,Mes anterior,Previous month,widgets/calendar_view.dart
+calendarioMesSiguiente,Mes siguiente,Next month,widgets/calendar_view.dart
+calendarioAgregarEvento,Agregar evento,Add event,widgets/calendar_view.dart
+calendarioSinEventosDia,No hay eventos este día.,There are no events on this day.,widgets/calendar_view.dart
+calendarioUnirse,Unirse a la reunión,Join the meeting,views/student/ruta_impacto_view.dart views/student/student_calendar_view.dart widgets/calendar_view.dart
+comunEditar,Editar,Edit,views/admin/admin_management.dart views/admin/admin_users.dart views/admin/lab_ruta_editor.dart views/advisor/advisor_portal.dart views/lxd/lxd_portal.dart widgets/calendar_view.dart
+comunEliminar,Eliminar,Delete,views/admin/admin_management.dart views/admin/admin_users.dart views/shared/communication_resources_view.dart views/shared/forum_view.dart widgets/calendar_view.dart
+calendarioEliminarEvento,Eliminar evento,Delete event,widgets/calendar_view.dart
+calendarioEliminarConfirmar,"¿Eliminar ""{titulo}""? Esta acción no se puede deshacer.","Delete ""{titulo}""? This action cannot be undone.",widgets/calendar_view.dart
+calendarioEditarEvento,Editar evento,Edit event,widgets/calendar_view.dart
+comunTitulo,Título,Title,views/admin/admin_management.dart views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart views/lxd/lesson_editor.dart views/shared/communication_resources_view.dart widgets/calendar_view.dart
+calendarioTipoEvento,Tipo de evento,Event type,widgets/calendar_view.dart
+calendarioSinCursosOL,"Todavía no tiene cursos de Open Learning propios. Cree uno en ""Mis Cursos"" antes de agendar una sesión.","You do not have any Open Learning courses of your own yet. Create one in ""My Courses"" before scheduling a session.",widgets/calendar_view.dart
+calendarioSinLaboratorios,"Todavía no tiene laboratorios asignados, así que no hay a quién agendarle una mentoría.","You do not have any laboratories assigned yet, so there is no one to schedule a mentoring session with.",widgets/calendar_view.dart
+comunLaboratorio,Laboratorio,Laboratory,views/lxd/course_editor_view.dart views/shared/lab_detail_view.dart widgets/calendar_view.dart
+calendarioEventoGlobal,"Evento global: lo verán todos los estudiantes y alumni eduXaction de la plataforma, sin importar su laboratorio.","Global event: all eduXaction students and alumni on the platform will see it, regardless of their laboratory.",widgets/calendar_view.dart
+calendarioLinkReunion,Link de la reunión,Meeting link,widgets/calendar_view.dart
+calendarioInvitados,Invitados (opcional),Guests (optional),widgets/calendar_view.dart
+calendarioInvitadosPista,Ej: María Pérez (Bancolombia),E.g.: María Pérez (Bancolombia),widgets/calendar_view.dart
+comunDescripcionOpcional,Descripción (opcional),Description (optional),widgets/calendar_view.dart
+calendarioRepetir,Repetir cada 15 días,Repeat every 15 days,widgets/calendar_view.dart
+calendarioEventoActualizado,Evento actualizado ✓,Event updated ✓,widgets/calendar_view.dart
+calendarioEventoAgregado,Evento agregado ✓,Event added ✓,widgets/calendar_view.dart
+comunGuardando,Guardando…,Saving…,views/admin/admin_site_content.dart views/admin/admin_users.dart views/lxd/course_editor_view.dart views/lxd/course_tracking_view.dart views/lxd/lesson_editor.dart views/lxd/lxd_portal.dart views/student/student_portal.dart widgets/calendar_view.dart widgets/common.dart
+comunGuardar,Guardar,Save,views/admin/admin_users.dart views/lxd/course_editor_view.dart views/lxd/course_tracking_view.dart views/lxd/lesson_editor.dart views/lxd/lxd_portal.dart widgets/calendar_view.dart widgets/common.dart
+archivoTipoNoPermitido,"Tipo de archivo no permitido. Se aceptan PDF, imágenes, documentos de Word y ZIP.","File type not allowed. PDF, images, Word documents and ZIP are accepted.",widgets/file_upload_field.dart
+archivoPesado,El archivo pesa {megas} MB y el máximo son 25 MB.,The file is {megas} MB and the maximum is 25 MB.,widgets/file_upload_field.dart
+archivoAdjuntar,Adjuntar archivo,Attach file,widgets/file_upload_field.dart
+archivoArchivo,Archivo,File,views/shared/communication_resources_view.dart widgets/file_upload_field.dart widgets/file_viewer.dart
+archivoPreparando,Preparando la subida…,Preparing the upload…,widgets/file_upload_field.dart
+archivoSubiendo,Subiendo… {porcentaje}%,Uploading… {porcentaje}%,widgets/file_upload_field.dart
+comunQuitar,Quitar,Remove,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart widgets/file_upload_field.dart widgets/video_upload_panel.dart
+archivoNoAbre,No se pudo abrir el archivo.,The file could not be opened.,widgets/file_viewer.dart
+archivoNoVisible,Este tipo de archivo no se puede ver dentro de la página. Descárguelo para abrirlo.,This type of file cannot be viewed inside the page. Download it to open it.,widgets/file_viewer.dart
+comunDescargar,Descargar,Download,views/student/student_portal.dart widgets/file_viewer.dart
+archivoNoImagen,No se pudo mostrar la imagen.,The image could not be displayed.,widgets/file_viewer.dart
+normas1Titulo,Respeto ante todo,Respect above all,widgets/normas_comunidad.dart
+normas1Texto,"Trate a las demás personas como quiere que lo traten. No se permiten insultos, burlas, acoso ni amenazas.","Treat other people the way you want to be treated. Insults, mockery, harassment and threats are not allowed.",widgets/normas_comunidad.dart
+normas2Titulo,Cero discriminación,Zero discrimination,widgets/normas_comunidad.dart
+normas2Texto,"No se acepta contenido que discrimine por origen, nacionalidad, género, orientación sexual, religión, discapacidad o condición social.","Content that discriminates on the basis of origin, nationality, gender, sexual orientation, religion, disability or social status is not accepted.",widgets/normas_comunidad.dart
+normas3Titulo,Contenido apropiado,Appropriate content,widgets/normas_comunidad.dart
+normas3Texto,"No publique contenido sexual, violento, ilegal ni nada que ponga en riesgo a otra persona.","Do not post sexual, violent or illegal content, or anything that puts another person at risk.",widgets/normas_comunidad.dart
+normas4Titulo,Sin publicidad,No advertising,widgets/normas_comunidad.dart
+normas4Texto,"El foro es para aprender y construir proyectos: no publique ventas, rifas, cadenas ni publicidad.","The forum is for learning and building projects: do not post sales, raffles, chain messages or advertising.",widgets/normas_comunidad.dart
+normas5Titulo,Cuide los datos,Take care of personal data,widgets/normas_comunidad.dart
+normas5Texto,"No comparta datos personales suyos ni de otras personas: teléfonos, direcciones, documentos o fotos de terceros.","Do not share your own personal data or anyone else's: phone numbers, addresses, documents or photos of other people.",widgets/normas_comunidad.dart
+normas6Titulo,Reporte lo que no está bien,Report what is not right,widgets/normas_comunidad.dart
+normas6Texto,"Si algo incumple estas normas, use «Reportar» en el menú ⋮ de la publicación. Si alguien le incomoda, puede bloquearlo y dejará de ver lo que publica.","If something breaks these guidelines, use “Report” in the ⋮ menu of the post. If someone makes you uncomfortable, you can block them and you will no longer see what they post.",widgets/normas_comunidad.dart
+normasConsecuencias,No hay tolerancia con el contenido ofensivo ni con el abuso. El equipo de Enactus Colombia revisa cada reporte y puede quitar el contenido y suspender la cuenta de quien incumpla estas normas.,There is no tolerance for offensive content or abuse. The Enactus Colombia team reviews every report and may remove the content and suspend the account of anyone who breaks these guidelines.,widgets/normas_comunidad.dart
+normasAntesDePublicar,"Antes de publicar por primera vez, lea y acepte las normas del foro.","Before posting for the first time, read and accept the forum guidelines.",widgets/normas_comunidad.dart
+normasAcepto,Acepto,I accept,widgets/normas_comunidad.dart
+visorAbriendo,Abriendo el documento…,Opening the document…,widgets/visor_pdf.dart
+visorNoAbre,No pudimos abrir este documento. Revise su conexión e intente de nuevo.,We could not open this document. Check your connection and try again.,widgets/visor_pdf.dart
+visorAppSistema,Este archivo se abre con la aplicación del sistema.,This file opens with the system app.,widgets/pdf_view_io.dart
+visorNoCarga,No se pudo cargar el visor de PDF. Recargue la página.,The PDF viewer could not be loaded. Reload the page.,widgets/pdf_view_web.dart
+leccionTipoRecurso,Recurso,Resource,views/lxd/lesson_editor.dart widgets/lesson_visuals.dart
+leccionTipoEnlace,Enlace,Link,views/lxd/lesson_editor.dart views/shared/communication_resources_view.dart widgets/lesson_visuals.dart
+leccionTipoQuiz,Quiz,Quiz,views/lxd/lesson_editor.dart widgets/lesson_visuals.dart
+leccionTipoActividad,Actividad,Activity,views/lxd/lesson_editor.dart widgets/lesson_visuals.dart
+leccionTipoEncuesta,Encuesta,Survey,views/lxd/lesson_editor.dart widgets/lesson_visuals.dart
+visorDocumento,Documento,Document,widgets/visor_pdf.dart
+calendarioVeces,"{cantidad, plural, =1{1 vez} other{{cantidad} veces}}","{cantidad, plural, =1{1 time} other{{cantidad} times}}",widgets/calendar_view.dart
+glosarioOcultarTexto,Ocultar texto y glosario,Hide text and glossary,widgets/glosario.dart
+glosarioVerTexto,Ver texto y glosario de la lección,Show the lesson's text and glossary,widgets/glosario.dart
+glosarioTextoDe,Texto y glosario de «{titulo}»,Text and glossary of “{titulo}”,widgets/glosario.dart
+glosarioDeLeccion,Glosario de esta lección,Glossary for this lesson,widgets/glosario.dart
+glosarioLeccionVacio,Esta lección no tiene términos de glosario.,This lesson has no glossary terms.,widgets/glosario.dart
+glosarioDelModulo,Glosario del módulo,Module glossary,views/lxd/glossary_editor.dart widgets/glosario.dart
+glosarioPorRepasar,{cantidad} por repasar,{cantidad} to review,widgets/glosario.dart
+glosarioTarjetas,Tarjetas,Cards,widgets/glosario.dart
+glosarioModoRepaso,Modo repaso,Review mode,widgets/glosario.dart
+glosarioBuscar,Buscar en el glosario,Search the glossary,widgets/glosario.dart
+glosarioBorrarBusqueda,Borrar la búsqueda,Clear the search,widgets/glosario.dart
+glosarioNingunoCoincide,Ningún término coincide con «{busqueda}».,No term matches “{busqueda}”.,widgets/glosario.dart
+glosarioNingunoMarcado,No tiene términos marcados para repasar.,You have no terms marked for review.,widgets/glosario.dart
+glosarioNingunoLetra,Ningún término empieza con esa letra.,No term starts with that letter.,widgets/glosario.dart
+glosarioQuitarFiltros,Quitar los filtros,Clear the filters,widgets/glosario.dart
+glosarioTodas,Todas,All,widgets/glosario.dart
+glosarioTodasLasLetras,Todas las letras,All letters,widgets/glosario.dart
+glosarioAyudaTarjetas,Toque una tarjeta para voltearla. El avance del repaso se guarda en la cuenta de cada estudiante.,Tap a card to flip it. Review progress is saved in each student's account.,widgets/glosario.dart
+glosarioAyudaRepaso,Toque una tarjeta para ver la definición y marque si ya la sabe. Ya lo sabe: {sabe} de {total} · Por repasar: {repasar},Tap a card to see the definition and mark whether you already know it. Known: {sabe} of {total} · To review: {repasar},widgets/glosario.dart
+glosarioYaLoSabeDe,Ya lo sabe: {sabe} de {total},Known: {sabe} of {total},widgets/glosario.dart
+glosarioSoloRepasar,Solo los de repasar,Only the ones to review,widgets/glosario.dart
+glosarioRelacionados,Relacionados,Related,widgets/glosario.dart
+glosarioIrA,Ir a «{palabra}»,Go to “{palabra}”,widgets/glosario.dart
+glosarioEjemplo,Ejemplo,Example,widgets/glosario.dart
+glosarioImagenDe,Imagen de «{palabra}»,Image of “{palabra}”,widgets/glosario.dart
+glosarioYaLoSabe,Ya lo sabe,Known,widgets/glosario.dart
+glosarioPorRepasarEstado,Por repasar,To review,widgets/glosario.dart
+glosarioDefinicionDe,Definición de «{palabra}»: {definicion},Definition of “{palabra}”: {definicion},widgets/glosario.dart
+glosarioToqueParaVer,«{palabra}». Toque para ver la definición.,“{palabra}”. Tap to see the definition.,widgets/glosario.dart
+glosarioYaLoSe,Ya lo sé,I know it,widgets/glosario.dart
+glosarioRepasar,Repasar,Review,widgets/glosario.dart
+glosarioToqueDefinicion,Toque para ver la definición,Tap to see the definition,widgets/glosario.dart
+videoCargandoTitulo,Cargando el video «{titulo}»,Loading the video “{titulo}”,widgets/lesson_video_shell.dart
+videoReproducirTitulo,Reproducir el video «{titulo}»,Play the video “{titulo}”,widgets/lesson_video_shell.dart
+videoSeguirViendo,Seguir viendo «{titulo}» desde {tiempo},Continue watching “{titulo}” from {tiempo},widgets/lesson_video_shell.dart
+videoCargando,Cargando el video…,Loading the video…,widgets/lesson_video_shell.dart
+videoSeguirDesde,Seguir desde {tiempo},Continue from {tiempo},views/student/course_detail_view.dart widgets/lesson_video_shell.dart
+videoNoDisponibleEntorno,La reproducción no está disponible en este entorno,Playback is not available in this environment,widgets/uploaded_lesson_player.dart
+videoYaNoDisponible,Este video ya no está disponible,This video is no longer available,widgets/uploaded_lesson_player.dart widgets/youtube_lesson_player.dart
+videoAviseCreador,Avísele a quien armó el curso.,Let the person who built the course know.,widgets/uploaded_lesson_player.dart
+videoNoCarga,No se pudo cargar el video,The video could not be loaded,widgets/uploaded_lesson_player.dart
+videoPuedeSerConexion,Puede ser la conexión. Intente de nuevo en un momento.,It may be the connection. Please try again in a moment.,widgets/uploaded_lesson_player.dart
+videoPausar,Pausar el video,Pause the video,widgets/video_controls.dart
+videoReproducir,Reproducir el video,Play the video,widgets/video_controls.dart
+videoCargandoCorto,Cargando el video,Loading the video,widgets/video_controls.dart
+videoPosicion,Posición del video,Video position,widgets/video_controls.dart
+videoTiempoDe,{actual} de {total},{actual} of {total},widgets/video_controls.dart
+videoPausarK,Pausar (K),Pause (K),widgets/video_controls.dart
+videoReproducirK,Reproducir (K),Play (K),widgets/video_controls.dart
+videoActivarSonido,Activar el sonido (M),Unmute (M),widgets/video_controls.dart
+videoSilenciar,Silenciar (M),Mute (M),widgets/video_controls.dart
+videoVolumen,Volumen,Volume,widgets/video_controls.dart
+videoMinutoDe,Minuto {actual} de {total},Minute {actual} of {total},widgets/video_controls.dart
+videoVelocidad,Velocidad de reproducción,Playback speed,widgets/video_controls.dart
+videoVelocidadNormal,Normal (1×),Normal (1×),widgets/video_controls.dart
+videoVelocidadActual,Velocidad de reproducción: {velocidad},Playback speed: {velocidad},widgets/video_controls.dart
+videoSalirPantallaCompleta,Salir de pantalla completa (F),Exit full screen (F),widgets/video_controls.dart
+videoPantallaCompleta,Pantalla completa (F),Full screen (F),widgets/video_controls.dart
+videoVer,Ver el video,Watch the video,widgets/video_player_dialog.dart
+videoPestanaNueva,Se abre en una pestaña nueva.,It opens in a new tab.,widgets/video_player_dialog.dart
+videoAbrir,Abrir video,Open video,widgets/video_player_dialog.dart
+videoLeccionSinVideo,Esta lección todavía no tiene video,This lesson does not have a video yet,widgets/video_player_dialog.dart
+videoCreadorNoCargo,Quien la creó aún no le cargó ninguno.,Its creator has not uploaded one yet.,widgets/video_player_dialog.dart
+videoEnlaceNoAbre,No se pudo abrir el enlace del video.,The video link could not be opened.,widgets/video_player_dialog.dart
+videoAvanceSeGuarda,"Su avance se guarda solo: si cierra, sigue donde quedó.","Your progress is saved automatically: if you close it, you will pick up where you left off.",widgets/video_player_dialog.dart
+videoLeccionCompletada,Lección completada,Lesson completed,widgets/video_player_dialog.dart
+videoVisto,Visto {porcentaje}%,Watched {porcentaje}%,views/student/course_detail_view.dart widgets/video_player_dialog.dart
+subidaSinTerminar,"Quedó sin terminar la subida de «{archivo}» ({tamano}). Elija el mismo archivo y, al guardar, sigue desde donde iba.","The upload of “{archivo}” ({tamano}) was not finished. Choose the same file and, when you save, it will continue where it left off.",widgets/video_upload_panel.dart
+subidaZonaSoltar,Zona para soltar el video,Drop zone for the video,widgets/video_upload_panel.dart
+subidaSuelte,Suelte el video para elegirlo,Drop the video to choose it,widgets/video_upload_panel.dart
+subidaReemplazar,"Para reemplazarlo, arrastre otro video aquí","To replace it, drag another video here",widgets/video_upload_panel.dart
+subidaArrastre,Arrastre el video aquí,Drag the video here,widgets/video_upload_panel.dart
+subidaElegirVideo,Elegir video,Choose video,widgets/video_upload_panel.dart
+subidaFormato,MP4 (H.264 con audio AAC) · hasta 500 MB,MP4 (H.264 with AAC audio) · up to 500 MB,widgets/video_upload_panel.dart
+subidaRevisando,Revisando el video…,Checking the video…,widgets/video_upload_panel.dart
+subidaElegirOtro,Elegir otro video,Choose another video,widgets/video_upload_panel.dart
+subidaVistaPreviaAsi,Vista previa — así lo verán los estudiantes:,Preview — this is how students will see it:,views/lxd/lesson_editor.dart widgets/video_upload_panel.dart
+subidaVistaPrevia,Vista previa,Preview,views/lxd/lesson_editor.dart widgets/video_upload_panel.dart
+subidaVistaPreviaNavegador,La vista previa se ve en el navegador,The preview is shown in the browser,widgets/video_upload_panel.dart
+subidaVistaPreviaDetalle,"El video se sube igual; para mirarlo antes de guardar, abra el editor desde el sitio web.","The video is uploaded anyway; to watch it before saving, open the editor from the website.",widgets/video_upload_panel.dart
+subidaPortadaPropia,Portada propia,Custom cover,widgets/video_upload_panel.dart
+subidaPortadaDelVideo,Portada tomada del video,Cover taken from the video,widgets/video_upload_panel.dart
+subidaSinPortada,Sin portada: se verá un fondo genérico,No cover: a generic background will be shown,widgets/video_upload_panel.dart
+subidaUsarOtraImagen,Usar otra imagen,Use another image,widgets/video_upload_panel.dart
+subidaVolverPortadaVideo,Volver a la del video,Go back to the video's cover,widgets/video_upload_panel.dart
+subidaQuitarPortada,Quitar la portada,Remove the cover,widgets/video_upload_panel.dart
+subidaCambiarPortada,Cambiar la portada,Change the cover,widgets/video_upload_panel.dart
+subidaPonerPortada,Ponerle portada,Add a cover,widgets/video_upload_panel.dart
+subidaNuevaPortada,Nueva portada: se guarda al guardar,New cover: it is saved when you save,widgets/video_upload_panel.dart
+subidaNoTermino,No se pudo terminar la subida: {mensaje} Las partes que ya llegaron no se pierden: guarde de nuevo y sigue desde donde iba.,The upload could not be finished: {mensaje} The parts that already arrived are not lost: save again and it will continue where it left off.,widgets/video_upload_panel.dart
+subidaDe,{enviado} de {total},{enviado} of {total},widgets/video_upload_panel.dart
+subidaQuedan,quedan {tiempo},{tiempo} left,widgets/video_upload_panel.dart
+subidaSiguiendo,Siguiendo la subida… {pct} %,Resuming the upload… {pct} %,widgets/video_upload_panel.dart
+subidaSubiendo,Subiendo el video… {pct} %,Uploading the video… {pct} %,widgets/video_upload_panel.dart
+subidaCancelar,Cancelar subida,Cancel upload,views/lxd/lesson_editor.dart widgets/video_upload_panel.dart
+subidaAvance,Avance de la subida,Upload progress,widgets/video_upload_panel.dart
+subidaNoCierre,No cierre esta ventana hasta que termine.,Do not close this window until it finishes.,widgets/video_upload_panel.dart
+youtubeNoAbre,No se pudo abrir YouTube.,YouTube could not be opened.,widgets/youtube_lesson_player.dart
+youtubeNoCarga,No se pudo cargar el reproductor,The player could not be loaded,widgets/youtube_lesson_player.dart
+youtubeNoCargaDetalle,"Puede ser la conexión, o que el navegador esté bloqueando a YouTube. Puede intentar de nuevo o verlo directamente allá.","It may be the connection, or the browser may be blocking YouTube. You can try again or watch it directly there.",widgets/youtube_lesson_player.dart
+youtubeSoloYoutube,Este video solo se puede ver en YouTube,This video can only be watched on YouTube,widgets/youtube_lesson_player.dart
+youtubeSoloYoutubeDetalle,Quien lo subió no permite reproducirlo fuera de YouTube.,The person who uploaded it does not allow it to be played outside YouTube.,widgets/youtube_lesson_player.dart
+youtubeBorrado,Lo borraron de YouTube o lo hicieron privado. Avísele a quien armó el curso.,It was deleted from YouTube or made private. Let the person who built the course know.,widgets/youtube_lesson_player.dart
+youtubeNoValido,El video guardado no es válido,The saved video is not valid,widgets/youtube_lesson_player.dart
+youtubeNoValidoDetalle,Avísele a quien armó el curso para que revise el enlace.,Let the person who built the course know so they can check the link.,widgets/youtube_lesson_player.dart
+youtubeNoReproduce,YouTube no pudo reproducir el video,YouTube could not play the video,widgets/youtube_lesson_player.dart
+youtubeNoReproduceDetalle,"Pruebe de nuevo, o mírelo directamente en YouTube.","Try again, or watch it directly on YouTube.",widgets/youtube_lesson_player.dart
+youtubeVerEn,Ver en YouTube,Watch on YouTube,widgets/youtube_lesson_player.dart
+glosarioTerminos,"{cantidad, plural, =1{1 término} other{{cantidad} términos}}","{cantidad, plural, =1{1 term} other{{cantidad} terms}}",views/lxd/glossary_editor.dart widgets/glosario.dart
+glosarioLetraTerminos,"Letra {letra}, {cantidad, plural, =1{1 término} other{{cantidad} términos}}","Letter {letra}, {cantidad, plural, =1{1 term} other{{cantidad} terms}}",widgets/glosario.dart
+subidaSubidoEl,subido el {fecha},uploaded on {fecha},widgets/video_upload_panel.dart
+subidaVideoActual,Video actual: {nombre},Current video: {nombre},widgets/video_upload_panel.dart
+subidaArchivoSubido,archivo subido,uploaded file,widgets/video_upload_panel.dart
+portadaIniciarSesion,Iniciar sesión,Sign in,views/public/landing_view.dart
+portadaEstudiantesActivos,Estudiantes activos,Active students,views/admin/admin_site_content.dart views/public/landing_view.dart
+portadaProyectosImpacto,Proyectos de impacto,Impact projects,views/admin/admin_site_content.dart views/public/landing_view.dart
+portadaLaboratorios,Laboratorios,Laboratories,views/admin/admin_site_content.dart views/public/landing_view.dart
+portadaUniversidadesAliadas,Universidades aliadas,Partner universities,views/admin/admin_site_content.dart views/public/landing_view.dart
+portadaAreasConocimiento,Áreas de conocimiento,Fields of knowledge,views/public/landing_view.dart
+portadaNuestrosLaboratorios,Nuestros Laboratorios,Our Laboratories,views/public/landing_view.dart
+portadaAreasTexto,Áreas de conocimiento donde formamos a nuestros equipos,Fields of knowledge in which we train our teams,views/public/landing_view.dart
+portadaGaleria,Galería,Gallery,views/public/landing_view.dart
+portadaNuestroTrabajo,Nuestro trabajo en imágenes,Our work in pictures,views/public/landing_view.dart
+portadaMomentos,Momentos de la comunidad eduXaction Colombia,Moments from the eduXaction Colombia community,views/public/landing_view.dart
+portadaListo,¿Listo para sumarse? 💛,Ready to get involved? 💛,views/public/landing_view.dart
+portadaListoTexto,"Sin importar si es estudiante, mentor, empresa o donante: hay un lugar para usted en eduXaction Colombia.","Whether you are a student, mentor, company or donor: there is a place for you at eduXaction Colombia.",views/public/landing_view.dart
+portadaQuieroUnirme,Quiero unirme,I want to join,views/public/landing_view.dart
+portadaExpoLugar,Santa Marta · julio 2026,Santa Marta · July 2026,views/public/landing_view.dart
+portadaExpoTitulo,Campeones National Expo 2026,National Expo 2026 Champions,views/public/landing_view.dart
+portadaExpoTexto,"Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo","Santa Marta, July 2026 — our teams on their way to the eduXaction World Cup in São Paulo",views/public/landing_view.dart
+portadaExpoPie,Delegación eduXaction Colombia · National Expo 2026,eduXaction Colombia delegation · National Expo 2026,views/public/landing_view.dart
+portadaEntrar,Entrar a la plataforma,Enter the platform,views/public/landing_view.dart
+tabDashboard,Dashboard,Dashboard,views/admin/admin_portal.dart views/student/student_portal.dart
+tabInicioCorto,Inicio,Home,views/admin/admin_portal.dart views/advisor/advisor_portal.dart views/student/student_portal.dart
+tabCalendario,Calendario,Calendar,views/admin/admin_portal.dart views/advisor/advisor_portal.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/student/student_calendar_view.dart views/student/student_portal.dart
+tabMisCursos,Mis Cursos,My Courses,views/lxd/lxd_portal.dart views/student/student_courses_view.dart views/student/student_portal.dart
+tabCursosCorto,Cursos,Courses,views/admin/admin_backup.dart views/admin/admin_management.dart views/admin/admin_portal.dart views/lxd/lxd_portal.dart views/student/student_portal.dart
+tabLaboratorios,Laboratorios,Laboratories,views/admin/admin_backup.dart views/admin/admin_management.dart views/admin/admin_portal.dart views/company/company_portal.dart views/mentor/mentor_portal.dart views/student/ruta_impacto_view.dart views/student/student_portal.dart
+tabRutaCorto,Ruta,Path,views/student/student_portal.dart
+tabDirectorioProyectos,Directorio de Proyectos,Project Directory,views/advisor/advisor_portal.dart views/shared/projects_directory_view.dart views/student/student_portal.dart
+tabProyectosCorto,Proyectos,Projects,views/admin/admin_backup.dart views/admin/admin_management.dart views/admin/admin_portal.dart views/advisor/advisor_portal.dart views/company/company_portal.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/student/student_portal.dart
+tabForo,Foro,Forum,views/admin/admin_portal.dart views/advisor/advisor_portal.dart views/student/student_portal.dart
+tabCertificados,Certificados,Certificates,views/admin/admin_backup.dart views/shared/user_detail_view.dart views/student/student_portal.dart
+tabMiPerfil,Mi Perfil,My Profile,views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/student/student_portal.dart
+tabPerfilCorto,Perfil,Profile,views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/shared/user_detail_view.dart views/student/student_portal.dart
+portalDe,Portal {rol},{rol} Portal,views/student/student_portal.dart
+certificadosMisTitulo,Mis Certificados,My Certificates,views/student/student_portal.dart
+certificadosMisSubtitulo,Certificados emitidos por sus LXD al completar una Ruta de Impacto,Certificates issued by your LXDs when you complete an Impact Path,views/student/student_portal.dart
+certificadosVacio,"Aún no tiene certificados.
+Complete sus cursos para obtenerlos.","You do not have any certificates yet.
+Complete your courses to earn them.",views/student/student_portal.dart
+certificadoRutaDe,Ruta de Impacto · {laboratorio},Impact Path · {laboratorio},views/student/student_portal.dart
+certificadoVerPdf,Ver PDF,View PDF,views/student/student_portal.dart
+comunCompartir,Compartir,Share,views/student/student_portal.dart
+perfilMiembroDesde,Miembro activo desde {anio},Active member since {anio},views/student/student_portal.dart
+perfilMiembroComunidad,Miembro de la comunidad,Community member,views/student/student_portal.dart
+perfilBuscarPortal,Buscar en el portal,Search the portal,views/student/ruta_impacto_view.dart views/student/student_calendar_view.dart views/student/student_dashboard_view.dart views/student/student_portal.dart
+perfilDatosPersonales,Datos personales,Personal information,views/student/student_portal.dart
+perfilCedula,Cédula,ID number,views/admin/admin_users.dart views/student/student_portal.dart
+perfilTelefonoEtiqueta,Teléfono,Phone,views/admin/admin_users.dart views/mentor/mentor_portal.dart views/student/student_portal.dart
+perfilCorreoEtiqueta,Correo,Email,views/admin/admin_users.dart views/student/student_portal.dart
+perfilCiudad,Ciudad,City,views/admin/admin_users.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/student/student_portal.dart
+perfilCarrera,Carrera,Degree program,views/admin/admin_users.dart views/student/student_portal.dart
+perfilVidaEduxaction,Vida eduXaction,eduXaction life,views/student/student_portal.dart
+perfilEquipo,Equipo,Team,views/student/student_portal.dart
+perfilEmpresaPatrocinadora,Empresa patrocinadora,Sponsoring company,views/student/student_portal.dart
+perfilCursosActivos,Cursos activos,Active courses,views/student/student_portal.dart
+perfilLeccionesCompletadas,Lecciones completadas,Lessons completed,views/student/student_portal.dart
+perfilEditar,Editar perfil,Edit profile,views/student/student_portal.dart
+perfilSinProyecto,Aún no tiene proyecto asignado.,You do not have a project assigned yet.,views/student/student_portal.dart
+perfilMiProyecto,MI PROYECTO,MY PROJECT,views/student/student_portal.dart
+certificadosVacioRuta,Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.,You do not have any certificates yet. Complete an Impact Path to earn your first one.,views/student/student_portal.dart
+certificadosFaltaPoco,"Le falta poco para su primer certificado: ""{nombre}"".","You are close to your first certificate: ""{nombre}"".",views/student/student_portal.dart
+leccionesDeTotal,{completadas} de {total} lecciones,{completadas} of {total} lessons,views/lxd/course_tracking_view.dart views/student/course_detail_view.dart views/student/ruta_impacto_view.dart views/student/student_dashboard_view.dart views/student/student_portal.dart
+certificadoDescargar,Descargar certificado,Download certificate,views/student/student_portal.dart
+perfilSeleccioneFoto,Seleccione una foto,Select a photo,views/student/student_portal.dart
+perfilFotoFormato,Use una foto en JPG o PNG.,Use a JPG or PNG photo.,views/student/student_portal.dart
+perfilFotoPesada,La foto pesa más de 25 MB. Elija una más liviana.,The photo is larger than 25 MB. Choose a lighter one.,views/student/student_portal.dart
+perfilTelefonoInvalido,Ingrese un teléfono válido (mínimo 7 dígitos).,Enter a valid phone number (at least 7 digits).,views/student/student_portal.dart
+perfilActualizado,Perfil actualizado ✓,Profile updated ✓,views/student/student_portal.dart
+perfilSubiendoFoto,Subiendo foto…,Uploading photo…,views/student/student_portal.dart
+perfilCambiarFoto,Cambiar foto de perfil,Change profile photo,views/student/student_portal.dart
+perfilAsignaAdmin,"Cédula, universidad, equipo, proyecto y empresa patrocinadora los asigna su administrador.","ID number, university, team, project and sponsoring company are assigned by your administrator.",views/student/student_portal.dart
+certificadoEmitidoDetalle,Emitido el {fecha} · Por: {emisor} · Código: {codigo},Issued on {fecha} · By: {emisor} · Code: {codigo},views/student/student_portal.dart
+certificadoEmitidoEl,Emitido el {fecha},Issued on {fecha},views/student/student_portal.dart
+dashboardSinProyecto,Aún no tiene proyecto asignado,You do not have a project assigned yet,views/student/student_dashboard_view.dart
+dashboardTodoPorEmpezar,Todo por empezar,Everything is ready to start,views/student/student_dashboard_view.dart
+dashboardSinCursos,"Aún no tiene cursos asignados. Cuando su administrador le asigne uno, su progreso aparecerá aquí.","You do not have any courses assigned yet. When your administrator assigns you one, your progress will appear here.",views/student/student_dashboard_view.dart
+comunActualizar,Actualizar,Refresh,views/student/ruta_impacto_view.dart views/student/student_calendar_view.dart views/student/student_dashboard_view.dart
+dashboardProgresoGeneral,Progreso general,Overall progress,views/student/student_dashboard_view.dart
+dashboardTodoCompletado,Ya completó todos sus cursos asignados.,You have completed all your assigned courses.,views/student/student_dashboard_view.dart
+dashboardContinueDonde,CONTINÚE DONDE IBA,PICK UP WHERE YOU LEFT OFF,views/student/student_dashboard_view.dart
+comunContinuar,Continuar,Continue,views/student/student_courses_view.dart views/student/student_dashboard_view.dart
+dashboardProgresoPorCurso,Progreso por curso,Progress by course,views/student/student_dashboard_view.dart
+dashboardContinuarCurso,"Continuar ""{nombre}""","Continue ""{nombre}""",views/student/student_dashboard_view.dart
+cursoRutaNationalExpo,Ruta National Expo,National Expo Path,views/student/student_courses_view.dart views/student/student_dashboard_view.dart
+dashboardChecklistExpo,Checklist National Expo,National Expo checklist,views/student/student_dashboard_view.dart
+dashboardPendientes,Pendientes,To-dos,views/lxd/course_tracking_view.dart views/student/student_dashboard_view.dart
+dashboardAlDia,¡Está al día! No tiene pendientes.,You are all caught up! You have no to-dos.,views/student/student_dashboard_view.dart
+dashboardChecklistTitulo,Checklist RUTA NATIONAL EXPO,NATIONAL EXPO PATH checklist,views/student/student_dashboard_view.dart
+dashboardActividadReciente,Actividad reciente,Recent activity,views/student/student_dashboard_view.dart
+dashboardSinCalificadas,Aún no tiene entregas calificadas.,You do not have any graded submissions yet.,views/student/student_dashboard_view.dart
+dashboardSuProyecto,Su proyecto,Your project,views/student/student_dashboard_view.dart
+calendarioNoTrajo,No pudimos traer sus eventos.,We could not load your events.,views/student/student_calendar_view.dart
+calendarioCargando,Cargando sus eventos…,Loading your events…,views/student/student_calendar_view.dart
+calendarioSubtitulo,Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.,Live sessions from your courses and events from your Impact Path.,views/student/student_calendar_view.dart
+calendarioProximos,Próximos eventos,Upcoming events,views/student/student_calendar_view.dart
+calendarioSinProximos,No tiene próximos eventos.,You have no upcoming events.,views/student/student_calendar_view.dart
+calendarioAgendaDespejada,Agenda despejada,Clear schedule,views/student/student_calendar_view.dart
+calendarioAgendaDespejadaTexto,No tiene sesiones ni entregas programadas este mes.,You have no sessions or deadlines scheduled this month.,views/student/student_calendar_view.dart
+comunActualizado,Actualizado,Refreshed,views/student/student_calendar_view.dart
+cursoHorasEstimadas,{horas} h estimadas,{horas} h estimated,views/student/course_detail_view.dart views/student/ruta_impacto_view.dart views/student/student_courses_view.dart
+cursoMinutosEstimados,{minutos} min estimados,{minutos} min estimated,views/student/student_courses_view.dart
+cursosAsignados,Cursos asignados,Assigned courses,views/student/ruta_impacto_view.dart views/student/student_courses_view.dart
+cursosCargando,Cargando sus cursos…,Loading your courses…,views/student/student_courses_view.dart
+cursosNoTrajo,No pudimos traer sus cursos.,We could not load your courses.,views/student/student_courses_view.dart
+cursosSubtitulo,"Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.","Laboratory courses assigned by your administrator, plus your team's preparation path for National Expo.",views/student/student_courses_view.dart
+cursosBuscar,Buscar curso o laboratorio,Search for a course or laboratory,views/student/student_courses_view.dart
+cursosSinAsignados,Sin cursos asignados,No assigned courses,views/student/student_courses_view.dart
+cursosSinAsignadosTexto,Aún no tiene cursos asignados por su administrador.,You do not have any courses assigned by your administrator yet.,views/student/student_courses_view.dart
+cursosNingunoCoincide,Ningún curso coincide con su búsqueda. Pruebe con otro término.,No course matches your search. Try another term.,views/student/student_courses_view.dart
+comunLimpiarBusqueda,Limpiar búsqueda,Clear search,views/student/student_courses_view.dart
+cursoModulos,"{cantidad, plural, =1{1 módulo} other{{cantidad} módulos}}","{cantidad, plural, =1{1 module} other{{cantidad} modules}}",views/student/student_courses_view.dart
+cursoLecciones,"{cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}","{cantidad, plural, =1{1 lesson} other{{cantidad} lessons}}",views/student/student_courses_view.dart
+cursoCertificado,Certificado,Certificate,views/lxd/course_editor_view.dart views/student/student_courses_view.dart
+cursoProgresoDetalle,{hechas} de {total} lecciones · {porcentaje}%,{hechas} of {total} lessons · {porcentaje}%,views/student/student_courses_view.dart
+cursoTrabajoEquipo,Trabajo en equipo,Teamwork,views/student/student_courses_view.dart
+comunComenzar,Comenzar,Start,views/student/student_courses_view.dart
+dashboardSemanaDel,Semana del {desde} al {hasta},Week of {desde} to {hasta},views/student/student_dashboard_view.dart
+dashboardHola,"Hola, {nombre}","Hello, {nombre}",views/student/student_dashboard_view.dart
+dashboardProyecto,Proyecto {proyecto},Project {proyecto},views/student/student_dashboard_view.dart
+dashboardCursosActivos,{cantidad} cursos activos,"{cantidad, plural, =1{1 active course} other{{cantidad} active courses}}",views/student/student_dashboard_view.dart
+dashboardLaboratorios,{cantidad} laboratorios,"{cantidad, plural, =1{1 laboratory} other{{cantidad} laboratories}}",views/student/student_dashboard_view.dart
+dashboardFaseVencida,Fase vencida: {fase},Overdue phase: {fase},views/student/student_dashboard_view.dart
+dashboardConfirmarMentoria,Confirmar mentoría: {fase},Confirm mentoring: {fase},views/student/student_dashboard_view.dart
+comunFase,Fase,Phase,views/student/student_dashboard_view.dart
+dashboardCalificadoEl,Calificado el {fecha},Graded on {fecha},views/student/student_dashboard_view.dart
+cursoDocente,Docente: {docente},Instructor: {docente},views/student/student_courses_view.dart
+cursoGeneraCertificado,Genera certificado,Awards a certificate,views/student/course_detail_view.dart
+cursoObjetivos,Objetivos,Objectives,views/admin/admin_management.dart views/admin/lab_ruta_editor.dart views/student/course_detail_view.dart
+cursoSoloLectura,Está viendo el progreso de otro estudiante — modo de solo lectura.,You are viewing another student's progress — read-only mode.,views/student/course_detail_view.dart
+cursoSinContenido,Este curso todavía no tiene contenido publicado.,This course does not have any published content yet.,views/student/course_detail_view.dart
+cursoMisEntregas,Mis entregas,My submissions,views/student/course_detail_view.dart
+leccionVideoYoutube,Video de YouTube,YouTube video,views/student/course_detail_view.dart
+leccionCompletada,Completada,Completed,views/student/course_detail_view.dart
+leccionMarcarPendiente,Marcar como pendiente,Mark as pending,views/student/course_detail_view.dart
+leccionMarcarCompletada,Marcar como completada,Mark as completed,views/student/course_detail_view.dart
+rutaCompletada,¡Completó la Ruta de Impacto! 🎉,You completed the Impact Path! 🎉,views/student/course_detail_view.dart
+leccionCompletadaExclama,¡Lección completada!,Lesson completed!,views/student/course_detail_view.dart
+cursoNoPuedeResponder,Está viendo el progreso de otro estudiante — no puede responder en su nombre.,You are viewing another student's progress — you cannot answer on their behalf.,views/student/course_detail_view.dart
+leccionSinMaterial,Esta lección todavía no tiene material cargado.,This lesson does not have any material uploaded yet.,views/student/course_detail_view.dart
+leccionSinEnlace,Esta lección no tiene un enlace válido.,This lesson does not have a valid link.,views/student/course_detail_view.dart
+leccionEnlaceNoAbre,No se pudo abrir el enlace.,The link could not be opened.,views/student/course_detail_view.dart
+quizCalificar,Calificar,Grade,views/lxd/lxd_portal.dart views/student/course_detail_view.dart
+quizCalificando,Calificando…,Grading…,views/student/course_detail_view.dart
+quizSinPreguntas,Este quiz todavía no tiene preguntas.,This quiz does not have any questions yet.,views/student/course_detail_view.dart
+quizAprobado,¡Aprobado! {puntaje}%,Passed! {puntaje}%,views/student/course_detail_view.dart
+quizPuntaje,Puntaje: {puntaje}% (mínimo 60%),Score: {puntaje}% (minimum 60%),views/student/course_detail_view.dart
+quizVerdadero,Verdadero,True,views/lxd/lesson_editor.dart views/student/course_detail_view.dart
+quizFalso,Falso,False,views/lxd/lesson_editor.dart views/student/course_detail_view.dart
+quizCompleteFrase,Complete la frase…,Complete the sentence…,views/student/course_detail_view.dart
+quizSuRespuesta,Su respuesta…,Your answer…,views/student/course_detail_view.dart
+quizUseFlechas,Use las flechas para ordenar:,Use the arrows to reorder:,views/student/course_detail_view.dart
+encuestaNombreTarea,Encuesta: {leccion},Survey: {leccion},views/student/course_detail_view.dart
+encuestaGracias,¡Gracias por responder!,Thank you for answering!,views/student/course_detail_view.dart
+comunEnviar,Enviar,Send,views/shared/talent_search_view.dart views/student/course_detail_view.dart views/student/ruta_impacto_view.dart
+encuestaOpinion,Su opinión nos ayuda a mejorar 💛,Your opinion helps us improve 💛,views/student/course_detail_view.dart
+actividadArchivoObligatorio,Archivo obligatorio,File required,views/lxd/lesson_editor.dart views/student/course_detail_view.dart
+actividadTextoObligatorio,Texto obligatorio,Text required,views/lxd/lesson_editor.dart views/student/course_detail_view.dart
+actividadRubrica,Rúbrica de evaluación,Grading rubric,views/student/course_detail_view.dart
+actividadSuEntrega,Su entrega,Your submission,views/student/course_detail_view.dart
+actividadRetroalimentacion,Retroalimentación: {retro},Feedback: {retro},views/student/course_detail_view.dart
+actividadEntregar,Entregar actividad,Submit activity,views/student/course_detail_view.dart
+actividadNuevaEntrega,Nueva entrega,New submission,views/student/course_detail_view.dart
+actividadRequiereTexto,Esta actividad requiere una respuesta escrita.,This activity requires a written answer.,views/student/course_detail_view.dart
+actividadRequiereArchivo,Esta actividad requiere adjuntar un archivo.,This activity requires an attached file.,views/student/course_detail_view.dart
+actividadEntregada,Actividad entregada ✓,Activity submitted ✓,views/student/course_detail_view.dart
+actividadEntregarTitulo,Entregar: {leccion},Submit: {leccion},views/student/course_detail_view.dart
+actividadRespuestaObligatoria,Su respuesta (obligatoria),Your answer (required),views/student/course_detail_view.dart
+actividadComentarioOpcional,Comentario (opcional),Comment (optional),views/student/course_detail_view.dart
+actividadSinEntregas,Todavía no ha realizado ninguna entrega en este curso.,You have not made any submissions in this course yet.,views/student/course_detail_view.dart
+actividadEntregaLibre,Nueva entrega libre,New open submission,views/student/course_detail_view.dart
+actividadPongaNombre,Póngale un nombre a la entrega.,Give the submission a name.,views/student/course_detail_view.dart
+actividadEntregaEnviada,Entrega enviada ✓,Submission sent ✓,views/student/course_detail_view.dart views/student/ruta_impacto_view.dart
+actividadNombreTarea,Nombre de la tarea,Task name,views/student/course_detail_view.dart
+comunComentario,Comentario,Comment,views/student/course_detail_view.dart views/student/ruta_impacto_view.dart
+actividadLimite,Límite: {fecha},Due: {fecha},views/student/course_detail_view.dart
+labsEnLaRed,{cantidad} en la red,{cantidad} in the network,views/student/ruta_impacto_view.dart
+labsQueEs,"Un laboratorio es un área de trabajo de eduXaction Colombia: reúne una Ruta de Impacto por fases, cursos y un LXD que la acompaña. Entre al suyo para ver qué sigue.","A laboratory is a work area of eduXaction Colombia: it brings together a phased Impact Path, courses and an LXD who guides it. Open yours to see what comes next.",views/student/ruta_impacto_view.dart
+labsSinAsignados,Sin laboratorios asignados,No laboratories assigned,views/student/ruta_impacto_view.dart
+labsSinAsignadosTexto,Su administrador todavía no le ha asignado un laboratorio. Sin uno no tiene Ruta de Impacto ni cursos de área.,Your administrator has not assigned you a laboratory yet. Without one you do not have an Impact Path or field courses.,views/student/ruta_impacto_view.dart
+labsOtros,OTROS LABORATORIOS DE LA RED,OTHER LABORATORIES IN THE NETWORK,views/student/ruta_impacto_view.dart
+labsSolicite,Solicite a su administrador que le asigne uno si su proyecto lo necesita.,Ask your administrator to assign you one if your project needs it.,views/student/ruta_impacto_view.dart
+rutaEntregaVencida,ENTREGA VENCIDA,OVERDUE,views/student/ruta_impacto_view.dart
+rutaEnCurso,EN CURSO,IN PROGRESS,views/student/ruta_impacto_view.dart
+rutaFaseCompletaDe,Fase {total} de {total} completa,Phase {total} of {total} complete,views/student/ruta_impacto_view.dart
+rutaFaseEnCursoDe,Fase {fase} de {total} en curso,Phase {fase} of {total} in progress,views/student/ruta_impacto_view.dart
+rutaSinModulos,Sin módulos aún,No modules yet,views/student/ruta_impacto_view.dart
+rutaModulosFraccion,{hechos}/{total} módulos,{hechos}/{total} modules,views/student/ruta_impacto_view.dart
+rutaFases,"{cantidad, plural, =1{1 fase} other{{cantidad} fases}}","{cantidad, plural, =1{1 phase} other{{cantidad} phases}}",views/student/ruta_impacto_view.dart
+rutaCursos,"{cantidad, plural, =1{1 curso} other{{cantidad} cursos}}","{cantidad, plural, =1{1 course} other{{cantidad} courses}}",views/student/ruta_impacto_view.dart
+rutaSinLxd,Sin LXD asignado,No LXD assigned,views/student/ruta_impacto_view.dart
+rutaLxd,LXD: {nombre},LXD: {nombre},views/student/ruta_impacto_view.dart
+comunEntrar,Entrar,Enter,views/student/ruta_impacto_view.dart
+rutaUnEquipo,1 equipo en la red,1 team in the network,views/student/ruta_impacto_view.dart
+rutaEquipos,{cantidad} equipos en la red,{cantidad} teams in the network,views/student/ruta_impacto_view.dart
+labNoEncontrado,Laboratorio no encontrado,Laboratory not found,views/student/ruta_impacto_view.dart
+labNoEncontradoTexto,Puede que ya no exista o que el enlace esté mal escrito.,It may no longer exist or the link may be mistyped.,views/student/ruta_impacto_view.dart
+labsTodos,Todos los laboratorios,All laboratories,views/student/ruta_impacto_view.dart
+rutaMayus,RUTA DE IMPACTO,IMPACT PATH,views/student/ruta_impacto_view.dart
+rutaFasesEnOrden,Las fases se abren en orden. Su LXD publica el contenido de cada una.,Phases open in order. Your LXD publishes the content of each one.,views/student/ruta_impacto_view.dart
+rutaSuAvance,Su avance,Your progress,views/student/ruta_impacto_view.dart
+rutaFaseDe,Fase {fase} de {total},Phase {fase} of {total},views/student/ruta_impacto_view.dart
+rutaModulosDeTotal,{hechos} de {total} módulos,{hechos} of {total} modules,views/student/ruta_impacto_view.dart
+rutaFasesEnRuta,Fases en la ruta,Phases in the path,views/student/ruta_impacto_view.dart
+rutaModulosPublicados,Módulos publicados,Published modules,views/student/ruta_impacto_view.dart
+rutaCursosLab,Cursos del laboratorio,Laboratory courses,views/student/ruta_impacto_view.dart
+rutaHorasEstimadas,Horas estimadas,Estimated hours,views/student/ruta_impacto_view.dart
+rutaSinFases,Este laboratorio todavía no tiene fases publicadas.,This laboratory does not have any published phases yet.,views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaFaseNumero,Fase {numero},Phase {numero},views/admin/lab_ruta_editor.dart views/mentor/mentor_portal.dart views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaEstadoCompleta,Completa,Complete,views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaEstadoVencida,Vencida,Overdue,views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaEstadoDisponible,Disponible,Available,views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaEstadoBloqueada,Bloqueada,Locked,views/student/ruta_impacto_view.dart
+rutaSeAbreCuando,Se abre cuando complete la Fase {fase},Opens when you complete Phase {fase},views/student/ruta_impacto_view.dart
+rutaLxdPublicara,Su LXD publicará el contenido de esta fase.,Your LXD will publish the content of this phase.,views/student/ruta_impacto_view.dart
+rutaLxdNoPublico,Su LXD aún no ha publicado el contenido de esta fase.,Your LXD has not published the content of this phase yet.,views/student/ruta_impacto_view.dart
+rutaSinModulosPublicados,Sin módulos publicados,No published modules,views/student/ruta_impacto_view.dart
+rutaEmpezarFase,Empezar la fase,Start the phase,views/student/ruta_impacto_view.dart
+rutaContinuarFase,Continuar la fase,Continue the phase,views/student/ruta_impacto_view.dart
+rutaSinCursos,Este laboratorio todavía no tiene cursos publicados. Su LXD los abrirá junto con la Fase 1.,This laboratory does not have any published courses yet. Your LXD will open them along with Phase 1.,views/student/ruta_impacto_view.dart
+rutaSuLxd,Su LXD,Your LXD,views/student/ruta_impacto_view.dart
+rutaLabSinLxd,Este laboratorio todavía no tiene un LXD asignado.,This laboratory does not have an LXD assigned yet.,views/student/ruta_impacto_view.dart
+rutaLxdNombreLargo,Learning Experience Designer,Learning Experience Designer,views/student/ruta_impacto_view.dart
+rutaSinHorario,Sin horario publicado,No schedule published,views/student/ruta_impacto_view.dart
+rutaAgendarMentoria,Agendar mentoría,Schedule mentoring,views/student/ruta_impacto_view.dart
+rutaLxdSinDisponibilidad,Su LXD todavía no publicó su disponibilidad.,Your LXD has not published their availability yet.,views/student/ruta_impacto_view.dart
+rutaDisponibilidadDe,Disponibilidad de {nombre},{nombre}'s availability,views/student/ruta_impacto_view.dart
+rutaEscribale,Escríbale para coordinar el horario exacto de {nombre}.,Write to them to arrange the exact time with {nombre}.,views/student/ruta_impacto_view.dart
+rutaEscribirCorreo,Escribir correo,Write an email,views/student/ruta_impacto_view.dart
+rutaSubtitulo,"Las fases de su laboratorio, sus objetivos y lo que falta para llegar a National Expo.","Your laboratory's phases, their objectives and what remains to reach National Expo.",views/student/ruta_impacto_view.dart
+rutaSinLab,Sin laboratorio asignado,No laboratory assigned,views/student/ruta_impacto_view.dart
+rutaSinLabTexto,Su administrador aún no le ha asignado ningún laboratorio.,Your administrator has not assigned you any laboratory yet.,views/student/ruta_impacto_view.dart
+rutaLabSinFases,Laboratorio sin fases,Laboratory without phases,views/student/ruta_impacto_view.dart
+rutaLabSinFasesTexto,El {laboratorio} todavía no ha publicado sus fases. Su LXD las abrirá cuando el contenido esté listo.,The {laboratorio} has not published its phases yet. Your LXD will open them when the content is ready.,views/student/ruta_impacto_view.dart
+rutaVerOtroLab,Ver otro laboratorio,View another laboratory,views/student/ruta_impacto_view.dart
+rutaEstadoSinAbrir,Sin abrir,Not open yet,views/student/ruta_impacto_view.dart
+rutaEstadoEnCurso,En curso,In progress,views/lxd/course_tracking_view.dart views/student/ruta_impacto_view.dart
+rutaModuloNumero,Módulo {numero},Module {numero},views/student/ruta_impacto_view.dart
+rutaCompleteAnterior,"Complete el módulo anterior para desbloquear ""{modulo}"".","Complete the previous module to unlock ""{modulo}"".",views/student/ruta_impacto_view.dart
+rutaBloqueado,Bloqueado,Locked,views/student/ruta_impacto_view.dart
+rutaModuloMentoria,Módulo de mentoría,Mentoring module,views/student/ruta_impacto_view.dart
+rutaSinContenido,Sin contenido aún,No content yet,views/student/ruta_impacto_view.dart
+rutaElementos,{cantidad} elemento(s),"{cantidad, plural, =1{1 item} other{{cantidad} items}}",views/student/ruta_impacto_view.dart
+rutaCompleto,Completo,Complete,views/student/ruta_impacto_view.dart
+rutaMetaAnio,META DEL AÑO,GOAL FOR THE YEAR,views/student/ruta_impacto_view.dart
+rutaSinEquipo,Aún no pertenece a un equipo.,You do not belong to a team yet.,views/student/ruta_impacto_view.dart
+rutaChecklistEquipo,Checklist del equipo,Team checklist,views/student/ruta_impacto_view.dart
+rutaModulo,Módulo,Module,views/admin/lab_ruta_editor.dart views/shared/lab_detail_view.dart views/student/ruta_impacto_view.dart
+rutaModuloNoExiste,Este módulo ya no existe o el enlace está mal escrito.,This module no longer exists or the link is mistyped.,views/student/ruta_impacto_view.dart
+rutaEntregasLecturas,Entregas y lecturas,Submissions and readings,views/student/ruta_impacto_view.dart
+rutaModuloSinContenido,Su administrador aún no agregó contenido a este módulo.,Your administrator has not added content to this module yet.,views/student/ruta_impacto_view.dart
+rutaEstaFase,esta fase,this phase,views/student/ruta_impacto_view.dart
+rutaReunase,Reúnase con su mentor para cerrar {fase}.,Meet with your mentor to close {fase}.,views/student/ruta_impacto_view.dart
+rutaSinEnlaceReunion,Su administrador todavía no configuró el enlace de la reunión.,Your administrator has not set up the meeting link yet.,views/student/ruta_impacto_view.dart
+rutaEntrega,Entrega,Submission,views/student/ruta_impacto_view.dart
+rutaLecturaSinMaterial,Esta lectura todavía no tiene material.,This reading does not have any material yet.,views/student/ruta_impacto_view.dart
+labsAsignadosEnRed,"{asignados, plural, =1{1 laboratorio asignado} other{{asignados} laboratorios asignados}} · {total} en la red","{asignados, plural, =1{1 laboratory assigned} other{{asignados} laboratories assigned}} · {total} in the network",views/student/ruta_impacto_view.dart
+rutaFechaPrevista,Fecha prevista por el laboratorio: {fecha},Date set by the laboratory: {fecha},views/student/ruta_impacto_view.dart
+rutaEntregaVencidaEl,Entrega vencida: {fecha},Overdue: {fecha},views/student/ruta_impacto_view.dart
+rutaEntregaEl,Entrega: {fecha},Due: {fecha},views/student/ruta_impacto_view.dart
+rutaAsuntoMentoria,Mentoría - {laboratorio},Mentoring - {laboratorio},views/student/ruta_impacto_view.dart
+foroHaceMin,hace {minutos} min,{minutos} min ago,views/shared/forum_view.dart
+foroHaceHoras,hace {horas} h,{horas} h ago,views/shared/forum_view.dart
+foroHaceDias,hace {dias} días,{dias} days ago,views/shared/forum_view.dart
+foroComunidad,Comunidad,Community,views/shared/forum_view.dart views/shared/projects_directory_view.dart
+foroTitulo,Foro de la Comunidad,Community Forum,views/shared/forum_view.dart
+foroNoAbre,No pudimos abrir el foro.,We could not open the forum.,views/shared/forum_view.dart
+foroCargando,Cargando publicaciones…,Loading posts…,views/shared/forum_view.dart
+foroSubtitulo,"Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.","Ask questions, share progress and find someone who already solved what you are working on. Students, mentors and LXDs from the whole network post here.",views/shared/forum_view.dart
+foroBuscar,"Buscar autor, organización o contenido","Search by author, organization or content",views/shared/forum_view.dart
+foroNadie,Nadie ha escrito aún,Nobody has posted yet,views/shared/forum_view.dart
+foroVacio,El foro está vacío. Puede ser la primera persona en abrir la conversación de la comunidad.,The forum is empty. You can be the first person to start the community conversation.,views/shared/forum_view.dart
+foroSinCoincidencias,Ninguna publicación coincide con este filtro. Pruebe con otra categoría o limpie la búsqueda.,No post matches this filter. Try another category or clear the search.,views/shared/forum_view.dart
+foroVerTodo,Ver todo el foro,View the whole forum,views/shared/forum_view.dart
+foroTodo,Todo,All,views/shared/forum_view.dart
+foroQueCompartir,¿Qué quiere compartir con la comunidad?,What would you like to share with the community?,views/shared/forum_view.dart
+foroPublicando,Publicando…,Posting…,views/shared/forum_view.dart
+foroPublicar,Publicar,Post,views/shared/forum_view.dart
+foroUsuarioEliminado,Usuario eliminado,Deleted user,views/shared/forum_view.dart
+foroMasAcciones,Más acciones,More actions,views/shared/forum_view.dart
+foroEliminarPublicacion,Eliminar publicación,Delete post,views/shared/forum_view.dart
+foroEliminarPublicacionTexto,¿Eliminar esta publicación del foro? Esta acción no se puede deshacer.,Delete this post from the forum? This action cannot be undone.,views/shared/forum_view.dart
+foroDesfijar,Desfijar,Unpin,views/shared/forum_view.dart
+foroFijar,Fijar anuncio,Pin announcement,views/shared/forum_view.dart
+foroReportar,Reportar,Report,views/shared/foro_moderacion.dart views/shared/forum_view.dart
+foroBloquearA,Bloquear a {nombre},Block {nombre},views/shared/foro_moderacion.dart views/shared/forum_view.dart
+foroResponder,Responder…,Reply…,views/shared/forum_view.dart
+foroVerRespuestas,Ver las {total} respuestas,View all {total} replies,views/shared/forum_view.dart
+foroEliminarRespuesta,Eliminar respuesta,Delete reply,views/shared/forum_view.dart
+foroEliminarRespuestaTexto,¿Eliminar esta respuesta del foro? Esta acción no se puede deshacer.,Delete this reply from the forum? This action cannot be undone.,views/shared/forum_view.dart
+foroRegla1,Respete a los demás equipos y comparta con la misma apertura con la que le gustaría recibir ayuda.,Respect the other teams and share with the same openness with which you would like to receive help.,views/shared/forum_view.dart
+foroRegla2,Publique contenido real de su proyecto: evidencias y preguntas concretas ayudan más que mensajes genéricos.,Post real content from your project: evidence and specific questions help more than generic messages.,views/shared/forum_view.dart
+foroRegla3,Es un espacio de toda la red: preguntas de cualquier laboratorio o universidad son bienvenidas.,It is a space for the whole network: questions from any laboratory or university are welcome.,views/shared/forum_view.dart
+foroNormas,Normas del foro,Forum guidelines,views/shared/forum_view.dart
+foroNormasCompletas,Normas completas,Full guidelines,views/shared/forum_view.dart
+foroPersonasBloqueadas,Personas bloqueadas,Blocked people,views/shared/foro_moderacion.dart views/shared/forum_view.dart
+foroReportes,Reportes del foro,Forum reports,views/shared/foro_moderacion.dart views/shared/forum_view.dart
+foroRevisar,Revisar,Review,views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart views/shared/forum_view.dart
+foroEquiposActivos,Equipos más activos,Most active teams,views/shared/forum_view.dart
+reporteMotivoOfensivo,Es ofensivo o irrespetuoso,It is offensive or disrespectful,views/shared/foro_moderacion.dart
+reporteMotivoAcoso,Es acoso o intimidación,It is harassment or bullying,views/shared/foro_moderacion.dart
+reporteMotivoDiscrimina,Discrimina a alguien,It discriminates against someone,views/shared/foro_moderacion.dart
+reporteMotivoSpam,Es spam o publicidad,It is spam or advertising,views/shared/foro_moderacion.dart
+reporteMotivoDatos,Comparte datos personales,It shares personal data,views/shared/foro_moderacion.dart
+reporteMotivoOtro,Otro motivo,Other reason,views/shared/foro_moderacion.dart
+reporteGracias,Gracias. El equipo de Enactus revisará este contenido.,Thank you. The Enactus team will review this content.,views/shared/foro_moderacion.dart
+reporteYaReportado,Ya lo había reportado; el equipo lo tiene en su lista.,You had already reported it; the team has it on their list.,views/shared/foro_moderacion.dart
+reporteRespuesta,Reportar respuesta,Report reply,views/shared/foro_moderacion.dart
+reportePublicacion,Reportar publicación,Report post,views/shared/foro_moderacion.dart
+reportePorQue,¿Por qué lo reporta? Solo el equipo de Enactus verá quién lo reportó.,Why are you reporting it? Only the Enactus team will see who reported it.,views/shared/foro_moderacion.dart
+reporteBloquearTambien,Bloquear también a {nombre},Also block {nombre},views/shared/foro_moderacion.dart
+reporteDejaraDeVer,Dejará de ver lo que publica.,You will no longer see what they post.,views/shared/foro_moderacion.dart
+bloqueoTexto,"Dejará de ver lo que {nombre} publica y responde en el foro. No se le avisará. Puede desbloquearle cuando quiera desde «Personas bloqueadas», en las normas del foro.","You will no longer see what {nombre} posts and replies in the forum. They will not be notified. You can unblock them whenever you want from “Blocked people”, in the forum guidelines.",views/shared/foro_moderacion.dart
+bloqueoHecho,Bloqueó a {nombre}.,You blocked {nombre}.,views/shared/foro_moderacion.dart
+bloqueoNadie,No ha bloqueado a nadie.,You have not blocked anyone.,views/shared/foro_moderacion.dart
+bloqueoDesbloquear,Desbloquear,Unblock,views/shared/foro_moderacion.dart
+reportesNinguno,No hay reportes pendientes.,There are no pending reports.,views/shared/foro_moderacion.dart
+reporteQuitarRespuesta,Quitar respuesta,Remove reply,views/shared/foro_moderacion.dart
+reporteQuitarPublicacion,Quitar publicación,Remove post,views/shared/foro_moderacion.dart
+reporteQuitarTexto,Se quitará del foro para todas las personas. No se puede deshacer.,It will be removed from the forum for everyone. This cannot be undone.,views/shared/foro_moderacion.dart
+reporteTipoPublicacion,PUBLICACIÓN,POST,views/shared/foro_moderacion.dart
+reporteYaNoSeVe,· ya no se ve en el foro,· no longer visible in the forum,views/shared/foro_moderacion.dart
+reporteSinMotivo,Sin motivo,No reason given,views/shared/foro_moderacion.dart
+reporteReporto,Reportó {nombre} · {fecha},Reported by {nombre} · {fecha},views/shared/foro_moderacion.dart
+reporteCerrar,Cerrar reporte,Close report,views/shared/foro_moderacion.dart
+reporteDejarlo,Dejarlo,Leave it,views/shared/foro_moderacion.dart
+reporteQuitarDelForo,Quitar del foro,Remove from the forum,views/shared/foro_moderacion.dart
+foroAhora,ahora,just now,views/shared/forum_view.dart
+foroAyer,ayer,yesterday,views/shared/forum_view.dart
+foroPersonasActivas,"{cantidad, plural, =1{1 persona activa esta semana} other{{cantidad} personas activas esta semana}}","{cantidad, plural, =1{1 person active this week} other{{cantidad} people active this week}}",views/shared/forum_view.dart
+foroRespuestas,"{cantidad, plural, =1{1 respuesta} other{{cantidad} respuestas}}","{cantidad, plural, =1{1 reply} other{{cantidad} replies}}",views/shared/forum_view.dart
+foroReportesSinAtender,"{cantidad, plural, =1{Hay 1 reporte sin atender.} other{Hay {cantidad} reportes sin atender.}}","{cantidad, plural, =1{There is 1 unhandled report.} other{There are {cantidad} unhandled reports.}}",views/shared/forum_view.dart
+foroPublicaciones,"{cantidad, plural, =1{1 publicación} other{{cantidad} publicaciones}}","{cantidad, plural, =1{1 post} other{{cantidad} posts}}",views/shared/forum_view.dart
+reporteTipoRespuesta,RESPUESTA,REPLY,views/shared/foro_moderacion.dart
+proyectosComunidad,Comunidad eduXaction Colombia,eduXaction Colombia community,views/shared/projects_directory_view.dart
+proyectosSubtitulo,"Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.","All the active projects in the network. Filter by stage, explore the SDGs they address and discover what the other teams are building.",views/shared/projects_directory_view.dart
+proyectosBuscar,"Buscar proyecto, comunidad u ODS","Search for a project, community or SDG",views/shared/projects_directory_view.dart
+proyectosTodasEtapas,Todas las etapas,All stages,views/shared/projects_directory_view.dart
+proyectosVacio,Aún no hay proyectos aquí,There are no projects here yet,views/shared/projects_directory_view.dart
+proyectosVacioTexto,"Todavía no se ha publicado ningún proyecto en la comunidad. Cuando su equipo registre el suyo, aparecerá aquí para toda la red.","No project has been published in the community yet. When your team registers yours, it will appear here for the whole network.",views/shared/projects_directory_view.dart
+proyectosSinCoincidencias,Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.,No project matches this filter. Try another stage or clear the search.,views/shared/projects_directory_view.dart
+proyectosVerTodasEtapas,Ver todas las etapas,View all stages,views/shared/projects_directory_view.dart
+proyectosProponer,Proponer un proyecto,Propose a project,views/shared/projects_directory_view.dart
+proyectosSinEquipo,Sin equipo asignado todavía.,No team assigned yet.,views/shared/projects_directory_view.dart
+proyectosFechaNoRegistrada,Fecha no registrada,Date not recorded,views/shared/projects_directory_view.dart
+proyectosProblema,Problema,Problem,views/shared/projects_directory_view.dart
+proyectosSolucion,Solución,Solution,views/shared/projects_directory_view.dart
+proyectosIndicadores,Indicadores de impacto,Impact indicators,views/admin/admin_management.dart views/shared/projects_directory_view.dart
+temaClaro,Claro,Light,views/shared/projects_directory_view.dart
+temaOscuro,Oscuro,Dark,views/shared/projects_directory_view.dart
+proyectosAsesor,Asesor académico: {nombre},Academic advisor: {nombre},views/shared/projects_directory_view.dart
+proyectosSinIntegrantes,Sin integrantes asignados.,No members assigned.,views/shared/projects_directory_view.dart
+proyectosUniversidadSinDefinir,Universidad sin definir,University not defined,views/shared/projects_directory_view.dart
+proyectosActivos,Proyectos activos,Active projects,views/shared/projects_directory_view.dart
+proyectosUniversidades,Universidades,Universities,views/admin/admin_backup.dart views/admin/admin_portal.dart views/shared/projects_directory_view.dart views/shared/students_map_view.dart
+proyectosOdsCubiertos,ODS cubiertos,SDGs covered,views/shared/projects_directory_view.dart
+proyectosEnExpo,En National Expo,At National Expo,views/shared/projects_directory_view.dart
+labEstudiantesAsignados,{cantidad} estudiante(s) asignado(s),{cantidad} student(s) assigned,views/shared/lab_detail_view.dart
+labMentores,Mentores,Mentors,views/admin/admin_portal.dart views/admin/lab_ruta_editor.dart views/shared/lab_detail_view.dart
+labSinModulos,Sin módulos publicados todavía.,No modules published yet.,views/shared/lab_detail_view.dart
+labBloqueadaAnterior,Bloqueada — complete la fase anterior,Locked — complete the previous phase,views/shared/lab_detail_view.dart
+labPorVencer,Por vencer,Due soon,views/shared/lab_detail_view.dart
+labSinEstudiantes,Sin estudiantes,No students,views/shared/lab_detail_view.dart views/shared/students_map_view.dart
+labCompletaron,{hechos}/{total} completaron,{hechos}/{total} completed,views/shared/lab_detail_view.dart
+usuarioEquipoProyecto,Equipo y proyecto,Team and project,views/shared/user_detail_view.dart
+usuarioAvanceRuta,Avance en la Ruta de Impacto,Progress in the Impact Path,views/shared/user_detail_view.dart
+usuarioSinCertificados,Todavía sin certificados.,No certificates yet.,views/shared/user_detail_view.dart
+usuarioSinLaboratorios,Sin laboratorios asignados.,No laboratories assigned.,views/shared/user_detail_view.dart
+usuarioEmpresaTexto,Sus LXD y mentores aparecen en su propio portal.,Their LXDs and mentors appear in their own portal.,views/shared/user_detail_view.dart
+usuarioCodigoImpacto,Código de impacto: {codigo},Impact code: {codigo},views/donor/donor_portal.dart views/shared/user_detail_view.dart
+usuarioDonanteTexto,Sus estudiantes y evidencias aparecen en su propio portal.,Their students and evidence appear in their own portal.,views/shared/user_detail_view.dart
+usuarioAsesor,Asesor académico,Academic advisor,views/shared/user_detail_view.dart
+usuarioAcompana,Acompaña a los equipos de {universidad}.,Supports the teams of {universidad}.,views/shared/user_detail_view.dart
+usuarioCursosCreados,Cursos creados,Courses created,views/shared/user_detail_view.dart
+usuarioSinCursos,Aún no ha creado ningún curso.,Has not created any course yet.,views/shared/user_detail_view.dart
+usuarioLabsAcompana,Laboratorios que acompaña,Laboratories they support,views/shared/user_detail_view.dart
+usuarioSinLab,Todavía sin laboratorio asignado.,No laboratory assigned yet.,views/shared/user_detail_view.dart
+usuarioEstudiantes,{cantidad} estudiantes,{cantidad} students,views/mentor/mentor_portal.dart views/shared/user_detail_view.dart
+usuarioEntregasRevisadas,{cantidad} entregas revisadas.,{cantidad} submissions reviewed.,views/shared/user_detail_view.dart
+comunEstudiantes,"{cantidad, plural, =1{1 estudiante} other{{cantidad} estudiantes}}","{cantidad, plural, =1{1 student} other{{cantidad} students}}",views/shared/projects_directory_view.dart views/shared/students_map_view.dart
+proyectosEstudiantesAlcance,"{cantidad, plural, =1{1 estudiante en su alcance} other{{cantidad} estudiantes en su alcance}}","{cantidad, plural, =1{1 student within reach} other{{cantidad} students within reach}}",views/shared/projects_directory_view.dart
+proyectosCreadoEl,Creado el {fecha},Created on {fecha},views/shared/projects_directory_view.dart
+labFechaLimite,Fecha límite: {fecha},Deadline: {fecha},views/admin/lab_ruta_editor.dart views/lxd/lesson_editor.dart views/shared/lab_detail_view.dart
+usuarioCalificaEn,Califica en: {contextos},Grades in: {contextos},views/shared/user_detail_view.dart
+usuarioNingunContexto,ningún contexto,no context,views/shared/user_detail_view.dart
+mapaEstudiantesRegistrados,Estudiantes registrados,Registered students,views/shared/students_map_view.dart
+mapaCiudades,Ciudades,Cities,views/shared/students_map_view.dart
+mapaDepartamentos,Departamentos,Departments,views/shared/students_map_view.dart
+mapaRedNacional,Red nacional · actualizado hoy,National network · updated today,views/shared/students_map_view.dart
+mapaPatrocina,Estudiantes que patrocina su organización,Students sponsored by your organization,views/shared/students_map_view.dart
+mapaEstudiantesPais,Estudiantes en el país,Students across the country,views/shared/students_map_view.dart
+mapaTexto,Dónde están los estudiantes registrados en eduXaction Colombia. Cada punto es una ciudad con al menos una universidad activa en la red.,Where the students registered in eduXaction Colombia are. Each dot is a city with at least one university active in the network.,views/shared/students_map_view.dart
+mapaSufijoPatrocina,estudiantes que patrocina,students you sponsor,views/shared/students_map_view.dart
+mapaOrdenadas,Ordenadas por número de estudiantes,Sorted by number of students,views/shared/students_map_view.dart
+mapaSoloVinculados,Solo los estudiantes vinculados a su aporte,Only the students linked to your contribution,views/shared/students_map_view.dart
+mapaPortalAliados,Portal de aliados · eduXaction Colombia,Partner portal · eduXaction Colombia,views/shared/students_map_view.dart
+mapaGeometria,Geometría: Natural Earth (dominio público),Geometry: Natural Earth (public domain),views/shared/students_map_view.dart
+mapaDosOMas,2 o más estudiantes,2 or more students,views/shared/students_map_view.dart
+mapaUnEstudiante,1 estudiante,1 student,views/shared/students_map_view.dart
+mapaEntre,Entre {desde} y {hasta},Between {desde} and {hasta},views/shared/students_map_view.dart
+mapaOMas,{cantidad} o más estudiantes,{cantidad} or more students,views/shared/students_map_view.dart
+mapaMenosDe,Menos de {cantidad},Fewer than {cantidad},views/shared/students_map_view.dart
+mapaTodaLaRed,Toda la red,The whole network,views/shared/students_map_view.dart
+mapaLosQuePatrocino,Los que patrocino,The ones I sponsor,views/shared/students_map_view.dart
+mapaTema,Tema,Theme,views/shared/students_map_view.dart
+mapaSinVinculados,Aún no hay estudiantes vinculados,No linked students yet,views/shared/students_map_view.dart
+mapaSinVinculadosTexto,"Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá aquí en el mapa.","There are no students linked to your contribution yet. As soon as your administrator assigns any, they will appear here on the map.",views/shared/students_map_view.dart
+mapaEscribirAdmin,Escribir a mi administrador,Write to my administrator,views/shared/students_map_view.dart
+mapaSolicitudTitulo,Solicitud de estudiantes patrocinados,Request for sponsored students,models/models.dart views/shared/students_map_view.dart
+mapaSolicitudTexto,Un aliado pidió que le asignen estudiantes a su aporte.,A partner asked to have students assigned to their contribution.,models/models.dart views/shared/students_map_view.dart
+mapaAvisamos,Le avisamos a su administrador.,We let your administrator know.,views/shared/students_map_view.dart
+mapaSinCiudades,Sin ciudades para este alcance todavía.,No cities for this scope yet.,views/shared/students_map_view.dart
+mapaCiudadExplica,La ciudad es la que el estudiante (o su administrador) eligió en su perfil. Los estudiantes sin ciudad asignada todavía no aparecen en el mapa.,The city is the one the student (or their administrator) chose in their profile. Students without a city assigned do not appear on the map yet.,views/shared/students_map_view.dart
+talentoTitulo,BuscaTalento,TalentSearch,views/company/company_portal.dart views/donor/donor_portal.dart views/shared/talent_search_view.dart
+talentoSubtitulo,Estudiantes eduXaction que ya demostraron sus habilidades en la Ruta de Impacto — contáctelos para oportunidades futuras 💛,eduXaction students who have already demonstrated their skills in the Impact Path — contact them for future opportunities 💛,views/shared/talent_search_view.dart
+talentoVacio,Todavía no hay estudiantes eduXaction en la plataforma.,There are no eduXaction students on the platform yet.,views/shared/talent_search_view.dart
+talentoTop,Top talento,Top talent,views/shared/talent_search_view.dart
+talentoAvance,{porcentaje}% de avance,{porcentaje}% progress,views/shared/talent_search_view.dart
+talentoObjetivosEmprendimiento,{cantidad} objetivos de emprendimiento,{cantidad} entrepreneurship objectives,views/shared/talent_search_view.dart
+talentoObjetivosEmpresariales,{cantidad} objetivos empresariales,{cantidad} business objectives,views/shared/talent_search_view.dart
+talentoCertificados,{cantidad} certificados,{cantidad} certificates,views/shared/talent_search_view.dart
+talentoContactar,Contactar,Contact,views/shared/talent_search_view.dart
+talentoOportunidad,Una oportunidad para usted,An opportunity for you,views/shared/talent_search_view.dart
+talentoNecesitaTitulo,El aviso necesita un título.,The notice needs a title.,views/shared/talent_search_view.dart
+talentoMensajeEnviado,Mensaje enviado ✓,Message sent ✓,views/shared/talent_search_view.dart
+talentoContactarA,Contactar a {nombre},Contact {nombre},views/shared/talent_search_view.dart
+talentoMensajeLlega,El mensaje llega a su bandeja dentro de la plataforma. No se entrega ningún dato de contacto.,The message arrives in their inbox inside the platform. No contact information is shared.,views/shared/talent_search_view.dart
+talentoAsunto,Asunto,Subject,views/shared/talent_search_view.dart
+recursosTitulo,Recursos de Comunicaciones,Communications Resources,views/shared/communication_resources_view.dart
+recursosSubtitulo,"Plantillas, guías de marca y material para el equipo","Templates, brand guides and material for the team",views/shared/communication_resources_view.dart
+recursosNuevo,Nuevo recurso,New resource,views/shared/communication_resources_view.dart
+recursosVacio,Todavía no hay recursos publicados.,No resources have been published yet.,views/shared/communication_resources_view.dart
+recursosEliminar,Eliminar recurso,Delete resource,views/shared/communication_resources_view.dart
+recursosEliminarTexto,"¿Eliminar ""{titulo}""?","Delete ""{titulo}""?",views/admin/admin_management.dart views/shared/communication_resources_view.dart
+recursosNecesitaTitulo,El recurso necesita un título.,The resource needs a title.,views/shared/communication_resources_view.dart
+recursosFaltaArchivo,Falta subir el archivo.,The file has not been uploaded yet.,views/shared/communication_resources_view.dart
+recursosFaltaUrl,Falta la URL.,The URL is missing.,views/shared/communication_resources_view.dart
+recursosPublicado,Recurso publicado ✓,Resource published ✓,views/shared/communication_resources_view.dart
+comunDescripcion,Descripción,Description,views/admin/admin_management.dart views/admin/lab_ruta_editor.dart views/lxd/lesson_editor.dart views/shared/communication_resources_view.dart
+mapaSufijoEstudiantes,estudiantes,students,views/shared/students_map_view.dart widgets/colombia_map.dart
+lxdPortal,Portal LXD,LXD Portal,views/lxd/lxd_portal.dart
+tabMisEstudiantes,Mis Estudiantes,My Students,views/lxd/lxd_portal.dart
+tabEstudiantesCorto,Estudiantes,Students,views/admin/admin_backup.dart views/admin/admin_portal.dart views/advisor/advisor_portal.dart views/lxd/course_tracking_view.dart views/lxd/lxd_portal.dart
+tabCalificaciones,Calificaciones,Grading,views/lxd/lxd_portal.dart
+tabCalificarCorto,Calificar,Grade,views/lxd/lxd_portal.dart
+tabCertificaciones,Certificaciones,Certifications,views/lxd/lxd_portal.dart
+lxdEstudiantesSubtitulo,Estudiantes inscritos en cursos que usted creó,Students enrolled in courses you created,views/lxd/lxd_portal.dart
+lxdFiltrarNombre,Filtrar por nombre o institución,Filter by name or institution,views/lxd/lxd_portal.dart
+lxdSinEstudiantes,No hay estudiantes inscritos en sus cursos.,There are no students enrolled in your courses.,views/lxd/lxd_portal.dart
+comunEstudiante,Estudiante,Student,views/lxd/course_tracking_view.dart views/lxd/lxd_portal.dart
+comunEtapa,Etapa,Stage,views/lxd/lxd_portal.dart
+lxdNecesidad,Necesidad,Need,views/lxd/lxd_portal.dart
+comunInstitucion,Institución,Institution,views/lxd/lxd_portal.dart
+comunProgreso,Progreso,Progress,views/lxd/course_tracking_view.dart views/lxd/lxd_portal.dart
+lxdPromedioCursos,Promedio de todos sus cursos,Average across all your courses,views/lxd/lxd_portal.dart
+lxdAcompanamientoUrgente,Acompañamiento urgente,Urgent support,views/lxd/lxd_portal.dart
+lxdSeguimientoRegular,Seguimiento regular,Regular follow-up,views/lxd/lxd_portal.dart
+lxdAutonomo,Autónomo,Independent,views/lxd/lxd_portal.dart
+lxdResumenAvance,Avance: {porcentaje}%,Progress: {porcentaje}%,views/lxd/lxd_portal.dart
+lxdResumenEmpresa,Empresa: {empresa},Company: {empresa},views/lxd/lxd_portal.dart
+lxdProyectosSubtitulo,Equipos y avance en la Ruta de Impacto de sus estudiantes,Teams and progress in your students' Impact Path,views/lxd/lxd_portal.dart
+lxdSinProyectos,Ninguno de sus estudiantes tiene proyecto asignado todavía.,None of your students has a project assigned yet.,views/lxd/lxd_portal.dart
+lxdCalendarioSubtitulo,Agende las sesiones sincrónicas de sus cursos Open Learning,Schedule the live sessions of your Open Learning courses,views/lxd/lxd_portal.dart
+lxdCursosSubtitulo,Cursos que usted creó — eduXaction (asignados o no a un laboratorio) y Open Learning,Courses you created — eduXaction (assigned to a laboratory or not) and Open Learning,views/lxd/lxd_portal.dart
+lxdNuevoCurso,Nuevo curso,New course,views/lxd/lxd_portal.dart
+lxdSinCursos,Aún no ha creado ningún curso. Cree el primero.,You have not created any course yet. Create the first one.,views/lxd/lxd_portal.dart
+lxdNombreCurso,Póngale un nombre al curso.,Give the course a name.,views/lxd/lxd_portal.dart
+lxdNombreDelCurso,Nombre del curso,Course name,views/lxd/course_editor_view.dart views/lxd/lxd_portal.dart
+lxdCursoOpenLearning,Curso de Open Learning,Open Learning course,views/lxd/lxd_portal.dart
+lxdCursoOpenLearningTexto,"Se asigna directo a estudiantes externos, sin laboratorio ni Ruta de Impacto","It is assigned directly to external students, without a laboratory or Impact Path",views/lxd/lxd_portal.dart
+lxdLabsNoCargan,No se pudieron cargar los laboratorios. Puede asignarlo después desde el constructor.,The laboratories could not be loaded. You can assign it later from the builder.,views/lxd/lxd_portal.dart
+lxdLaboratorioOpcional,Laboratorio (opcional),Laboratory (optional),views/lxd/lxd_portal.dart
+lxdSinAsignarAun,Sin asignar por ahora,Unassigned for now,views/lxd/lxd_portal.dart
+comunCreando,Creando…,Creating…,views/lxd/lxd_portal.dart
+lxdCrearAbrir,Crear y abrir constructor,Create and open builder,views/lxd/lxd_portal.dart
+lxdInscritos,{cantidad} inscritos,{cantidad} enrolled,views/admin/admin_management.dart views/lxd/lxd_portal.dart
+lxdCompletados,{cantidad} completados,{cantidad} completed,views/lxd/lxd_portal.dart
+lxdAvance,{porcentaje}% avance,{porcentaje}% progress,views/lxd/lxd_portal.dart
+lxdSinNotas,Sin notas,No grades,views/lxd/lxd_portal.dart
+lxdPromedio,Promedio {nota},Average {nota},views/lxd/lxd_portal.dart
+lxdPendientes,{cantidad} pendientes,{cantidad} pending,views/lxd/lxd_portal.dart
+lxdSinVincular,Sin vincular a ningún módulo todavía,Not linked to any module yet,views/lxd/lxd_portal.dart
+lxdVinculadoA,Vinculado a: {modulo},Linked to: {modulo},views/lxd/lxd_portal.dart
+lxdConstructor,Constructor,Builder,views/lxd/lxd_portal.dart
+lxdSeguimiento,Seguimiento,Tracking,views/lxd/lxd_portal.dart
+lxdEliminarCurso,Eliminar curso,Delete course,views/admin/admin_management.dart views/lxd/lxd_portal.dart
+lxdEliminarCursoTexto,"Va a eliminar ""{nombre}"" con todos sus módulos, lecciones y configuración.","You are about to delete ""{nombre}"" with all its modules, lessons and settings.",views/lxd/lxd_portal.dart
+lxdCursoEliminado,Curso eliminado,Course deleted,views/lxd/lxd_portal.dart
+lxdCalificacionesSubtitulo,Entregas de estudiantes en sus cursos,Student submissions in your courses,views/lxd/lxd_portal.dart
+lxdSinPermisoCalificar,Su Admin no le ha dado permiso de calificar todavía,Your Admin has not given you permission to grade yet,views/lxd/lxd_portal.dart
+lxdSinEntregas,No hay entregas para calificar.,There are no submissions to grade.,views/lxd/lxd_portal.dart
+calificarElija,Elija aprobado o reprobado.,Choose passed or failed.,views/lxd/lxd_portal.dart
+calificarPuntajeRango,El puntaje va de 0 a 100.,The score goes from 0 to 100.,views/lxd/lxd_portal.dart
+calificarNotaRango,La nota va de 0.0 a 5.0.,The grade goes from 0.0 to 5.0.,views/lxd/lxd_portal.dart
+calificarEntregaCalificada,Entrega calificada ✓,Submission graded ✓,views/lxd/lxd_portal.dart
+calificarTitulo,Calificar: {tarea},Grade: {tarea},views/lxd/lxd_portal.dart
+calificarEscala,Escala de calificación,Grading scale,views/lxd/lxd_portal.dart
+calificarResultado,Resultado:,Result:,views/lxd/lxd_portal.dart
+calificarSoloRevision,Esta actividad es de solo revisión: deja su retroalimentación sin nota.,This activity is review-only: leave your feedback without a grade.,views/lxd/lxd_portal.dart
+calificarPuntaje,Puntaje (0 - 100),Score (0 - 100),views/lxd/lxd_portal.dart
+calificarNota,Nota (0.0 - 5.0),Grade (0.0 - 5.0),views/lxd/lxd_portal.dart
+calificarRetroalimentacion,Retroalimentación,Feedback,views/lxd/lxd_portal.dart
+certificadoEmitido,Certificado {codigo} emitido 🏆,Certificate {codigo} issued 🏆,views/lxd/lxd_portal.dart
+certificacionesSubtitulo,El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso),The certificate is issued when a laboratory's full Impact Path is completed (there is no longer a per-course certificate),views/lxd/lxd_portal.dart
+certificacionesSinPermiso,Su Admin no le ha dado permiso de calificar en eduXaction: no puede emitir certificados todavía,Your Admin has not given you permission to grade in eduXaction: you cannot issue certificates yet,views/lxd/lxd_portal.dart
+certificacionesEmitidos,Certificados emitidos,Certificates issued,views/admin/admin_portal.dart views/lxd/lxd_portal.dart
+certificacionesVacio,Aún no se han emitido certificados.,No certificates have been issued yet.,views/lxd/lxd_portal.dart
+certificacionesEmitirNuevo,Emitir nuevo certificado,Issue a new certificate,views/lxd/lxd_portal.dart
+certificacionesLabRuta,Laboratorio (Ruta completa),Laboratory (full Path),views/lxd/lxd_portal.dart
+certificacionesEmitiendo,Emitiendo…,Issuing…,views/lxd/lxd_portal.dart
+certificacionesEmitir,Emitir,Issue,views/lxd/lxd_portal.dart
+certificacionesComprobando,Comprobando su Ruta de Impacto…,Checking their Impact Path…,views/lxd/lxd_portal.dart
+certificacionesNoCompleto,Este estudiante aún no completó la Ruta de Impacto de ningún laboratorio,This student has not completed the Impact Path of any laboratory yet,views/lxd/lxd_portal.dart
+lxdPerfilSubtitulo,Información visible para administradores y estudiantes,Information visible to administrators and students,views/lxd/lxd_portal.dart
+lxdPermisoOL,Permiso de calificar · Open Learning,Grading permission · Open Learning,views/lxd/lxd_portal.dart
+comunActivado,Activado,Enabled,views/lxd/lxd_portal.dart
+comunDesactivado,Desactivado,Disabled,views/lxd/lxd_portal.dart
+lxdPermisoEduxaction,Permiso de calificar · eduXaction,Grading permission · eduXaction,views/lxd/lxd_portal.dart
+perfilCargo,Cargo,Position,views/admin/admin_users.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart
+perfilEspecialidad,Especialidad,Specialty,views/admin/admin_users.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart
+perfilIdiomas,Idiomas,Languages,views/admin/admin_users.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart
+perfilDisponibilidad,Disponibilidad,Availability,views/admin/admin_users.dart views/lxd/course_editor_view.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart
+perfilExperiencia,Experiencia,Experience,views/admin/admin_users.dart views/lxd/lxd_portal.dart views/mentor/mentor_portal.dart
+perfilIntereses,Intereses,Interests,views/admin/admin_users.dart views/lxd/lxd_portal.dart
+lxdResumenProyecto,Proyecto: {proyecto},Project: {proyecto},views/lxd/lxd_portal.dart
+certificadoLinea,{estudiante} · Ruta de Impacto {laboratorio} · {codigo},{estudiante} · Impact Path {laboratorio} · {codigo},views/lxd/lxd_portal.dart
+constructorInfoGeneral,Información general,General information,views/lxd/course_editor_view.dart
+constructorCategorizacion,Categorización y objetivos,Categorization and objectives,views/lxd/course_editor_view.dart
+constructorDelCurso,Constructor del curso,Course builder,views/lxd/course_editor_view.dart
+constructorEvaluacion,Evaluación y certificado,Assessment and certificate,views/lxd/course_editor_view.dart
+constructorRestricciones,Restricciones y patrocinio,Restrictions and sponsorship,views/lxd/course_editor_view.dart
+constructorTitulo,Constructor de Curso,Course Builder,views/lxd/course_editor_view.dart
+comunVolver,Volver,Back,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart
+constructorHerramienta,el constructor de módulos y lecciones,the module and lesson builder,views/lxd/course_editor_view.dart
+constructorNecesitaNombre,El curso necesita un nombre.,The course needs a name.,views/lxd/course_editor_view.dart
+constructorGuardado,Curso guardado ✓,Course saved ✓,views/lxd/course_editor_view.dart
+constructorSubtitulo,Subtítulo,Subtitle,views/lxd/course_editor_view.dart
+constructorDescCorta,Descripción corta,Short description,views/lxd/course_editor_view.dart
+constructorDescCompleta,Descripción completa,Full description,views/lxd/course_editor_view.dart
+constructorPortada,Imagen de portada,Cover image,views/lxd/course_editor_view.dart
+constructorYaPortada,Ya tiene portada. Subir otra la reemplaza.,It already has a cover. Uploading another one replaces it.,views/lxd/course_editor_view.dart
+constructorNivel,Nivel,Level,views/lxd/course_editor_view.dart
+constructorDuracion,Duración estimada (horas),Estimated duration (hours),views/lxd/course_editor_view.dart
+constructorIdioma,Idioma,Language,views/lxd/course_editor_view.dart
+constructorEstado,Estado: ,Status: ,views/lxd/course_editor_view.dart
+constructorPublicar,Publicar,Publish,views/lxd/course_editor_view.dart
+constructorArchivar,Archivar,Archive,views/lxd/course_editor_view.dart
+constructorArchivarCurso,Archivar curso,Archive course,views/lxd/course_editor_view.dart
+constructorArchivarTexto,"Deja de asignarse a estudiantes nuevos, pero quienes ya tienen avance no se bloquean.","It is no longer assigned to new students, but those who already have progress are not blocked.",views/lxd/course_editor_view.dart
+constructorLeccionesCompletar,Lecciones a completar:,Lessons to complete:,views/lxd/course_editor_view.dart
+constructorCategorizacionGuardada,Categorización guardada ✓,Categorization saved ✓,views/lxd/course_editor_view.dart
+constructorSinLab,Sin laboratorio (curso especial),No laboratory (special course),views/lxd/course_editor_view.dart
+constructorEtiquetas,Etiquetas,Tags,views/lxd/course_editor_view.dart
+constructorCompetencias,Competencias que desarrolla (métricas de impacto),Skills it develops (impact metrics),views/lxd/course_editor_view.dart
+constructorOdsRelacionados,ODS relacionados,Related SDGs,views/admin/admin_management.dart views/lxd/course_editor_view.dart
+constructorObjetivosCurso,Objetivos del curso,Course objectives,views/lxd/course_editor_view.dart
+constructorObjetivosPista,p. ej. Comprender los fundamentos de la IA aplicada,e.g. Understand the fundamentals of applied AI,views/lxd/course_editor_view.dart
+constructorObjetivosRuta,Objetivos para la Ruta de Impacto,Objectives for the Impact Path,views/lxd/course_editor_view.dart
+constructorObjetivosRutaTexto,"Si este curso se vincula a un módulo de un laboratorio, estos objetivos se agregan automáticamente a los de esa fase.","If this course is linked to a module of a laboratory, these objectives are automatically added to those of that phase.",views/lxd/course_editor_view.dart
+constructorObjetivosEmprendimiento,Objetivos de Emprendimiento,Entrepreneurship Objectives,views/lxd/course_editor_view.dart
+constructorObjetivosEmprendimientoPista,p. ej. Identificar oportunidades de IA en proyectos sociales,e.g. Identify AI opportunities in social projects,views/lxd/course_editor_view.dart
+constructorObjetivosEmpresariales,Objetivos Empresariales,Business Objectives,views/lxd/course_editor_view.dart
+constructorObjetivosEmpresarialesPista,p. ej. Comprender los fundamentos del aprendizaje automático,e.g. Understand the fundamentals of machine learning,views/lxd/course_editor_view.dart
+constructorResultados,Resultados de aprendizaje,Learning outcomes,views/lxd/course_editor_view.dart
+constructorResultadosPista,p. ej. Construye un prototipo con datos reales,e.g. Builds a prototype with real data,views/lxd/course_editor_view.dart
+constructorPrerrequisitos,Prerrequisitos,Prerequisites,views/lxd/course_editor_view.dart
+constructorPrerrequisitosTexto,Cursos que el estudiante debería completar antes (o ninguno).,Courses the student should complete beforehand (or none).,views/lxd/course_editor_view.dart
+constructorSinOtrosCursos,No hay otros cursos disponibles.,There are no other courses available.,views/lxd/course_editor_view.dart
+constructorNuevoModulo,Nuevo módulo,New module,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart
+constructorTituloModulo,Título del módulo,Module title,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart
+constructorArrastre,Arrastre con el ícono ⠿ para reordenar módulos y lecciones.,Drag with the ⠿ icon to reorder modules and lessons.,views/lxd/course_editor_view.dart
+constructorPrimerModulo,Cree el primer módulo para empezar.,Create the first module to get started.,views/lxd/course_editor_view.dart
+constructorModuloTitulo,Módulo {numero}: {titulo},Module {numero}: {titulo},views/lxd/course_editor_view.dart
+constructorRenombrarModulo,Renombrar módulo,Rename module,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart
+constructorAgregarLeccion,Agregar lección,Add lesson,views/lxd/course_editor_view.dart
+constructorEliminarModulo,Eliminar módulo,Delete module,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart
+constructorSinLecciones,Sin lecciones — use + para agregar contenido.,No lessons — use + to add content.,views/lxd/course_editor_view.dart
+constructorEditarTipo,Editar {tipo},Edit {tipo},views/lxd/course_editor_view.dart
+constructorEliminarLeccion,Eliminar lección,Delete lesson,views/lxd/course_editor_view.dart
+constructorEliminarLeccionTexto,"¿Eliminar ""{titulo}""?","Delete ""{titulo}""?",views/lxd/course_editor_view.dart
+comunGuardado,Guardado ✓,Saved ✓,views/lxd/course_editor_view.dart views/lxd/glossary_editor.dart
+constructorCuentaCertificado,¿Este curso cuenta para certificado?,Does this course count toward a certificate?,views/lxd/course_editor_view.dart
+constructorCuentaCertificadoTexto,"Se ve un sello en el curso y sus horas cuentan para el certificado de la Ruta de Impacto del laboratorio (el PDF lo emite el LXD al completar toda la Ruta, no por curso individual)","A seal is shown on the course and its hours count toward the laboratory's Impact Path certificate (the LXD issues the PDF when the whole Path is completed, not per individual course)",views/lxd/course_editor_view.dart
+constructorHorasCertificadas,Horas certificadas,Certified hours,views/lxd/course_editor_view.dart
+constructorSinDefinir,Sin definir,Not set,views/lxd/course_editor_view.dart
+constructorApertura,Apertura: {fecha},Opens: {fecha},views/lxd/course_editor_view.dart
+constructorCierre,Cierre: {fecha},Closes: {fecha},views/lxd/course_editor_view.dart
+constructorCierreAntes,El curso no puede cerrar antes de abrir.,The course cannot close before it opens.,views/lxd/course_editor_view.dart
+constructorMaximo,Máximo de estudiantes (0 = sin límite),Maximum number of students (0 = no limit),views/lxd/course_editor_view.dart
+constructorVisible,Visible,Visible,views/lxd/course_editor_view.dart
+constructorOculto,Oculto,Hidden,views/admin/student_assignments_dialog.dart views/lxd/course_editor_view.dart
+constructorOcultosTexto,Los cursos ocultos no aparecen para asignación,Hidden courses do not appear for assignment,views/lxd/course_editor_view.dart
+constructorPatrocinio,Patrocinio,Sponsorship,views/lxd/course_editor_view.dart
+constructorEmpresaPatrocinadora,Empresa patrocinadora del curso (opcional),Sponsoring company for the course (optional),views/lxd/course_editor_view.dart
+constructorNinguna,Ninguna,None,views/admin/admin_management.dart views/lxd/course_editor_view.dart
+constructorPatrocinioTexto,Las horas de formación completadas en cursos patrocinados alimentan las métricas de impacto de la empresa.,The training hours completed in sponsored courses feed the company's impact metrics.,views/lxd/course_editor_view.dart
+constructorQuitarFecha,Quitar fecha,Remove date,views/admin/lab_ruta_editor.dart views/lxd/course_editor_view.dart views/lxd/lesson_editor.dart
+comunAgregar,Agregar,Add,views/lxd/course_editor_view.dart
+comunAceptar,Aceptar,OK,views/lxd/course_editor_view.dart
+constructorEliminarModuloTexto,"Va a eliminar ""{modulo}"" con sus {cantidad} lecciones.","{cantidad, plural, =1{You are about to delete ""{modulo}"" with its 1 lesson.} other{You are about to delete ""{modulo}"" with its {cantidad} lessons.}}",views/lxd/course_editor_view.dart
+quizTipoMultiple,Selección múltiple,Multiple choice,views/lxd/lesson_editor.dart
+quizTipoVerdaderoFalso,Verdadero / Falso,True / False,views/lxd/lesson_editor.dart
+quizTipoCorta,Respuesta corta,Short answer,views/lxd/lesson_editor.dart
+quizTipoOrdenar,Ordenar,Order,views/lxd/lesson_editor.dart
+quizTipoCompletar,Completar,Fill in the blank,views/lxd/lesson_editor.dart
+leccionDescartarTexto,Hay cambios sin guardar en esta lección. ¿Desea salir de todas formas?,There are unsaved changes in this lesson. Do you want to leave anyway?,views/lxd/lesson_editor.dart
+leccionNecesitaTitulo,La lección necesita un título.,The lesson needs a title.,views/lxd/lesson_editor.dart
+leccionEnlaceNecesitaUrl,Una lección de tipo enlace necesita su URL.,A link lesson needs its URL.,views/lxd/lesson_editor.dart
+leccionEspereRevision,Espere a que termine la revisión del video.,Wait for the video check to finish.,views/lxd/lesson_editor.dart
+leccionSubidaCancelada,"Se canceló la subida. Si la lección ya tenía video, sigue igual.","The upload was canceled. If the lesson already had a video, it stays the same.",views/lxd/lesson_editor.dart
+leccionEnlaceYoutube,Enlace del video de YouTube,YouTube video link,views/lxd/lesson_editor.dart
+leccionYoutubeEncontrado,"Video de YouTube encontrado. Se guarda solo su id ({id}), no el enlace.","YouTube video found. Only its id ({id}) is saved, not the link.",views/lxd/lesson_editor.dart
+leccionEnlaceVimeo,Enlace de Vimeo: se guarda tal cual y se ve con el reproductor de Vimeo.,Vimeo link: it is saved as is and played with the Vimeo player.,views/lxd/lesson_editor.dart
+leccionYaTieneVideo,Esta lección ya tiene un video propio cargado. Pegar un enlace lo reemplaza.,This lesson already has its own uploaded video. Pasting a link replaces it.,views/lxd/lesson_editor.dart
+leccionPegueEnlace,"Pegue el enlace tal como lo copia de YouTube: sirven watch?v=, youtu.be, shorts y embed. También se acepta Vimeo.","Paste the link just as you copy it from YouTube: watch?v=, youtu.be, shorts and embed all work. Vimeo is also accepted.",views/lxd/lesson_editor.dart
+leccionNueva,Nueva lección,New lesson,views/lxd/lesson_editor.dart
+leccionEditar,Editar lección,Edit lesson,views/lxd/lesson_editor.dart
+leccionSubiendo,Subiendo…,Uploading…,views/lxd/lesson_editor.dart
+leccionPegarYoutube,Pegar link de YouTube,Paste YouTube link,views/lxd/lesson_editor.dart
+leccionSubirVideo,Subir video,Upload video,views/lxd/lesson_editor.dart
+leccionDuracionMinutos,Duración (minutos),Duration (minutes),views/lxd/lesson_editor.dart
+leccionArchivoDescargable,Archivo descargable,Downloadable file,views/lxd/lesson_editor.dart
+leccionArchivoActual,Actual: {archivo},Current: {archivo},views/lxd/lesson_editor.dart
+leccionPreguntasEncuesta,Preguntas de la encuesta (sin calificación),Survey questions (not graded),views/lxd/lesson_editor.dart
+leccionPreguntasQuiz,Preguntas (las califica el servidor),Questions (graded by the server),views/lxd/lesson_editor.dart
+leccionPregunta,Pregunta,Question,views/lxd/lesson_editor.dart
+leccionSinPreguntas,"Sin preguntas todavía. Una lección de quiz sin preguntas se guarda, pero quien la abra recibe un aviso en vez de una nota.","No questions yet. A quiz lesson without questions is saved, but whoever opens it gets a notice instead of a grade.",views/lxd/lesson_editor.dart
+leccionPreguntaNumero,Pregunta {numero},Question {numero},views/lxd/lesson_editor.dart
+leccionQuitarPregunta,Quitar pregunta,Remove question,views/lxd/lesson_editor.dart
+leccionEnunciado,Enunciado,Prompt,views/lxd/lesson_editor.dart
+leccionQuitarOpcion,Quitar opción,Remove option,views/lxd/lesson_editor.dart
+leccionOpcion,Opción,Option,views/lxd/lesson_editor.dart
+leccionRespuestaCorrecta,Respuesta correcta:,Correct answer:,views/lxd/lesson_editor.dart
+leccionRespuestaFlexible,Respuesta correcta (se comparan tildes y mayúsculas de forma flexible),Correct answer (accents and capitalization are compared flexibly),views/lxd/lesson_editor.dart
+leccionPalabraCompleta,Palabra o frase que completa el enunciado,Word or phrase that completes the prompt,views/lxd/lesson_editor.dart
+leccionOrdenCorrecto,"Elementos en el orden CORRECTO — así se guardan, y así se califica quien los ordene igual:","Items in the CORRECT order — this is how they are saved, and anyone who orders them the same way gets them right:",views/lxd/lesson_editor.dart
+leccionQuitarElemento,Quitar elemento,Remove item,views/lxd/lesson_editor.dart
+leccionElemento,Elemento,Item,views/lxd/lesson_editor.dart
+leccionInstrucciones,Instrucciones de la actividad,Activity instructions,views/lxd/lesson_editor.dart
+leccionFechaSinDefinir,Fecha límite: sin definir,Deadline: not set,views/admin/lab_ruta_editor.dart views/lxd/lesson_editor.dart
+leccionMaxArchivos,Máx. archivos,Max. files,views/lxd/lesson_editor.dart
+leccionPedirAlgo,"La actividad tiene que pedir al menos texto o archivo: si no, no hay nada que entregar.",The activity has to ask for at least text or a file: otherwise there is nothing to submit.,views/lxd/lesson_editor.dart
+leccionTiposEntregable,Tipos de entregable aceptados (ninguno = cualquiera),Accepted deliverable types (none = any),views/lxd/lesson_editor.dart
+leccionCalificacion,Calificación,Grading,views/lxd/lesson_editor.dart
+leccionRubrica,Rúbrica (criterios y puntos),Rubric (criteria and points),views/lxd/lesson_editor.dart
+leccionCriterio,Criterio,Criterion,views/lxd/lesson_editor.dart
+leccionPuntos,Puntos,Points,views/lxd/lesson_editor.dart
+leccionQuitarCriterio,Quitar criterio,Remove criterion,views/lxd/lesson_editor.dart
+leccionTotalPuntos,Total: {total} puntos,Total: {total} points,views/lxd/lesson_editor.dart
+leccionOpcionNumero,Opción {numero},Option {numero},views/lxd/lesson_editor.dart
+leccionOpcionCorrecta,Opción {numero} (correcta),Option {numero} (correct),views/lxd/lesson_editor.dart
+glosarioDelModuloCon,Glosario del módulo · {terminos},Module glossary · {terminos},views/lxd/glossary_editor.dart
+glosarioEditorVacio,Este módulo todavía no tiene términos. Los que agregue aparecen al final de las lecciones que marque y al final del módulo.,This module does not have any terms yet. The ones you add appear at the end of the lessons you mark and at the end of the module.,views/lxd/glossary_editor.dart
+glosarioAgregarTermino,Agregar término,Add term,views/lxd/glossary_editor.dart
+glosarioArrastrar,Arrastrar para reordenar «{palabra}»,Drag to reorder “{palabra}”,views/lxd/glossary_editor.dart
+glosarioTieneImagen,Tiene imagen,Has an image,views/lxd/glossary_editor.dart
+glosarioSinLeccion,No está marcado en ninguna lección,It is not marked in any lesson,views/lxd/glossary_editor.dart
+glosarioEditarPalabra,Editar «{palabra}»,Edit “{palabra}”,views/lxd/glossary_editor.dart
+glosarioEliminarPalabra,Eliminar «{palabra}»,Delete “{palabra}”,views/lxd/glossary_editor.dart
+glosarioEliminarTermino,Eliminar término,Delete term,views/lxd/glossary_editor.dart
+glosarioEliminarTerminoTexto,¿Eliminar «{palabra}» del glosario? También se quita de los relacionados de otros términos y del repaso de los estudiantes.,Delete “{palabra}” from the glossary? It is also removed from other terms' related lists and from the students' review.,views/lxd/glossary_editor.dart
+glosarioPalabraObligatoria,La palabra es obligatoria.,The word is required.,views/lxd/glossary_editor.dart
+glosarioYaExiste,Ya existe «{palabra}» en este módulo.,“{palabra}” already exists in this module.,views/lxd/glossary_editor.dart
+glosarioYaExisteEn,Ya existe «{palabra}» en el módulo «{modulo}».,“{palabra}” already exists in the module “{modulo}”.,views/lxd/glossary_editor.dart
+glosarioDescartarTexto,Hay cambios sin guardar en este término. ¿Desea salir de todas formas?,There are unsaved changes in this term. Do you want to leave anyway?,views/lxd/glossary_editor.dart
+glosarioTerminoAgregado,Término agregado ✓,Term added ✓,views/lxd/glossary_editor.dart
+glosarioNuevoTermino,Nuevo término,New term,views/lxd/glossary_editor.dart
+glosarioEditarTermino,Editar término,Edit term,views/lxd/glossary_editor.dart
+glosarioModulo,Módulo: {modulo},Module: {modulo},views/lxd/glossary_editor.dart
+glosarioPalabraCampo,Palabra o expresión *,Word or expression *,views/lxd/glossary_editor.dart
+glosarioDefinicionCorta,Definición corta *,Short definition *,views/lxd/glossary_editor.dart
+glosarioDefinicionObligatoria,La definición corta es obligatoria.,The short definition is required.,views/lxd/glossary_editor.dart
+glosarioDefinicionAyuda,Una o dos frases. Es lo que se ve en la tarjeta y al pasar el mouse sobre la palabra.,One or two sentences. It is what is shown on the card and when hovering over the word.,views/lxd/glossary_editor.dart
+glosarioExplicacion,Explicación ampliada (opcional),Extended explanation (optional),views/lxd/glossary_editor.dart
+glosarioEjemploOpcional,Ejemplo (opcional),Example (optional),views/lxd/glossary_editor.dart
+glosarioImagenOpcional,Imagen (opcional),Image (optional),views/lxd/glossary_editor.dart
+glosarioQuitarImagen,Quitar imagen,Remove image,views/admin/admin_site_content.dart views/lxd/glossary_editor.dart
+glosarioPngJpg,PNG o JPG.,PNG or JPG.,views/lxd/glossary_editor.dart
+glosarioLeccionesDonde,Lecciones donde aparece,Lessons where it appears,views/lxd/glossary_editor.dart
+glosarioModuloSinLecciones,Este módulo todavía no tiene lecciones.,This module does not have any lessons yet.,views/lxd/glossary_editor.dart
+glosarioRelacionadosTitulo,Términos relacionados,Related terms,views/lxd/glossary_editor.dart
+glosarioRelacionadosAyuda,"Cuando el curso tenga más términos, podrá relacionarlos acá.","When the course has more terms, you will be able to relate them here.",views/lxd/glossary_editor.dart
+glosarioDeOtroModulo,De otro módulo,From another module,views/lxd/glossary_editor.dart
+seguimientoTitulo,Seguimiento del Curso,Course Tracking,views/lxd/course_tracking_view.dart
+seguimientoInscritos,Inscritos,Enrolled,views/lxd/course_tracking_view.dart
+seguimientoCompletados,Completados,Completed,views/lxd/course_tracking_view.dart
+seguimientoAvancePromedio,Avance promedio,Average progress,views/advisor/advisor_portal.dart views/donor/donor_portal.dart views/lxd/course_tracking_view.dart
+seguimientoNotaPromedio,Nota promedio,Average grade,views/lxd/course_tracking_view.dart
+seguimientoSinEstudiantes,"Aún no hay estudiantes asignados a este curso.
+El admin los asigna desde su portal.","There are no students assigned to this course yet.
+The admin assigns them from their portal.",views/lxd/course_tracking_view.dart
+seguimientoAnaliticas,Analíticas,Analytics,views/lxd/course_tracking_view.dart
+seguimientoNota,Nota,Grade,views/lxd/course_tracking_view.dart
+seguimientoUltimaActividad,Última actividad,Last activity,views/lxd/course_tracking_view.dart
+seguimientoEstado,Estado,Status,views/lxd/course_tracking_view.dart
+seguimientoComentarios,Comentarios,Comments,views/lxd/course_tracking_view.dart
+seguimientoCompletado,Completado,Completed,views/lxd/course_tracking_view.dart
+seguimientoSinIniciar,Sin iniciar,Not started,views/lxd/course_tracking_view.dart
+seguimientoNotaPrivada,Nota privada: {nota},Private note: {nota},views/lxd/course_tracking_view.dart
+seguimientoAgregarComentario,Agregar comentario privado,Add private comment,views/lxd/course_tracking_view.dart
+seguimientoComentariosDe,Comentarios privados — {nombre},Private comments — {nombre},views/lxd/course_tracking_view.dart
+seguimientoRetroObservaciones,Retroalimentación y observaciones,Feedback and observations,views/lxd/course_tracking_view.dart
+seguimientoSoloDocentes,Solo para el equipo docente. El estudiante NO la ve.,Only for the teaching team. The student does NOT see it.,views/lxd/course_tracking_view.dart
+seguimientoAvanceCurso,Avance del curso,Course progress,views/lxd/course_tracking_view.dart
+comunSinDatos,Sin datos,No data,views/lxd/course_tracking_view.dart
+seguimientoAvanceUniversidad,Avance promedio por universidad (%),Average progress by university (%),views/lxd/course_tracking_view.dart
+seguimientoRiesgo,Riesgo de abandono (sin iniciar),Dropout risk (not started),views/lxd/course_tracking_view.dart
+seguimientoTiempoPromedio,Tiempo promedio invertido,Average time spent,views/lxd/course_tracking_view.dart
+seguimientoAvancePatrocinados,Avance de patrocinados,Sponsored students' progress,views/lxd/course_tracking_view.dart
+seguimientoLeccionesTotales,Lecciones totales,Total lessons,views/lxd/course_tracking_view.dart
+glosarioApareceEn,"Aparece en {cantidad, plural, =1{1 lección} other{{cantidad} lecciones}}","Appears in {cantidad, plural, =1{1 lesson} other{{cantidad} lessons}}",views/lxd/glossary_editor.dart
+seguimientoNotaYActividad,Nota: {nota}  ·  {actividad},Grade: {nota}  ·  {actividad},views/lxd/course_tracking_view.dart
+adminPortalSuper,Portal Super Admin,Super Admin Portal,views/admin/admin_portal.dart
+adminPortal,Portal Admin,Admin Portal,views/admin/admin_portal.dart
+tabUsuarios,Usuarios,Users,views/admin/admin_portal.dart views/admin/admin_users.dart
+tabEquipos,Equipos,Teams,views/admin/admin_backup.dart views/admin/admin_management.dart views/admin/admin_portal.dart views/advisor/advisor_portal.dart
+tabEvidenciasDonantes,Evidencias donantes,Donor evidence,views/admin/admin_portal.dart
+tabEvidenciasCorto,Evidencias,Evidence,views/admin/admin_portal.dart views/donor/donor_portal.dart
+tabContenidoPagina,Contenido página,Page content,views/admin/admin_portal.dart
+tabContenidoCorto,Contenido,Content,views/admin/admin_portal.dart
+tabDatosRespaldos,Datos y respaldos,Data and backups,views/admin/admin_portal.dart
+tabRespaldosCorto,Respaldos,Backups,views/admin/admin_portal.dart
+adminDashboardGeneral,Dashboard General,General Dashboard,views/admin/admin_portal.dart
+adminDashboardSubtitulo,Estado global de la plataforma,Overall status of the platform,views/admin/admin_portal.dart
+adminImpactoFormativo,Impacto formativo eduXaction,eduXaction training impact,views/admin/admin_portal.dart
+adminUsuariosPorRol,Usuarios por rol,Users by role,views/admin/admin_portal.dart
+adminEstudAbrev,Estud.,Stud.,views/admin/admin_portal.dart
+adminAsesores,Asesores,Advisors,views/admin/admin_portal.dart
+adminEmpresas,Empresas,Companies,views/admin/admin_portal.dart
+adminDonantes,Donantes,Donors,views/admin/admin_portal.dart
+adminProyectosPorEtapa,Proyectos por etapa,Projects by stage,views/admin/admin_portal.dart
+adminConfigureMetricas,"Configure competencias, ODS y horas en los cursos (constructor del LXD) para ver métricas de impacto formativo.","Set up skills, SDGs and hours in the courses (LXD builder) to see training impact metrics.",views/admin/admin_portal.dart
+adminHorasCompetencia,Horas de formación por competencia,Training hours by skill,views/admin/admin_portal.dart
+adminSinDatosAun,Sin datos aún,No data yet,views/admin/admin_portal.dart
+adminCoberturaOds,Cobertura de ODS (estudiantes que completaron),SDG coverage (students who completed),views/admin/admin_portal.dart
+adminSinCursosOds,Sin cursos asociados a ODS aún,No courses associated with SDGs yet,views/admin/admin_portal.dart
+adminOdsTooltip,{ods} — {completados} de {total},{ods} — {completados} of {total},views/admin/admin_portal.dart
+adminCalendarioSubtitulo,"Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma","Open Learning live sessions, Impact Path events and mentoring sessions across the whole platform",views/admin/admin_portal.dart
+asignarCursosOk,Cursos asignados ✓,Courses assigned ✓,views/admin/student_assignments_dialog.dart
+asignarLabsOk,Laboratorios asignados ✓,Laboratories assigned ✓,views/admin/student_assignments_dialog.dart
+asignarA,Asignar a {nombre},Assign to {nombre},views/admin/student_assignments_dialog.dart
+asignarNoCarga,No se pudo cargar lo asignado: {error},What is assigned could not be loaded: {error},views/admin/student_assignments_dialog.dart
+asignarExplicaOL,Cuenta de Open Learning: recibe cursos uno por uno. Es su única vía de acceso a material — sin cursos asignados no tiene nada que ver. No tiene laboratorios ni Ruta de Impacto.,Open Learning account: receives courses one by one. It is their only way to access material — without assigned courses there is nothing to see. It has no laboratories or Impact Path.,views/admin/student_assignments_dialog.dart
+asignarExplicaEdu,"Cuenta eduXaction: recibe laboratorios, y con ellos el acceso a TODOS sus cursos, sin asignarlos aparte. Quitar un laboratorio le quita ese material: su avance no se borra y vuelve tal cual si se le reasigna, pero mientras tanto deja de verlo.","eduXaction account: receives laboratories, and with them access to ALL their courses, without assigning them separately. Removing a laboratory removes that material: their progress is not deleted and comes back as it was if it is reassigned, but in the meantime they stop seeing it.",views/admin/student_assignments_dialog.dart
+asignarSinLabs,No hay laboratorios creados todavía.,There are no laboratories created yet.,views/admin/student_assignments_dialog.dart
+asignarSinCursos,No hay cursos creados todavía.,There are no courses created yet.,views/admin/student_assignments_dialog.dart
+asignarDeLaboratorio,De laboratorio,Laboratory course,views/admin/student_assignments_dialog.dart
+asignarPendientes,"{cantidad, plural, =1{Asignado. Este curso no está publicado, así que todavía no lo verá: {cursos}.} other{Asignado. Estos cursos no están publicados, así que todavía no los verá: {cursos}.}}","{cantidad, plural, =1{Assigned. This course is not published, so they will not see it yet: {cursos}.} other{Assigned. These courses are not published, so they will not see them yet: {cursos}.}}",views/admin/student_assignments_dialog.dart
+adminHorasPatrocinadas,{empresa} ha patrocinado {horas} horas de formación,{empresa} has sponsored {horas} hours of training,views/admin/admin_portal.dart
+usuariosSubtituloSuper,Crea y elimina cualquier tipo de cuenta (incluidos admins),Creates and deletes any type of account (including admins),views/admin/admin_users.dart
+usuariosSubtitulo,"Crea cuentas de estudiantes, LXD, mentores, asesores, empresas y donantes","Creates accounts for students, LXDs, mentors, advisors, companies and donors",views/admin/admin_users.dart
+usuariosNuevo,Nuevo usuario,New user,views/admin/admin_users.dart
+comunTodos,Todos,All,views/admin/admin_management.dart views/admin/admin_users.dart views/advisor/advisor_portal.dart
+usuariosSinRol,No hay cuentas con ese rol.,There are no accounts with that role.,views/admin/admin_users.dart
+usuariosUnaSolicitud,1 solicitud de eliminación de cuenta,1 account deletion request,views/admin/admin_users.dart
+usuariosSolicitudes,{cantidad} solicitudes de eliminación de cuenta,{cantidad} account deletion requests,views/admin/admin_users.dart
+usuariosSolicitudesTexto,Estas cuentas ya no funcionan. Falta borrar sus datos personales dentro del plazo de {dias} días que se les prometió.,These accounts no longer work. Their personal data still has to be deleted within the {dias}-day period they were promised.,views/admin/admin_users.dart
+usuariosBorrarDatosDe,Borrar los datos de {nombre},Delete {nombre}'s data,views/admin/admin_users.dart
+usuariosBorrarDatosTexto,"Se borran su nombre, correo, teléfono, cédula, ciudad, foto y perfil, el nombre en sus certificados y las notas sobre esta persona. No se puede deshacer.","Their name, email, phone, ID number, city, photo and profile, the name on their certificates and the notes about this person are deleted. This cannot be undone.",views/admin/admin_users.dart
+usuariosDatosBorrados,Datos borrados.,Data deleted.,views/admin/admin_users.dart
+usuariosBorrando,Borrando…,Deleting…,views/admin/admin_users.dart
+usuariosBorrarDatos,Borrar datos,Delete data,views/admin/admin_users.dart
+usuariosRol,Rol,Role,views/admin/admin_users.dart
+usuariosDetalle,Detalle,Details,views/admin/admin_users.dart
+usuariosAcciones,Acciones,Actions,views/admin/admin_users.dart
+usuariosCalifica,Califica: {contextos},Grades: {contextos},views/admin/admin_users.dart
+usuariosAsignarCursos,Asignar cursos,Assign courses,views/admin/admin_users.dart
+usuariosAsignarLabs,Asignar laboratorios,Assign laboratories,views/admin/admin_users.dart
+usuariosEliminar,Eliminar usuario,Delete user,views/admin/admin_users.dart
+usuariosEliminarTexto,Va a eliminar a {nombre} ({rol}).,You are about to delete {nombre} ({rol}).,views/admin/admin_users.dart
+usuariosCuentaEliminada,Cuenta eliminada ✓,Account deleted ✓,views/admin/admin_users.dart
+usuariosNombreCorreoObligatorios,El nombre y el correo son obligatorios.,Name and email are required.,views/admin/admin_users.dart views/company/company_portal.dart
+usuariosContrasenaMinima,La contraseña necesita al menos 6 caracteres.,The password needs at least 6 characters.,views/admin/admin_users.dart views/company/company_portal.dart
+usuariosEscribaInstitucion,Escriba el nombre de la institución en «¿Cuál institución?».,Write the name of the institution in “Which institution?”.,views/admin/admin_users.dart
+usuariosEditar,Editar usuario,Edit user,views/admin/admin_users.dart
+usuariosRolFijo,"Rol: {rol} — para cambiarlo, se crea otra cuenta. Cambiarlo acá movería su acceso sin que se note.","Role: {rol} — to change it, another account is created. Changing it here would move their access without anyone noticing.",views/admin/admin_users.dart
+usuariosNombreCompleto,Nombre completo,Full name,views/admin/admin_users.dart views/company/company_portal.dart
+usuariosContrasenaNueva,Contraseña nueva (opcional),New password (optional),views/admin/admin_users.dart
+usuariosMinimoSeis,Mínimo 6 caracteres.,At least 6 characters.,views/admin/admin_users.dart
+usuariosDejeEnBlanco,Déjela en blanco para no cambiarla. Cambiarla cierra las sesiones abiertas de esa persona.,Leave it blank to keep it. Changing it signs that person out of their open sessions.,views/admin/admin_users.dart
+usuariosSinUniversidadAsesor,Sin universidad — no verá estudiantes,No university — they will not see students,views/admin/admin_users.dart
+usuariosNombreEmpresa,Nombre de la empresa,Company name,views/admin/admin_users.dart
+usuariosCodigoImpacto,Código de impacto único,Unique impact code,views/admin/admin_users.dart
+usuariosTipoEstudiante,Tipo de estudiante,Student type,views/admin/admin_users.dart
+usuariosSoloCursos,Solo ve los cursos que le asigne. Sin laboratorios ni Ruta de Impacto.,They only see the courses you assign them. No laboratories or Impact Path.,views/admin/admin_users.dart
+usuariosVeLabs,Ve Laboratorios y su Ruta de Impacto (se asignan desde el laboratorio).,They see Laboratories and their Impact Path (assigned from the laboratory).,views/admin/admin_users.dart
+usuariosElijaUniversidad,Elija una universidad,Choose a university,views/admin/admin_users.dart
+usuariosSinUniversidadOL,Sin universidad (Open Learning),No university (Open Learning),views/admin/admin_users.dart
+usuariosCiudadAyuda,De dónde es — la ubica en el Mapa de Estudiantes,Where they are from — it places them on the Student Map,views/admin/admin_users.dart
+usuariosLxdEmpresa,"Si este LXD es de una empresa aliada, sus cursos quedan atribuidos a ella.","If this LXD is from a partner company, their courses are attributed to it.",views/admin/admin_users.dart
+usuariosPermisoCalificar,Permiso de calificar,Grading permission,views/admin/admin_users.dart
+usuariosCambioRegistrado,Cada cambio queda registrado con quién lo hizo.,Every change is recorded with who made it.,views/admin/admin_users.dart
+usuariosOLDefecto,Activado por defecto: es quien califica ahí,Enabled by default: they are the one who grades there,views/admin/admin_users.dart
+usuariosEduDefecto,Desactivado por defecto: ahí no califica,Disabled by default: they do not grade there,views/admin/admin_users.dart
+usuariosMentorLab,"El laboratorio se asigna desde la pestaña ""Laboratorios"" (un laboratorio puede tener varios mentores).","The laboratory is assigned from the ""Laboratories"" tab (a laboratory can have several mentors).",views/admin/admin_users.dart
+usuariosMentorEmpresa,"Si este Mentor es de una empresa aliada, queda atribuido a ella.","If this Mentor is from a partner company, they are attributed to it.",views/admin/admin_users.dart
+usuariosEmpresaAliada,Empresa aliada (opcional),Partner company (optional),views/admin/admin_users.dart
+usuariosNingunaEdu,Ninguna (de eduXaction),None (eduXaction's own),views/admin/admin_users.dart
+usuariosPidioEl,{correo} · pidió el {fecha},{correo} · requested on {fecha},views/admin/admin_users.dart
+usuariosQuedanDias,"{cantidad, plural, =1{queda 1 día} other{quedan {cantidad} días}}","{cantidad, plural, =1{1 day left} other{{cantidad} days left}}",views/admin/admin_users.dart
+usuariosPlazoVencido,plazo vencido,deadline passed,views/admin/admin_users.dart
+usuariosNinguno,ninguno,none,views/admin/admin_users.dart
+gestionProyectosSubtitulo,"Cada proyecto define problema, solución, comunidad, ODS, etapa e indicadores","Each project defines a problem, solution, community, SDGs, stage and indicators",views/admin/admin_management.dart
+gestionNuevoProyecto,Nuevo proyecto,New project,views/admin/admin_management.dart
+gestionSinProyectos,No hay proyectos.,There are no projects.,views/admin/admin_management.dart
+gestionEliminarProyecto,Eliminar proyecto,Delete project,views/admin/admin_management.dart
+gestionVaAEliminar,"Va a eliminar ""{nombre}"".","You are about to delete ""{nombre}"".",views/admin/admin_management.dart
+gestionIntegrantes,"{cantidad, plural, =1{1 integrante} other{{cantidad} integrantes}}","{cantidad, plural, =1{1 member} other{{cantidad} members}}",views/admin/admin_management.dart
+gestionProyectoNombre,El proyecto necesita un nombre.,The project needs a name.,views/admin/admin_management.dart
+gestionEditarProyecto,Editar proyecto,Edit project,views/admin/admin_management.dart
+gestionSinUniversidadReconciliar,Sin universidad (pendiente de reconciliar),No university (pending reconciliation),views/admin/admin_management.dart
+gestionIntegrantesUniversidad,Sus integrantes tienen que ser de esta universidad.,Its members have to be from this university.,views/admin/admin_management.dart
+gestionProblema,Problema que resuelve,Problem it solves,views/admin/admin_management.dart
+gestionSolucion,Solución propuesta,Proposed solution,views/admin/admin_management.dart
+gestionComunidad,Comunidad beneficiada,Benefiting community,views/admin/admin_management.dart
+gestionEtapaActual,Etapa actual,Current stage,views/admin/admin_management.dart
+gestionHabilitarExpo,Habilitar RUTA NATIONAL EXPO,Enable NATIONAL EXPO PATH,views/admin/admin_management.dart
+gestionHabilitarExpoTexto,Abre la checklist de preparación para el equipo.,Opens the preparation checklist for the team.,views/admin/admin_management.dart
+gestionEquiposSubtitulo,"Cada equipo trabaja un proyecto desde una universidad, con su asesor académico","Each team works on a project from a university, with its academic advisor",views/admin/admin_management.dart
+gestionNuevoEquipo,Nuevo equipo,New team,views/admin/admin_management.dart
+gestionSinEquipos,No hay equipos.,There are no teams.,views/admin/admin_management.dart
+gestionIntegrantesTitulo,Integrantes,Members,views/admin/admin_management.dart
+gestionEliminarEquipo,Eliminar equipo,Delete team,views/admin/admin_management.dart
+gestionEquipoNecesita,El equipo necesita un nombre y un proyecto.,The team needs a name and a project.,views/admin/admin_management.dart
+gestionEditarEquipo,Editar equipo,Edit team,views/admin/admin_management.dart
+gestionNombreEquipo,Nombre del equipo,Team name,views/admin/admin_management.dart
+gestionUniversidadDelProyecto,"Sale del proyecto. Para cambiarla, edite el proyecto.","It comes from the project. To change it, edit the project.",views/admin/admin_management.dart
+gestionElijaProyecto,Elija un proyecto,Choose a project,views/admin/admin_management.dart
+gestionProyectoSinUniversidad,El proyecto todavía no tiene universidad,The project does not have a university yet,views/admin/admin_management.dart
+gestionAsesorOpcional,Asesor académico (opcional),Academic advisor (optional),views/admin/admin_management.dart
+gestionAsesorAyuda,"El asesor acompaña al equipo, no al proyecto: un proyecto puede tener equipos de varias universidades.","The advisor supports the team, not the project: a project can have teams from several universities.",views/admin/admin_management.dart
+gestionSinAsesor,Sin asesor,No advisor,views/admin/admin_management.dart
+gestionIntegrantesDe,Integrantes de {nombre},Members of {nombre},views/admin/admin_management.dart
+gestionSinEstudiantes,No hay estudiantes para asignar.,There are no students to assign.,views/admin/admin_management.dart
+gestionRolProyecto,El rol dentro del proyecto no es el rol de la plataforma: describe qué hace esa persona en el equipo.,The role within the project is not the platform role: it describes what that person does on the team.,views/admin/admin_management.dart
+gestionLabsSubtitulo,Cada laboratorio tiene su Ruta de Impacto de tres fases,Each laboratory has its three-phase Impact Path,views/admin/admin_management.dart
+gestionNuevoLab,Nuevo laboratorio,New laboratory,views/admin/admin_management.dart
+gestionSinLabs,No hay laboratorios.,There are no laboratories.,views/admin/admin_management.dart
+gestionEditarRuta,Editar Ruta de Impacto,Edit Impact Path,views/admin/admin_management.dart
+gestionEliminarLab,Eliminar laboratorio,Delete laboratory,views/admin/admin_management.dart
+gestionEliminarLabTexto,"Va a eliminar ""{nombre}"" con toda su Ruta.","You are about to delete ""{nombre}"" with its whole Path.",views/admin/admin_management.dart
+gestionLabNombre,El laboratorio necesita un nombre.,The laboratory needs a name.,views/admin/admin_management.dart
+gestionEditarLab,Editar laboratorio,Edit laboratory,views/admin/admin_management.dart
+gestionLabSeCrea,Se crea con sus tres fases. Después se editan desde el editor de Ruta de Impacto.,It is created with its three phases. They are then edited from the Impact Path editor.,views/admin/admin_management.dart
+gestionEmpresaOpcional,Empresa patrocinadora (opcional),Sponsoring company (optional),views/admin/admin_management.dart
+gestionCursosSubtitulo,"Todos los cursos de la plataforma, de cualquier LXD","All the courses on the platform, from any LXD",views/admin/admin_management.dart
+gestionSinCursosEstado,No hay cursos con ese estado.,There are no courses with that status.,views/admin/admin_management.dart
+gestionCompletaron,{cantidad} completaron,{cantidad} completed,views/admin/admin_management.dart
+gestionSinCalificar,{cantidad} sin calificar,{cantidad} ungraded,views/admin/admin_management.dart
+gestionRutaModulo,Ruta: {modulo},Path: {modulo},views/admin/admin_management.dart
+gestionEvidenciasTitulo,Evidencias para Donantes,Evidence for Donors,views/admin/admin_management.dart
+gestionEvidenciasSubtitulo,"Fotos, historias y reportes que ve cada donante en su portal","Photos, stories and reports that each donor sees in their portal",views/admin/admin_management.dart
+gestionNuevaEvidencia,Nueva evidencia,New evidence,views/admin/admin_management.dart
+gestionSinEvidencias,No hay evidencias todavía.,There is no evidence yet.,views/admin/admin_management.dart
+gestionEliminarEvidencia,Eliminar evidencia,Delete evidence,views/admin/admin_management.dart
+gestionEvidenciaNecesita,La evidencia necesita un título y un donante.,The evidence needs a title and a donor.,views/admin/admin_management.dart
+gestionEditarEvidencia,Editar evidencia,Edit evidence,views/admin/admin_management.dart
+gestionTipo,Tipo,Type,views/admin/admin_management.dart
+gestionDonanteRecibe,Donante que la recibe,Donor who receives it,views/admin/admin_management.dart
+gestionSoloEseDonante,Solo ese donante la ve en su portal.,Only that donor sees it in their portal.,views/admin/admin_management.dart
+gestionArchivoOpcional,Archivo (opcional),File (optional),views/admin/admin_management.dart
+gestionYaTieneArchivo,Ya tiene un archivo. Subir otro lo reemplaza.,It already has a file. Uploading another one replaces it.,views/admin/admin_management.dart
+rutaEditorHerramienta,el editor de la Ruta de Impacto,the Impact Path editor,views/admin/lab_ruta_editor.dart
+rutaEditorVersion,Versión de contenido {version},Content version {version},views/admin/lab_ruta_editor.dart
+rutaEditorVersionTexto,Los certificados quedan anclados a la versión de contenido con la que se emitieron: agregar módulos después no invalida los que ya se entregaron.,Certificates stay anchored to the content version they were issued with: adding modules later does not invalidate the ones already awarded.,views/admin/lab_ruta_editor.dart
+rutaEditorAcompanan,Quiénes lo acompañan,Who supports it,views/admin/lab_ruta_editor.dart
+rutaEditorSinMentores,Todavía sin mentores ni LXD.,No mentors or LXD yet.,views/admin/lab_ruta_editor.dart
+rutaEditorMentoresDe,Mentores de {nombre},Mentors of {nombre},views/admin/lab_ruta_editor.dart
+rutaEditorMentoresAyuda,"Un laboratorio puede tener varios mentores, y todos ven a sus estudiantes.","A laboratory can have several mentors, and they all see its students.",views/admin/lab_ruta_editor.dart
+rutaEditorEstudiantesCantidad,Estudiantes ({cantidad}),Students ({cantidad}),views/admin/lab_ruta_editor.dart
+rutaEditorEstudiantesDe,Estudiantes de {nombre},Students of {nombre},views/admin/lab_ruta_editor.dart
+rutaEditorEstudiantesAyuda,"Asignar a alguien acá le da acceso a los CURSOS del laboratorio. Quitarlo se lo quita: su avance no se borra, pero deja de verlo. Solo estudiantes eduXaction.","Assigning someone here gives them access to the laboratory's COURSES. Removing them takes it away: their progress is not deleted, but they stop seeing it. eduXaction students only.",views/admin/lab_ruta_editor.dart
+rutaEditorSinCuentas,No hay cuentas disponibles.,There are no accounts available.,views/admin/lab_ruta_editor.dart
+rutaEditorEditarFase,Editar la fase,Edit the phase,views/admin/lab_ruta_editor.dart
+rutaEditorFasesTres,"Las fases son siempre tres: se editan, no se agregan ni se borran. Una Ruta con dos fases no se puede completar.","There are always three phases: they are edited, not added or deleted. A Path with two phases cannot be completed.",views/admin/lab_ruta_editor.dart
+rutaEditorObjetivo,Objetivo,Objective,views/admin/lab_ruta_editor.dart
+rutaEditorSinObjetivos,Sin objetivos todavía.,No objectives yet.,views/admin/lab_ruta_editor.dart
+rutaEditorCursosCumplen,Cursos que lo cumplen,Courses that fulfill it,views/admin/lab_ruta_editor.dart
+rutaEditorQuitarObjetivo,Quitar objetivo,Remove objective,views/admin/lab_ruta_editor.dart
+rutaEditorQuitarObjetivoTexto,"¿Quitar ""{objetivo}"" de la fase?","Remove ""{objetivo}"" from the phase?",views/admin/lab_ruta_editor.dart
+rutaEditorSinCursosTraba,"Sin cursos vinculados no se puede completar nunca, y eso traba la fase entera para todo el laboratorio.","Without linked courses it can never be completed, and that blocks the whole phase for the entire laboratory.",views/admin/lab_ruta_editor.dart
+rutaEditorObjetivoTexto,El objetivo necesita su texto.,The objective needs its text.,views/admin/lab_ruta_editor.dart
+rutaEditorNuevoObjetivo,Nuevo objetivo,New objective,views/admin/lab_ruta_editor.dart
+rutaEditorEditarObjetivo,Editar objetivo,Edit objective,views/admin/lab_ruta_editor.dart
+rutaEditorCategoria,Categoría,Category,views/admin/lab_ruta_editor.dart
+rutaEditorVincular,Después hay que vincularle los cursos que lo cumplen: sin ellos no se completa nunca.,Afterwards you have to link the courses that fulfill it: without them it is never completed.,views/admin/lab_ruta_editor.dart
+rutaEditorCursosCumplenTitulo,Cursos que cumplen el objetivo,Courses that fulfill the objective,views/admin/lab_ruta_editor.dart
+rutaEditorCumplido,"""{objetivo}"" se da por cumplido cuando el estudiante termina el 100% de TODOS los cursos marcados.","""{objetivo}"" is considered fulfilled when the student finishes 100% of ALL the selected courses.",views/admin/lab_ruta_editor.dart
+rutaEditorSinMarcados,"Sin ninguno marcado, este objetivo no se completa nunca.","With none selected, this objective is never completed.",views/admin/lab_ruta_editor.dart
+rutaEditorModulos,Módulos,Modules,views/admin/lab_ruta_editor.dart
+rutaEditorUltimoMentoria,"El último módulo de la fase es siempre el de mentoría. Se recalcula solo al agregar, quitar o reordenar.","The last module of the phase is always the mentoring one. It is recalculated automatically when adding, removing or reordering.",views/admin/lab_ruta_editor.dart
+rutaEditorSinModulos,Sin módulos todavía.,No modules yet.,views/admin/lab_ruta_editor.dart
+rutaEditorCursosModulo,Cursos del módulo,Module courses,views/admin/lab_ruta_editor.dart
+rutaEditorRenombrar,Renombrar,Rename,views/admin/lab_ruta_editor.dart
+rutaEditorEliminarModuloTexto,"Va a eliminar ""{modulo}"" con sus {cantidad} lecciones propias.","You are about to delete ""{modulo}"" with its {cantidad} own lessons.",views/admin/lab_ruta_editor.dart
+rutaEditorCursosCantidad,"{cantidad, plural, =1{1 curso} other{{cantidad} cursos}}","{cantidad, plural, =1{1 course} other{{cantidad} courses}}",views/admin/lab_ruta_editor.dart
+rutaEditorImportados,Se agregaron {cantidad} objetivos del curso a la fase.,{cantidad} course objectives were added to the phase.,views/admin/lab_ruta_editor.dart
+rutaEditorCursosDe,Cursos de {modulo},Courses of {modulo},views/admin/lab_ruta_editor.dart
+rutaEditorCursoUnModulo,"Un curso vive en un solo módulo de esta Ruta: en dos, su avance se contaría dos veces. Al vincularlo, sus objetivos categorizados se agregan a la fase.","A course lives in only one module of this Path: in two, its progress would be counted twice. When it is linked, its categorized objectives are added to the phase.",views/admin/lab_ruta_editor.dart
+respaldoTitulo,Datos y Copias de Seguridad,Data and Backups,views/admin/admin_backup.dart
+respaldoSubtitulo,Dónde viven los datos y cómo respaldarlos,Where the data lives and how to back it up,views/admin/admin_backup.dart
+respaldoEstadoActual,Estado actual,Current status,views/admin/admin_backup.dart
+respaldoRespaldo,Respaldo,Backup,views/admin/admin_backup.dart
+respaldoDondeDatos,¿Dónde se guardan los datos?,Where is the data stored?,views/admin/admin_backup.dart
+respaldoDondeDatosTexto,"Los datos viven en la base de datos del servidor, no en este navegador. Cerrar sesión, cambiar de computador o entrar desde otro dispositivo no cambia nada: cada quien ve lo mismo.
+
+Los archivos (fotos, PDF, videos) se guardan aparte, en el almacenamiento de objetos, y el respaldo NO los incluye: guarda las referencias, no los archivos.
+
+Una copia de seguridad tampoco lleva credenciales. Las contraseñas y las sesiones abiertas quedan fuera a propósito: un respaldo es para restaurar datos, no para llevárselas.","The data lives in the server's database, not in this browser. Signing out, changing computers or signing in from another device changes nothing: everyone sees the same thing.
+
+Files (photos, PDFs, videos) are stored separately, in object storage, and the backup does NOT include them: it saves the references, not the files.
+
+A backup does not include credentials either. Passwords and open sessions are left out on purpose: a backup is for restoring data, not for taking them away.",views/admin/admin_backup.dart
+respaldoEntregasSinRevisar,Entregas sin revisar,Unreviewed submissions,views/admin/admin_backup.dart
+respaldoPreparando,Preparando…,Preparing…,views/admin/admin_backup.dart
+respaldoDescargar,Descargar copia de seguridad,Download backup,views/admin/admin_backup.dart
+respaldoRestaurarArchivo,Restaurar desde archivo,Restore from file,views/admin/admin_backup.dart
+respaldoSoloComputador,Restaurar una copia reemplaza la base entera: solo se puede hacer desde un computador.,Restoring a backup replaces the entire database: it can only be done from a computer.,views/admin/admin_backup.dart
+respaldoReemplaza,Restaurar reemplaza la base entera por la del archivo. No se puede deshacer.,Restoring replaces the entire database with the one in the file. This cannot be undone.,views/admin/admin_backup.dart
+respaldoSoloSuper,"Restaurar reemplaza la base entera, así que solo lo puede hacer un Super Admin.","Restoring replaces the entire database, so only a Super Admin can do it.",views/admin/admin_backup.dart
+respaldoGuardarCopia,Guardar copia de seguridad,Save backup,views/admin/admin_backup.dart
+respaldoCopiaDescargada,Copia descargada ✓,Backup downloaded ✓,views/admin/admin_backup.dart
+respaldoSeleccioneArchivo,Seleccione el archivo de respaldo,Select the backup file,views/admin/admin_backup.dart
+respaldoRestaurarCopia,Restaurar copia de seguridad,Restore backup,views/admin/admin_backup.dart
+respaldoRestaurarTexto,"La base entera se reemplaza por la del archivo ""{archivo}"". No se puede deshacer.","The entire database is replaced with the one in the file ""{archivo}"". This cannot be undone.",views/admin/admin_backup.dart
+respaldoNoValido,Ese archivo no es un respaldo válido: no se pudo leer como JSON.,That file is not a valid backup: it could not be read as JSON.,views/admin/admin_backup.dart
+respaldoRestaurado,Datos restaurados ✓,Data restored ✓,views/admin/admin_backup.dart
+contenidoHerramienta,la edición de la página principal,editing the home page,views/admin/admin_site_content.dart
+contenidoTitulo,Contenido de la Página Principal,Home Page Content,views/admin/admin_site_content.dart
+contenidoSubtitulo,"Hero, banner y textos visibles para el público","Hero, banner and texts visible to the public",views/admin/admin_site_content.dart
+contenidoTituloVacio,El título del hero no puede quedar vacío.,The hero title cannot be empty.,views/admin/admin_site_content.dart
+contenidoActualizado,Página principal actualizada ✓,Home page updated ✓,views/admin/admin_site_content.dart
+contenidoImagenesPublicadas,Imágenes publicadas ✓,Images published ✓,views/admin/admin_site_content.dart
+contenidoTituloHero,Título del hero,Hero title,views/admin/admin_site_content.dart
+contenidoSubtituloHero,Subtítulo del hero,Hero subtitle,views/admin/admin_site_content.dart
+contenidoBanner,Banner de anuncio (vacío = oculto),Announcement banner (empty = hidden),views/admin/admin_site_content.dart
+contenidoSobreNosotros,"Texto ""Sobre nosotros""","""About us"" text",views/admin/admin_site_content.dart
+contenidoLinkVideollamada,Link de videollamada (módulos de mentoría),Video call link (mentoring modules),views/admin/admin_site_content.dart
+contenidoLinkAyuda,Un solo enlace genérico: todavía no hay integración con un proveedor de reuniones.,A single generic link: there is no integration with a meeting provider yet.,views/admin/admin_site_content.dart
+contenidoCifras,Cifras del hero,Hero figures,views/admin/admin_site_content.dart
+contenidoCifrasAyuda,"Los cuatro números bajo el título. Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base — ese vive en el panel.","The four numbers under the title. They are written by hand on purpose: they are the figure the team wants to communicate, not the database count — that one lives in the dashboard.",views/admin/admin_site_content.dart
+contenidoGuardarCambios,Guardar cambios,Save changes,views/admin/admin_site_content.dart
+contenidoGaleria,Galería de imágenes,Image gallery,views/admin/admin_site_content.dart
+contenidoGaleriaAyuda,"Se muestran en la página principal, entre los laboratorios y el cierre. Quitar una la saca de la portada de inmediato.","They are shown on the home page, between the laboratories and the closing section. Removing one takes it off the home page immediately.",views/admin/admin_site_content.dart
+contenidoGaleriaVacia,Todavía no hay imágenes en la galería.,There are no images in the gallery yet.,views/admin/admin_site_content.dart
+contenidoSacarImagen,¿Sacarla de la página principal?,Remove it from the home page?,views/admin/admin_site_content.dart
+contenidoPublicar,Publicar {cantidad} en la portada,Publish {cantidad} on the home page,views/admin/admin_site_content.dart
+respaldoNombreArchivo,enactus_respaldo_{fecha}.json,enactus_backup_{fecha}.json,views/admin/admin_backup.dart
+avisoEntregaCalificadaTitulo,Entrega calificada,Submission graded,models/models.dart
+avisoEntregaCalificadaCuerpo,"""{tarea}"" tiene nueva retroalimentación.","""{tarea}"" has new feedback.",models/models.dart
+avisoEntregaRevisadaTitulo,Entrega revisada,Submission reviewed,models/models.dart views/mentor/mentor_portal.dart
+avisoEntregaRevisadaCuerpo,"""{tarea}"" tiene un comentario nuevo de su Mentor.","""{tarea}"" has a new comment from your Mentor.",models/models.dart
+avisoForoReporteTitulo,Nuevo reporte en el foro,New report in the forum,models/models.dart
+avisoForoReporteCuerpo,Alguien reportó contenido del foro. Revíselo en Foro › Reportes.,Someone reported forum content. Review it in Forum › Reports.,models/models.dart
+avisoCertificadoTitulo,Nuevo certificado,New certificate,models/models.dart
+avisoCertificadoCuerpo,Recibió el certificado por completar la Ruta de Impacto de {laboratorio}.,You received the certificate for completing the Impact Path of {laboratorio}.,models/models.dart
+avisoMentorComentoCuerpo,"Su mentor comentó ""{tarea}"".","Your mentor commented on ""{tarea}"".",models/models.dart views/mentor/mentor_portal.dart
+avisoFirma,— {remitente} ({correo}),— {remitente} ({correo}),models/models.dart
+contenidoEnIngles,Textos en inglés,Texts in English,views/admin/admin_site_content.dart
+contenidoEnInglesAyuda,"Para quien ve la portada en inglés. Si un campo queda vacío, se muestra el texto en español.","For people who view the home page in English. If a field is left empty, the Spanish text is shown.",views/admin/admin_site_content.dart
+contenidoTituloHeroEn,Título del hero (inglés),Hero title (English),views/admin/admin_site_content.dart
+contenidoSubtituloHeroEn,Subtítulo del hero (inglés),Hero subtitle (English),views/admin/admin_site_content.dart
+contenidoBannerEn,Banner de anuncio (inglés),Announcement banner (English),views/admin/admin_site_content.dart
+contenidoSobreNosotrosEn,"Texto ""Sobre nosotros"" (inglés)","""About us"" text (English)",views/admin/admin_site_content.dart
+mentorPortal,Portal Mentor,Mentor Portal,views/mentor/mentor_portal.dart
+tabMisLaboratorios,Mis Laboratorios,My Laboratories,views/company/company_portal.dart views/mentor/mentor_portal.dart
+tabEntregas,Entregas,Submissions,views/mentor/mentor_portal.dart
+tabRecursosComunicaciones,Recursos Comunicaciones,Communications Resources,views/advisor/advisor_portal.dart views/mentor/mentor_portal.dart
+tabRecursosCorto,Recursos,Resources,views/advisor/advisor_portal.dart views/mentor/mentor_portal.dart
+mentorLabsSubtitulo,Los laboratorios que acompaña y quiénes los cursan,The laboratories you support and who is taking them,views/mentor/mentor_portal.dart
+mentorSinLabs,Todavía no le han asignado ningún laboratorio.,You have not been assigned any laboratory yet.,views/mentor/mentor_portal.dart
+mentorSinEstudiantes,Sin estudiantes asignados todavía.,No students assigned yet.,views/mentor/mentor_portal.dart
+mentorCalendarioSubtitulo,Mentorías de sus laboratorios y eventos de la Ruta,Mentoring sessions for your laboratories and Path events,views/mentor/mentor_portal.dart
+mentorEntregasSubtitulo,Revise y comente el trabajo de sus estudiantes,Review and comment on your students' work,views/mentor/mentor_portal.dart
+mentorSinEntregas,No hay entregas por ahora.,There are no submissions for now.,views/mentor/mentor_portal.dart
+mentorComoMentor,"Como mentor revisa y comenta, pero no pone nota: la calificación tiene su propio autor y su propia escala. Su comentario llega igual al estudiante.","As a mentor you review and comment, but you do not give a grade: grading has its own author and its own scale. Your comment still reaches the student.",views/mentor/mentor_portal.dart
+mentorRevisada,Revisada,Reviewed,views/mentor/mentor_portal.dart
+mentorSinRevisar,Sin revisar,Not reviewed,views/mentor/mentor_portal.dart
+mentorSuComentario,Su comentario: {comentario},Your comment: {comentario},views/mentor/mentor_portal.dart
+mentorEditarComentario,Editar comentario,Edit comment,views/mentor/mentor_portal.dart
+mentorEscribaComentario,Escriba su comentario antes de guardar.,Write your comment before saving.,views/mentor/mentor_portal.dart
+mentorComentarioGuardado,Comentario guardado ✓,Comment saved ✓,views/mentor/mentor_portal.dart
+mentorRevisarEntrega,Revisar entrega,Review submission,views/mentor/mentor_portal.dart
+mentorReviseComente,Revise y comente; la nota la pone quien califica el curso.,Review and comment; the grade is given by whoever grades the course.,views/mentor/mentor_portal.dart
+mentorSuRetro,Su retroalimentación,Your feedback,views/mentor/mentor_portal.dart
+mentorPerfilSubtitulo,Sus datos y el material que comparte con los estudiantes,Your details and the material you share with students,views/mentor/mentor_portal.dart
+asesorPortal,Portal Asesor Académico,Academic Advisor Portal,views/advisor/advisor_portal.dart
+tabDashboardUniversidad,Dashboard Universidad,University Dashboard,views/advisor/advisor_portal.dart
+tabSeguimientoEstudiantes,Seguimiento Estudiantes,Student Tracking,views/advisor/advisor_portal.dart
+tabDirectorioCorto,Directorio,Directory,views/advisor/advisor_portal.dart
+asesorSuUniversidad,Su universidad,Your university,views/advisor/advisor_portal.dart
+asesorSubtitulo,Los equipos y estudiantes que acompaña,The teams and students you support,views/advisor/advisor_portal.dart
+asesorCalendarioSubtitulo,Eventos de la Ruta de Impacto y de los laboratorios de sus estudiantes,Impact Path events and events from your students' laboratories,views/advisor/advisor_portal.dart
+asesorSeguimientoTitulo,Seguimiento de Estudiantes,Student Tracking,views/advisor/advisor_portal.dart
+asesorSeguimientoSubtitulo,Cómo van los estudiantes de su universidad,How the students at your university are doing,views/advisor/advisor_portal.dart
+asesorBuscarNombre,Buscar por nombre…,Search by name…,views/advisor/advisor_portal.dart
+asesorNingunEstudiante,Ningún estudiante coincide.,No student matches.,views/advisor/advisor_portal.dart
+asesorCursosFraccion,{hechos}/{total} cursos,{hechos}/{total} courses,views/advisor/advisor_portal.dart
+asesorProyectosSubtitulo,Los proyectos de los equipos que asesora,The projects of the teams you advise,views/advisor/advisor_portal.dart
+asesorSinProyectos,Todavía no hay proyectos.,There are no projects yet.,views/advisor/advisor_portal.dart
+empresaPortal,Portal Empresa,Company Portal,views/company/company_portal.dart
+tabImpacto,Impacto,Impact,views/company/company_portal.dart views/donor/donor_portal.dart
+tabMapaEstudiantes,Mapa de Estudiantes,Student Map,views/company/company_portal.dart views/donor/donor_portal.dart
+tabMapaCorto,Mapa,Map,views/company/company_portal.dart views/donor/donor_portal.dart
+tabEstudiantesPatrocinados,Estudiantes Patrocinados,Sponsored Students,views/company/company_portal.dart
+tabPatrocinadosCorto,Patrocinados,Sponsored,views/company/company_portal.dart
+tabMiEquipo,Mi Equipo,My Team,views/company/company_portal.dart
+tabEquipoCorto,Equipo,Team,views/company/company_portal.dart
+tabTalentoCorto,Talento,Talent,views/company/company_portal.dart views/donor/donor_portal.dart
+empresaImpactoTitulo,Impacto de su aporte,Impact of your contribution,views/company/company_portal.dart
+empresaImpactoSubtitulo,Qué hizo posible su organización,What your organization made possible,views/company/company_portal.dart
+empresaEstudiantesAlcanzados,Estudiantes alcanzados,Students reached,views/company/company_portal.dart
+empresaEquipoFormador,Su equipo formador,Your training team,views/company/company_portal.dart
+empresaHorasFormacion,Horas de formación,Training hours,views/company/company_portal.dart
+empresaAcompana,{empresa} acompaña a {estudiantes} estudiantes en {laboratorios} laboratorios.,{empresa} supports {estudiantes} students in {laboratorios} laboratories.,views/company/company_portal.dart
+empresaLabsSubtitulo,Los que patrocina y aquellos donde trabaja su equipo,The ones you sponsor and those where your team works,views/company/company_portal.dart
+empresaSinLabs,Todavía no hay laboratorios asociados a su organización.,There are no laboratories associated with your organization yet.,views/company/company_portal.dart
+empresaPatrocinadosSubtitulo,A quiénes alcanza su aporte y cómo van,Who your contribution reaches and how they are doing,views/company/company_portal.dart
+empresaSinEstudiantes,Todavía no hay estudiantes vinculados a su organización.,There are no students linked to your organization yet.,views/company/company_portal.dart
+empresaEquipoSubtitulo,Los LXD y mentores de su organización,Your organization's LXDs and mentors,views/company/company_portal.dart
+empresaNuevaCuenta,Nueva cuenta,New account,views/company/company_portal.dart
+empresaSinCuentas,Todavía no ha dado de alta a nadie.,You have not created any accounts yet.,views/company/company_portal.dart
+empresaCuentasAtadas,Las cuentas que cree quedan atadas a su organización. Solo puede dar de alta LXD y mentores: los estudiantes los asigna el equipo de administración.,The accounts you create are tied to your organization. You can only create LXDs and mentors: students are assigned by the administration team.,views/company/company_portal.dart
+empresaEntregasRevisadas,{cantidad} entregas revisadas,{cantidad} submissions reviewed,views/company/company_portal.dart
+empresaCuentaCreada,Cuenta creada ✓,Account created ✓,views/company/company_portal.dart
+empresaNuevaCuentaEquipo,Nueva cuenta de su equipo,New account for your team,views/company/company_portal.dart
+empresaContrasenaAyuda,Mínimo 6 caracteres. Usted se la comparte.,At least 6 characters. You share it with them.,views/company/company_portal.dart
+empresaCargoOpcional,Cargo (opcional),Position (optional),views/company/company_portal.dart
+donantePortal,Portal Donante,Donor Portal,views/donor/donor_portal.dart
+tabMiImpacto,Mi Impacto,My Impact,views/donor/donor_portal.dart
+donanteSubtitulo,A quiénes apoya y cómo van,Who you support and how they are doing,views/donor/donor_portal.dart
+donanteEstudiantesApoyados,Estudiantes apoyados,Students supported,views/donor/donor_portal.dart
+donanteEvidenciasRecibidas,Evidencias recibidas,Evidence received,views/donor/donor_portal.dart
+donanteEstudiantesQueApoya,Estudiantes que apoya,Students you support,views/donor/donor_portal.dart
+donanteSinEstudiantes,"Todavía no hay estudiantes vinculados a su aporte. En cuanto su administrador asigne alguno, aparecerá acá.","There are no students linked to your contribution yet. As soon as your administrator assigns any, they will appear here.",views/donor/donor_portal.dart
+donanteEvidenciasTitulo,Evidencias de Impacto,Impact Evidence,views/donor/donor_portal.dart
+donanteEvidenciasSubtitulo,"Fotos, historias y reportes de lo que su aporte hizo posible","Photos, stories and reports of what your contribution made possible",views/donor/donor_portal.dart
+donanteSinEvidencias,Todavía no hay evidencias para su aporte.,There is no evidence for your contribution yet.,views/donor/donor_portal.dart
+donanteVerArchivo,Ver archivo,View file,views/donor/donor_portal.dart
+comunPalabraEliminar,ELIMINAR,DELETE,widgets/common.dart
+rutaLaboratorioMayus,LABORATORIO,LABORATORY,views/student/ruta_impacto_view.dart
+rutaObjetivosMayus,OBJETIVOS,OBJECTIVES,views/student/ruta_impacto_view.dart
+proyectosEquipoMayus,EQUIPO,TEAM,views/shared/projects_directory_view.dart
+visorNombreArchivo,documento.pdf,document.pdf,widgets/visor_pdf.dart
+odsNumero,ODS {numero},SDG {numero},views/admin/admin_management.dart views/admin/admin_portal.dart
+odsSigla,ODS,SDGs,views/shared/projects_directory_view.dart
+foroFijado,FIJADO,PINNED,views/shared/forum_view.dart

@@ -2101,5 +2101,413 @@
       "nota": {},
       "actividad": {}
     }
+  },
+  "adminPortalSuper": "Portal Super Admin",
+  "adminPortal": "Portal Admin",
+  "tabUsuarios": "Usuarios",
+  "tabEquipos": "Equipos",
+  "tabEvidenciasDonantes": "Evidencias donantes",
+  "tabEvidenciasCorto": "Evidencias",
+  "tabContenidoPagina": "Contenido página",
+  "tabContenidoCorto": "Contenido",
+  "tabDatosRespaldos": "Datos y respaldos",
+  "tabRespaldosCorto": "Respaldos",
+  "adminDashboardGeneral": "Dashboard General",
+  "adminDashboardSubtitulo": "Estado global de la plataforma",
+  "adminImpactoFormativo": "Impacto formativo eduXaction",
+  "adminUsuariosPorRol": "Usuarios por rol",
+  "adminEstudAbrev": "Estud.",
+  "adminAsesores": "Asesores",
+  "adminEmpresas": "Empresas",
+  "adminDonantes": "Donantes",
+  "adminProyectosPorEtapa": "Proyectos por etapa",
+  "adminConfigureMetricas": "Configure competencias, ODS y horas en los cursos (constructor del LXD) para ver métricas de impacto formativo.",
+  "adminHorasCompetencia": "Horas de formación por competencia",
+  "adminSinDatosAun": "Sin datos aún",
+  "adminCoberturaOds": "Cobertura de ODS (estudiantes que completaron)",
+  "adminSinCursosOds": "Sin cursos asociados a ODS aún",
+  "adminOdsTooltip": "{ods} — {completados} de {total}",
+  "@adminOdsTooltip": {
+    "placeholders": {
+      "ods": {},
+      "completados": {},
+      "total": {}
+    }
+  },
+  "adminCalendarioSubtitulo": "Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma",
+  "asignarCursosOk": "Cursos asignados ✓",
+  "asignarLabsOk": "Laboratorios asignados ✓",
+  "asignarA": "Asignar a {nombre}",
+  "@asignarA": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "asignarNoCarga": "No se pudo cargar lo asignado: {error}",
+  "@asignarNoCarga": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "asignarExplicaOL": "Cuenta de Open Learning: recibe cursos uno por uno. Es su única vía de acceso a material — sin cursos asignados no tiene nada que ver. No tiene laboratorios ni Ruta de Impacto.",
+  "asignarExplicaEdu": "Cuenta eduXaction: recibe laboratorios, y con ellos el acceso a TODOS sus cursos, sin asignarlos aparte. Quitar un laboratorio le quita ese material: su avance no se borra y vuelve tal cual si se le reasigna, pero mientras tanto deja de verlo.",
+  "asignarSinLabs": "No hay laboratorios creados todavía.",
+  "asignarSinCursos": "No hay cursos creados todavía.",
+  "asignarDeLaboratorio": "De laboratorio",
+  "asignarPendientes": "{cantidad, plural, =1{Asignado. Este curso no está publicado, así que todavía no lo verá: {cursos}.} other{Asignado. Estos cursos no están publicados, así que todavía no los verá: {cursos}.}}",
+  "@asignarPendientes": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      },
+      "cursos": {}
+    }
+  },
+  "adminHorasPatrocinadas": "{empresa} ha patrocinado {horas} horas de formación",
+  "@adminHorasPatrocinadas": {
+    "placeholders": {
+      "empresa": {},
+      "horas": {}
+    }
+  },
+  "usuariosSubtituloSuper": "Crea y elimina cualquier tipo de cuenta (incluidos admins)",
+  "usuariosSubtitulo": "Crea cuentas de estudiantes, LXD, mentores, asesores, empresas y donantes",
+  "usuariosNuevo": "Nuevo usuario",
+  "comunTodos": "Todos",
+  "usuariosSinRol": "No hay cuentas con ese rol.",
+  "usuariosUnaSolicitud": "1 solicitud de eliminación de cuenta",
+  "usuariosSolicitudes": "{cantidad} solicitudes de eliminación de cuenta",
+  "@usuariosSolicitudes": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "usuariosSolicitudesTexto": "Estas cuentas ya no funcionan. Falta borrar sus datos personales dentro del plazo de {dias} días que se les prometió.",
+  "@usuariosSolicitudesTexto": {
+    "placeholders": {
+      "dias": {}
+    }
+  },
+  "usuariosBorrarDatosDe": "Borrar los datos de {nombre}",
+  "@usuariosBorrarDatosDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "usuariosBorrarDatosTexto": "Se borran su nombre, correo, teléfono, cédula, ciudad, foto y perfil, el nombre en sus certificados y las notas sobre esta persona. No se puede deshacer.",
+  "usuariosDatosBorrados": "Datos borrados.",
+  "usuariosBorrando": "Borrando…",
+  "usuariosBorrarDatos": "Borrar datos",
+  "usuariosRol": "Rol",
+  "usuariosDetalle": "Detalle",
+  "usuariosAcciones": "Acciones",
+  "usuariosCalifica": "Califica: {contextos}",
+  "@usuariosCalifica": {
+    "placeholders": {
+      "contextos": {}
+    }
+  },
+  "usuariosAsignarCursos": "Asignar cursos",
+  "usuariosAsignarLabs": "Asignar laboratorios",
+  "usuariosEliminar": "Eliminar usuario",
+  "usuariosEliminarTexto": "Va a eliminar a {nombre} ({rol}).",
+  "@usuariosEliminarTexto": {
+    "placeholders": {
+      "nombre": {},
+      "rol": {}
+    }
+  },
+  "usuariosCuentaEliminada": "Cuenta eliminada ✓",
+  "usuariosNombreCorreoObligatorios": "El nombre y el correo son obligatorios.",
+  "usuariosContrasenaMinima": "La contraseña necesita al menos 6 caracteres.",
+  "usuariosEscribaInstitucion": "Escriba el nombre de la institución en «¿Cuál institución?».",
+  "usuariosEditar": "Editar usuario",
+  "usuariosRolFijo": "Rol: {rol} — para cambiarlo, se crea otra cuenta. Cambiarlo acá movería su acceso sin que se note.",
+  "@usuariosRolFijo": {
+    "placeholders": {
+      "rol": {}
+    }
+  },
+  "usuariosNombreCompleto": "Nombre completo",
+  "usuariosContrasenaNueva": "Contraseña nueva (opcional)",
+  "usuariosMinimoSeis": "Mínimo 6 caracteres.",
+  "usuariosDejeEnBlanco": "Déjela en blanco para no cambiarla. Cambiarla cierra las sesiones abiertas de esa persona.",
+  "usuariosSinUniversidadAsesor": "Sin universidad — no verá estudiantes",
+  "usuariosNombreEmpresa": "Nombre de la empresa",
+  "usuariosCodigoImpacto": "Código de impacto único",
+  "usuariosTipoEstudiante": "Tipo de estudiante",
+  "usuariosSoloCursos": "Solo ve los cursos que le asigne. Sin laboratorios ni Ruta de Impacto.",
+  "usuariosVeLabs": "Ve Laboratorios y su Ruta de Impacto (se asignan desde el laboratorio).",
+  "usuariosElijaUniversidad": "Elija una universidad",
+  "usuariosSinUniversidadOL": "Sin universidad (Open Learning)",
+  "usuariosCiudadAyuda": "De dónde es — la ubica en el Mapa de Estudiantes",
+  "usuariosLxdEmpresa": "Si este LXD es de una empresa aliada, sus cursos quedan atribuidos a ella.",
+  "usuariosPermisoCalificar": "Permiso de calificar",
+  "usuariosCambioRegistrado": "Cada cambio queda registrado con quién lo hizo.",
+  "usuariosOLDefecto": "Activado por defecto: es quien califica ahí",
+  "usuariosEduDefecto": "Desactivado por defecto: ahí no califica",
+  "usuariosMentorLab": "El laboratorio se asigna desde la pestaña \"Laboratorios\" (un laboratorio puede tener varios mentores).",
+  "usuariosMentorEmpresa": "Si este Mentor es de una empresa aliada, queda atribuido a ella.",
+  "usuariosEmpresaAliada": "Empresa aliada (opcional)",
+  "usuariosNingunaEdu": "Ninguna (de eduXaction)",
+  "usuariosPidioEl": "{correo} · pidió el {fecha}",
+  "@usuariosPidioEl": {
+    "placeholders": {
+      "correo": {},
+      "fecha": {}
+    }
+  },
+  "usuariosQuedanDias": "{cantidad, plural, =1{queda 1 día} other{quedan {cantidad} días}}",
+  "@usuariosQuedanDias": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "usuariosPlazoVencido": "plazo vencido",
+  "usuariosNinguno": "ninguno",
+  "gestionProyectosSubtitulo": "Cada proyecto define problema, solución, comunidad, ODS, etapa e indicadores",
+  "gestionNuevoProyecto": "Nuevo proyecto",
+  "gestionSinProyectos": "No hay proyectos.",
+  "gestionEliminarProyecto": "Eliminar proyecto",
+  "gestionVaAEliminar": "Va a eliminar \"{nombre}\".",
+  "@gestionVaAEliminar": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "gestionIntegrantes": "{cantidad, plural, =1{1 integrante} other{{cantidad} integrantes}}",
+  "@gestionIntegrantes": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "gestionProyectoNombre": "El proyecto necesita un nombre.",
+  "gestionEditarProyecto": "Editar proyecto",
+  "gestionSinUniversidadReconciliar": "Sin universidad (pendiente de reconciliar)",
+  "gestionIntegrantesUniversidad": "Sus integrantes tienen que ser de esta universidad.",
+  "gestionProblema": "Problema que resuelve",
+  "gestionSolucion": "Solución propuesta",
+  "gestionComunidad": "Comunidad beneficiada",
+  "gestionEtapaActual": "Etapa actual",
+  "gestionHabilitarExpo": "Habilitar RUTA NATIONAL EXPO",
+  "gestionHabilitarExpoTexto": "Abre la checklist de preparación para el equipo.",
+  "gestionEquiposSubtitulo": "Cada equipo trabaja un proyecto desde una universidad, con su asesor académico",
+  "gestionNuevoEquipo": "Nuevo equipo",
+  "gestionSinEquipos": "No hay equipos.",
+  "gestionIntegrantesTitulo": "Integrantes",
+  "gestionEliminarEquipo": "Eliminar equipo",
+  "gestionEquipoNecesita": "El equipo necesita un nombre y un proyecto.",
+  "gestionEditarEquipo": "Editar equipo",
+  "gestionNombreEquipo": "Nombre del equipo",
+  "gestionUniversidadDelProyecto": "Sale del proyecto. Para cambiarla, edite el proyecto.",
+  "gestionElijaProyecto": "Elija un proyecto",
+  "gestionProyectoSinUniversidad": "El proyecto todavía no tiene universidad",
+  "gestionAsesorOpcional": "Asesor académico (opcional)",
+  "gestionAsesorAyuda": "El asesor acompaña al equipo, no al proyecto: un proyecto puede tener equipos de varias universidades.",
+  "gestionSinAsesor": "Sin asesor",
+  "gestionIntegrantesDe": "Integrantes de {nombre}",
+  "@gestionIntegrantesDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "gestionSinEstudiantes": "No hay estudiantes para asignar.",
+  "gestionRolProyecto": "El rol dentro del proyecto no es el rol de la plataforma: describe qué hace esa persona en el equipo.",
+  "gestionLabsSubtitulo": "Cada laboratorio tiene su Ruta de Impacto de tres fases",
+  "gestionNuevoLab": "Nuevo laboratorio",
+  "gestionSinLabs": "No hay laboratorios.",
+  "gestionEditarRuta": "Editar Ruta de Impacto",
+  "gestionEliminarLab": "Eliminar laboratorio",
+  "gestionEliminarLabTexto": "Va a eliminar \"{nombre}\" con toda su Ruta.",
+  "@gestionEliminarLabTexto": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "gestionLabNombre": "El laboratorio necesita un nombre.",
+  "gestionEditarLab": "Editar laboratorio",
+  "gestionLabSeCrea": "Se crea con sus tres fases. Después se editan desde el editor de Ruta de Impacto.",
+  "gestionEmpresaOpcional": "Empresa patrocinadora (opcional)",
+  "gestionCursosSubtitulo": "Todos los cursos de la plataforma, de cualquier LXD",
+  "gestionSinCursosEstado": "No hay cursos con ese estado.",
+  "gestionCompletaron": "{cantidad} completaron",
+  "@gestionCompletaron": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "gestionSinCalificar": "{cantidad} sin calificar",
+  "@gestionSinCalificar": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "gestionRutaModulo": "Ruta: {modulo}",
+  "@gestionRutaModulo": {
+    "placeholders": {
+      "modulo": {}
+    }
+  },
+  "gestionEvidenciasTitulo": "Evidencias para Donantes",
+  "gestionEvidenciasSubtitulo": "Fotos, historias y reportes que ve cada donante en su portal",
+  "gestionNuevaEvidencia": "Nueva evidencia",
+  "gestionSinEvidencias": "No hay evidencias todavía.",
+  "gestionEliminarEvidencia": "Eliminar evidencia",
+  "gestionEvidenciaNecesita": "La evidencia necesita un título y un donante.",
+  "gestionEditarEvidencia": "Editar evidencia",
+  "gestionTipo": "Tipo",
+  "gestionDonanteRecibe": "Donante que la recibe",
+  "gestionSoloEseDonante": "Solo ese donante la ve en su portal.",
+  "gestionArchivoOpcional": "Archivo (opcional)",
+  "gestionYaTieneArchivo": "Ya tiene un archivo. Subir otro lo reemplaza.",
+  "rutaEditorHerramienta": "el editor de la Ruta de Impacto",
+  "rutaEditorVersion": "Versión de contenido {version}",
+  "@rutaEditorVersion": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "rutaEditorVersionTexto": "Los certificados quedan anclados a la versión de contenido con la que se emitieron: agregar módulos después no invalida los que ya se entregaron.",
+  "rutaEditorAcompanan": "Quiénes lo acompañan",
+  "rutaEditorSinMentores": "Todavía sin mentores ni LXD.",
+  "rutaEditorMentoresDe": "Mentores de {nombre}",
+  "@rutaEditorMentoresDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "rutaEditorMentoresAyuda": "Un laboratorio puede tener varios mentores, y todos ven a sus estudiantes.",
+  "rutaEditorEstudiantesCantidad": "Estudiantes ({cantidad})",
+  "@rutaEditorEstudiantesCantidad": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "rutaEditorEstudiantesDe": "Estudiantes de {nombre}",
+  "@rutaEditorEstudiantesDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "rutaEditorEstudiantesAyuda": "Asignar a alguien acá le da acceso a los CURSOS del laboratorio. Quitarlo se lo quita: su avance no se borra, pero deja de verlo. Solo estudiantes eduXaction.",
+  "rutaEditorSinCuentas": "No hay cuentas disponibles.",
+  "rutaEditorEditarFase": "Editar la fase",
+  "rutaEditorFasesTres": "Las fases son siempre tres: se editan, no se agregan ni se borran. Una Ruta con dos fases no se puede completar.",
+  "rutaEditorObjetivo": "Objetivo",
+  "rutaEditorSinObjetivos": "Sin objetivos todavía.",
+  "rutaEditorCursosCumplen": "Cursos que lo cumplen",
+  "rutaEditorQuitarObjetivo": "Quitar objetivo",
+  "rutaEditorQuitarObjetivoTexto": "¿Quitar \"{objetivo}\" de la fase?",
+  "@rutaEditorQuitarObjetivoTexto": {
+    "placeholders": {
+      "objetivo": {}
+    }
+  },
+  "rutaEditorSinCursosTraba": "Sin cursos vinculados no se puede completar nunca, y eso traba la fase entera para todo el laboratorio.",
+  "rutaEditorObjetivoTexto": "El objetivo necesita su texto.",
+  "rutaEditorNuevoObjetivo": "Nuevo objetivo",
+  "rutaEditorEditarObjetivo": "Editar objetivo",
+  "rutaEditorCategoria": "Categoría",
+  "rutaEditorVincular": "Después hay que vincularle los cursos que lo cumplen: sin ellos no se completa nunca.",
+  "rutaEditorCursosCumplenTitulo": "Cursos que cumplen el objetivo",
+  "rutaEditorCumplido": "\"{objetivo}\" se da por cumplido cuando el estudiante termina el 100% de TODOS los cursos marcados.",
+  "@rutaEditorCumplido": {
+    "placeholders": {
+      "objetivo": {}
+    }
+  },
+  "rutaEditorSinMarcados": "Sin ninguno marcado, este objetivo no se completa nunca.",
+  "rutaEditorModulos": "Módulos",
+  "rutaEditorUltimoMentoria": "El último módulo de la fase es siempre el de mentoría. Se recalcula solo al agregar, quitar o reordenar.",
+  "rutaEditorSinModulos": "Sin módulos todavía.",
+  "rutaEditorCursosModulo": "Cursos del módulo",
+  "rutaEditorRenombrar": "Renombrar",
+  "rutaEditorEliminarModuloTexto": "Va a eliminar \"{modulo}\" con sus {cantidad} lecciones propias.",
+  "@rutaEditorEliminarModuloTexto": {
+    "placeholders": {
+      "modulo": {},
+      "cantidad": {}
+    }
+  },
+  "rutaEditorCursosCantidad": "{cantidad, plural, =1{1 curso} other{{cantidad} cursos}}",
+  "@rutaEditorCursosCantidad": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "rutaEditorImportados": "Se agregaron {cantidad} objetivos del curso a la fase.",
+  "@rutaEditorImportados": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "rutaEditorCursosDe": "Cursos de {modulo}",
+  "@rutaEditorCursosDe": {
+    "placeholders": {
+      "modulo": {}
+    }
+  },
+  "rutaEditorCursoUnModulo": "Un curso vive en un solo módulo de esta Ruta: en dos, su avance se contaría dos veces. Al vincularlo, sus objetivos categorizados se agregan a la fase.",
+  "respaldoTitulo": "Datos y Copias de Seguridad",
+  "respaldoSubtitulo": "Dónde viven los datos y cómo respaldarlos",
+  "respaldoEstadoActual": "Estado actual",
+  "respaldoRespaldo": "Respaldo",
+  "respaldoDondeDatos": "¿Dónde se guardan los datos?",
+  "respaldoDondeDatosTexto": "Los datos viven en la base de datos del servidor, no en este navegador. Cerrar sesión, cambiar de computador o entrar desde otro dispositivo no cambia nada: cada quien ve lo mismo.\n\nLos archivos (fotos, PDF, videos) se guardan aparte, en el almacenamiento de objetos, y el respaldo NO los incluye: guarda las referencias, no los archivos.\n\nUna copia de seguridad tampoco lleva credenciales. Las contraseñas y las sesiones abiertas quedan fuera a propósito: un respaldo es para restaurar datos, no para llevárselas.",
+  "respaldoEntregasSinRevisar": "Entregas sin revisar",
+  "respaldoPreparando": "Preparando…",
+  "respaldoDescargar": "Descargar copia de seguridad",
+  "respaldoRestaurarArchivo": "Restaurar desde archivo",
+  "respaldoSoloComputador": "Restaurar una copia reemplaza la base entera: solo se puede hacer desde un computador.",
+  "respaldoReemplaza": "Restaurar reemplaza la base entera por la del archivo. No se puede deshacer.",
+  "respaldoSoloSuper": "Restaurar reemplaza la base entera, así que solo lo puede hacer un Super Admin.",
+  "respaldoGuardarCopia": "Guardar copia de seguridad",
+  "respaldoCopiaDescargada": "Copia descargada ✓",
+  "respaldoSeleccioneArchivo": "Seleccione el archivo de respaldo",
+  "respaldoRestaurarCopia": "Restaurar copia de seguridad",
+  "respaldoRestaurarTexto": "La base entera se reemplaza por la del archivo \"{archivo}\". No se puede deshacer.",
+  "@respaldoRestaurarTexto": {
+    "placeholders": {
+      "archivo": {}
+    }
+  },
+  "respaldoNoValido": "Ese archivo no es un respaldo válido: no se pudo leer como JSON.",
+  "respaldoRestaurado": "Datos restaurados ✓",
+  "contenidoHerramienta": "la edición de la página principal",
+  "contenidoTitulo": "Contenido de la Página Principal",
+  "contenidoSubtitulo": "Hero, banner y textos visibles para el público",
+  "contenidoTituloVacio": "El título del hero no puede quedar vacío.",
+  "contenidoActualizado": "Página principal actualizada ✓",
+  "contenidoImagenesPublicadas": "Imágenes publicadas ✓",
+  "contenidoTituloHero": "Título del hero",
+  "contenidoSubtituloHero": "Subtítulo del hero",
+  "contenidoBanner": "Banner de anuncio (vacío = oculto)",
+  "contenidoSobreNosotros": "Texto \"Sobre nosotros\"",
+  "contenidoLinkVideollamada": "Link de videollamada (módulos de mentoría)",
+  "contenidoLinkAyuda": "Un solo enlace genérico: todavía no hay integración con un proveedor de reuniones.",
+  "contenidoCifras": "Cifras del hero",
+  "contenidoCifrasAyuda": "Los cuatro números bajo el título. Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base — ese vive en el panel.",
+  "contenidoGuardarCambios": "Guardar cambios",
+  "contenidoGaleria": "Galería de imágenes",
+  "contenidoGaleriaAyuda": "Se muestran en la página principal, entre los laboratorios y el cierre. Quitar una la saca de la portada de inmediato.",
+  "contenidoGaleriaVacia": "Todavía no hay imágenes en la galería.",
+  "contenidoSacarImagen": "¿Sacarla de la página principal?",
+  "contenidoPublicar": "Publicar {cantidad} en la portada",
+  "@contenidoPublicar": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "respaldoNombreArchivo": "enactus_respaldo_{fecha}.json",
+  "@respaldoNombreArchivo": {
+    "placeholders": {
+      "fecha": {}
+    }
   }
 }

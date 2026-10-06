@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/calendar_view.dart';
 import '../../widgets/charts.dart';
@@ -25,58 +27,58 @@ class AdminPortal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PortalShell(
-      portalTitle: isSuperAdmin ? 'Portal Super Admin' : 'Portal Admin',
+      portalTitle: isSuperAdmin ? tr.adminPortalSuper : tr.adminPortal,
       tabs: [
         PortalTab(
-            label: 'Dashboard',
-            shortLabel: 'Inicio',
+            label: tr.tabDashboard,
+            shortLabel: tr.tabInicioCorto,
             destacada: true,
             icon: Icons.dashboard_outlined,
             builder: (_) => const AdminDashboard()),
         PortalTab(
-            label: 'Calendario',
+            label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const AdminCalendar()),
         PortalTab(
-            label: 'Usuarios',
+            label: tr.tabUsuarios,
             destacada: true,
             icon: Icons.manage_accounts_outlined,
             builder: (_) => AdminUsers(isSuperAdmin: isSuperAdmin)),
         PortalTab(
-            label: 'Proyectos',
+            label: tr.tabProyectosCorto,
             icon: Icons.lightbulb_outline,
             builder: (_) => const AdminProjects()),
         PortalTab(
-            label: 'Equipos',
+            label: tr.tabEquipos,
             icon: Icons.groups_outlined,
             builder: (_) => const AdminGroups()),
         PortalTab(
-            label: 'Laboratorios',
+            label: tr.tabLaboratorios,
             icon: Icons.science_outlined,
             builder: (_) => const AdminLabs()),
         PortalTab(
-            label: 'Cursos',
+            label: tr.tabCursosCorto,
             icon: Icons.video_library_outlined,
             builder: (_) => const AdminCourses()),
         PortalTab(
-            label: 'Evidencias donantes',
-            shortLabel: 'Evidencias',
+            label: tr.tabEvidenciasDonantes,
+            shortLabel: tr.tabEvidenciasCorto,
             icon: Icons.volunteer_activism_outlined,
             builder: (_) => const AdminEvidences()),
         PortalTab(
-            label: 'Foro',
+            label: tr.tabForo,
             destacada: true,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
         PortalTab(
-            label: 'Contenido página',
-            shortLabel: 'Contenido',
+            label: tr.tabContenidoPagina,
+            shortLabel: tr.tabContenidoCorto,
             icon: Icons.web_outlined,
             builder: (_) => const AdminSiteContent()),
         PortalTab(
-            label: 'Datos y respaldos',
-            shortLabel: 'Respaldos',
+            label: tr.tabDatosRespaldos,
+            shortLabel: tr.tabRespaldosCorto,
             icon: Icons.storage_outlined,
             builder: (_) => const AdminBackup()),
       ],
@@ -103,8 +105,8 @@ class AdminDashboard extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Dashboard General',
-      subtitle: 'Estado global de la plataforma',
+      title: tr.adminDashboardGeneral,
+      subtitle: tr.adminDashboardSubtitulo,
       children: [
         combine2(data.impactMetrics, data.projects).when(
           loading: () => const CardListSkeleton(count: 3, height: 110),
@@ -119,7 +121,7 @@ class AdminDashboard extends StatelessWidget {
                 _Kpis(counts: metrics.counts),
                 const SizedBox(height: 16),
                 _Charts(counts: metrics.counts, projects: projects),
-                const SectionTitle('Impacto formativo eduXaction'),
+                SectionTitle(tr.adminImpactoFormativo),
                 _ImpactMetricsPanel(metrics: metrics),
               ],
             );
@@ -141,38 +143,38 @@ class _Kpis extends StatelessWidget {
         StatRow(tiles: [
           StatTile(
               value: '${counts.allStudents}',
-              label: 'Estudiantes',
+              label: tr.tabEstudiantesCorto,
               icon: Icons.school_outlined),
           StatTile(
               value: '${counts.projects}',
-              label: 'Proyectos',
+              label: tr.tabProyectosCorto,
               icon: Icons.lightbulb_outline),
           StatTile(
               value: '${counts.groups}',
-              label: 'Equipos',
+              label: tr.tabEquipos,
               icon: Icons.groups_outlined),
           StatTile(
               value: '${counts.courses}',
-              label: 'Cursos',
+              label: tr.tabCursosCorto,
               icon: Icons.video_library_outlined),
         ]),
         const SizedBox(height: 12),
         StatRow(tiles: [
           StatTile(
               value: '${counts.certificates}',
-              label: 'Certificados emitidos',
+              label: tr.certificacionesEmitidos,
               icon: Icons.workspace_premium_outlined),
           StatTile(
               value: '${counts.universities}',
-              label: 'Universidades',
+              label: tr.proyectosUniversidades,
               icon: Icons.account_balance_outlined),
           StatTile(
               value: '${counts.mentors}',
-              label: 'Mentores',
+              label: tr.labMentores,
               icon: Icons.psychology_outlined),
           StatTile(
               value: '${counts.laboratories}',
-              label: 'Laboratorios',
+              label: tr.tabLaboratorios,
               icon: Icons.science_outlined),
         ]),
       ],
@@ -192,7 +194,7 @@ class _Charts extends StatelessWidget {
       builder: (context, c) {
         final wide = c.maxWidth > 900;
         final byRole = ChartCard(
-          title: 'Usuarios por rol',
+          title: tr.adminUsuariosPorRol,
           child: SimpleBarChart(
             maxY: [
               counts.allStudents,
@@ -203,12 +205,12 @@ class _Charts extends StatelessWidget {
               counts.lxds,
             ].reduce((a, b) => a > b ? a : b).toDouble().clamp(5, 99999) * 1.2,
             data: [
-              (label: 'Estud.', value: counts.allStudents.toDouble()),
+              (label: tr.adminEstudAbrev, value: counts.allStudents.toDouble()),
               (label: 'LXD', value: counts.lxds.toDouble()),
-              (label: 'Mentores', value: counts.mentors.toDouble()),
-              (label: 'Asesores', value: counts.advisors.toDouble()),
-              (label: 'Empresas', value: counts.companies.toDouble()),
-              (label: 'Donantes', value: counts.donors.toDouble()),
+              (label: tr.labMentores, value: counts.mentors.toDouble()),
+              (label: tr.adminAsesores, value: counts.advisors.toDouble()),
+              (label: tr.adminEmpresas, value: counts.companies.toDouble()),
+              (label: tr.adminDonantes, value: counts.donors.toDouble()),
             ],
           ),
         );
@@ -217,7 +219,7 @@ class _Charts extends StatelessWidget {
         // la etiqueta al filtro no encontraría nada, y el gráfico saldría
         // vacío sin que nada falle.
         final byStage = ChartCard(
-          title: 'Proyectos por etapa',
+          title: tr.adminProyectosPorEtapa,
           child: DonutChart(
             data: [
               for (final stage in ProjectStage.all)
@@ -260,10 +262,9 @@ class _ImpactMetricsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (metrics.hasNoCharts) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.insights_outlined,
-        message: 'Configure competencias, ODS y horas en los cursos '
-            '(constructor del LXD) para ver métricas de impacto formativo.',
+        message: tr.adminConfigureMetricas,
       );
     }
 
@@ -276,11 +277,11 @@ class _ImpactMetricsPanel extends StatelessWidget {
           builder: (context, c) {
             final wide = c.maxWidth > 900;
             final hoursChart = ChartCard(
-              title: 'Horas de formación por competencia',
+              title: tr.adminHorasCompetencia,
               height: 220,
               child: horas.isEmpty
-                  ? const EmptyState(
-                      icon: Icons.school_outlined, message: 'Sin datos aún')
+                  ? EmptyState(
+                      icon: Icons.school_outlined, message: tr.adminSinDatosAun)
                   : SimpleBarChart(
                       maxY: (horas.first.hours * 1.3).clamp(5, 99999),
                       data: [
@@ -328,9 +329,8 @@ class _ImpactMetricsPanel extends StatelessWidget {
                         const SizedBox(width: 10),
                         Flexible(
                           child: Text(
-                            '${s.companyName} ha patrocinado '
-                            '${s.hours.toStringAsFixed(s.hours % 1 == 0 ? 0 : 1)} '
-                            'horas de formación',
+                            tr.adminHorasPatrocinadas(
+                                s.companyName, numero(s.hours)),
                             style: const TextStyle(fontSize: 13),
                           ),
                         ),
@@ -365,11 +365,11 @@ class _OdsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Cobertura de ODS (estudiantes que completaron)',
+          Text(tr.adminCoberturaOds,
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
           const SizedBox(height: 14),
           if (ods.isEmpty)
-            const Text('Sin cursos asociados a ODS aún',
+            Text(tr.adminSinCursosOds,
                 style: TextStyle(color: AppColors.textMuted))
           else
             for (final o in ods.take(5))
@@ -390,7 +390,7 @@ class _OdsCard extends StatelessWidget {
                         // doscientas no son la misma noticia, y la barra sola
                         // no lo distingue.
                         tooltip:
-                            '${o.label} — ${o.completed} de ${o.total}',
+                            tr.adminOdsTooltip(o.label, o.completed, o.total),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -418,9 +418,8 @@ class AdminCalendar extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Calendario',
-      subtitle: 'Sesiones sincrónicas de Open Learning, eventos de Ruta de '
-          'Impacto y mentorías de toda la plataforma',
+      title: tr.tabCalendario,
+      subtitle: tr.adminCalendarioSubtitulo,
       children: [
         combine3(data.calendarEvents, data.courses, data.laboratories).when(
           loading: () => const CardListSkeleton(count: 1, height: 320),

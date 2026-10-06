@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -22,10 +23,10 @@ class AdminSiteContent extends StatelessWidget {
     // Edita el sitio público y sube imágenes: en el teléfono, primero el
     // aviso de que conviene hacerlo desde un computador.
     return AvisoEscritorio(
-      herramienta: 'la edición de la página principal',
+      herramienta: tr.contenidoHerramienta,
       child: TabBody(
-      title: 'Contenido de la Página Principal',
-      subtitle: 'Hero, banner y textos visibles para el público',
+      title: tr.contenidoTitulo,
+      subtitle: tr.contenidoSubtitulo,
       children: [
         data.siteContent.when(
           loading: () => const CardListSkeleton(count: 1, height: 400),
@@ -103,7 +104,7 @@ class _FormState extends State<_Form> {
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('El título del hero no puede quedar vacío.'));
+          ValidationError(tr.contenidoTituloVacio));
       return;
     }
     setState(() {
@@ -125,7 +126,7 @@ class _FormState extends State<_Form> {
       });
       if (!mounted) return;
       setState(() => _saving = false);
-      showSuccessCheck(context, 'Página principal actualizada ✓');
+      showSuccessCheck(context, tr.contenidoActualizado);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -157,7 +158,7 @@ class _FormState extends State<_Form> {
         _nuevas.clear();
         _saving = false;
       });
-      showSuccessCheck(context, 'Imágenes publicadas ✓');
+      showSuccessCheck(context, tr.contenidoImagenesPublicadas);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -179,33 +180,30 @@ class _FormState extends State<_Form> {
             ErrorBanner(_error!),
             const SizedBox(height: 14),
           ],
-          _campo(_title, 'Título del hero'),
+          _campo(_title, tr.contenidoTituloHero),
           const SizedBox(height: 14),
-          _campo(_subtitle, 'Subtítulo del hero', maxLines: 2),
+          _campo(_subtitle, tr.contenidoSubtituloHero, maxLines: 2),
           const SizedBox(height: 14),
-          _campo(_banner, 'Banner de anuncio (vacío = oculto)'),
+          _campo(_banner, tr.contenidoBanner),
           const SizedBox(height: 14),
-          _campo(_about, 'Texto "Sobre nosotros"', maxLines: 3),
+          _campo(_about, tr.contenidoSobreNosotros, maxLines: 3),
           const SizedBox(height: 14),
           TextField(
             controller: _meetingLink,
             keyboardType: TextInputType.url,
             autocorrect: false,
             enabled: !_saving,
-            decoration: const InputDecoration(
-              labelText: 'Link de videollamada (módulos de mentoría)',
-              helperText: 'Un solo enlace genérico: todavía no hay integración '
-                  'con un proveedor de reuniones.',
+            decoration: InputDecoration(
+              labelText: tr.contenidoLinkVideollamada,
+              helperText: tr.contenidoLinkAyuda,
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Cifras del hero',
+          Text(tr.contenidoCifras,
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
           const SizedBox(height: 4),
-          const Text(
-            'Los cuatro números bajo el título. Se escriben a mano a propósito: '
-            'son la cifra que el equipo quiere comunicar, no el conteo de la '
-            'base — ese vive en el panel.',
+          Text(
+            tr.contenidoCifrasAyuda,
             style: TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 14),
@@ -213,10 +211,10 @@ class _FormState extends State<_Form> {
           LayoutBuilder(
             builder: (context, c) {
               final campos = [
-                _numero(_statStudents, 'Estudiantes activos'),
-                _numero(_statProjects, 'Proyectos de impacto'),
-                _numero(_statLabs, 'Laboratorios'),
-                _numero(_statUniversities, 'Universidades aliadas'),
+                _numero(_statStudents, tr.portadaEstudiantesActivos),
+                _numero(_statProjects, tr.portadaProyectosImpacto),
+                _numero(_statLabs, tr.portadaLaboratorios),
+                _numero(_statUniversities, tr.portadaUniversidadesAliadas),
               ];
               if (c.maxWidth < 460) {
                 return Column(
@@ -259,7 +257,7 @@ class _FormState extends State<_Form> {
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.save_outlined, size: 18),
-              label: Text(_saving ? 'Guardando…' : 'Guardar cambios'),
+              label: Text(_saving ? tr.comunGuardando : tr.contenidoGuardarCambios),
               onPressed: _saving ? null : _save,
             ),
           ),
@@ -307,17 +305,16 @@ class _Galeria extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Galería de imágenes',
+        Text(tr.contenidoGaleria,
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
         const SizedBox(height: 4),
-        const Text(
-          'Se muestran en la página principal, entre los laboratorios y el '
-          'cierre. Quitar una la saca de la portada de inmediato.',
+        Text(
+          tr.contenidoGaleriaAyuda,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12),
         ),
         const SizedBox(height: 14),
         if (imagenes.isEmpty)
-          const Text('Todavía no hay imágenes en la galería.',
+          Text(tr.contenidoGaleriaVacia,
               style: TextStyle(color: AppColors.textMuted, fontSize: 12.5))
         else
           Wrap(
@@ -359,8 +356,8 @@ class _Galeria extends StatelessWidget {
                             : () async {
                                 final ok = await confirmDialog(
                                   context,
-                                  'Quitar imagen',
-                                  '¿Sacarla de la página principal?',
+                                  tr.glosarioQuitarImagen,
+                                  tr.contenidoSacarImagen,
                                 );
                                 if (!ok) return;
                                 await data.removeGalleryImage(img.id);
@@ -398,7 +395,7 @@ class _Galeria extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
-              label: Text('Publicar ${nuevas.length} en la portada'),
+              label: Text(tr.contenidoPublicar(nuevas.length)),
               onPressed: enabled ? onPublicar : null,
             ),
           ),

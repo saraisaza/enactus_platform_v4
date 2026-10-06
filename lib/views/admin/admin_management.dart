@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/textos.dart';
 import '../../widgets/university_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -36,13 +37,12 @@ class AdminProjects extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Proyectos',
-      subtitle: 'Cada proyecto define problema, solución, comunidad, ODS, '
-          'etapa e indicadores',
+      title: tr.tabProyectosCorto,
+      subtitle: tr.gestionProyectosSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Nuevo proyecto'),
+          label: Text(tr.gestionNuevoProyecto),
           onPressed: () => showProjectDialog(context, null),
         ),
       ],
@@ -51,8 +51,8 @@ class AdminProjects extends StatelessWidget {
           loading: () => const CardListSkeleton(count: 4, height: 120),
           error: (e) => ErrorState(e, onRetry: data.reloadProjects),
           data: (projects) => projects.isEmpty
-              ? const EmptyState(
-                  icon: Icons.lightbulb_outline, message: 'No hay proyectos.')
+              ? EmptyState(
+                  icon: Icons.lightbulb_outline, message: tr.gestionSinProyectos)
               : Column(
                   children: [
                     for (final p in projects)
@@ -107,18 +107,18 @@ class _ProjectCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
                 color: AppColors.gold,
-                tooltip: 'Editar',
+                tooltip: tr.comunEditar,
                 onPressed: () => showProjectDialog(context, project),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
                 color: AppColors.statusCritical,
-                tooltip: 'Eliminar',
+                tooltip: tr.comunEliminar,
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(
                     context,
-                    'Eliminar proyecto',
-                    'Va a eliminar "${project.name}".',
+                    tr.gestionEliminarProyecto,
+                    tr.gestionVaAEliminar(project.name),
                   );
                   if (!ok || !context.mounted) return;
                   try {
@@ -152,7 +152,7 @@ class _ProjectCard extends StatelessWidget {
                     icon: Icons.emoji_events_outlined),
               if (project.teamSize > 0)
                 StatusChip(
-                    label: '${project.teamSize} integrantes',
+                    label: tr.gestionIntegrantes(project.teamSize),
                     color: AppColors.textSecondary,
                     icon: Icons.groups_outlined),
               for (final u in project.universities)
@@ -243,7 +243,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('El proyecto necesita un nombre.'));
+          _error = ValidationError(tr.gestionProyectoNombre));
       return;
     }
     setState(() {
@@ -288,7 +288,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: _isNew ? 'Nuevo proyecto' : 'Editar proyecto',
+      title: _isNew ? tr.gestionNuevoProyecto : tr.gestionEditarProyecto,
       maxWidth: 540,
       saving: _saving,
       onCancel: () => Navigator.pop(context, false),
@@ -301,7 +301,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             ErrorBanner(_error!),
             const SizedBox(height: 12),
           ],
-          _campo(_name, 'Nombre'),
+          _campo(_name, tr.comunNombre),
           const SizedBox(height: 12),
           UniversityPicker(
             value: _universityId,
@@ -312,24 +312,24 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             // viejos, no algo que se deba poder elegir a propósito. Se permite
             // para no bloquear la edición de los que ya están así, y se dice.
             allowEmpty: true,
-            emptyLabel: 'Sin universidad (pendiente de reconciliar)',
-            helperText: 'Sus integrantes tienen que ser de esta universidad.',
+            emptyLabel: tr.gestionSinUniversidadReconciliar,
+            helperText: tr.gestionIntegrantesUniversidad,
           ),
           const SizedBox(height: 12),
-          _campo(_description, 'Descripción', maxLines: 2),
+          _campo(_description, tr.comunDescripcion, maxLines: 2),
           const SizedBox(height: 12),
-          _campo(_problem, 'Problema que resuelve', maxLines: 2),
+          _campo(_problem, tr.gestionProblema, maxLines: 2),
           const SizedBox(height: 12),
-          _campo(_solution, 'Solución propuesta', maxLines: 2),
+          _campo(_solution, tr.gestionSolucion, maxLines: 2),
           const SizedBox(height: 12),
-          _campo(_community, 'Comunidad beneficiada'),
+          _campo(_community, tr.gestionComunidad),
           const SizedBox(height: 12),
-          _campo(_indicators, 'Indicadores de impacto'),
+          _campo(_indicators, tr.proyectosIndicadores),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _stage,
-            decoration: const InputDecoration(labelText: 'Etapa actual'),
+            decoration: InputDecoration(labelText: tr.gestionEtapaActual),
             items: [
               for (final s in ProjectStage.all)
                 DropdownMenuItem(value: s, child: Text(ProjectStage.label(s))),
@@ -339,17 +339,17 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
           const SizedBox(height: 12),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Habilitar RUTA NATIONAL EXPO',
+            title: Text(tr.gestionHabilitarExpo,
                 style: TextStyle(fontSize: 14)),
-            subtitle: const Text(
-                'Abre la checklist de preparación para el equipo.',
+            subtitle: Text(
+                tr.gestionHabilitarExpoTexto,
                 style: TextStyle(fontSize: 12)),
             value: _expoEnabled,
             activeThumbColor: AppColors.gold,
             onChanged:
                 _saving ? null : (v) => setState(() => _expoEnabled = v),
           ),
-          const SectionTitle('ODS relacionados'),
+          SectionTitle(tr.constructorOdsRelacionados),
           _OdsPicker(
             selected: _ods,
             enabled: !_saving,
@@ -426,13 +426,12 @@ class AdminGroups extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Equipos',
-      subtitle: 'Cada equipo trabaja un proyecto desde una universidad, con '
-          'su asesor académico',
+      title: tr.tabEquipos,
+      subtitle: tr.gestionEquiposSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Nuevo equipo'),
+          label: Text(tr.gestionNuevoEquipo),
           onPressed: () => showGroupDialog(context, null),
         ),
       ],
@@ -446,8 +445,8 @@ class AdminGroups extends StatelessWidget {
           data: (values) {
             final (groups, projects) = values;
             if (groups.isEmpty) {
-              return const EmptyState(
-                  icon: Icons.groups_outlined, message: 'No hay equipos.');
+              return EmptyState(
+                  icon: Icons.groups_outlined, message: tr.gestionSinEquipos);
             }
             final porId = {for (final p in projects) p.id: p};
             return Column(
@@ -507,22 +506,22 @@ class _GroupCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.person_add_alt_outlined, size: 18),
                 color: AppColors.gold,
-                tooltip: 'Integrantes',
+                tooltip: tr.gestionIntegrantesTitulo,
                 onPressed: () => showGroupMembersDialog(context, group),
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
                 color: AppColors.gold,
-                tooltip: 'Editar',
+                tooltip: tr.comunEditar,
                 onPressed: () => showGroupDialog(context, group),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
                 color: AppColors.statusCritical,
-                tooltip: 'Eliminar',
+                tooltip: tr.comunEliminar,
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(context,
-                      'Eliminar equipo', 'Va a eliminar "${group.name}".');
+                      tr.gestionEliminarEquipo, tr.gestionVaAEliminar(group.name));
                   if (!ok || !context.mounted) return;
                   try {
                     await data.deleteGroup(group.id);
@@ -584,8 +583,8 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
 
   Future<void> _save() async {
     if (_name.text.trim().isEmpty || _projectId == null) {
-      setState(() => _error = const ValidationError(
-          'El equipo necesita un nombre y un proyecto.'));
+      setState(() => _error = ValidationError(
+          tr.gestionEquipoNecesita));
       return;
     }
     setState(() {
@@ -623,7 +622,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
     final data = context.watch<DataProvider>();
 
     return AdaptiveFormShell(
-      title: _isNew ? 'Nuevo equipo' : 'Editar equipo',
+      title: _isNew ? tr.gestionNuevoEquipo : tr.gestionEditarEquipo,
       maxWidth: 500,
       saving: _saving,
       onCancel: () => Navigator.pop(context, false),
@@ -639,7 +638,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Nombre del equipo'),
+            decoration: InputDecoration(labelText: tr.gestionNombreEquipo),
           ),
           const SizedBox(height: 12),
           data.projects.when(
@@ -649,7 +648,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
               initialValue:
                   projects.any((p) => p.id == _projectId) ? _projectId : null,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Proyecto'),
+              decoration: InputDecoration(labelText: tr.busquedaTipoProyecto),
               items: [
                 for (final p in projects)
                   DropdownMenuItem(
@@ -676,15 +675,15 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
                     .firstOrNull;
             final uni = data.universityById(proyecto?.universityId);
             return InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Universidad',
-                helperText: 'Sale del proyecto. Para cambiarla, edite el proyecto.',
+              decoration: InputDecoration(
+                labelText: tr.universidadEtiqueta,
+                helperText: tr.gestionUniversidadDelProyecto,
               ),
               child: Text(
                 uni?.name ??
                     (_projectId == null
-                        ? 'Elija un proyecto'
-                        : 'El proyecto todavía no tiene universidad'),
+                        ? tr.gestionElijaProyecto
+                        : tr.gestionProyectoSinUniversidad),
                 style: TextStyle(
                   color: uni == null
                       ? AppColors.textSecondary
@@ -702,15 +701,13 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
                       ? _advisorId
                       : null,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Asesor académico (opcional)',
-                    helperText: 'El asesor acompaña al equipo, no al proyecto: '
-                        'un proyecto puede tener equipos de varias '
-                        'universidades.',
+                  decoration: InputDecoration(
+                    labelText: tr.gestionAsesorOpcional,
+                    helperText: tr.gestionAsesorAyuda,
                   ),
                   items: [
-                    const DropdownMenuItem<String?>(
-                        value: null, child: Text('Sin asesor')),
+                    DropdownMenuItem<String?>(
+                        value: null, child: Text(tr.gestionSinAsesor)),
                     for (final a in asesores)
                       DropdownMenuItem<String?>(
                           value: a.id,
@@ -794,7 +791,7 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
     final members = _members;
 
     return AdaptiveFormShell(
-      title: 'Integrantes de ${widget.group.name}',
+      title: tr.gestionIntegrantesDe(widget.group.name),
       maxWidth: 520,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -811,9 +808,9 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
               data: (values) {
                 final (estudiantes, _) = values;
                 if (estudiantes.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                       icon: Icons.people_outline,
-                      message: 'No hay estudiantes para asignar.');
+                      message: tr.gestionSinEstudiantes);
                 }
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -823,9 +820,8 @@ class _GroupMembersDialogState extends State<_GroupMembersDialog> {
                       ErrorBanner(_error!),
                       const SizedBox(height: 12),
                     ],
-                    const Text(
-                      'El rol dentro del proyecto no es el rol de la '
-                      'plataforma: describe qué hace esa persona en el equipo.',
+                    Text(
+                      tr.gestionRolProyecto,
                       style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                     ),
@@ -920,12 +916,12 @@ class AdminLabs extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Laboratorios',
-      subtitle: 'Cada laboratorio tiene su Ruta de Impacto de tres fases',
+      title: tr.tabLaboratorios,
+      subtitle: tr.gestionLabsSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Nuevo laboratorio'),
+          label: Text(tr.gestionNuevoLab),
           onPressed: () => showLabDialog(context, null),
         ),
       ],
@@ -934,9 +930,9 @@ class AdminLabs extends StatelessWidget {
           loading: () => const CardListSkeleton(count: 4, height: 110),
           error: (e) => ErrorState(e, onRetry: data.reloadLaboratories),
           data: (labs) => labs.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.science_outlined,
-                  message: 'No hay laboratorios.')
+                  message: tr.gestionSinLabs)
               : Column(
                   children: [
                     for (final lab in labs)
@@ -976,7 +972,7 @@ class _LabCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.route_outlined, size: 18),
                 color: AppColors.gold,
-                tooltip: 'Editar Ruta de Impacto',
+                tooltip: tr.gestionEditarRuta,
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -986,18 +982,18 @@ class _LabCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
                 color: AppColors.gold,
-                tooltip: 'Editar',
+                tooltip: tr.comunEditar,
                 onPressed: () => showLabDialog(context, lab),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
                 color: AppColors.statusCritical,
-                tooltip: 'Eliminar',
+                tooltip: tr.comunEliminar,
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(
                     context,
-                    'Eliminar laboratorio',
-                    'Va a eliminar "${lab.name}" con toda su Ruta.',
+                    tr.gestionEliminarLab,
+                    tr.gestionEliminarLabTexto(lab.name),
                   );
                   if (!ok || !context.mounted) return;
                   try {
@@ -1077,7 +1073,7 @@ class _LabFormDialogState extends State<_LabFormDialog> {
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) {
       setState(() => _error =
-          const ValidationError('El laboratorio necesita un nombre.'));
+          ValidationError(tr.gestionLabNombre));
       return;
     }
     setState(() {
@@ -1119,7 +1115,7 @@ class _LabFormDialogState extends State<_LabFormDialog> {
     final data = context.watch<DataProvider>();
 
     return AdaptiveFormShell(
-      title: _isNew ? 'Nuevo laboratorio' : 'Editar laboratorio',
+      title: _isNew ? tr.gestionNuevoLab : tr.gestionEditarLab,
       maxWidth: 480,
       saving: _saving,
       onCancel: () => Navigator.pop(context, false),
@@ -1133,32 +1129,31 @@ class _LabFormDialogState extends State<_LabFormDialog> {
             const SizedBox(height: 12),
           ],
           if (_isNew)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: Text(
-                'Se crea con sus tres fases. Después se editan desde el editor '
-                'de Ruta de Impacto.',
+                tr.gestionLabSeCrea,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
               ),
             ),
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Nombre'),
+            decoration: InputDecoration(labelText: tr.comunNombre),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Descripción'),
+            decoration: InputDecoration(labelText: tr.comunDescripcion),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _objectives,
             enabled: !_saving,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Objetivos'),
+            decoration: InputDecoration(labelText: tr.cursoObjetivos),
           ),
           const SizedBox(height: 12),
           data.users(role: Roles.company).when(
@@ -1169,11 +1164,11 @@ class _LabFormDialogState extends State<_LabFormDialog> {
                       ? _sponsorId
                       : null,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                      labelText: 'Empresa patrocinadora (opcional)'),
+                  decoration: InputDecoration(
+                      labelText: tr.gestionEmpresaOpcional),
                   items: [
-                    const DropdownMenuItem<String?>(
-                        value: null, child: Text('Ninguna')),
+                    DropdownMenuItem<String?>(
+                        value: null, child: Text(tr.constructorNinguna)),
                     for (final c in empresas)
                       DropdownMenuItem<String?>(
                         value: c.id,
@@ -1212,8 +1207,8 @@ class _AdminCoursesState extends State<AdminCourses> {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Cursos',
-      subtitle: 'Todos los cursos de la plataforma, de cualquier LXD',
+      title: tr.tabCursosCorto,
+      subtitle: tr.gestionCursosSubtitulo,
       children: [
         Wrap(
           spacing: 8,
@@ -1221,7 +1216,7 @@ class _AdminCoursesState extends State<AdminCourses> {
           children: [
             for (final s in [_todos, ...CourseStatus.all])
               ChoiceChip(
-                label: Text(s == _todos ? 'Todos' : CourseStatus.label(s)),
+                label: Text(s == _todos ? tr.comunTodos : CourseStatus.label(s)),
                 selected: _filtro == s,
                 selectedColor: AppColors.gold.withValues(alpha: 0.25),
                 onSelected: (_) => setState(() => _filtro = s),
@@ -1237,9 +1232,9 @@ class _AdminCoursesState extends State<AdminCourses> {
                 ? courses
                 : courses.where((c) => c.status == _filtro).toList();
             if (visibles.isEmpty) {
-              return const EmptyState(
+              return EmptyState(
                   icon: Icons.video_library_outlined,
-                  message: 'No hay cursos con ese estado.');
+                  message: tr.gestionSinCursosEstado);
             }
             return Column(
               children: [
@@ -1306,21 +1301,21 @@ class _CourseCard extends StatelessWidget {
               runSpacing: 6,
               children: [
                 StatusChip(
-                    label: '${stats.enrolled} inscritos',
+                    label: tr.lxdInscritos(stats.enrolled),
                     color: AppColors.textSecondary,
                     icon: Icons.people_outline),
                 StatusChip(
-                    label: '${stats.completed} completaron',
+                    label: tr.gestionCompletaron(stats.completed),
                     color: AppColors.statusGood,
                     icon: Icons.verified_outlined),
                 if (stats.pending > 0)
                   StatusChip(
-                      label: '${stats.pending} sin calificar',
+                      label: tr.gestionSinCalificar(stats.pending),
                       color: AppColors.statusSerious,
                       icon: Icons.pending_actions_outlined),
                 if (course.linkedModule != null)
                   StatusChip(
-                      label: 'Ruta: ${course.linkedModule}',
+                      label: tr.gestionRutaModulo(course.linkedModule!),
                       color: AppColors.gold,
                       icon: Icons.route_outlined),
               ],
@@ -1335,7 +1330,7 @@ class _CourseCard extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 icon: const Icon(Icons.edit_outlined, size: 16),
-                label: const Text('Editar'),
+                label: Text(tr.comunEditar),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1344,10 +1339,10 @@ class _CourseCard extends StatelessWidget {
               ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.delete_outline, size: 16),
-                label: const Text('Eliminar'),
+                label: Text(tr.comunEliminar),
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(context,
-                      'Eliminar curso', 'Va a eliminar "${course.name}".');
+                      tr.lxdEliminarCurso, tr.gestionVaAEliminar(course.name));
                   if (!ok || !context.mounted) return;
                   try {
                     await data.deleteCourse(course.id);
@@ -1381,12 +1376,12 @@ class AdminEvidences extends StatelessWidget {
     final data = context.watch<DataProvider>();
 
     return TabBody(
-      title: 'Evidencias para Donantes',
-      subtitle: 'Fotos, historias y reportes que ve cada donante en su portal',
+      title: tr.gestionEvidenciasTitulo,
+      subtitle: tr.gestionEvidenciasSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
-          label: const Text('Nueva evidencia'),
+          label: Text(tr.gestionNuevaEvidencia),
           onPressed: () => showEvidenceDialog(context, null),
         ),
       ],
@@ -1395,9 +1390,9 @@ class AdminEvidences extends StatelessWidget {
           loading: () => const CardListSkeleton(count: 3, height: 96),
           error: (e) => ErrorState(e, onRetry: data.reloadEvidences),
           data: (evidences) => evidences.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.volunteer_activism_outlined,
-                  message: 'No hay evidencias todavía.')
+                  message: tr.gestionSinEvidencias)
               : Column(
                   children: [
                     for (final ev in evidences)
@@ -1446,16 +1441,16 @@ class _EvidenceCard extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 18),
             color: AppColors.gold,
-            tooltip: 'Editar',
+            tooltip: tr.comunEditar,
             onPressed: () => showEvidenceDialog(context, evidence),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 18),
             color: AppColors.statusCritical,
-            tooltip: 'Eliminar',
+            tooltip: tr.comunEliminar,
             onPressed: () async {
-              final ok = await confirmDialog(context, 'Eliminar evidencia',
-                  '¿Eliminar "${evidence.title}"?');
+              final ok = await confirmDialog(context, tr.gestionEliminarEvidencia,
+                  tr.recursosEliminarTexto(evidence.title));
               if (!ok || !context.mounted) return;
               try {
                 await data.deleteEvidence(evidence.id);
@@ -1523,8 +1518,8 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty || _donorId == null) {
-      setState(() => _error = const ValidationError(
-          'La evidencia necesita un título y un donante.'));
+      setState(() => _error = ValidationError(
+          tr.gestionEvidenciaNecesita));
       return;
     }
     setState(() {
@@ -1569,7 +1564,7 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
     final data = context.watch<DataProvider>();
 
     return AdaptiveFormShell(
-      title: _isNew ? 'Nueva evidencia' : 'Editar evidencia',
+      title: _isNew ? tr.gestionNuevaEvidencia : tr.gestionEditarEvidencia,
       maxWidth: 460,
       saving: _saving,
       onCancel: () => Navigator.pop(context, false),
@@ -1585,20 +1580,20 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Título'),
+            decoration: InputDecoration(labelText: tr.comunTitulo),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Descripción'),
+            decoration: InputDecoration(labelText: tr.comunDescripcion),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _type,
-            decoration: const InputDecoration(labelText: 'Tipo'),
+            decoration: InputDecoration(labelText: tr.gestionTipo),
             items: [
               for (final t in const [
                 'photo',
@@ -1620,9 +1615,9 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
                   initialValue:
                       donantes.any((d) => d.id == _donorId) ? _donorId : null,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Donante que la recibe',
-                    helperText: 'Solo ese donante la ve en su portal.',
+                  decoration: InputDecoration(
+                    labelText: tr.gestionDonanteRecibe,
+                    helperText: tr.gestionSoloEseDonante,
                   ),
                   items: [
                     for (final d in donantes)
@@ -1636,13 +1631,13 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
                 ),
               ),
           const SizedBox(height: 14),
-          const Text('Archivo (opcional)',
+          Text(tr.gestionArchivoOpcional,
               style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
           const SizedBox(height: 6),
           if (widget.original?.s3Key != null && _archivo.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 8),
-              child: Text('Ya tiene un archivo. Subir otro lo reemplaza.',
+              child: Text(tr.gestionYaTieneArchivo,
                   style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             ),
           FileUploadField(

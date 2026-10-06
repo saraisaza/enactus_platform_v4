@@ -4044,4 +4044,835 @@ class AppLocalizationsEn extends AppLocalizations {
   String seguimientoNotaYActividad(Object nota, Object actividad) {
     return 'Grade: $nota  ·  $actividad';
   }
+
+  @override
+  String get adminPortalSuper => 'Super Admin Portal';
+
+  @override
+  String get adminPortal => 'Admin Portal';
+
+  @override
+  String get tabUsuarios => 'Users';
+
+  @override
+  String get tabEquipos => 'Teams';
+
+  @override
+  String get tabEvidenciasDonantes => 'Donor evidence';
+
+  @override
+  String get tabEvidenciasCorto => 'Evidence';
+
+  @override
+  String get tabContenidoPagina => 'Page content';
+
+  @override
+  String get tabContenidoCorto => 'Content';
+
+  @override
+  String get tabDatosRespaldos => 'Data and backups';
+
+  @override
+  String get tabRespaldosCorto => 'Backups';
+
+  @override
+  String get adminDashboardGeneral => 'General Dashboard';
+
+  @override
+  String get adminDashboardSubtitulo => 'Overall status of the platform';
+
+  @override
+  String get adminImpactoFormativo => 'eduXaction training impact';
+
+  @override
+  String get adminUsuariosPorRol => 'Users by role';
+
+  @override
+  String get adminEstudAbrev => 'Stud.';
+
+  @override
+  String get adminAsesores => 'Advisors';
+
+  @override
+  String get adminEmpresas => 'Companies';
+
+  @override
+  String get adminDonantes => 'Donors';
+
+  @override
+  String get adminProyectosPorEtapa => 'Projects by stage';
+
+  @override
+  String get adminConfigureMetricas =>
+      'Set up skills, SDGs and hours in the courses (LXD builder) to see training impact metrics.';
+
+  @override
+  String get adminHorasCompetencia => 'Training hours by skill';
+
+  @override
+  String get adminSinDatosAun => 'No data yet';
+
+  @override
+  String get adminCoberturaOds => 'SDG coverage (students who completed)';
+
+  @override
+  String get adminSinCursosOds => 'No courses associated with SDGs yet';
+
+  @override
+  String adminOdsTooltip(Object ods, Object completados, Object total) {
+    return '$ods — $completados of $total';
+  }
+
+  @override
+  String get adminCalendarioSubtitulo =>
+      'Open Learning live sessions, Impact Path events and mentoring sessions across the whole platform';
+
+  @override
+  String get asignarCursosOk => 'Courses assigned ✓';
+
+  @override
+  String get asignarLabsOk => 'Laboratories assigned ✓';
+
+  @override
+  String asignarA(Object nombre) {
+    return 'Assign to $nombre';
+  }
+
+  @override
+  String asignarNoCarga(Object error) {
+    return 'What is assigned could not be loaded: $error';
+  }
+
+  @override
+  String get asignarExplicaOL =>
+      'Open Learning account: receives courses one by one. It is their only way to access material — without assigned courses there is nothing to see. It has no laboratories or Impact Path.';
+
+  @override
+  String get asignarExplicaEdu =>
+      'eduXaction account: receives laboratories, and with them access to ALL their courses, without assigning them separately. Removing a laboratory removes that material: their progress is not deleted and comes back as it was if it is reassigned, but in the meantime they stop seeing it.';
+
+  @override
+  String get asignarSinLabs => 'There are no laboratories created yet.';
+
+  @override
+  String get asignarSinCursos => 'There are no courses created yet.';
+
+  @override
+  String get asignarDeLaboratorio => 'Laboratory course';
+
+  @override
+  String asignarPendientes(int cantidad, Object cursos) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other:
+          'Assigned. These courses are not published, so they will not see them yet: $cursos.',
+      one:
+          'Assigned. This course is not published, so they will not see it yet: $cursos.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String adminHorasPatrocinadas(Object empresa, Object horas) {
+    return '$empresa has sponsored $horas hours of training';
+  }
+
+  @override
+  String get usuariosSubtituloSuper =>
+      'Creates and deletes any type of account (including admins)';
+
+  @override
+  String get usuariosSubtitulo =>
+      'Creates accounts for students, LXDs, mentors, advisors, companies and donors';
+
+  @override
+  String get usuariosNuevo => 'New user';
+
+  @override
+  String get comunTodos => 'All';
+
+  @override
+  String get usuariosSinRol => 'There are no accounts with that role.';
+
+  @override
+  String get usuariosUnaSolicitud => '1 account deletion request';
+
+  @override
+  String usuariosSolicitudes(Object cantidad) {
+    return '$cantidad account deletion requests';
+  }
+
+  @override
+  String usuariosSolicitudesTexto(Object dias) {
+    return 'These accounts no longer work. Their personal data still has to be deleted within the $dias-day period they were promised.';
+  }
+
+  @override
+  String usuariosBorrarDatosDe(Object nombre) {
+    return 'Delete $nombre\'s data';
+  }
+
+  @override
+  String get usuariosBorrarDatosTexto =>
+      'Their name, email, phone, ID number, city, photo and profile, the name on their certificates and the notes about this person are deleted. This cannot be undone.';
+
+  @override
+  String get usuariosDatosBorrados => 'Data deleted.';
+
+  @override
+  String get usuariosBorrando => 'Deleting…';
+
+  @override
+  String get usuariosBorrarDatos => 'Delete data';
+
+  @override
+  String get usuariosRol => 'Role';
+
+  @override
+  String get usuariosDetalle => 'Details';
+
+  @override
+  String get usuariosAcciones => 'Actions';
+
+  @override
+  String usuariosCalifica(Object contextos) {
+    return 'Grades: $contextos';
+  }
+
+  @override
+  String get usuariosAsignarCursos => 'Assign courses';
+
+  @override
+  String get usuariosAsignarLabs => 'Assign laboratories';
+
+  @override
+  String get usuariosEliminar => 'Delete user';
+
+  @override
+  String usuariosEliminarTexto(Object nombre, Object rol) {
+    return 'You are about to delete $nombre ($rol).';
+  }
+
+  @override
+  String get usuariosCuentaEliminada => 'Account deleted ✓';
+
+  @override
+  String get usuariosNombreCorreoObligatorios => 'Name and email are required.';
+
+  @override
+  String get usuariosContrasenaMinima =>
+      'The password needs at least 6 characters.';
+
+  @override
+  String get usuariosEscribaInstitucion =>
+      'Write the name of the institution in “Which institution?”.';
+
+  @override
+  String get usuariosEditar => 'Edit user';
+
+  @override
+  String usuariosRolFijo(Object rol) {
+    return 'Role: $rol — to change it, another account is created. Changing it here would move their access without anyone noticing.';
+  }
+
+  @override
+  String get usuariosNombreCompleto => 'Full name';
+
+  @override
+  String get usuariosContrasenaNueva => 'New password (optional)';
+
+  @override
+  String get usuariosMinimoSeis => 'At least 6 characters.';
+
+  @override
+  String get usuariosDejeEnBlanco =>
+      'Leave it blank to keep it. Changing it signs that person out of their open sessions.';
+
+  @override
+  String get usuariosSinUniversidadAsesor =>
+      'No university — they will not see students';
+
+  @override
+  String get usuariosNombreEmpresa => 'Company name';
+
+  @override
+  String get usuariosCodigoImpacto => 'Unique impact code';
+
+  @override
+  String get usuariosTipoEstudiante => 'Student type';
+
+  @override
+  String get usuariosSoloCursos =>
+      'They only see the courses you assign them. No laboratories or Impact Path.';
+
+  @override
+  String get usuariosVeLabs =>
+      'They see Laboratories and their Impact Path (assigned from the laboratory).';
+
+  @override
+  String get usuariosElijaUniversidad => 'Choose a university';
+
+  @override
+  String get usuariosSinUniversidadOL => 'No university (Open Learning)';
+
+  @override
+  String get usuariosCiudadAyuda =>
+      'Where they are from — it places them on the Student Map';
+
+  @override
+  String get usuariosLxdEmpresa =>
+      'If this LXD is from a partner company, their courses are attributed to it.';
+
+  @override
+  String get usuariosPermisoCalificar => 'Grading permission';
+
+  @override
+  String get usuariosCambioRegistrado =>
+      'Every change is recorded with who made it.';
+
+  @override
+  String get usuariosOLDefecto =>
+      'Enabled by default: they are the one who grades there';
+
+  @override
+  String get usuariosEduDefecto =>
+      'Disabled by default: they do not grade there';
+
+  @override
+  String get usuariosMentorLab =>
+      'The laboratory is assigned from the \"Laboratories\" tab (a laboratory can have several mentors).';
+
+  @override
+  String get usuariosMentorEmpresa =>
+      'If this Mentor is from a partner company, they are attributed to it.';
+
+  @override
+  String get usuariosEmpresaAliada => 'Partner company (optional)';
+
+  @override
+  String get usuariosNingunaEdu => 'None (eduXaction\'s own)';
+
+  @override
+  String usuariosPidioEl(Object correo, Object fecha) {
+    return '$correo · requested on $fecha';
+  }
+
+  @override
+  String usuariosQuedanDias(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get usuariosPlazoVencido => 'deadline passed';
+
+  @override
+  String get usuariosNinguno => 'none';
+
+  @override
+  String get gestionProyectosSubtitulo =>
+      'Each project defines a problem, solution, community, SDGs, stage and indicators';
+
+  @override
+  String get gestionNuevoProyecto => 'New project';
+
+  @override
+  String get gestionSinProyectos => 'There are no projects.';
+
+  @override
+  String get gestionEliminarProyecto => 'Delete project';
+
+  @override
+  String gestionVaAEliminar(Object nombre) {
+    return 'You are about to delete \"$nombre\".';
+  }
+
+  @override
+  String gestionIntegrantes(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gestionProyectoNombre => 'The project needs a name.';
+
+  @override
+  String get gestionEditarProyecto => 'Edit project';
+
+  @override
+  String get gestionSinUniversidadReconciliar =>
+      'No university (pending reconciliation)';
+
+  @override
+  String get gestionIntegrantesUniversidad =>
+      'Its members have to be from this university.';
+
+  @override
+  String get gestionProblema => 'Problem it solves';
+
+  @override
+  String get gestionSolucion => 'Proposed solution';
+
+  @override
+  String get gestionComunidad => 'Benefiting community';
+
+  @override
+  String get gestionEtapaActual => 'Current stage';
+
+  @override
+  String get gestionHabilitarExpo => 'Enable NATIONAL EXPO PATH';
+
+  @override
+  String get gestionHabilitarExpoTexto =>
+      'Opens the preparation checklist for the team.';
+
+  @override
+  String get gestionEquiposSubtitulo =>
+      'Each team works on a project from a university, with its academic advisor';
+
+  @override
+  String get gestionNuevoEquipo => 'New team';
+
+  @override
+  String get gestionSinEquipos => 'There are no teams.';
+
+  @override
+  String get gestionIntegrantesTitulo => 'Members';
+
+  @override
+  String get gestionEliminarEquipo => 'Delete team';
+
+  @override
+  String get gestionEquipoNecesita => 'The team needs a name and a project.';
+
+  @override
+  String get gestionEditarEquipo => 'Edit team';
+
+  @override
+  String get gestionNombreEquipo => 'Team name';
+
+  @override
+  String get gestionUniversidadDelProyecto =>
+      'It comes from the project. To change it, edit the project.';
+
+  @override
+  String get gestionElijaProyecto => 'Choose a project';
+
+  @override
+  String get gestionProyectoSinUniversidad =>
+      'The project does not have a university yet';
+
+  @override
+  String get gestionAsesorOpcional => 'Academic advisor (optional)';
+
+  @override
+  String get gestionAsesorAyuda =>
+      'The advisor supports the team, not the project: a project can have teams from several universities.';
+
+  @override
+  String get gestionSinAsesor => 'No advisor';
+
+  @override
+  String gestionIntegrantesDe(Object nombre) {
+    return 'Members of $nombre';
+  }
+
+  @override
+  String get gestionSinEstudiantes => 'There are no students to assign.';
+
+  @override
+  String get gestionRolProyecto =>
+      'The role within the project is not the platform role: it describes what that person does on the team.';
+
+  @override
+  String get gestionLabsSubtitulo =>
+      'Each laboratory has its three-phase Impact Path';
+
+  @override
+  String get gestionNuevoLab => 'New laboratory';
+
+  @override
+  String get gestionSinLabs => 'There are no laboratories.';
+
+  @override
+  String get gestionEditarRuta => 'Edit Impact Path';
+
+  @override
+  String get gestionEliminarLab => 'Delete laboratory';
+
+  @override
+  String gestionEliminarLabTexto(Object nombre) {
+    return 'You are about to delete \"$nombre\" with its whole Path.';
+  }
+
+  @override
+  String get gestionLabNombre => 'The laboratory needs a name.';
+
+  @override
+  String get gestionEditarLab => 'Edit laboratory';
+
+  @override
+  String get gestionLabSeCrea =>
+      'It is created with its three phases. They are then edited from the Impact Path editor.';
+
+  @override
+  String get gestionEmpresaOpcional => 'Sponsoring company (optional)';
+
+  @override
+  String get gestionCursosSubtitulo =>
+      'All the courses on the platform, from any LXD';
+
+  @override
+  String get gestionSinCursosEstado => 'There are no courses with that status.';
+
+  @override
+  String gestionCompletaron(Object cantidad) {
+    return '$cantidad completed';
+  }
+
+  @override
+  String gestionSinCalificar(Object cantidad) {
+    return '$cantidad ungraded';
+  }
+
+  @override
+  String gestionRutaModulo(Object modulo) {
+    return 'Path: $modulo';
+  }
+
+  @override
+  String get gestionEvidenciasTitulo => 'Evidence for Donors';
+
+  @override
+  String get gestionEvidenciasSubtitulo =>
+      'Photos, stories and reports that each donor sees in their portal';
+
+  @override
+  String get gestionNuevaEvidencia => 'New evidence';
+
+  @override
+  String get gestionSinEvidencias => 'There is no evidence yet.';
+
+  @override
+  String get gestionEliminarEvidencia => 'Delete evidence';
+
+  @override
+  String get gestionEvidenciaNecesita =>
+      'The evidence needs a title and a donor.';
+
+  @override
+  String get gestionEditarEvidencia => 'Edit evidence';
+
+  @override
+  String get gestionTipo => 'Type';
+
+  @override
+  String get gestionDonanteRecibe => 'Donor who receives it';
+
+  @override
+  String get gestionSoloEseDonante =>
+      'Only that donor sees it in their portal.';
+
+  @override
+  String get gestionArchivoOpcional => 'File (optional)';
+
+  @override
+  String get gestionYaTieneArchivo =>
+      'It already has a file. Uploading another one replaces it.';
+
+  @override
+  String get rutaEditorHerramienta => 'the Impact Path editor';
+
+  @override
+  String rutaEditorVersion(Object version) {
+    return 'Content version $version';
+  }
+
+  @override
+  String get rutaEditorVersionTexto =>
+      'Certificates stay anchored to the content version they were issued with: adding modules later does not invalidate the ones already awarded.';
+
+  @override
+  String get rutaEditorAcompanan => 'Who supports it';
+
+  @override
+  String get rutaEditorSinMentores => 'No mentors or LXD yet.';
+
+  @override
+  String rutaEditorMentoresDe(Object nombre) {
+    return 'Mentors of $nombre';
+  }
+
+  @override
+  String get rutaEditorMentoresAyuda =>
+      'A laboratory can have several mentors, and they all see its students.';
+
+  @override
+  String rutaEditorEstudiantesCantidad(Object cantidad) {
+    return 'Students ($cantidad)';
+  }
+
+  @override
+  String rutaEditorEstudiantesDe(Object nombre) {
+    return 'Students of $nombre';
+  }
+
+  @override
+  String get rutaEditorEstudiantesAyuda =>
+      'Assigning someone here gives them access to the laboratory\'s COURSES. Removing them takes it away: their progress is not deleted, but they stop seeing it. eduXaction students only.';
+
+  @override
+  String get rutaEditorSinCuentas => 'There are no accounts available.';
+
+  @override
+  String get rutaEditorEditarFase => 'Edit the phase';
+
+  @override
+  String get rutaEditorFasesTres =>
+      'There are always three phases: they are edited, not added or deleted. A Path with two phases cannot be completed.';
+
+  @override
+  String get rutaEditorObjetivo => 'Objective';
+
+  @override
+  String get rutaEditorSinObjetivos => 'No objectives yet.';
+
+  @override
+  String get rutaEditorCursosCumplen => 'Courses that fulfill it';
+
+  @override
+  String get rutaEditorQuitarObjetivo => 'Remove objective';
+
+  @override
+  String rutaEditorQuitarObjetivoTexto(Object objetivo) {
+    return 'Remove \"$objetivo\" from the phase?';
+  }
+
+  @override
+  String get rutaEditorSinCursosTraba =>
+      'Without linked courses it can never be completed, and that blocks the whole phase for the entire laboratory.';
+
+  @override
+  String get rutaEditorObjetivoTexto => 'The objective needs its text.';
+
+  @override
+  String get rutaEditorNuevoObjetivo => 'New objective';
+
+  @override
+  String get rutaEditorEditarObjetivo => 'Edit objective';
+
+  @override
+  String get rutaEditorCategoria => 'Category';
+
+  @override
+  String get rutaEditorVincular =>
+      'Afterwards you have to link the courses that fulfill it: without them it is never completed.';
+
+  @override
+  String get rutaEditorCursosCumplenTitulo =>
+      'Courses that fulfill the objective';
+
+  @override
+  String rutaEditorCumplido(Object objetivo) {
+    return '\"$objetivo\" is considered fulfilled when the student finishes 100% of ALL the selected courses.';
+  }
+
+  @override
+  String get rutaEditorSinMarcados =>
+      'With none selected, this objective is never completed.';
+
+  @override
+  String get rutaEditorModulos => 'Modules';
+
+  @override
+  String get rutaEditorUltimoMentoria =>
+      'The last module of the phase is always the mentoring one. It is recalculated automatically when adding, removing or reordering.';
+
+  @override
+  String get rutaEditorSinModulos => 'No modules yet.';
+
+  @override
+  String get rutaEditorCursosModulo => 'Module courses';
+
+  @override
+  String get rutaEditorRenombrar => 'Rename';
+
+  @override
+  String rutaEditorEliminarModuloTexto(Object modulo, Object cantidad) {
+    return 'You are about to delete \"$modulo\" with its $cantidad own lessons.';
+  }
+
+  @override
+  String rutaEditorCursosCantidad(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad courses',
+      one: '1 course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rutaEditorImportados(Object cantidad) {
+    return '$cantidad course objectives were added to the phase.';
+  }
+
+  @override
+  String rutaEditorCursosDe(Object modulo) {
+    return 'Courses of $modulo';
+  }
+
+  @override
+  String get rutaEditorCursoUnModulo =>
+      'A course lives in only one module of this Path: in two, its progress would be counted twice. When it is linked, its categorized objectives are added to the phase.';
+
+  @override
+  String get respaldoTitulo => 'Data and Backups';
+
+  @override
+  String get respaldoSubtitulo => 'Where the data lives and how to back it up';
+
+  @override
+  String get respaldoEstadoActual => 'Current status';
+
+  @override
+  String get respaldoRespaldo => 'Backup';
+
+  @override
+  String get respaldoDondeDatos => 'Where is the data stored?';
+
+  @override
+  String get respaldoDondeDatosTexto =>
+      'The data lives in the server\'s database, not in this browser. Signing out, changing computers or signing in from another device changes nothing: everyone sees the same thing.\n\nFiles (photos, PDFs, videos) are stored separately, in object storage, and the backup does NOT include them: it saves the references, not the files.\n\nA backup does not include credentials either. Passwords and open sessions are left out on purpose: a backup is for restoring data, not for taking them away.';
+
+  @override
+  String get respaldoEntregasSinRevisar => 'Unreviewed submissions';
+
+  @override
+  String get respaldoPreparando => 'Preparing…';
+
+  @override
+  String get respaldoDescargar => 'Download backup';
+
+  @override
+  String get respaldoRestaurarArchivo => 'Restore from file';
+
+  @override
+  String get respaldoSoloComputador =>
+      'Restoring a backup replaces the entire database: it can only be done from a computer.';
+
+  @override
+  String get respaldoReemplaza =>
+      'Restoring replaces the entire database with the one in the file. This cannot be undone.';
+
+  @override
+  String get respaldoSoloSuper =>
+      'Restoring replaces the entire database, so only a Super Admin can do it.';
+
+  @override
+  String get respaldoGuardarCopia => 'Save backup';
+
+  @override
+  String get respaldoCopiaDescargada => 'Backup downloaded ✓';
+
+  @override
+  String get respaldoSeleccioneArchivo => 'Select the backup file';
+
+  @override
+  String get respaldoRestaurarCopia => 'Restore backup';
+
+  @override
+  String respaldoRestaurarTexto(Object archivo) {
+    return 'The entire database is replaced with the one in the file \"$archivo\". This cannot be undone.';
+  }
+
+  @override
+  String get respaldoNoValido =>
+      'That file is not a valid backup: it could not be read as JSON.';
+
+  @override
+  String get respaldoRestaurado => 'Data restored ✓';
+
+  @override
+  String get contenidoHerramienta => 'editing the home page';
+
+  @override
+  String get contenidoTitulo => 'Home Page Content';
+
+  @override
+  String get contenidoSubtitulo =>
+      'Hero, banner and texts visible to the public';
+
+  @override
+  String get contenidoTituloVacio => 'The hero title cannot be empty.';
+
+  @override
+  String get contenidoActualizado => 'Home page updated ✓';
+
+  @override
+  String get contenidoImagenesPublicadas => 'Images published ✓';
+
+  @override
+  String get contenidoTituloHero => 'Hero title';
+
+  @override
+  String get contenidoSubtituloHero => 'Hero subtitle';
+
+  @override
+  String get contenidoBanner => 'Announcement banner (empty = hidden)';
+
+  @override
+  String get contenidoSobreNosotros => '\"About us\" text';
+
+  @override
+  String get contenidoLinkVideollamada => 'Video call link (mentoring modules)';
+
+  @override
+  String get contenidoLinkAyuda =>
+      'A single generic link: there is no integration with a meeting provider yet.';
+
+  @override
+  String get contenidoCifras => 'Hero figures';
+
+  @override
+  String get contenidoCifrasAyuda =>
+      'The four numbers under the title. They are written by hand on purpose: they are the figure the team wants to communicate, not the database count — that one lives in the dashboard.';
+
+  @override
+  String get contenidoGuardarCambios => 'Save changes';
+
+  @override
+  String get contenidoGaleria => 'Image gallery';
+
+  @override
+  String get contenidoGaleriaAyuda =>
+      'They are shown on the home page, between the laboratories and the closing section. Removing one takes it off the home page immediately.';
+
+  @override
+  String get contenidoGaleriaVacia => 'There are no images in the gallery yet.';
+
+  @override
+  String get contenidoSacarImagen => 'Remove it from the home page?';
+
+  @override
+  String contenidoPublicar(Object cantidad) {
+    return 'Publish $cantidad on the home page';
+  }
+
+  @override
+  String respaldoNombreArchivo(Object fecha) {
+    return 'enactus_backup_$fecha.json';
+  }
 }

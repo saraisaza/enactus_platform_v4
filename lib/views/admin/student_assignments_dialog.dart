@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -90,9 +91,8 @@ class _StudentAssignmentsDialogState extends State<_StudentAssignmentsDialog> {
           // No es un error: la asignación se guardó. Pero el estudiante no va
           // a ver esos cursos hasta que se publiquen, y darlo por hecho es
           // exactamente cómo alguien queda sin material sin que nadie lo note.
-          pendiente =
-              'Asignado. ${pendientes.length == 1 ? "Este curso no está publicado" : "Estos cursos no están publicados"}, '
-              'así que todavía no los verá: ${pendientes.map((c) => c.name).join(", ")}.';
+          pendiente = tr.asignarPendientes(
+              pendientes.length, pendientes.map((c) => c.name).join(', '));
         }
       } else {
         await data.setStudentLaboratories(
@@ -108,7 +108,7 @@ class _StudentAssignmentsDialogState extends State<_StudentAssignmentsDialog> {
       } else {
         showSuccessCheck(
           contextoVivo,
-          _esOpenLearning ? 'Cursos asignados ✓' : 'Laboratorios asignados ✓',
+          _esOpenLearning ? tr.asignarCursosOk : tr.asignarLabsOk,
         );
       }
     } on ApiException catch (e) {
@@ -124,7 +124,7 @@ class _StudentAssignmentsDialogState extends State<_StudentAssignmentsDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Asignar a ${widget.student.name}',
+      title: tr.asignarA(widget.student.name),
       maxWidth: 520,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -139,7 +139,7 @@ class _StudentAssignmentsDialogState extends State<_StudentAssignmentsDialog> {
             final e = snap.error;
             return e is ApiException
                 ? ErrorBanner(e)
-                : _Vacio('No se pudo cargar lo asignado: $e');
+                : _Vacio(tr.asignarNoCarga('$e'));
           }
           if (!snap.hasData) {
             return const CardListSkeleton(count: 4, height: 48);
@@ -195,13 +195,8 @@ class _Explicacion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texto = esOpenLearning
-        ? 'Cuenta de Open Learning: recibe cursos uno por uno. Es su única vía '
-            'de acceso a material — sin cursos asignados no tiene nada que ver. '
-            'No tiene laboratorios ni Ruta de Impacto.'
-        : 'Cuenta eduXaction: recibe laboratorios, y con ellos el acceso a '
-            'TODOS sus cursos, sin asignarlos aparte. Quitar un laboratorio le '
-            'quita ese material: su avance no se borra y vuelve tal cual si se '
-            'le reasigna, pero mientras tanto deja de verlo.';
+        ? tr.asignarExplicaOL
+        : tr.asignarExplicaEdu;
 
     return Container(
       padding: const EdgeInsets.all(11),
@@ -245,7 +240,7 @@ class _ListaDeLaboratorios extends StatelessWidget {
           loading: () => const CardListSkeleton(count: 4, height: 48),
           error: (e) => ErrorBanner(e),
           data: (labs) => labs.isEmpty
-              ? const _Vacio('No hay laboratorios creados todavía.')
+              ? _Vacio(tr.asignarSinLabs)
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -302,7 +297,7 @@ class _ListaDeCursos extends StatelessWidget {
               });
 
             if (ordenados.isEmpty) {
-              return const _Vacio('No hay cursos creados todavía.');
+              return _Vacio(tr.asignarSinCursos);
             }
 
             return Column(
@@ -346,11 +341,11 @@ class _Subtitulo extends StatelessWidget {
           const _Etiqueta('Open Learning', color: AppColors.gold),
         if (!visible)
           _Etiqueta(
-            curso.status == 'published' ? 'Oculto' : 'Borrador',
+            curso.status == 'published' ? tr.constructorOculto : tr.estadoBorrador,
             color: AppColors.statusCritical,
           ),
         if (visible && !curso.isOpenLearning)
-          const _Etiqueta('De laboratorio', color: AppColors.textMuted),
+          _Etiqueta(tr.asignarDeLaboratorio, color: AppColors.textMuted),
       ],
     );
   }

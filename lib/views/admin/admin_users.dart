@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/textos.dart';
 import '../../widgets/university_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -52,15 +53,14 @@ class _AdminUsersState extends State<AdminUsers> {
         data.users(role: _roleFilter == _todos ? null : _roleFilter);
 
     return TabBody(
-      title: 'Usuarios',
+      title: tr.tabUsuarios,
       subtitle: widget.isSuperAdmin
-          ? 'Crea y elimina cualquier tipo de cuenta (incluidos admins)'
-          : 'Crea cuentas de estudiantes, LXD, mentores, asesores, empresas y '
-              'donantes',
+          ? tr.usuariosSubtituloSuper
+          : tr.usuariosSubtitulo,
       actions: [
         ElevatedButton.icon(
           icon: const Icon(Icons.person_add, size: 18),
-          label: const Text('Nuevo usuario'),
+          label: Text(tr.usuariosNuevo),
           onPressed: () => _abrirFormulario(null),
         ),
       ],
@@ -72,7 +72,7 @@ class _AdminUsersState extends State<AdminUsers> {
           children: [
             for (final r in [_todos, ...Roles.all])
               ChoiceChip(
-                label: Text(r == _todos ? 'Todos' : Roles.label(r)),
+                label: Text(r == _todos ? tr.comunTodos : Roles.label(r)),
                 selected: _roleFilter == r,
                 selectedColor: AppColors.gold.withValues(alpha: 0.25),
                 onSelected: (_) => setState(() => _roleFilter = r),
@@ -88,9 +88,9 @@ class _AdminUsersState extends State<AdminUsers> {
             setState(() {});
           }),
           data: (users) => users.isEmpty
-              ? const EmptyState(
+              ? EmptyState(
                   icon: Icons.people_outline,
-                  message: 'No hay cuentas con ese rol.')
+                  message: tr.usuariosSinRol)
               : _UsersList(
                   users: users,
                   isSuperAdmin: widget.isSuperAdmin,
@@ -142,14 +142,13 @@ class _ColaDeEliminacion extends StatelessWidget {
         children: [
           Text(
             solicitudes.length == 1
-                ? '1 solicitud de eliminación de cuenta'
-                : '${solicitudes.length} solicitudes de eliminación de cuenta',
+                ? tr.usuariosUnaSolicitud
+                : tr.usuariosSolicitudes(solicitudes.length),
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Estas cuentas ya no funcionan. Falta borrar sus datos personales '
-            'dentro del plazo de $_plazoDias días que se les prometió.',
+          Text(
+            tr.usuariosSolicitudesTexto(_plazoDias),
             style: TextStyle(color: AppColors.textMuted, height: 1.4),
           ),
           const SizedBox(height: 8),
@@ -175,10 +174,8 @@ class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
     final s = widget.solicitud;
     if (!await confirmDialog(
       context,
-      'Borrar los datos de ${s.name}',
-      'Se borran su nombre, correo, teléfono, cédula, ciudad, foto y perfil, '
-          'el nombre en sus certificados y las notas sobre esta persona. No se '
-          'puede deshacer.',
+      tr.usuariosBorrarDatosDe(s.name),
+      tr.usuariosBorrarDatosTexto,
     )) {
       return;
     }
@@ -186,7 +183,7 @@ class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
     setState(() => _borrando = true);
     try {
       await context.read<DataProvider>().purgeUser(s.id);
-      if (mounted) showAppSnack(context, 'Datos borrados.');
+      if (mounted) showAppSnack(context, tr.usuariosDatosBorrados);
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
@@ -217,8 +214,8 @@ class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
                 Text('${s.name} · ${Roles.label(s.role)}',
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 Text(
-                  '${s.email} · pidió el $fecha · '
-                  '${quedan > 0 ? 'quedan $quedan días' : 'plazo vencido'}',
+                  '${tr.usuariosPidioEl(s.email, fecha)} · '
+                  '${quedan > 0 ? tr.usuariosQuedanDias(quedan) : tr.usuariosPlazoVencido}',
                   style: TextStyle(
                     fontSize: 12.5,
                     color: quedan > 0
@@ -231,7 +228,7 @@ class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
           ),
           OutlinedButton(
             onPressed: _borrando ? null : _borrar,
-            child: Text(_borrando ? 'Borrando…' : 'Borrar datos'),
+            child: Text(_borrando ? tr.usuariosBorrando : tr.usuariosBorrarDatos),
           ),
         ],
       ),
@@ -291,12 +288,12 @@ class _UsersList extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Nombre')),
-            DataColumn(label: Text('Correo')),
-            DataColumn(label: Text('Rol')),
-            DataColumn(label: Text('Detalle')),
-            DataColumn(label: Text('Acciones')),
+          columns: [
+            DataColumn(label: Text(tr.comunNombre)),
+            DataColumn(label: Text(tr.perfilCorreoEtiqueta)),
+            DataColumn(label: Text(tr.usuariosRol)),
+            DataColumn(label: Text(tr.usuariosDetalle)),
+            DataColumn(label: Text(tr.usuariosAcciones)),
           ],
           rows: [
             for (final u in users)
@@ -336,7 +333,7 @@ String _detalle(AppUser u) {
     if (u.university.isNotEmpty) u.university,
     if (u.role == Roles.company && u.companyName.isNotEmpty) u.companyName,
     if (u.role == Roles.donor && (u.impactCode ?? '').isNotEmpty) u.impactCode!,
-    if (u.role == Roles.lxd) 'Califica: ${_calificaEn(u)}',
+    if (u.role == Roles.lxd) tr.usuariosCalifica(_calificaEn(u)),
     if (u.city.isNotEmpty) u.city,
   ];
   return partes.join(' · ');
@@ -347,7 +344,7 @@ String _calificaEn(AppUser lxd) {
     if (lxd.canGradeOpenLearning) 'Open Learning',
     if (lxd.canGradeEnactus) 'eduXaction',
   ];
-  return contextos.isEmpty ? 'ninguno' : contextos.join(', ');
+  return contextos.isEmpty ? tr.usuariosNinguno : contextos.join(', ');
 }
 
 class _UserCard extends StatelessWidget {
@@ -448,33 +445,33 @@ class _Acciones extends StatelessWidget {
             icon: const Icon(Icons.assignment_ind_outlined, size: 18),
             color: AppColors.gold,
             tooltip: user.studentType == StudentType.openLearning
-                ? 'Asignar cursos'
-                : 'Asignar laboratorios',
+                ? tr.usuariosAsignarCursos
+                : tr.usuariosAsignarLabs,
             onPressed: () => showStudentAssignmentsDialog(context, user),
           ),
         IconButton(
           icon: const Icon(Icons.edit_outlined, size: 18),
           color: AppColors.gold,
-          tooltip: 'Editar',
+          tooltip: tr.comunEditar,
           onPressed: canEdit ? onEdit : null,
         ),
         IconButton(
           icon: const Icon(Icons.delete_outline, size: 18),
           color: AppColors.statusCritical,
-          tooltip: 'Eliminar',
+          tooltip: tr.comunEliminar,
           onPressed: !canDelete
               ? null
               : () async {
                   final ok = await confirmDoubleDialog(
                     context,
-                    'Eliminar usuario',
-                    'Va a eliminar a ${user.name} (${Roles.label(user.role)}).',
+                    tr.usuariosEliminar,
+                    tr.usuariosEliminarTexto(user.name, Roles.label(user.role)),
                   );
                   if (!ok || !context.mounted) return;
                   try {
                     await data.deleteUser(user.id);
                     if (context.mounted) {
-                      showSuccessCheck(context, 'Cuenta eliminada ✓');
+                      showSuccessCheck(context, tr.usuariosCuentaEliminada);
                     }
                   } on ApiException catch (e) {
                     if (context.mounted) {
@@ -559,14 +556,14 @@ class _UserFormDialogState extends State<_UserFormDialog> {
 
   bool get _isNew => widget.original == null;
 
-  static const _profileFields = {
-    'company': 'Empresa',
-    'position': 'Cargo',
-    'specialty': 'Especialidad',
-    'languages': 'Idiomas',
-    'availability': 'Disponibilidad',
-    'experience': 'Experiencia',
-    'interests': 'Intereses',
+  static Map<String, String> get _profileFields => {
+    'company': tr.rolEmpresa,
+    'position': tr.perfilCargo,
+    'specialty': tr.perfilEspecialidad,
+    'languages': tr.perfilIdiomas,
+    'availability': tr.perfilDisponibilidad,
+    'experience': tr.perfilExperiencia,
+    'interests': tr.perfilIntereses,
   };
 
   @override
@@ -627,20 +624,20 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     final correo = _email.text.trim();
     if (nombre.isEmpty || correo.isEmpty) {
       setState(() => _error =
-          const ValidationError('El nombre y el correo son obligatorios.'));
+          ValidationError(tr.usuariosNombreCorreoObligatorios));
       return;
     }
     // Al crear es obligatoria; al editar solo se valida si se escribió algo,
     // porque en blanco significa "dejala como está".
     if ((_isNew || _password.text.isNotEmpty) && _password.text.length < 6) {
-      setState(() => _error = const ValidationError(
-          'La contraseña necesita al menos 6 caracteres.'));
+      setState(() => _error = ValidationError(
+          tr.usuariosContrasenaMinima));
       return;
     }
     final eligioOtra = _universityId == UniversityPicker.otra;
     if (eligioOtra && _otraUniversidad.text.trim().length < 3) {
-      setState(() => _error = const ValidationError(
-          'Escriba el nombre de la institución en «¿Cuál institución?».'));
+      setState(() => _error = ValidationError(
+          tr.usuariosEscribaInstitucion));
       return;
     }
 
@@ -732,15 +729,15 @@ class _UserFormDialogState extends State<_UserFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final titulo = _isNew ? 'Nuevo usuario' : 'Editar usuario';
+    final titulo = _isNew ? tr.usuariosNuevo : tr.usuariosEditar;
     final acciones = [
       TextButton(
         onPressed: _saving ? null : () => Navigator.pop(context, false),
-        child: const Text('Cancelar'),
+        child: Text(tr.comunCancelar),
       ),
       ElevatedButton(
         onPressed: _saving ? null : _save,
-        child: Text(_saving ? 'Guardando…' : 'Guardar'),
+        child: Text(_saving ? tr.comunGuardando : tr.comunGuardar),
       ),
     ];
 
@@ -755,7 +752,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 elevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.close),
-                  tooltip: 'Cerrar',
+                  tooltip: tr.comunCerrar,
                   onPressed:
                       _saving ? null : () => Navigator.pop(context, false),
                 ),
@@ -810,7 +807,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _role,
-            decoration: const InputDecoration(labelText: 'Rol'),
+            decoration: InputDecoration(labelText: tr.usuariosRol),
             items: [
               for (final r in widget.creatableRoles)
                 DropdownMenuItem(value: r, child: Text(Roles.label(r))),
@@ -821,34 +818,32 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
-              'Rol: ${Roles.label(_role)} — para cambiarlo, se crea otra '
-              'cuenta. Cambiarlo acá movería su acceso sin que se note.',
+              tr.usuariosRolFijo(Roles.label(_role)),
               style:
                   const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
           ),
         const SizedBox(height: 12),
-        _campo(_name, 'Nombre completo'),
+        _campo(_name, tr.usuariosNombreCompleto),
         const SizedBox(height: 12),
-        _campo(_email, 'Correo electrónico'),
+        _campo(_email, tr.ingresoCorreo),
         const SizedBox(height: 12),
         TextField(
           controller: _password,
           enabled: !_saving,
           obscureText: true,
           decoration: InputDecoration(
-            labelText: _isNew ? 'Contraseña' : 'Contraseña nueva (opcional)',
+            labelText: _isNew ? tr.ingresoContrasena : tr.usuariosContrasenaNueva,
             helperText: _isNew
-                ? 'Mínimo 6 caracteres.'
-                : 'Déjela en blanco para no cambiarla. Cambiarla cierra las '
-                    'sesiones abiertas de esa persona.',
+                ? tr.usuariosMinimoSeis
+                : tr.usuariosDejeEnBlanco,
           ),
         ),
         const SizedBox(height: 12),
-        _campo(_phone, 'Teléfono'),
+        _campo(_phone, tr.perfilTelefonoEtiqueta),
         if (!esEstudiante) ...[
           const SizedBox(height: 12),
-          _campo(_city, 'Ciudad'),
+          _campo(_city, tr.perfilCiudad),
         ],
         if (esEstudiante) ..._camposEstudiante(),
         if (_role == Roles.lxd) ..._camposLxd(data),
@@ -862,16 +857,16 @@ class _UserFormDialogState extends State<_UserFormDialog> {
             // Un asesor sin universidad no ve a NADIE, así que la ausencia no
             // es un estado neutro: se avisa acá y no al guardar.
             allowEmpty: true,
-            emptyLabel: 'Sin universidad — no verá estudiantes',
+            emptyLabel: tr.usuariosSinUniversidadAsesor,
           ),
         ],
         if (_role == Roles.company) ...[
           const SizedBox(height: 12),
-          _campo(_companyName, 'Nombre de la empresa'),
+          _campo(_companyName, tr.usuariosNombreEmpresa),
         ],
         if (_role == Roles.donor) ...[
           const SizedBox(height: 12),
-          _campo(_impactCode, 'Código de impacto único'),
+          _campo(_impactCode, tr.usuariosCodigoImpacto),
         ],
       ],
     );
@@ -889,7 +884,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           isExpanded: true,
           initialValue: _studentType,
           decoration:
-              const InputDecoration(labelText: 'Tipo de estudiante'),
+              InputDecoration(labelText: tr.usuariosTipoEstudiante),
           items: [
             for (final t in StudentType.all)
               DropdownMenuItem(value: t, child: Text(StudentType.label(t))),
@@ -900,14 +895,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         const SizedBox(height: 4),
         Text(
           _studentType == StudentType.openLearning
-              ? 'Solo ve los cursos que le asigne. Sin laboratorios ni Ruta '
-                  'de Impacto.'
-              : 'Ve Laboratorios y su Ruta de Impacto (se asignan desde el '
-                  'laboratorio).',
+              ? tr.usuariosSoloCursos
+              : tr.usuariosVeLabs,
           style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
         ),
         const SizedBox(height: 12),
-        _campo(_cedula, 'Cédula'),
+        _campo(_cedula, tr.perfilCedula),
         const SizedBox(height: 12),
         UniversityPicker(
           value: _universityId,
@@ -917,16 +910,16 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           // Learning no lleva, y eso es correcto, no un campo sin llenar.
           allowEmpty: _studentType != 'enactus',
           emptyLabel: _studentType == 'enactus'
-              ? 'Elija una universidad'
-              : 'Sin universidad (Open Learning)',
+              ? tr.usuariosElijaUniversidad
+              : tr.usuariosSinUniversidadOL,
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           initialValue: _studentCity,
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Ciudad',
-            helperText: 'De dónde es — la ubica en el Mapa de Estudiantes',
+          decoration: InputDecoration(
+            labelText: tr.perfilCiudad,
+            helperText: tr.usuariosCiudadAyuda,
           ),
           items: [
             for (final c in colombiaCities)
@@ -939,29 +932,28 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           onChanged: _saving ? null : (v) => setState(() => _studentCity = v),
         ),
         const SizedBox(height: 12),
-        _campo(_career, 'Carrera'),
+        _campo(_career, tr.perfilCarrera),
       ];
 
   List<Widget> _camposLxd(DataProvider data) => [
         const SizedBox(height: 12),
         _empresaAliada(data,
-            ayuda: 'Si este LXD es de una empresa aliada, sus cursos quedan '
-                'atribuidos a ella.'),
+            ayuda: tr.usuariosLxdEmpresa),
         for (final e in _profileFields.entries) ...[
           const SizedBox(height: 12),
           _campo(_profile[e.key]!, e.value),
         ],
         const SizedBox(height: 14),
-        const Text('Permiso de calificar',
+        Text(tr.usuariosPermisoCalificar,
             style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
-        const Text(
-          'Cada cambio queda registrado con quién lo hizo.',
+        Text(
+          tr.usuariosCambioRegistrado,
           style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Open Learning', style: TextStyle(fontSize: 14)),
-          subtitle: const Text('Activado por defecto: es quien califica ahí',
+          subtitle: Text(tr.usuariosOLDefecto,
               style: TextStyle(fontSize: 12)),
           value: _canGradeOpenLearning,
           activeThumbColor: AppColors.gold,
@@ -972,7 +964,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('eduXaction', style: TextStyle(fontSize: 14)),
-          subtitle: const Text('Desactivado por defecto: ahí no califica',
+          subtitle: Text(tr.usuariosEduDefecto,
               style: TextStyle(fontSize: 12)),
           value: _canGradeEnactus,
           activeThumbColor: AppColors.gold,
@@ -983,15 +975,13 @@ class _UserFormDialogState extends State<_UserFormDialog> {
 
   List<Widget> _camposMentor(DataProvider data) => [
         const SizedBox(height: 12),
-        const Text(
-          'El laboratorio se asigna desde la pestaña "Laboratorios" (un '
-          'laboratorio puede tener varios mentores).',
+        Text(
+          tr.usuariosMentorLab,
           style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
         ),
         const SizedBox(height: 12),
         _empresaAliada(data,
-            ayuda: 'Si este Mentor es de una empresa aliada, queda atribuido '
-                'a ella.'),
+            ayuda: tr.usuariosMentorEmpresa),
       ];
 
   Widget _empresaAliada(DataProvider data, {required String ayuda}) {
@@ -1005,12 +995,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                     : null,
             isExpanded: true,
             decoration: InputDecoration(
-              labelText: 'Empresa aliada (opcional)',
+              labelText: tr.usuariosEmpresaAliada,
               helperText: ayuda,
             ),
             items: [
-              const DropdownMenuItem<String?>(
-                  value: null, child: Text('Ninguna (de eduXaction)')),
+              DropdownMenuItem<String?>(
+                  value: null, child: Text(tr.usuariosNingunaEdu)),
               for (final c in empresas)
                 DropdownMenuItem<String?>(
                   value: c.id,

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/async_value.dart';
 import '../../utils/constants.dart';
+import '../../utils/formatos.dart';
 import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
@@ -36,14 +38,14 @@ class LabRutaEditorView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          const AppHeader(portalTitle: 'Ruta de Impacto'),
+          AppHeader(portalTitle: tr.rutaDeImpacto),
           Expanded(
             child: data.labById(labId).when(
                   loading: () => const Center(child: BrandLoader()),
                   error: (e) =>
                       ErrorState(e, onRetry: () => data.reloadLab(labId)),
                   data: (lab) => AvisoEscritorio(
-                    herramienta: 'el editor de la Ruta de Impacto',
+                    herramienta: tr.rutaEditorHerramienta,
                     child: _Body(lab: lab),
                   ),
                 ),
@@ -70,7 +72,7 @@ class _Body extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_back),
                 color: AppColors.gold,
-                tooltip: 'Volver',
+                tooltip: tr.comunVolver,
                 onPressed: () => Navigator.pop(context),
               ),
               Expanded(
@@ -81,7 +83,7 @@ class _Body extends StatelessWidget {
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, fontSize: 18),
                         overflow: TextOverflow.ellipsis),
-                    Text('Versión de contenido ${lab.contentVersion}',
+                    Text(tr.rutaEditorVersion(lab.contentVersion),
                         style: const TextStyle(
                             fontSize: 12, color: AppColors.textMuted)),
                   ],
@@ -90,10 +92,8 @@ class _Body extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Los certificados quedan anclados a la versión de contenido con la '
-            'que se emitieron: agregar módulos después no invalida los que ya '
-            'se entregaron.',
+          Text(
+            tr.rutaEditorVersionTexto,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 16),
@@ -121,7 +121,7 @@ class _StaffSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Quiénes lo acompañan',
+          Text(tr.rutaEditorAcompanan,
               style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Wrap(
@@ -139,7 +139,7 @@ class _StaffSection extends StatelessWidget {
                     color: AppColors.textSecondary,
                     icon: Icons.design_services_outlined),
               if (lab.mentors.isEmpty && lab.lxds.isEmpty)
-                const Text('Todavía sin mentores ni LXD.',
+                Text(tr.rutaEditorSinMentores,
                     style:
                         TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             ],
@@ -151,15 +151,14 @@ class _StaffSection extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 icon: const Icon(Icons.psychology_outlined, size: 16),
-                label: const Text('Mentores'),
+                label: Text(tr.labMentores),
                 onPressed: () => _asignar(
                   context,
-                  titulo: 'Mentores de ${lab.name}',
+                  titulo: tr.rutaEditorMentoresDe(lab.name),
                   role: Roles.mentor,
                   actuales: (_) =>
                       AsyncValue.data(lab.mentors.map((m) => m.id).toSet()),
-                  ayuda: 'Un laboratorio puede tener varios mentores, y todos '
-                      'ven a sus estudiantes.',
+                  ayuda: tr.rutaEditorMentoresAyuda,
                   onGuardar: (ids) => context
                       .read<DataProvider>()
                       .setLabMentors(lab.id, ids),
@@ -167,7 +166,7 @@ class _StaffSection extends StatelessWidget {
               ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.school_outlined, size: 16),
-                label: Text('Estudiantes (${lab.studentsAssigned})'),
+                label: Text(tr.rutaEditorEstudiantesCantidad(lab.studentsAssigned)),
                 onPressed: () => _asignarEstudiantes(context),
               ),
             ],
@@ -181,7 +180,7 @@ class _StaffSection extends StatelessWidget {
     final data = context.read<DataProvider>();
     return _asignar(
       context,
-      titulo: 'Estudiantes de ${lab.name}',
+      titulo: tr.rutaEditorEstudiantesDe(lab.name),
       role: '${Roles.student},${Roles.alumni}',
       // El detalle no trae la lista de estudiantes, solo cuántos son: se
       // piden filtrados por laboratorio, que es una consulta del servidor. El
@@ -189,9 +188,7 @@ class _StaffSection extends StatelessWidget {
       actuales: (d) => d
           .users(laboratoryId: lab.id)
           .map((us) => us.map((u) => u.id).toSet()),
-      ayuda: 'Asignar a alguien acá le da acceso a los CURSOS del '
-          'laboratorio. Quitarlo se lo quita: su avance no se borra, pero '
-          'deja de verlo. Solo estudiantes eduXaction.',
+      ayuda: tr.rutaEditorEstudiantesAyuda,
       onGuardar: (ids) => data.setLabStudents(lab.id, ids),
     );
   }
@@ -306,7 +303,7 @@ class _AssignDialogState extends State<_AssignDialog> {
                         fontSize: 12.5, color: AppColors.textMuted)),
                 const SizedBox(height: 12),
                 if (valores.$1.isEmpty)
-                  const Text('No hay cuentas disponibles.',
+                  Text(tr.rutaEditorSinCuentas,
                       style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted))
                 else
@@ -370,15 +367,14 @@ class _PhaseCard extends StatelessWidget {
                     children: [
                       Text(
                         phase.title.isEmpty
-                            ? 'Fase ${phase.orderIndex}'
+                            ? tr.rutaFaseNumero(phase.orderIndex)
                             : phase.title,
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, fontSize: 15),
                       ),
                       if (phase.deadline != null)
                         Text(
-                          'Fecha límite: '
-                          '${DateFormat('d MMM yyyy').format(phase.deadlineDate!)}',
+                          tr.labFechaLimite(fechaCorta(phase.deadlineDate!)),
                           style: const TextStyle(
                               fontSize: 12, color: AppColors.textMuted),
                         ),
@@ -388,7 +384,7 @@ class _PhaseCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),
                   color: AppColors.gold,
-                  tooltip: 'Editar la fase',
+                  tooltip: tr.rutaEditorEditarFase,
                   onPressed: () => _editarFase(context),
                 ),
               ],
@@ -496,7 +492,7 @@ class _PhaseFormDialogState extends State<_PhaseFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: 'Fase ${widget.phase.orderIndex}',
+      title: tr.rutaFaseNumero(widget.phase.orderIndex),
       maxWidth: 460,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -509,23 +505,22 @@ class _PhaseFormDialogState extends State<_PhaseFormDialog> {
             ErrorBanner(_error!),
             const SizedBox(height: 12),
           ],
-          const Text(
-            'Las fases son siempre tres: se editan, no se agregan ni se '
-            'borran. Una Ruta con dos fases no se puede completar.',
+          Text(
+            tr.rutaEditorFasesTres,
             style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Título'),
+            decoration: InputDecoration(labelText: tr.comunTitulo),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Descripción'),
+            decoration: InputDecoration(labelText: tr.comunDescripcion),
           ),
           const SizedBox(height: 12),
           HoverCard(
@@ -538,16 +533,15 @@ class _PhaseFormDialogState extends State<_PhaseFormDialog> {
                 Expanded(
                   child: Text(
                     _deadline == null
-                        ? 'Fecha límite: sin definir'
-                        : 'Fecha límite: '
-                            '${DateFormat('d MMM yyyy').format(DateTime.parse(_deadline!))}',
+                        ? tr.leccionFechaSinDefinir
+                        : tr.labFechaLimite(fechaCorta(DateTime.parse(_deadline!))),
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
                 if (_deadline != null)
                   IconButton(
                     icon: const Icon(Icons.clear, size: 14),
-                    tooltip: 'Quitar fecha',
+                    tooltip: tr.constructorQuitarFecha,
                     onPressed:
                         _saving ? null : () => setState(() => _deadline = null),
                   ),
@@ -583,11 +577,11 @@ class _ObjectivesSection extends StatelessWidget {
             spacing: 12,
             runSpacing: 8,
             children: [
-              const Text('Objetivos',
+              Text(tr.cursoObjetivos,
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               OutlinedButton.icon(
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Objetivo'),
+                label: Text(tr.rutaEditorObjetivo),
                 onPressed: () => showDialog<void>(
                   context: context,
                   barrierDismissible: false,
@@ -598,7 +592,7 @@ class _ObjectivesSection extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           if (phase.objectives.isEmpty)
-            const Text('Sin objetivos todavía.',
+            Text(tr.rutaEditorSinObjetivos,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted))
           else
             for (final o in phase.objectives)
@@ -653,7 +647,7 @@ class _ObjectiveRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.link, size: 16),
                 color: AppColors.gold,
-                tooltip: 'Cursos que lo cumplen',
+                tooltip: tr.rutaEditorCursosCumplen,
                 onPressed: () => showDialog<void>(
                   context: context,
                   barrierDismissible: false,
@@ -664,7 +658,7 @@ class _ObjectiveRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 color: AppColors.textSecondary,
-                tooltip: 'Editar',
+                tooltip: tr.comunEditar,
                 onPressed: () => showDialog<void>(
                   context: context,
                   barrierDismissible: false,
@@ -675,10 +669,10 @@ class _ObjectiveRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.close, size: 16),
                 color: AppColors.statusCritical,
-                tooltip: 'Quitar',
+                tooltip: tr.comunQuitar,
                 onPressed: () async {
-                  final ok = await confirmDialog(context, 'Quitar objetivo',
-                      '¿Quitar "${objective.text}" de la fase?');
+                  final ok = await confirmDialog(context, tr.rutaEditorQuitarObjetivo,
+                      tr.rutaEditorQuitarObjetivoTexto(objective.text));
                   if (!ok || !context.mounted) return;
                   await data.deleteObjective(objective.id, labId: lab.id);
                 },
@@ -686,11 +680,10 @@ class _ObjectiveRow extends StatelessWidget {
             ],
           ),
           if (trabado)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 24, top: 2),
               child: Text(
-                'Sin cursos vinculados no se puede completar nunca, y eso '
-                'traba la fase entera para todo el laboratorio.',
+                tr.rutaEditorSinCursosTraba,
                 style:
                     TextStyle(fontSize: 11.5, color: AppColors.statusCritical),
               ),
@@ -739,7 +732,7 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
   Future<void> _save() async {
     if (_text.text.trim().isEmpty) {
       setState(() =>
-          _error = const ValidationError('El objetivo necesita su texto.'));
+          _error = ValidationError(tr.rutaEditorObjetivoTexto));
       return;
     }
     setState(() {
@@ -777,7 +770,7 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveFormShell(
-      title: widget.original == null ? 'Nuevo objetivo' : 'Editar objetivo',
+      title: widget.original == null ? tr.rutaEditorNuevoObjetivo : tr.rutaEditorEditarObjetivo,
       maxWidth: 480,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -794,13 +787,13 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
             controller: _text,
             enabled: !_saving,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'Objetivo'),
+            decoration: InputDecoration(labelText: tr.rutaEditorObjetivo),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _category,
-            decoration: const InputDecoration(labelText: 'Categoría'),
+            decoration: InputDecoration(labelText: tr.rutaEditorCategoria),
             items: [
               for (final c in ObjectiveCategory.all)
                 DropdownMenuItem(
@@ -809,9 +802,8 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
             onChanged: _saving ? null : (v) => setState(() => _category = v!),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Después hay que vincularle los cursos que lo cumplen: sin ellos '
-            'no se completa nunca.',
+          Text(
+            tr.rutaEditorVincular,
             style: TextStyle(fontSize: 12, color: AppColors.textMuted),
           ),
         ],
@@ -870,7 +862,7 @@ class _ObjectiveCoursesDialogState extends State<_ObjectiveCoursesDialog> {
     final data = context.watch<DataProvider>();
 
     return AdaptiveFormShell(
-      title: 'Cursos que cumplen el objetivo',
+      title: tr.rutaEditorCursosCumplenTitulo,
       maxWidth: 520,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -887,16 +879,15 @@ class _ObjectiveCoursesDialogState extends State<_ObjectiveCoursesDialog> {
               const SizedBox(height: 12),
             ],
             Text(
-              '"${widget.objective.text}" se da por cumplido cuando el '
-              'estudiante termina el 100% de TODOS los cursos marcados.',
+              tr.rutaEditorCumplido(widget.objective.text),
               style: const TextStyle(
                   fontSize: 12.5, color: AppColors.textMuted),
             ),
             if (_seleccion.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text(
-                  'Sin ninguno marcado, este objetivo no se completa nunca.',
+                  tr.rutaEditorSinMarcados,
                   style: TextStyle(
                       fontSize: 12, color: AppColors.statusCritical),
                 ),
@@ -954,14 +945,14 @@ class _ModulesSection extends StatelessWidget {
             spacing: 12,
             runSpacing: 8,
             children: [
-              const Text('Módulos',
+              Text(tr.rutaEditorModulos,
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               OutlinedButton.icon(
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Módulo'),
+                label: Text(tr.rutaModulo),
                 onPressed: () async {
                   final titulo = await promptText(
-                      context, 'Nuevo módulo', 'Título del módulo');
+                      context, tr.constructorNuevoModulo, tr.constructorTituloModulo);
                   if (titulo == null || titulo.isEmpty || !context.mounted) {
                     return;
                   }
@@ -978,14 +969,13 @@ class _ModulesSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
-            'El último módulo de la fase es siempre el de mentoría. Se '
-            'recalcula solo al agregar, quitar o reordenar.',
+          Text(
+            tr.rutaEditorUltimoMentoria,
             style: TextStyle(fontSize: 12, color: AppColors.textMuted),
           ),
           const SizedBox(height: 8),
           if (phase.modules.isEmpty)
-            const Text('Sin módulos todavía.',
+            Text(tr.rutaEditorSinModulos,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted))
           else
             ReorderableListView.builder(
@@ -1066,14 +1056,14 @@ class _ModuleRow extends StatelessWidget {
                 ),
               ),
               if (module.isMentorshipModule)
-                const StatusChip(
-                    label: 'Mentoría',
+                StatusChip(
+                    label: tr.eventoMentoria,
                     color: AppColors.gold,
                     icon: Icons.psychology_outlined),
               IconButton(
                 icon: const Icon(Icons.link, size: 16),
                 color: AppColors.gold,
-                tooltip: 'Cursos del módulo',
+                tooltip: tr.rutaEditorCursosModulo,
                 onPressed: () => showDialog<void>(
                   context: context,
                   barrierDismissible: false,
@@ -1084,10 +1074,10 @@ class _ModuleRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 color: AppColors.textSecondary,
-                tooltip: 'Renombrar',
+                tooltip: tr.rutaEditorRenombrar,
                 onPressed: () async {
                   final titulo = await promptText(
-                      context, 'Renombrar módulo', 'Título', module.title);
+                      context, tr.constructorRenombrarModulo, tr.comunTitulo, module.title);
                   if (titulo == null || titulo.isEmpty || !context.mounted) {
                     return;
                   }
@@ -1098,13 +1088,12 @@ class _ModuleRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 16),
                 color: AppColors.statusCritical,
-                tooltip: 'Eliminar módulo',
+                tooltip: tr.constructorEliminarModulo,
                 onPressed: () async {
                   final ok = await confirmDoubleDialog(
                     context,
                     'Eliminar módulo',
-                    'Va a eliminar "${module.title}" con sus '
-                        '${module.ownLessons.length} lecciones propias.',
+                    tr.rutaEditorEliminarModuloTexto(module.title, module.ownLessons.length),
                   );
                   if (!ok || !context.mounted) return;
                   await data.deleteRutaModule(module.id, labId: lab.id);
@@ -1121,7 +1110,7 @@ class _ModuleRow extends StatelessWidget {
                 children: [
                   if (module.courseIds.isNotEmpty)
                     StatusChip(
-                        label: '${module.courseIds.length} cursos',
+                        label: tr.rutaEditorCursosCantidad(module.courseIds.length),
                         color: AppColors.textSecondary,
                         icon: Icons.video_library_outlined),
                   for (final l in module.ownLessons)
@@ -1178,7 +1167,7 @@ class _ModuleCoursesDialogState extends State<_ModuleCoursesDialog> {
       if (importados > 0) {
         showAppSnack(
           context,
-          'Se agregaron $importados objetivos del curso a la fase.',
+          tr.rutaEditorImportados(importados),
         );
       }
     } on ApiException catch (e) {
@@ -1196,7 +1185,7 @@ class _ModuleCoursesDialogState extends State<_ModuleCoursesDialog> {
     final data = context.watch<DataProvider>();
 
     return AdaptiveFormShell(
-      title: 'Cursos de ${widget.module.title}',
+      title: tr.rutaEditorCursosDe(widget.module.title),
       maxWidth: 520,
       saving: _saving,
       onCancel: () => Navigator.pop(context),
@@ -1212,10 +1201,8 @@ class _ModuleCoursesDialogState extends State<_ModuleCoursesDialog> {
               ErrorBanner(_error!),
               const SizedBox(height: 12),
             ],
-            const Text(
-              'Un curso vive en un solo módulo de esta Ruta: en dos, su avance '
-              'se contaría dos veces. Al vincularlo, sus objetivos '
-              'categorizados se agregan a la fase.',
+            Text(
+              tr.rutaEditorCursoUnModulo,
               style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
             ),
             const SizedBox(height: 12),

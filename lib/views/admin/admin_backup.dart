@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
@@ -33,17 +34,17 @@ class AdminBackup extends StatelessWidget {
         context.watch<AuthProvider>().currentUser?.role == Roles.superAdmin;
 
     return TabBody(
-      title: 'Datos y Copias de Seguridad',
-      subtitle: 'Dónde viven los datos y cómo respaldarlos',
+      title: tr.respaldoTitulo,
+      subtitle: tr.respaldoSubtitulo,
       children: [
         const _WhereItLives(),
-        const SectionTitle('Estado actual'),
+        SectionTitle(tr.respaldoEstadoActual),
         data.impactMetrics.when(
           loading: () => const CardListSkeleton(count: 1, height: 96),
           error: (e) => ErrorState(e, onRetry: data.reloadImpactMetrics),
           data: (metrics) => _Counts(counts: metrics.counts),
         ),
-        const SectionTitle('Respaldo'),
+        SectionTitle(tr.respaldoRespaldo),
         _BackupCard(esSuperAdmin: esSuperAdmin),
       ],
     );
@@ -60,26 +61,18 @@ class _WhereItLives extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(Icons.storage_outlined, color: AppColors.gold),
               SizedBox(width: 10),
               Expanded(
-                child: Text('¿Dónde se guardan los datos?',
+                child: Text(tr.respaldoDondeDatos,
                     style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Los datos viven en la base de datos del servidor, no en este '
-            'navegador. Cerrar sesión, cambiar de computador o entrar desde '
-            'otro dispositivo no cambia nada: cada quien ve lo mismo.\n\n'
-            'Los archivos (fotos, PDF, videos) se guardan aparte, en el '
-            'almacenamiento de objetos, y el respaldo NO los incluye: guarda '
-            'las referencias, no los archivos.\n\n'
-            'Una copia de seguridad tampoco lleva credenciales. Las '
-            'contraseñas y las sesiones abiertas quedan fuera a propósito: un '
-            'respaldo es para restaurar datos, no para llevárselas.',
+          Text(
+            tr.respaldoDondeDatosTexto,
             style: TextStyle(
                 color: AppColors.textSecondary, fontSize: 13.5, height: 1.6),
           ),
@@ -100,38 +93,38 @@ class _Counts extends StatelessWidget {
         StatRow(tiles: [
           StatTile(
               value: '${counts.allStudents}',
-              label: 'Estudiantes',
+              label: tr.tabEstudiantesCorto,
               icon: Icons.people_outline),
           StatTile(
               value: '${counts.courses}',
-              label: 'Cursos',
+              label: tr.tabCursosCorto,
               icon: Icons.video_library_outlined),
           StatTile(
               value: '${counts.projects}',
-              label: 'Proyectos',
+              label: tr.tabProyectosCorto,
               icon: Icons.lightbulb_outline),
           StatTile(
               value: '${counts.laboratories}',
-              label: 'Laboratorios',
+              label: tr.tabLaboratorios,
               icon: Icons.science_outlined),
         ]),
         const SizedBox(height: 12),
         StatRow(tiles: [
           StatTile(
               value: '${counts.groups}',
-              label: 'Equipos',
+              label: tr.tabEquipos,
               icon: Icons.groups_outlined),
           StatTile(
               value: '${counts.certificates}',
-              label: 'Certificados',
+              label: tr.tabCertificados,
               icon: Icons.workspace_premium_outlined),
           StatTile(
               value: '${counts.universities}',
-              label: 'Universidades',
+              label: tr.proyectosUniversidades,
               icon: Icons.account_balance_outlined),
           StatTile(
               value: '${counts.submissionsPending}',
-              label: 'Entregas sin revisar',
+              label: tr.respaldoEntregasSinRevisar,
               icon: Icons.pending_actions_outlined),
         ]),
       ],
@@ -166,8 +159,8 @@ class _BackupCardState extends State<_BackupCard> {
               ElevatedButton.icon(
                 icon: const Icon(Icons.download, size: 18),
                 label: Text(_working
-                    ? 'Preparando…'
-                    : 'Descargar copia de seguridad'),
+                    ? tr.respaldoPreparando
+                    : tr.respaldoDescargar),
                 onPressed: _working ? null : _export,
               ),
               // Restaurar reemplaza la base ENTERA y no se puede deshacer:
@@ -176,7 +169,7 @@ class _BackupCardState extends State<_BackupCard> {
               if (!context.isCompact)
                 OutlinedButton.icon(
                   icon: const Icon(Icons.upload, size: 18),
-                  label: const Text('Restaurar desde archivo'),
+                  label: Text(tr.respaldoRestaurarArchivo),
                   onPressed:
                       _working || !widget.esSuperAdmin ? null : _import,
                 ),
@@ -185,13 +178,10 @@ class _BackupCardState extends State<_BackupCard> {
           const SizedBox(height: 10),
           Text(
             context.isCompact
-                ? 'Restaurar una copia reemplaza la base entera: solo se puede '
-                    'hacer desde un computador.'
+                ? tr.respaldoSoloComputador
                 : widget.esSuperAdmin
-                ? 'Restaurar reemplaza la base entera por la del archivo. No '
-                    'se puede deshacer.'
-                : 'Restaurar reemplaza la base entera, así que solo lo puede '
-                    'hacer un Super Admin.',
+                ? tr.respaldoReemplaza
+                : tr.respaldoSoloSuper,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
           ),
           if (_error != null) ...[
@@ -212,8 +202,8 @@ class _BackupCardState extends State<_BackupCard> {
       final backup = await context.read<DataProvider>().exportBackup();
       final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       final path = await FilePicker.saveFile(
-        dialogTitle: 'Guardar copia de seguridad',
-        fileName: 'enactus_respaldo_$stamp.json',
+        dialogTitle: tr.respaldoGuardarCopia,
+        fileName: tr.respaldoNombreArchivo(stamp),
         type: FileType.custom,
         allowedExtensions: ['json'],
         bytes: utf8.encode(jsonEncode(backup)),
@@ -222,7 +212,7 @@ class _BackupCardState extends State<_BackupCard> {
       setState(() => _working = false);
       // `path` nulo = la persona canceló el diálogo de guardado. No es un
       // error y no merece un aviso de éxito.
-      if (path != null) showSuccessCheck(context, 'Copia descargada ✓');
+      if (path != null) showSuccessCheck(context, tr.respaldoCopiaDescargada);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -235,7 +225,7 @@ class _BackupCardState extends State<_BackupCard> {
 
   Future<void> _import() async {
     final result = await FilePicker.pickFiles(
-      dialogTitle: 'Seleccione el archivo de respaldo',
+      dialogTitle: tr.respaldoSeleccioneArchivo,
       type: FileType.custom,
       allowedExtensions: ['json'],
       withData: true,
@@ -245,9 +235,8 @@ class _BackupCardState extends State<_BackupCard> {
 
     final ok = await confirmDoubleDialog(
       context,
-      'Restaurar copia de seguridad',
-      'La base entera se reemplaza por la del archivo '
-          '"${result!.files.single.name}". No se puede deshacer.',
+      tr.respaldoRestaurarCopia,
+      tr.respaldoRestaurarTexto(result!.files.single.name),
     );
     if (!ok || !mounted) return;
 
@@ -264,8 +253,8 @@ class _BackupCardState extends State<_BackupCard> {
       if (mounted) {
         setState(() {
           _working = false;
-          _error = const ValidationError(
-              'Ese archivo no es un respaldo válido: no se pudo leer como JSON.');
+          _error = ValidationError(
+              tr.respaldoNoValido);
         });
       }
       return;
@@ -274,7 +263,7 @@ class _BackupCardState extends State<_BackupCard> {
     try {
       await context.read<DataProvider>().restoreBackup(payload);
       if (!mounted) return;
-      showSuccessCheck(context, 'Datos restaurados ✓');
+      showSuccessCheck(context, tr.respaldoRestaurado);
       // La sesión actual puede no existir en el respaldo restaurado: se vuelve
       // al ingreso en vez de dejar la pantalla con un token que ya no vale.
       await context.read<AuthProvider>().logout();

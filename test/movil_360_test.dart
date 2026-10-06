@@ -74,9 +74,16 @@ Future<void> _irA(WidgetTester tester, String rotulo) async {
   } else {
     await tester.tap(find.byTooltip('Más opciones'));
     await _frames(tester, 4);
-    await tester.tap(find
-        .descendant(of: find.byType(Drawer), matching: find.text(rotulo))
-        .first);
+    // El menú es una lista que se desplaza: con letra grande, las últimas
+    // opciones quedan más abajo del borde, y una persona baja hasta ellas.
+    final enCajon =
+        find.descendant(of: find.byType(Drawer), matching: find.text(rotulo));
+    await tester.scrollUntilVisible(enCajon, 120,
+        scrollable: find
+            .descendant(
+                of: find.byType(Drawer), matching: find.byType(Scrollable))
+            .first);
+    await tester.tap(enCajon.first);
   }
   await _frames(tester);
 }

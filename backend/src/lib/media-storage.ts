@@ -5,6 +5,7 @@ import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
   DeleteObjectsCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   ListPartsCommand,
   PutObjectCommand,
@@ -153,6 +154,11 @@ export interface MediaStorage {
   abortMultipartUpload(key: string, uploadId: string): Promise<void>;
   /** El tamaño del objeto, o `null` si no existe. */
   objectSize(key: string): Promise<number | null>;
+  /**
+   * Los primeros [bytes] del objeto, o `null` si no existe. Para mirar QUÉ es
+   * un archivo (su firma, sus medidas) sin bajarlo entero.
+   */
+  readObjectStart(key: string, bytes: number): Promise<Uint8Array | null>;
   signPutObject(key: string, contentType: string, sizeBytes: number): Promise<string>;
   deleteObjects(
     keys: string[],
@@ -296,6 +302,20 @@ export const awsMediaStorage: MediaStorage = {
     try {
       const out = await s3().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
       return out.ContentLength ?? 0;
+    } catch (error) {
+      const nombre = nombreDe(error);
+      if (nombre === 'NotFound' || nombre === 'NoSuchKey') return null;
+      throw storageUnavailable(error);
+    }
+  },
+
+  async readObjectStart(key, bytes) {
+    if (!isStorageConfigured()) throw notConfigured();
+    try {
+      const out = await s3().send(
+        new GetObjectCommand({ Bucket: bucket(), Key: key, Range: `bytes=0-${bytes - 1}` }),
+      );
+      return out.Body ? await out.Body.transformToByteArray() : new Uint8Array();
     } catch (error) {
       const nombre = nombreDe(error);
       if (nombre === 'NotFound' || nombre === 'NoSuchKey') return null;

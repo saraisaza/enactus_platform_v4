@@ -233,7 +233,8 @@
   "rolAlumni": "Alumni",
   "rolMentor": "Mentor",
   "rolAsesorAcademico": "Asesor Académico",
-  "rolEmpresa": "Empresa",
+  "rolEmpresa": "Empresa aliada",
+  "perfilCampoEmpresa": "Empresa",
   "rolDonante": "Donante",
   "pieInstitucional": "Entidad sin ánimo de lucro. Fundada en 2021. Bogotá D. C., Colombia.",
   "youtubeNoEsVideo": "Ese enlace es de YouTube, pero no de un video (parece un canal o una lista). Abra el video y copie su enlace.",
@@ -2118,7 +2119,7 @@
   "adminUsuariosPorRol": "Usuarios por rol",
   "adminEstudAbrev": "Estud.",
   "adminAsesores": "Asesores",
-  "adminEmpresas": "Empresas",
+  "adminEmpresas": "Aliadas",
   "adminDonantes": "Donantes",
   "adminProyectosPorEtapa": "Proyectos por etapa",
   "adminConfigureMetricas": "Configure competencias, ODS y horas en los cursos (constructor del LXD) para ver métricas de impacto formativo.",
@@ -2599,7 +2600,7 @@
   },
   "asesorProyectosSubtitulo": "Los proyectos de los equipos que asesora",
   "asesorSinProyectos": "Todavía no hay proyectos.",
-  "empresaPortal": "Portal Empresa",
+  "empresaPortal": "Portal Empresa aliada",
   "tabImpacto": "Impacto",
   "tabMapaEstudiantes": "Mapa de Estudiantes",
   "tabMapaCorto": "Mapa",
@@ -2662,5 +2663,186 @@
     }
   },
   "odsSigla": "ODS",
-  "foroFijado": "FIJADO"
+  "foroFijado": "FIJADO",
+  "tabClientes": "Clientes",
+  "clientesTitulo": "Clientes",
+  "clientesSubtitulo": "Enactus y las empresas cliente, cada uno con su logo y sus colores. Quien inicie sesión verá la plataforma con la marca de su cliente, junto al logo de eduXaction.",
+  "clientesNuevo": "Nuevo cliente",
+  "clientesEditar": "Editar {nombre}",
+  "@clientesEditar": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesVacio": "Todavía no hay clientes.",
+  "clientesEtiquetaLaboratorios": "Laboratorios y Ruta de Impacto",
+  "clientesEtiquetaDesactivado": "Desactivado",
+  "clientesColoresEduxaction": "Colores de eduXaction",
+  "clientesPrimario": "Primario",
+  "clientesSecundario": "Secundario",
+  "clientesSinLogo": "Sin logo",
+  "clientesDesactivar": "Desactivar",
+  "clientesReactivar": "Reactivar",
+  "clientesDesactivarTitulo": "Desactivar cliente",
+  "clientesDesactivarMensaje": "Las cuentas de {nombre} no podrán iniciar sesión mientras esté desactivado. Su avance no se borra: vuelve tal cual al reactivarlo.",
+  "@clientesDesactivarMensaje": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesDesactivado": "{nombre} quedó desactivado.",
+  "@clientesDesactivado": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesReactivado": "{nombre} quedó activo de nuevo.",
+  "@clientesReactivado": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesGuardado": "Se guardó {nombre}.",
+  "@clientesGuardado": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesNombre": "Nombre del cliente",
+  "clientesNombreFalta": "Escriba el nombre del cliente.",
+  "clientesNombreProvisional": "Nombre del cliente",
+  "clientesLogo": "Logo",
+  "clientesLogoAyuda": "PNG de hasta 1 MB, idealmente con fondo transparente y de al menos 400 px de ancho.",
+  "clientesSubirLogo": "Subir logo",
+  "clientesReemplazarLogo": "Reemplazar logo",
+  "clientesQuitarLogo": "Quitar logo",
+  "clientesSubiendoLogo": "Subiendo el logo…",
+  "clientesLogoDe": "Logo de {nombre}",
+  "@clientesLogoDe": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "clientesLogoPesado": "El logo pesa {megas} MB y el máximo es 1 MB.",
+  "@clientesLogoPesado": {
+    "placeholders": {
+      "megas": {}
+    }
+  },
+  "clientesLogoNoPng": "El archivo no es un PNG, aunque su nombre termine en .png. Expórtelo de nuevo como PNG.",
+  "clientesLogoChico": "El logo mide {ancho}×{alto} px: se vería borroso. Súbalo de al menos {minimo} px en su lado más largo.",
+  "@clientesLogoChico": {
+    "placeholders": {
+      "ancho": {},
+      "alto": {},
+      "minimo": {}
+    }
+  },
+  "clientesLogoGrande": "El logo mide {ancho}×{alto} px y el máximo son {maximo} px por lado. Redúzcalo antes de subirlo.",
+  "@clientesLogoGrande": {
+    "placeholders": {
+      "ancho": {},
+      "alto": {},
+      "maximo": {}
+    }
+  },
+  "clientesLogoMedidas": "PNG de {ancho}×{alto} px.",
+  "@clientesLogoMedidas": {
+    "placeholders": {
+      "ancho": {},
+      "alto": {}
+    }
+  },
+  "clientesLogoSinTransparencia": "El logo no tiene fondo transparente: se verá como un rectángulo con su propio fondo.",
+  "clientesLogoOscuro": "El logo es oscuro y casi no se ve sobre el encabezado gris: se activó la placa clara detrás. Puede quitarla si prefiere.",
+  "clientesPlacaClara": "Placa clara detrás del logo",
+  "clientesPlacaClaraAyuda": "Para logos oscuros, que desaparecen sobre el encabezado gris.",
+  "clientesColorPrimario": "Color primario",
+  "clientesColorPrimarioAyuda": "Botones, enlaces, íconos y títulos destacados.",
+  "clientesColorPrimarioVacio": "Sin color primario, el cliente se ve con los colores de eduXaction.",
+  "clientesColorSecundario": "Color secundario",
+  "clientesColorSecundarioAyuda": "Insignias, barras de progreso y la opción activa del menú.",
+  "clientesColorSecundarioVacio": "Sin color secundario, se usa el primario.",
+  "clientesColorInvalido": "Escriba un código hexadecimal de seis dígitos, como #1A73E8.",
+  "clientesColorFalta": "Escriba un color.",
+  "clientesAbrirSelector": "Elegir {campo} en el selector",
+  "@clientesAbrirSelector": {
+    "placeholders": {
+      "campo": {}
+    }
+  },
+  "clientesQuitarColor": "Quitar el {campo}",
+  "@clientesQuitarColor": {
+    "placeholders": {
+      "campo": {}
+    }
+  },
+  "clientesUsarEsteColor": "Usar este color",
+  "clientesSaturacionBrillo": "Saturación y brillo",
+  "clientesTono": "Tono",
+  "clientesVistaPrevia": "Vista previa",
+  "clientesModoOscuro": "Modo oscuro",
+  "clientesModoClaro": "Modo claro",
+  "clientesMaquetaSaludo": "Hola, Ana",
+  "clientesMaquetaNuevo": "Nuevo",
+  "clientesMaquetaCurso": "Liderazgo para equipos",
+  "clientesMaquetaContinuar": "Continuar",
+  "clientesMaquetaEnlace": "Ver mis cursos",
+  "clientesLegibilidad": "Legibilidad",
+  "clientesTintaBlanca": "blanco",
+  "clientesTintaOscura": "oscuro",
+  "clientesInformeBoton": "Botones: texto {tinta} sobre su color, {contraste}:1. Se lee bien.",
+  "@clientesInformeBoton": {
+    "placeholders": {
+      "tinta": {},
+      "contraste": {}
+    }
+  },
+  "clientesInformeBotonSeFunde": "Botones sobre fondo oscuro: su color se distingue poco de las tarjetas de la plataforma ({contraste}:1; lo recomendado es 3:1). El texto se lee, pero el botón resalta poco: un tono más claro lo haría más visible.",
+  "@clientesInformeBotonSeFunde": {
+    "placeholders": {
+      "contraste": {}
+    }
+  },
+  "clientesInformeOscuroIgual": "Textos sobre fondo oscuro: su color se usa tal cual ({contraste}:1).",
+  "@clientesInformeOscuroIgual": {
+    "placeholders": {
+      "contraste": {}
+    }
+  },
+  "clientesInformeOscuroAjustado": "Textos sobre fondo oscuro: su color daba {antes}:1 y no se leía; se aclaró a {color} ({despues}:1). Los botones mantienen su color exacto.",
+  "@clientesInformeOscuroAjustado": {
+    "placeholders": {
+      "antes": {},
+      "color": {},
+      "despues": {}
+    }
+  },
+  "clientesInformeClaroIgual": "Textos sobre fondo claro: su color se usa tal cual ({contraste}:1).",
+  "@clientesInformeClaroIgual": {
+    "placeholders": {
+      "contraste": {}
+    }
+  },
+  "clientesInformeClaroAjustado": "Textos sobre fondo claro: su color daba {antes}:1 y no se leía; se oscureció a {color} ({despues}:1).",
+  "@clientesInformeClaroAjustado": {
+    "placeholders": {
+      "antes": {},
+      "color": {},
+      "despues": {}
+    }
+  },
+  "clientesInformeSecundarioIgual": "Insignias: el color secundario se usa tal cual.",
+  "clientesInformeSecundarioOscuro": "Insignias sobre fondo oscuro: para que se lean, el secundario se aclaró a {color}.",
+  "@clientesInformeSecundarioOscuro": {
+    "placeholders": {
+      "color": {}
+    }
+  },
+  "clientesInformeSecundarioClaro": "Insignias sobre fondo claro: para que se lean, el secundario se oscureció a {color}.",
+  "@clientesInformeSecundarioClaro": {
+    "placeholders": {
+      "color": {}
+    }
+  }
 }

@@ -67,6 +67,8 @@ tags:
     description: Foro de la comunidad Enactus
   - name: users
     description: Personas, con alcance por rol
+  - name: clients
+    description: Clientes (empresas y Enactus) y su marca — solo admin/superadmin
   - name: files
     description: URLs firmadas de subida y lectura
   - name: admin
@@ -805,6 +807,136 @@ paths:
         '400': { $ref: '#/components/responses/ValidationError' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { description: Existe, pero está inactiva }
+
+  /clients:
+    get:
+      tags: [clients]
+      summary: Los clientes, con su marca (solo admin/superadmin)
+      description: |
+        Enactus primero —es el cliente con laboratorios y Ruta de Impacto, y
+        lo crea la migración 0013— y después las empresas por nombre. Incluye
+        los desactivados.
+
+        `logoUrl` viene ya firmada, como la galería de la portada: el panel
+        pinta los logos sin un pedido más por cada uno. Es nula si el cliente
+        no tiene logo o si el almacenamiento no está configurado.
+      responses:
+        '200':
+          description: Los clientes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Client' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [clients]
+      summary: Crear un cliente (solo admin/superadmin)
+      description: |
+        Sin colores ni logo, el cliente se ve con la marca de eduXaction. Los
+        colores se aceptan como `#1a73e8`, `1A73E8`…: se guardan como
+        `#RRGGBB` en mayúsculas. El logo es la `key` que devolvió
+        `POST /clients/logo-upload-url`, ya subida: el servidor mira el archivo
+        (que sea un PNG de verdad, su peso y sus medidas) antes de aceptarlo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 2, maxLength: 80 }
+                primaryColor: { type: [string, 'null'], example: '#1A73E8' }
+                secondaryColor: { type: [string, 'null'], example: '#0B5394' }
+                logoS3Key: { type: [string, 'null'], example: 'client-logos/3f1c….png' }
+                logoLightPlate: { type: boolean, default: false }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Client' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: Ya existe un cliente con ese nombre, o el logo no llegó al almacenamiento }
+        '413': { description: El logo pesa más de 1 MB }
+
+  /clients/logo-upload-url:
+    post:
+      tags: [clients]
+      summary: Permiso para subir un logo (solo admin/superadmin)
+      description: |
+        Un `PUT` simple a S3, como la portada de un video. Solo PNG de hasta
+        1 MB: el tamaño va firmado, así que S3 rechaza un archivo distinto del
+        declarado. La `key` la arma el servidor, siempre en `client-logos/`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, sizeBytes]
+              properties:
+                contentType: { type: string, enum: [image/png] }
+                sizeBytes: { type: integer, minimum: 1, maximum: 1048576 }
+      responses:
+        '200':
+          description: La URL firmada y la key con la que después se guarda el logo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string }
+                  uploadUrl: { type: string, format: uri }
+                  method: { type: string, enum: [PUT] }
+                  headers: { type: object, additionalProperties: { type: string } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { description: El logo pesa más de 1 MB }
+
+  /clients/{id}:
+    patch:
+      tags: [clients]
+      summary: Editar, cambiar el logo o desactivar un cliente (solo admin/superadmin)
+      description: |
+        Todo opcional; `null` en un color o en el logo los quita (vuelve el de
+        eduXaction). `active: false` desactiva el cliente: sus cuentas no
+        podrán iniciar sesión cuando las cuentas tengan cliente; su avance no
+        se borra. Enactus no se puede desactivar desde acá (409): dejaría sin
+        acceso a toda su red con un clic.
+
+        Al cambiar el logo, el anterior pasa a la cola de borrado de S3.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2, maxLength: 80 }
+                primaryColor: { type: [string, 'null'] }
+                secondaryColor: { type: [string, 'null'] }
+                logoS3Key: { type: [string, 'null'] }
+                logoLightPlate: { type: boolean }
+                active: { type: boolean }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Client' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Nombre repetido, logo que no llegó, o intento de desactivar Enactus }
 
   /catalogs:
     get:
@@ -3019,6 +3151,25 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
 
   schemas:
+    Client:
+      type: object
+      description: |
+        Un cliente —una empresa, o Enactus— con su marca. Sin logo o sin
+        colores, se usa la marca de eduXaction en lo que falte.
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        logoS3Key: { type: [string, 'null'] }
+        logoUrl: { type: [string, 'null'], format: uri, description: Firmada; vence en minutos }
+        logoWidth: { type: [integer, 'null'] }
+        logoHeight: { type: [integer, 'null'] }
+        logoLightPlate: { type: boolean, description: Placa clara detrás de un logo oscuro }
+        primaryColor: { type: [string, 'null'], example: '#1A73E8' }
+        secondaryColor: { type: [string, 'null'] }
+        hasLaboratories: { type: boolean, description: Solo Enactus (laboratorios y Ruta de Impacto) }
+        active: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     Error:
       type: object
       required: [error]

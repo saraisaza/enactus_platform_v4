@@ -14,6 +14,7 @@ import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../shared/forum_view.dart';
 import 'admin_backup.dart';
+import 'admin_clients.dart';
 import 'admin_management.dart';
 import 'admin_site_content.dart';
 import 'admin_users.dart';
@@ -45,6 +46,10 @@ class AdminPortal extends StatelessWidget {
             destacada: true,
             icon: Icons.manage_accounts_outlined,
             builder: (_) => AdminUsers(isSuperAdmin: isSuperAdmin)),
+        PortalTab(
+            label: tr.tabClientes,
+            icon: Icons.storefront_outlined,
+            builder: (_) => const AdminClients()),
         PortalTab(
             label: tr.tabProyectosCorto,
             icon: Icons.lightbulb_outline,

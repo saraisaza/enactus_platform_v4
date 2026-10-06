@@ -2778,6 +2778,55 @@
           "detail": "Your session has expired. Please reauthenticate."
         }
       }
+    },
+    "/clients": {
+      "data": [
+        {
+          "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+          "name": "Enactus",
+          "logoS3Key": null,
+          "logoUrl": null,
+          "logoWidth": null,
+          "logoHeight": null,
+          "logoLightPlate": false,
+          "primaryColor": null,
+          "secondaryColor": null,
+          "hasLaboratories": true,
+          "active": true,
+          "createdAt": "2026-10-06T21:00:00.000Z",
+          "updatedAt": "2026-10-06T21:00:00.000Z"
+        },
+        {
+          "id": "2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02",
+          "name": "Banco Andino",
+          "logoS3Key": null,
+          "logoUrl": null,
+          "logoWidth": null,
+          "logoHeight": null,
+          "logoLightPlate": false,
+          "primaryColor": "#1A73E8",
+          "secondaryColor": "#0B5394",
+          "hasLaboratories": false,
+          "active": true,
+          "createdAt": "2026-10-06T21:05:00.000Z",
+          "updatedAt": "2026-10-06T21:05:00.000Z"
+        },
+        {
+          "id": "4a3b2c1d-0e9f-4a8b-b7c6-d5e4f3a2b103",
+          "name": "Ferretería Sol",
+          "logoS3Key": null,
+          "logoUrl": null,
+          "logoWidth": null,
+          "logoHeight": null,
+          "logoLightPlate": false,
+          "primaryColor": null,
+          "secondaryColor": null,
+          "hasLaboratories": false,
+          "active": false,
+          "createdAt": "2026-10-06T21:06:00.000Z",
+          "updatedAt": "2026-10-06T21:07:00.000Z"
+        }
+      ]
     }
   },
   "estados": {

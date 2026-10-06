@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../l10n/textos.dart';
 import '../models/authoring.dart';
+import '../models/client.dart';
 import '../models/glossary.dart';
 import '../models/models.dart';
 import '../models/progress.dart';
@@ -145,6 +146,7 @@ class DataProvider extends ChangeNotifier {
     _groups = const AsyncValue.idle();
     _catalogs = const AsyncValue.idle();
     _universities = const AsyncValue.idle();
+    _clients = const AsyncValue.idle();
     _talent = const AsyncValue.idle();
     _impactMetrics = const AsyncValue.idle();
     // `_siteContent` NO se limpia: es público y no depende de quién mire.
@@ -385,6 +387,63 @@ class DataProvider extends ChangeNotifier {
       notifyListeners();
     }
     return creada;
+  }
+
+  AsyncValue<List<Client>> _clients = const AsyncValue.idle();
+
+  /// Los clientes —Enactus y las empresas— con su marca. Solo para
+  /// administración: el servidor responde 403 a cualquier otro rol.
+  AsyncValue<List<Client>> get clients {
+    _lazy(_clients, (v) => _clients = v, _fetchClients);
+    return _clients;
+  }
+
+  Future<void> reloadClients() =>
+      _refresh((v) => _clients = v, _fetchClients, _clients.valueOrNull);
+
+  Future<List<Client>> _fetchClients() async {
+    final json = await api.get('/clients');
+    final mapa = Map<String, dynamic>.from(json as Map);
+    return (mapa['data'] as List? ?? const [])
+        .map((e) => Client.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  /// Crea un cliente. [campos] lleva `name` y, si se eligieron, los colores
+  /// (`#RRGGBB`), la key del logo ya subido y `logoLightPlate`.
+  Future<Client> createClient(Map<String, dynamic> campos) async {
+    final json = await api.post('/clients', body: campos);
+    await reloadClients();
+    return Client.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Cambia solo lo que viene en [cambios]: un color o el logo en `null` se
+  /// quitan; `active: false` desactiva el cliente.
+  Future<Client> updateClient(String id, Map<String, dynamic> cambios) async {
+    final json = await api.patch('/clients/$id', body: cambios);
+    await reloadClients();
+    return Client.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Sube el logo directo a S3 y devuelve su key, para guardarla después con
+  /// [createClient] o [updateClient]. El servidor revisa el archivo al
+  /// guardar: que sea un PNG de verdad, su peso y sus medidas.
+  Future<String> uploadClientLogo(
+    List<int> bytes, {
+    void Function(double progress)? onProgress,
+  }) async {
+    final signed = await api.post('/clients/logo-upload-url', body: {
+      'contentType': 'image/png',
+      'sizeBytes': bytes.length,
+    });
+    final info = Map<String, dynamic>.from(signed as Map);
+    await api.uploadToSignedUrl(
+      uploadUrl: info['uploadUrl'] as String,
+      bytes: bytes,
+      contentType: 'image/png',
+      onProgress: onProgress,
+    );
+    return info['key'] as String;
   }
 
   /// La universidad por su id, o `null` si no está en el catálogo cargado.

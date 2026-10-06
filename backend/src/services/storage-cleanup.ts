@@ -1,7 +1,7 @@
 import { asc, eq, inArray, or, sql } from 'drizzle-orm';
 
 import type { Database } from '../db/client';
-import { courses, lessons, storagePendingDeletes } from '../db/schema';
+import { clients, courses, lessons, storagePendingDeletes } from '../db/schema';
 import { mediaStorage } from '../lib/media-storage';
 
 /**
@@ -56,6 +56,11 @@ export async function drainStorageDeletes(
       .from(courses)
       .where(inArray(courses.introVideoS3Key, keys));
     for (const fila of deCursos) if (fila.video) enUso.add(fila.video);
+    const deClientes = await db
+      .select({ logo: clients.logoS3Key })
+      .from(clients)
+      .where(inArray(clients.logoS3Key, keys));
+    for (const fila of deClientes) if (fila.logo) enUso.add(fila.logo);
 
     const siguenEnUso = keys.filter((k) => enUso.has(k));
     if (siguenEnUso.length > 0) {

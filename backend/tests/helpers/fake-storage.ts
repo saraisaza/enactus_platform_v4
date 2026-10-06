@@ -84,6 +84,14 @@ export class FakeMediaStorage implements MediaStorage {
     return Promise.resolve(this.objetos.get(key) ?? null);
   }
 
+  /** El contenido de los objetos subidos con [subirArchivo]. */
+  readonly contenidos = new Map<string, Uint8Array>();
+
+  readObjectStart(key: string, bytes: number) {
+    if (!this.objetos.has(key)) return Promise.resolve(null);
+    return Promise.resolve((this.contenidos.get(key) ?? new Uint8Array()).slice(0, bytes));
+  }
+
   signPutObject(key: string, contentType: string, sizeBytes: number) {
     return Promise.resolve(
       `https://s3.prueba/${key}?put=1&type=${encodeURIComponent(contentType)}&size=${sizeBytes}`,
@@ -93,6 +101,12 @@ export class FakeMediaStorage implements MediaStorage {
   /** El `PUT` simple de la portada. */
   subirObjeto(key: string, sizeBytes: number) {
     this.objetos.set(key, sizeBytes);
+  }
+
+  /** Un `PUT` con contenido de verdad: lo que el servidor después inspecciona. */
+  subirArchivo(key: string, contenido: Uint8Array) {
+    this.objetos.set(key, contenido.length);
+    this.contenidos.set(key, contenido);
   }
 
   deleteObjects(keys: string[]) {

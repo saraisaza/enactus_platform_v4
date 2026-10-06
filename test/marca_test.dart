@@ -105,7 +105,12 @@ void main() {
       }
 
       for (final c in grilla) {
-        final p = PaletaMarca.desde(primario: c);
+        // El secundario, del lado opuesto del círculo: así cada vuelta prueba
+        // dos tonos distintos.
+        final opuesto = HSLColor.fromColor(c);
+        final p = PaletaMarca.desde(
+            primario: c,
+            secundario: opuesto.withHue((opuesto.hue + 180) % 360).toColor());
         exigir('texto sobre el botón', p.sobrePrimario, p.primario, c);
         exigir('texto sobre el botón con el mouse encima', p.sobrePrimario,
             p.primarioBrillante, c);
@@ -116,6 +121,7 @@ void main() {
           Color(0xFF17171A), // tarjetas
         ]) {
           exigir('texto de marca sobre $fondo', p.tintaSobreOscuro, fondo, c);
+          exigir('insignia sobre $fondo', p.secundarioSobreOscuro, fondo, c);
         }
         for (final fondo in const [
           Color(0xFFF4F2EF), // página clara
@@ -123,6 +129,7 @@ void main() {
           Color(0xFFE9E7E3), // panel claro
         ]) {
           exigir('texto de marca sobre $fondo', p.tintaSobreClaro, fondo, c);
+          exigir('insignia sobre $fondo', p.secundarioSobreClaro, fondo, c);
         }
       }
       expect(fallas, isEmpty, reason: fallas.take(20).join('\n'));

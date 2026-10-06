@@ -8,8 +8,9 @@ tipografía y la estructura siguen siendo las de eduXaction.
 
 El trabajo va por etapas, cada una probada en staging antes de la siguiente:
 
-1. **Tema cambiable sin cambio visible** — hecha (esta guía).
-2. Clientes en el panel de admin: nombre, logo, colores, vista previa.
+1. **Tema cambiable sin cambio visible** — hecha.
+2. **Clientes en el panel de admin** — hecha: nombre, logo, colores, vista
+   previa, informe de legibilidad, editar y desactivar.
 3. Asignar cuentas a un cliente y aplicar su marca al iniciar sesión.
 4. Portal del Manager / Supervisor.
 5. Blindaje (aislamiento entre clientes) y producción.
@@ -67,3 +68,42 @@ Las imágenes dependen de cómo dibuja las letras cada sistema, así que no se
 guardan en el repositorio ni corren en CI. Se comprobó que la comparación es
 estable (cero diferencias sin cambios) y sensible (mover el ámbar de `#FFC107`
 a `#FFC108` hace fallar las 92).
+
+## Los clientes (etapa 2)
+
+Tabla `clients` (migración 0013). La migración crea **Enactus**, el único
+cliente con laboratorios y Ruta (`has_laboratories`; un índice impide un
+segundo). Sin colores ni logo, un cliente se ve con la marca de eduXaction.
+
+| Ruta (solo admin y superadmin) | Qué hace |
+|---|---|
+| `GET /clients` | La lista, Enactus primero, con la URL del logo ya firmada |
+| `POST /clients/logo-upload-url` | Permiso para subir un PNG de hasta 1 MB a `client-logos/` |
+| `POST /clients` | Crear: nombre, colores (`#RRGGBB`), logo, placa clara |
+| `PATCH /clients/:id` | Editar, cambiar o quitar el logo, desactivar (`active`) |
+
+Reglas que no se ven a simple vista:
+
+- **El logo se verifica mirando el archivo**, no lo que dijo el navegador: la
+  firma de PNG, el peso (1 MB) y las medidas (lado mayor de al menos 200 px,
+  ninguno de más de 4000). La app hace la misma revisión antes de subir, para
+  no hacer esperar; la que cuenta es la del servidor.
+- **Un logo reemplazado se borra de S3** por la cola de borrado, que antes de
+  borrar comprueba que ningún cliente lo use (restaurar un respaldo puede
+  volver a apuntarlo).
+- **Enactus no se desactiva desde el panel** (409): dejaría sin acceso a toda
+  su red.
+- **Placa clara**: la app la propone si el logo tiene transparencia y su color
+  promedio da menos de 3:1 contra el gris del encabezado. El admin decide.
+- **Respaldo**: `clients` va en el respaldo. Un respaldo anterior a la tabla
+  no la trae, y restaurarlo la deja como estaba en vez de vaciarla
+  (`TABLAS_POSTERIORES_A_RESPALDOS_VIEJOS` en `routes/admin.ts`).
+
+El informe de legibilidad del editor (`InformeDeContraste`) dice qué hizo la
+plataforma con cada color —se usó tal cual, se aclaró o se oscureció— y avisa
+cuando un primario muy oscuro deja el botón casi igual a las tarjetas (menos
+de 3:1): ahí no se corrige, porque es el color exacto del cliente.
+
+En la interfaz, el rol `company` de siempre se llama ahora **Empresa aliada**
+(la que patrocina laboratorios), para no confundirlo con una empresa cliente.
+

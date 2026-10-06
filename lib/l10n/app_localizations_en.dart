@@ -531,7 +531,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rolAsesorAcademico => 'Academic Advisor';
 
   @override
-  String get rolEmpresa => 'Company';
+  String get rolEmpresa => 'Partner company';
+
+  @override
+  String get perfilCampoEmpresa => 'Company';
 
   @override
   String get rolDonante => 'Donor';
@@ -4094,7 +4097,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAsesores => 'Advisors';
 
   @override
-  String get adminEmpresas => 'Companies';
+  String get adminEmpresas => 'Partners';
 
   @override
   String get adminDonantes => 'Donors';
@@ -5057,7 +5060,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get asesorSinProyectos => 'There are no projects yet.';
 
   @override
-  String get empresaPortal => 'Company Portal';
+  String get empresaPortal => 'Partner Company Portal';
 
   @override
   String get tabImpacto => 'Impact';
@@ -5215,4 +5218,277 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foroFijado => 'PINNED';
+
+  @override
+  String get tabClientes => 'Clients';
+
+  @override
+  String get clientesTitulo => 'Clients';
+
+  @override
+  String get clientesSubtitulo =>
+      'Enactus and the client companies, each with its own logo and colors. Whoever signs in will see the platform with their client\'s brand, next to the eduXaction logo.';
+
+  @override
+  String get clientesNuevo => 'New client';
+
+  @override
+  String clientesEditar(Object nombre) {
+    return 'Edit $nombre';
+  }
+
+  @override
+  String get clientesVacio => 'There are no clients yet.';
+
+  @override
+  String get clientesEtiquetaLaboratorios => 'Laboratories and Impact Path';
+
+  @override
+  String get clientesEtiquetaDesactivado => 'Deactivated';
+
+  @override
+  String get clientesColoresEduxaction => 'eduXaction colors';
+
+  @override
+  String get clientesPrimario => 'Primary';
+
+  @override
+  String get clientesSecundario => 'Secondary';
+
+  @override
+  String get clientesSinLogo => 'No logo';
+
+  @override
+  String get clientesDesactivar => 'Deactivate';
+
+  @override
+  String get clientesReactivar => 'Reactivate';
+
+  @override
+  String get clientesDesactivarTitulo => 'Deactivate client';
+
+  @override
+  String clientesDesactivarMensaje(Object nombre) {
+    return '$nombre\'s accounts will not be able to sign in while it is deactivated. Their progress is not deleted: it comes back as it was when it is reactivated.';
+  }
+
+  @override
+  String clientesDesactivado(Object nombre) {
+    return '$nombre is now deactivated.';
+  }
+
+  @override
+  String clientesReactivado(Object nombre) {
+    return '$nombre is active again.';
+  }
+
+  @override
+  String clientesGuardado(Object nombre) {
+    return '$nombre was saved.';
+  }
+
+  @override
+  String get clientesNombre => 'Client name';
+
+  @override
+  String get clientesNombreFalta => 'Enter the client\'s name.';
+
+  @override
+  String get clientesNombreProvisional => 'Client name';
+
+  @override
+  String get clientesLogo => 'Logo';
+
+  @override
+  String get clientesLogoAyuda =>
+      'PNG up to 1 MB, ideally with a transparent background and at least 400 px wide.';
+
+  @override
+  String get clientesSubirLogo => 'Upload logo';
+
+  @override
+  String get clientesReemplazarLogo => 'Replace logo';
+
+  @override
+  String get clientesQuitarLogo => 'Remove logo';
+
+  @override
+  String get clientesSubiendoLogo => 'Uploading the logo…';
+
+  @override
+  String clientesLogoDe(Object nombre) {
+    return '$nombre logo';
+  }
+
+  @override
+  String clientesLogoPesado(Object megas) {
+    return 'The logo is $megas MB and the maximum is 1 MB.';
+  }
+
+  @override
+  String get clientesLogoNoPng =>
+      'The file is not a PNG, even though its name ends in .png. Export it again as PNG.';
+
+  @override
+  String clientesLogoChico(Object ancho, Object alto, Object minimo) {
+    return 'The logo is $ancho×$alto px: it would look blurry. Upload it with at least $minimo px on its longest side.';
+  }
+
+  @override
+  String clientesLogoGrande(Object ancho, Object alto, Object maximo) {
+    return 'The logo is $ancho×$alto px and the maximum is $maximo px per side. Make it smaller before uploading it.';
+  }
+
+  @override
+  String clientesLogoMedidas(Object ancho, Object alto) {
+    return 'PNG of $ancho×$alto px.';
+  }
+
+  @override
+  String get clientesLogoSinTransparencia =>
+      'The logo has no transparent background: it will look like a rectangle with its own background.';
+
+  @override
+  String get clientesLogoOscuro =>
+      'The logo is dark and barely shows on the gray header: the light plate behind it was turned on. You can turn it off if you prefer.';
+
+  @override
+  String get clientesPlacaClara => 'Light plate behind the logo';
+
+  @override
+  String get clientesPlacaClaraAyuda =>
+      'For dark logos, which disappear on the gray header.';
+
+  @override
+  String get clientesColorPrimario => 'Primary color';
+
+  @override
+  String get clientesColorPrimarioAyuda =>
+      'Buttons, links, icons and highlighted titles.';
+
+  @override
+  String get clientesColorPrimarioVacio =>
+      'Without a primary color, the client is shown with the eduXaction colors.';
+
+  @override
+  String get clientesColorSecundario => 'Secondary color';
+
+  @override
+  String get clientesColorSecundarioAyuda =>
+      'Badges, progress bars and the active menu option.';
+
+  @override
+  String get clientesColorSecundarioVacio =>
+      'Without a secondary color, the primary is used.';
+
+  @override
+  String get clientesColorInvalido =>
+      'Enter a six-digit hexadecimal code, such as #1A73E8.';
+
+  @override
+  String get clientesColorFalta => 'Enter a color.';
+
+  @override
+  String clientesAbrirSelector(Object campo) {
+    return 'Pick $campo in the selector';
+  }
+
+  @override
+  String clientesQuitarColor(Object campo) {
+    return 'Remove the $campo';
+  }
+
+  @override
+  String get clientesUsarEsteColor => 'Use this color';
+
+  @override
+  String get clientesSaturacionBrillo => 'Saturation and brightness';
+
+  @override
+  String get clientesTono => 'Hue';
+
+  @override
+  String get clientesVistaPrevia => 'Preview';
+
+  @override
+  String get clientesModoOscuro => 'Dark mode';
+
+  @override
+  String get clientesModoClaro => 'Light mode';
+
+  @override
+  String get clientesMaquetaSaludo => 'Hi, Ana';
+
+  @override
+  String get clientesMaquetaNuevo => 'New';
+
+  @override
+  String get clientesMaquetaCurso => 'Leadership for teams';
+
+  @override
+  String get clientesMaquetaContinuar => 'Continue';
+
+  @override
+  String get clientesMaquetaEnlace => 'See my courses';
+
+  @override
+  String get clientesLegibilidad => 'Readability';
+
+  @override
+  String get clientesTintaBlanca => 'white';
+
+  @override
+  String get clientesTintaOscura => 'dark';
+
+  @override
+  String clientesInformeBoton(Object tinta, Object contraste) {
+    return 'Buttons: $tinta text on your color, $contraste:1. Easy to read.';
+  }
+
+  @override
+  String clientesInformeBotonSeFunde(Object contraste) {
+    return 'Buttons on dark backgrounds: your color barely stands out from the platform\'s cards ($contraste:1; 3:1 is recommended). The text is readable, but the button does not stand out much: a lighter shade would make it more visible.';
+  }
+
+  @override
+  String clientesInformeOscuroIgual(Object contraste) {
+    return 'Text on dark backgrounds: your color is used as is ($contraste:1).';
+  }
+
+  @override
+  String clientesInformeOscuroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  ) {
+    return 'Text on dark backgrounds: your color gave $antes:1 and was hard to read; it was lightened to $color ($despues:1). Buttons keep your exact color.';
+  }
+
+  @override
+  String clientesInformeClaroIgual(Object contraste) {
+    return 'Text on light backgrounds: your color is used as is ($contraste:1).';
+  }
+
+  @override
+  String clientesInformeClaroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  ) {
+    return 'Text on light backgrounds: your color gave $antes:1 and was hard to read; it was darkened to $color ($despues:1).';
+  }
+
+  @override
+  String get clientesInformeSecundarioIgual =>
+      'Badges: the secondary color is used as is.';
+
+  @override
+  String clientesInformeSecundarioOscuro(Object color) {
+    return 'Badges on dark backgrounds: so they can be read, the secondary was lightened to $color.';
+  }
+
+  @override
+  String clientesInformeSecundarioClaro(Object color) {
+    return 'Badges on light backgrounds: so they can be read, the secondary was darkened to $color.';
+  }
 }

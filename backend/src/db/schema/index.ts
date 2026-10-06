@@ -6,6 +6,7 @@
  * - `enums`        — todos los enums del dominio
  * - `catalogs`     — ODS y competencias (catálogos fijos, hoy constantes Dart)
  * - `universities` — universidades (unidad de visibilidad del asesor)
+ * - `clients`      — clientes (empresas y Enactus) con su marca
  * - `users`        — usuarios, refresh tokens, bitácora de auditoría
  * - `orgs`         — proyectos, equipos e integrantes
  * - `labs`         — laboratorios, fases, objetivos y módulos de la Ruta
@@ -20,6 +21,7 @@
 export * from './enums';
 export * from './catalogs';
 export * from './universities';
+export * from './clients';
 export * from './users';
 export * from './orgs';
 export * from './labs';

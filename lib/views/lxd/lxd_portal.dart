@@ -1461,7 +1461,9 @@ class _LxdProfile extends StatelessWidget {
                   lxd.canGradeEnactus ? tr.comunActivado : tr.comunDesactivado),
               const Divider(height: 32),
               for (final field in [
-                (tr.rolEmpresa, 'company'),
+                // El campo de perfil (dónde trabaja), no el rol «Empresa
+                // aliada».
+                (tr.perfilCampoEmpresa, 'company'),
                 (tr.perfilCargo, 'position'),
                 (tr.perfilEspecialidad, 'specialty'),
                 (tr.perfilIdiomas, 'languages'),

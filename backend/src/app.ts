@@ -21,6 +21,7 @@ import { courseTrackingRoutes } from './routes/course-tracking';
 import { assignmentRoutes } from './routes/assignments';
 import { userRoutes } from './routes/users';
 import { universityRoutes } from './routes/universities';
+import { clientRoutes } from './routes/clients';
 import { catalogRoutes } from './routes/catalogs';
 import { courseRoutes, moduleRoutes } from './routes/courses';
 import { fileRoutes } from './routes/files';
@@ -180,6 +181,7 @@ export function createApp(database: Database = defaultDb) {
   // base, no de una constante copiada en el cliente.
   app.route('/catalogs', catalogRoutes);
   app.route('/universities', universityRoutes);
+  app.route('/clients', clientRoutes);
   app.route('/courses', courseRoutes);
   // Segundo router en la misma base: el seguimiento de un curso es de otro
   // rol (quien acompaña, no quien edita) y vive en su propio archivo.

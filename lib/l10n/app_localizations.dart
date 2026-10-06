@@ -1043,8 +1043,14 @@ abstract class AppLocalizations {
   /// No description provided for @rolEmpresa.
   ///
   /// In es, this message translates to:
-  /// **'Empresa'**
+  /// **'Empresa aliada'**
   String get rolEmpresa;
+
+  /// No description provided for @perfilCampoEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa'**
+  String get perfilCampoEmpresa;
 
   /// No description provided for @rolDonante.
   ///
@@ -6929,7 +6935,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminEmpresas.
   ///
   /// In es, this message translates to:
-  /// **'Empresas'**
+  /// **'Aliadas'**
   String get adminEmpresas;
 
   /// No description provided for @adminDonantes.
@@ -8513,7 +8519,7 @@ abstract class AppLocalizations {
   /// No description provided for @empresaPortal.
   ///
   /// In es, this message translates to:
-  /// **'Portal Empresa'**
+  /// **'Portal Empresa aliada'**
   String get empresaPortal;
 
   /// No description provided for @tabImpacto.
@@ -8795,6 +8801,440 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'FIJADO'**
   String get foroFijado;
+
+  /// No description provided for @tabClientes.
+  ///
+  /// In es, this message translates to:
+  /// **'Clientes'**
+  String get tabClientes;
+
+  /// No description provided for @clientesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Clientes'**
+  String get clientesTitulo;
+
+  /// No description provided for @clientesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Enactus y las empresas cliente, cada uno con su logo y sus colores. Quien inicie sesión verá la plataforma con la marca de su cliente, junto al logo de eduXaction.'**
+  String get clientesSubtitulo;
+
+  /// No description provided for @clientesNuevo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo cliente'**
+  String get clientesNuevo;
+
+  /// No description provided for @clientesEditar.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar {nombre}'**
+  String clientesEditar(Object nombre);
+
+  /// No description provided for @clientesVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay clientes.'**
+  String get clientesVacio;
+
+  /// No description provided for @clientesEtiquetaLaboratorios.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorios y Ruta de Impacto'**
+  String get clientesEtiquetaLaboratorios;
+
+  /// No description provided for @clientesEtiquetaDesactivado.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivado'**
+  String get clientesEtiquetaDesactivado;
+
+  /// No description provided for @clientesColoresEduxaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Colores de eduXaction'**
+  String get clientesColoresEduxaction;
+
+  /// No description provided for @clientesPrimario.
+  ///
+  /// In es, this message translates to:
+  /// **'Primario'**
+  String get clientesPrimario;
+
+  /// No description provided for @clientesSecundario.
+  ///
+  /// In es, this message translates to:
+  /// **'Secundario'**
+  String get clientesSecundario;
+
+  /// No description provided for @clientesSinLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin logo'**
+  String get clientesSinLogo;
+
+  /// No description provided for @clientesDesactivar.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar'**
+  String get clientesDesactivar;
+
+  /// No description provided for @clientesReactivar.
+  ///
+  /// In es, this message translates to:
+  /// **'Reactivar'**
+  String get clientesReactivar;
+
+  /// No description provided for @clientesDesactivarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar cliente'**
+  String get clientesDesactivarTitulo;
+
+  /// No description provided for @clientesDesactivarMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Las cuentas de {nombre} no podrán iniciar sesión mientras esté desactivado. Su avance no se borra: vuelve tal cual al reactivarlo.'**
+  String clientesDesactivarMensaje(Object nombre);
+
+  /// No description provided for @clientesDesactivado.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} quedó desactivado.'**
+  String clientesDesactivado(Object nombre);
+
+  /// No description provided for @clientesReactivado.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} quedó activo de nuevo.'**
+  String clientesReactivado(Object nombre);
+
+  /// No description provided for @clientesGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Se guardó {nombre}.'**
+  String clientesGuardado(Object nombre);
+
+  /// No description provided for @clientesNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del cliente'**
+  String get clientesNombre;
+
+  /// No description provided for @clientesNombreFalta.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba el nombre del cliente.'**
+  String get clientesNombreFalta;
+
+  /// No description provided for @clientesNombreProvisional.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del cliente'**
+  String get clientesNombreProvisional;
+
+  /// No description provided for @clientesLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Logo'**
+  String get clientesLogo;
+
+  /// No description provided for @clientesLogoAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'PNG de hasta 1 MB, idealmente con fondo transparente y de al menos 400 px de ancho.'**
+  String get clientesLogoAyuda;
+
+  /// No description provided for @clientesSubirLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir logo'**
+  String get clientesSubirLogo;
+
+  /// No description provided for @clientesReemplazarLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reemplazar logo'**
+  String get clientesReemplazarLogo;
+
+  /// No description provided for @clientesQuitarLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar logo'**
+  String get clientesQuitarLogo;
+
+  /// No description provided for @clientesSubiendoLogo.
+  ///
+  /// In es, this message translates to:
+  /// **'Subiendo el logo…'**
+  String get clientesSubiendoLogo;
+
+  /// No description provided for @clientesLogoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Logo de {nombre}'**
+  String clientesLogoDe(Object nombre);
+
+  /// No description provided for @clientesLogoPesado.
+  ///
+  /// In es, this message translates to:
+  /// **'El logo pesa {megas} MB y el máximo es 1 MB.'**
+  String clientesLogoPesado(Object megas);
+
+  /// No description provided for @clientesLogoNoPng.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo no es un PNG, aunque su nombre termine en .png. Expórtelo de nuevo como PNG.'**
+  String get clientesLogoNoPng;
+
+  /// No description provided for @clientesLogoChico.
+  ///
+  /// In es, this message translates to:
+  /// **'El logo mide {ancho}×{alto} px: se vería borroso. Súbalo de al menos {minimo} px en su lado más largo.'**
+  String clientesLogoChico(Object ancho, Object alto, Object minimo);
+
+  /// No description provided for @clientesLogoGrande.
+  ///
+  /// In es, this message translates to:
+  /// **'El logo mide {ancho}×{alto} px y el máximo son {maximo} px por lado. Redúzcalo antes de subirlo.'**
+  String clientesLogoGrande(Object ancho, Object alto, Object maximo);
+
+  /// No description provided for @clientesLogoMedidas.
+  ///
+  /// In es, this message translates to:
+  /// **'PNG de {ancho}×{alto} px.'**
+  String clientesLogoMedidas(Object ancho, Object alto);
+
+  /// No description provided for @clientesLogoSinTransparencia.
+  ///
+  /// In es, this message translates to:
+  /// **'El logo no tiene fondo transparente: se verá como un rectángulo con su propio fondo.'**
+  String get clientesLogoSinTransparencia;
+
+  /// No description provided for @clientesLogoOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'El logo es oscuro y casi no se ve sobre el encabezado gris: se activó la placa clara detrás. Puede quitarla si prefiere.'**
+  String get clientesLogoOscuro;
+
+  /// No description provided for @clientesPlacaClara.
+  ///
+  /// In es, this message translates to:
+  /// **'Placa clara detrás del logo'**
+  String get clientesPlacaClara;
+
+  /// No description provided for @clientesPlacaClaraAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Para logos oscuros, que desaparecen sobre el encabezado gris.'**
+  String get clientesPlacaClaraAyuda;
+
+  /// No description provided for @clientesColorPrimario.
+  ///
+  /// In es, this message translates to:
+  /// **'Color primario'**
+  String get clientesColorPrimario;
+
+  /// No description provided for @clientesColorPrimarioAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Botones, enlaces, íconos y títulos destacados.'**
+  String get clientesColorPrimarioAyuda;
+
+  /// No description provided for @clientesColorPrimarioVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin color primario, el cliente se ve con los colores de eduXaction.'**
+  String get clientesColorPrimarioVacio;
+
+  /// No description provided for @clientesColorSecundario.
+  ///
+  /// In es, this message translates to:
+  /// **'Color secundario'**
+  String get clientesColorSecundario;
+
+  /// No description provided for @clientesColorSecundarioAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Insignias, barras de progreso y la opción activa del menú.'**
+  String get clientesColorSecundarioAyuda;
+
+  /// No description provided for @clientesColorSecundarioVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin color secundario, se usa el primario.'**
+  String get clientesColorSecundarioVacio;
+
+  /// No description provided for @clientesColorInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba un código hexadecimal de seis dígitos, como #1A73E8.'**
+  String get clientesColorInvalido;
+
+  /// No description provided for @clientesColorFalta.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba un color.'**
+  String get clientesColorFalta;
+
+  /// No description provided for @clientesAbrirSelector.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir {campo} en el selector'**
+  String clientesAbrirSelector(Object campo);
+
+  /// No description provided for @clientesQuitarColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar el {campo}'**
+  String clientesQuitarColor(Object campo);
+
+  /// No description provided for @clientesUsarEsteColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar este color'**
+  String get clientesUsarEsteColor;
+
+  /// No description provided for @clientesSaturacionBrillo.
+  ///
+  /// In es, this message translates to:
+  /// **'Saturación y brillo'**
+  String get clientesSaturacionBrillo;
+
+  /// No description provided for @clientesTono.
+  ///
+  /// In es, this message translates to:
+  /// **'Tono'**
+  String get clientesTono;
+
+  /// No description provided for @clientesVistaPrevia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa'**
+  String get clientesVistaPrevia;
+
+  /// No description provided for @clientesModoOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo oscuro'**
+  String get clientesModoOscuro;
+
+  /// No description provided for @clientesModoClaro.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo claro'**
+  String get clientesModoClaro;
+
+  /// No description provided for @clientesMaquetaSaludo.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola, Ana'**
+  String get clientesMaquetaSaludo;
+
+  /// No description provided for @clientesMaquetaNuevo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo'**
+  String get clientesMaquetaNuevo;
+
+  /// No description provided for @clientesMaquetaCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Liderazgo para equipos'**
+  String get clientesMaquetaCurso;
+
+  /// No description provided for @clientesMaquetaContinuar.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get clientesMaquetaContinuar;
+
+  /// No description provided for @clientesMaquetaEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver mis cursos'**
+  String get clientesMaquetaEnlace;
+
+  /// No description provided for @clientesLegibilidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Legibilidad'**
+  String get clientesLegibilidad;
+
+  /// No description provided for @clientesTintaBlanca.
+  ///
+  /// In es, this message translates to:
+  /// **'blanco'**
+  String get clientesTintaBlanca;
+
+  /// No description provided for @clientesTintaOscura.
+  ///
+  /// In es, this message translates to:
+  /// **'oscuro'**
+  String get clientesTintaOscura;
+
+  /// No description provided for @clientesInformeBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Botones: texto {tinta} sobre su color, {contraste}:1. Se lee bien.'**
+  String clientesInformeBoton(Object tinta, Object contraste);
+
+  /// No description provided for @clientesInformeBotonSeFunde.
+  ///
+  /// In es, this message translates to:
+  /// **'Botones sobre fondo oscuro: su color se distingue poco de las tarjetas de la plataforma ({contraste}:1; lo recomendado es 3:1). El texto se lee, pero el botón resalta poco: un tono más claro lo haría más visible.'**
+  String clientesInformeBotonSeFunde(Object contraste);
+
+  /// No description provided for @clientesInformeOscuroIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'Textos sobre fondo oscuro: su color se usa tal cual ({contraste}:1).'**
+  String clientesInformeOscuroIgual(Object contraste);
+
+  /// No description provided for @clientesInformeOscuroAjustado.
+  ///
+  /// In es, this message translates to:
+  /// **'Textos sobre fondo oscuro: su color daba {antes}:1 y no se leía; se aclaró a {color} ({despues}:1). Los botones mantienen su color exacto.'**
+  String clientesInformeOscuroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  );
+
+  /// No description provided for @clientesInformeClaroIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'Textos sobre fondo claro: su color se usa tal cual ({contraste}:1).'**
+  String clientesInformeClaroIgual(Object contraste);
+
+  /// No description provided for @clientesInformeClaroAjustado.
+  ///
+  /// In es, this message translates to:
+  /// **'Textos sobre fondo claro: su color daba {antes}:1 y no se leía; se oscureció a {color} ({despues}:1).'**
+  String clientesInformeClaroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  );
+
+  /// No description provided for @clientesInformeSecundarioIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'Insignias: el color secundario se usa tal cual.'**
+  String get clientesInformeSecundarioIgual;
+
+  /// No description provided for @clientesInformeSecundarioOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'Insignias sobre fondo oscuro: para que se lean, el secundario se aclaró a {color}.'**
+  String clientesInformeSecundarioOscuro(Object color);
+
+  /// No description provided for @clientesInformeSecundarioClaro.
+  ///
+  /// In es, this message translates to:
+  /// **'Insignias sobre fondo claro: para que se lean, el secundario se oscureció a {color}.'**
+  String clientesInformeSecundarioClaro(Object color);
 }
 
 class _AppLocalizationsDelegate

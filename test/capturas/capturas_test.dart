@@ -28,14 +28,19 @@
 library;
 
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:enactus_platform/l10n/textos.dart';
+import 'package:enactus_platform/utils/app_theme.dart';
 import 'package:enactus_platform/utils/constants.dart';
+import 'package:enactus_platform/utils/marca.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
+import 'package:enactus_platform/widgets/vista_previa_marca.dart';
 
 import '../helpers/portal_harness.dart';
 
@@ -64,14 +69,44 @@ String _nombre(String texto) {
       .replaceAll(RegExp(r'^-|-$'), '');
 }
 
+/// Un logo de prueba: un círculo y una palabra en azul marino, con fondo
+/// transparente. Oscuro a propósito: es el caso que pide la placa clara.
+Future<Uint8List> _logoDePrueba() async {
+  final grabadora = ui.PictureRecorder();
+  final lienzo = Canvas(grabadora);
+  const tinta = Color(0xFF0B2D5B);
+  lienzo.drawCircle(const Offset(60, 60), 44, Paint()..color = tinta);
+  final parrafo = (ui.ParagraphBuilder(ui.ParagraphStyle(
+          fontFamily: AppFonts.display, fontSize: 84))
+        ..pushStyle(ui.TextStyle(color: tinta, fontWeight: FontWeight.w700))
+        ..addText('NORTE'))
+      .build()
+    ..layout(const ui.ParagraphConstraints(width: 400));
+  lienzo.drawParagraph(parrafo, const Offset(122, 4));
+  final imagen = await grabadora.endRecording().toImage(420, 120);
+  final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
+  return datos!.buffer.asUint8List();
+}
+
 Future<void> _esperar(WidgetTester tester) async {
   for (var i = 0; i < 6; i++) {
     await tester.pump(const Duration(milliseconds: 120));
   }
 }
 
-Future<void> _capturar(String archivo) => expectLater(
-    find.byType(MaterialApp), matchesGoldenFile('goldens/$archivo.png'));
+/// Toma la captura, después de dejar que terminen de cargar las imágenes.
+///
+/// Las fotos (la galería de la portada) se decodifican en tiempo REAL, no en
+/// el reloj falso de la prueba: con la máquina cargada —la suite entera
+/// corriendo— a veces no alcanzaban, y la captura salía distinta sin que nada
+/// hubiera cambiado. Una regla de medir que falla sola no mide nada.
+Future<void> _capturar(WidgetTester tester, String archivo) async {
+  await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 250)));
+  await tester.pump();
+  await expectLater(
+      find.byType(MaterialApp), matchesGoldenFile('goldens/$archivo.png'));
+}
 
 void main() {
   setUpAll(() async {
@@ -92,7 +127,7 @@ void main() {
         testWidgets('$nombre en $etiqueta', (tester) async {
           fijarTamano(tester, tamano);
           await montar(tester, appPublica(ruta));
-          await _capturar('publica_${nombre}_$etiqueta');
+          await _capturar(tester, 'publica_${nombre}_$etiqueta');
         });
       }
     }
@@ -104,7 +139,7 @@ void main() {
       testWidgets('${Roles.label(role)}: pestaña inicial', (tester) async {
         fijarTamano(tester, const Size(390, 844));
         await montar(tester, appDe(role));
-        await _capturar('telefono_$role');
+        await _capturar(tester, 'telefono_$role');
       });
     }
   });
@@ -123,14 +158,15 @@ void main() {
         final rotulos = rotulosDeBarraLateral(tester, barra);
         expect(rotulos.length, greaterThan(1));
 
-        for (final (indice, rotulo) in rotulos.indexed) {
+        for (final rotulo in rotulos) {
           await tester.tap(
               find.descendant(of: barra.first, matching: find.text(rotulo)).first,
               warnIfMissed: false);
           await _esperar(tester);
-          final base =
-              'escritorio_${role}_${indice.toString().padLeft(2, '0')}_${_nombre(rotulo)}';
-          await _capturar(base);
+          // Sin el número de la pestaña: una pestaña nueva correría el de
+          // todas las siguientes y cada una se compararía con otra.
+          final base = 'escritorio_${role}_${_nombre(rotulo)}';
+          await _capturar(tester, base);
 
           // Las pestañas con selector de tema propio también se miran en
           // claro: ahí el acento de marca se oscurece para seguir legible, y
@@ -139,7 +175,7 @@ void main() {
           if (role == Roles.student && aClaro.evaluate().isNotEmpty) {
             await tester.tap(aClaro.first, warnIfMissed: false);
             await _esperar(tester);
-            await _capturar('${base}_claro');
+            await _capturar(tester, '${base}_claro');
             await tester.tap(find.byIcon(Icons.dark_mode_outlined).first,
                 warnIfMissed: false);
             await _esperar(tester);
@@ -147,5 +183,80 @@ void main() {
         }
       });
     }
+  });
+
+  group('el editor de clientes', () {
+    setUp(conSesionGuardada);
+    for (final (etiqueta, tamano) in const [
+      ('escritorio', Size(1440, 1100)),
+      ('tablet', Size(1024, 1300)),
+      ('telefono', Size(390, 844)),
+    ]) {
+      testWidgets('editar un cliente con colores, en $etiqueta', (tester) async {
+        fijarTamano(tester, tamano);
+        await montar(tester, appDe(Roles.admin));
+        // En el teléfono la pestaña vive en «Más», en la barra de abajo.
+        if (etiqueta == 'telefono') {
+          await tester.tap(find.text(tr.portalMas));
+          await _esperar(tester);
+        }
+        await tester.tap(find.text(tr.tabClientes).last, warnIfMissed: false);
+        await _esperar(tester);
+        // La segunda tarjeta: Banco Andino, con primario y secundario.
+        await tester.tap(find.text(tr.comunEditar).at(1), warnIfMissed: false);
+        await _esperar(tester);
+        await _capturar(tester, 'editor_cliente_$etiqueta');
+      });
+    }
+  });
+
+  group('la vista previa con un logo', () {
+    for (final placa in [false, true]) {
+      testWidgets(placa ? 'con placa clara' : 'sin placa', (tester) async {
+        fijarTamano(tester, const Size(720, 330));
+        final logo = await tester.runAsync(_logoDePrueba);
+        final imagen = MemoryImage(logo!);
+        await tester.pumpWidget(MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildAppTheme(),
+          home: Scaffold(
+            body: Padding(
+              padding: const EdgeInsets.all(12),
+              child: VistaPreviaMarca(
+                paleta: PaletaMarca.desde(
+                    primario: const Color(0xFF0B2D5B),
+                    secundario: const Color(0xFFE8A93D)),
+                nombre: 'Banco Norte',
+                logo: imagen,
+                placaClara: placa,
+                ladoALado: true,
+              ),
+            ),
+          ),
+        ));
+        // La imagen se decodifica de verdad, fuera del reloj falso.
+        await tester.runAsync(() => precacheImage(
+            imagen, tester.element(find.byType(VistaPreviaMarca))));
+        await _esperar(tester);
+        await _capturar(tester, 'vista_previa_logo_${placa ? 'con' : 'sin'}_placa');
+      });
+    }
+  });
+
+  group('el selector de color', () {
+    setUp(conSesionGuardada);
+    testWidgets('abierto sobre el primario', (tester) async {
+      fijarTamano(tester, const Size(1440, 1100));
+      await montar(tester, appDe(Roles.admin));
+      await tester.tap(find.text(tr.tabClientes).last, warnIfMissed: false);
+      await _esperar(tester);
+      await tester.tap(find.text(tr.comunEditar).at(1), warnIfMissed: false);
+      await _esperar(tester);
+      await tester.tap(
+          find.byTooltip(tr.clientesAbrirSelector(tr.clientesColorPrimario)).last,
+          warnIfMissed: false);
+      await _esperar(tester);
+      await _capturar(tester, 'selector_de_color');
+    });
   });
 }

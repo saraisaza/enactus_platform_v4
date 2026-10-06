@@ -61,6 +61,7 @@ RUTAS = [
     ("/communication-resources?pageSize=100", ["superadmin"]),
     ("/talent?pageSize=100", ["superadmin"]),
     ("/notifications?pageSize=100", ["student", "superadmin"]),
+    ("/clients", ["superadmin"]),
 ]
 
 

@@ -529,7 +529,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rolAsesorAcademico => 'Asesor Académico';
 
   @override
-  String get rolEmpresa => 'Empresa';
+  String get rolEmpresa => 'Empresa aliada';
+
+  @override
+  String get perfilCampoEmpresa => 'Empresa';
 
   @override
   String get rolDonante => 'Donante';
@@ -4069,7 +4072,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminAsesores => 'Asesores';
 
   @override
-  String get adminEmpresas => 'Empresas';
+  String get adminEmpresas => 'Aliadas';
 
   @override
   String get adminDonantes => 'Donantes';
@@ -5035,7 +5038,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get asesorSinProyectos => 'Todavía no hay proyectos.';
 
   @override
-  String get empresaPortal => 'Portal Empresa';
+  String get empresaPortal => 'Portal Empresa aliada';
 
   @override
   String get tabImpacto => 'Impacto';
@@ -5193,4 +5196,277 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get foroFijado => 'FIJADO';
+
+  @override
+  String get tabClientes => 'Clientes';
+
+  @override
+  String get clientesTitulo => 'Clientes';
+
+  @override
+  String get clientesSubtitulo =>
+      'Enactus y las empresas cliente, cada uno con su logo y sus colores. Quien inicie sesión verá la plataforma con la marca de su cliente, junto al logo de eduXaction.';
+
+  @override
+  String get clientesNuevo => 'Nuevo cliente';
+
+  @override
+  String clientesEditar(Object nombre) {
+    return 'Editar $nombre';
+  }
+
+  @override
+  String get clientesVacio => 'Todavía no hay clientes.';
+
+  @override
+  String get clientesEtiquetaLaboratorios => 'Laboratorios y Ruta de Impacto';
+
+  @override
+  String get clientesEtiquetaDesactivado => 'Desactivado';
+
+  @override
+  String get clientesColoresEduxaction => 'Colores de eduXaction';
+
+  @override
+  String get clientesPrimario => 'Primario';
+
+  @override
+  String get clientesSecundario => 'Secundario';
+
+  @override
+  String get clientesSinLogo => 'Sin logo';
+
+  @override
+  String get clientesDesactivar => 'Desactivar';
+
+  @override
+  String get clientesReactivar => 'Reactivar';
+
+  @override
+  String get clientesDesactivarTitulo => 'Desactivar cliente';
+
+  @override
+  String clientesDesactivarMensaje(Object nombre) {
+    return 'Las cuentas de $nombre no podrán iniciar sesión mientras esté desactivado. Su avance no se borra: vuelve tal cual al reactivarlo.';
+  }
+
+  @override
+  String clientesDesactivado(Object nombre) {
+    return '$nombre quedó desactivado.';
+  }
+
+  @override
+  String clientesReactivado(Object nombre) {
+    return '$nombre quedó activo de nuevo.';
+  }
+
+  @override
+  String clientesGuardado(Object nombre) {
+    return 'Se guardó $nombre.';
+  }
+
+  @override
+  String get clientesNombre => 'Nombre del cliente';
+
+  @override
+  String get clientesNombreFalta => 'Escriba el nombre del cliente.';
+
+  @override
+  String get clientesNombreProvisional => 'Nombre del cliente';
+
+  @override
+  String get clientesLogo => 'Logo';
+
+  @override
+  String get clientesLogoAyuda =>
+      'PNG de hasta 1 MB, idealmente con fondo transparente y de al menos 400 px de ancho.';
+
+  @override
+  String get clientesSubirLogo => 'Subir logo';
+
+  @override
+  String get clientesReemplazarLogo => 'Reemplazar logo';
+
+  @override
+  String get clientesQuitarLogo => 'Quitar logo';
+
+  @override
+  String get clientesSubiendoLogo => 'Subiendo el logo…';
+
+  @override
+  String clientesLogoDe(Object nombre) {
+    return 'Logo de $nombre';
+  }
+
+  @override
+  String clientesLogoPesado(Object megas) {
+    return 'El logo pesa $megas MB y el máximo es 1 MB.';
+  }
+
+  @override
+  String get clientesLogoNoPng =>
+      'El archivo no es un PNG, aunque su nombre termine en .png. Expórtelo de nuevo como PNG.';
+
+  @override
+  String clientesLogoChico(Object ancho, Object alto, Object minimo) {
+    return 'El logo mide $ancho×$alto px: se vería borroso. Súbalo de al menos $minimo px en su lado más largo.';
+  }
+
+  @override
+  String clientesLogoGrande(Object ancho, Object alto, Object maximo) {
+    return 'El logo mide $ancho×$alto px y el máximo son $maximo px por lado. Redúzcalo antes de subirlo.';
+  }
+
+  @override
+  String clientesLogoMedidas(Object ancho, Object alto) {
+    return 'PNG de $ancho×$alto px.';
+  }
+
+  @override
+  String get clientesLogoSinTransparencia =>
+      'El logo no tiene fondo transparente: se verá como un rectángulo con su propio fondo.';
+
+  @override
+  String get clientesLogoOscuro =>
+      'El logo es oscuro y casi no se ve sobre el encabezado gris: se activó la placa clara detrás. Puede quitarla si prefiere.';
+
+  @override
+  String get clientesPlacaClara => 'Placa clara detrás del logo';
+
+  @override
+  String get clientesPlacaClaraAyuda =>
+      'Para logos oscuros, que desaparecen sobre el encabezado gris.';
+
+  @override
+  String get clientesColorPrimario => 'Color primario';
+
+  @override
+  String get clientesColorPrimarioAyuda =>
+      'Botones, enlaces, íconos y títulos destacados.';
+
+  @override
+  String get clientesColorPrimarioVacio =>
+      'Sin color primario, el cliente se ve con los colores de eduXaction.';
+
+  @override
+  String get clientesColorSecundario => 'Color secundario';
+
+  @override
+  String get clientesColorSecundarioAyuda =>
+      'Insignias, barras de progreso y la opción activa del menú.';
+
+  @override
+  String get clientesColorSecundarioVacio =>
+      'Sin color secundario, se usa el primario.';
+
+  @override
+  String get clientesColorInvalido =>
+      'Escriba un código hexadecimal de seis dígitos, como #1A73E8.';
+
+  @override
+  String get clientesColorFalta => 'Escriba un color.';
+
+  @override
+  String clientesAbrirSelector(Object campo) {
+    return 'Elegir $campo en el selector';
+  }
+
+  @override
+  String clientesQuitarColor(Object campo) {
+    return 'Quitar el $campo';
+  }
+
+  @override
+  String get clientesUsarEsteColor => 'Usar este color';
+
+  @override
+  String get clientesSaturacionBrillo => 'Saturación y brillo';
+
+  @override
+  String get clientesTono => 'Tono';
+
+  @override
+  String get clientesVistaPrevia => 'Vista previa';
+
+  @override
+  String get clientesModoOscuro => 'Modo oscuro';
+
+  @override
+  String get clientesModoClaro => 'Modo claro';
+
+  @override
+  String get clientesMaquetaSaludo => 'Hola, Ana';
+
+  @override
+  String get clientesMaquetaNuevo => 'Nuevo';
+
+  @override
+  String get clientesMaquetaCurso => 'Liderazgo para equipos';
+
+  @override
+  String get clientesMaquetaContinuar => 'Continuar';
+
+  @override
+  String get clientesMaquetaEnlace => 'Ver mis cursos';
+
+  @override
+  String get clientesLegibilidad => 'Legibilidad';
+
+  @override
+  String get clientesTintaBlanca => 'blanco';
+
+  @override
+  String get clientesTintaOscura => 'oscuro';
+
+  @override
+  String clientesInformeBoton(Object tinta, Object contraste) {
+    return 'Botones: texto $tinta sobre su color, $contraste:1. Se lee bien.';
+  }
+
+  @override
+  String clientesInformeBotonSeFunde(Object contraste) {
+    return 'Botones sobre fondo oscuro: su color se distingue poco de las tarjetas de la plataforma ($contraste:1; lo recomendado es 3:1). El texto se lee, pero el botón resalta poco: un tono más claro lo haría más visible.';
+  }
+
+  @override
+  String clientesInformeOscuroIgual(Object contraste) {
+    return 'Textos sobre fondo oscuro: su color se usa tal cual ($contraste:1).';
+  }
+
+  @override
+  String clientesInformeOscuroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  ) {
+    return 'Textos sobre fondo oscuro: su color daba $antes:1 y no se leía; se aclaró a $color ($despues:1). Los botones mantienen su color exacto.';
+  }
+
+  @override
+  String clientesInformeClaroIgual(Object contraste) {
+    return 'Textos sobre fondo claro: su color se usa tal cual ($contraste:1).';
+  }
+
+  @override
+  String clientesInformeClaroAjustado(
+    Object antes,
+    Object color,
+    Object despues,
+  ) {
+    return 'Textos sobre fondo claro: su color daba $antes:1 y no se leía; se oscureció a $color ($despues:1).';
+  }
+
+  @override
+  String get clientesInformeSecundarioIgual =>
+      'Insignias: el color secundario se usa tal cual.';
+
+  @override
+  String clientesInformeSecundarioOscuro(Object color) {
+    return 'Insignias sobre fondo oscuro: para que se lean, el secundario se aclaró a $color.';
+  }
+
+  @override
+  String clientesInformeSecundarioClaro(Object color) {
+    return 'Insignias sobre fondo claro: para que se lean, el secundario se oscureció a $color.';
+  }
 }

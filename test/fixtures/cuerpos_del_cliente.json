@@ -9,6 +9,12 @@
   "courseId": null,
   "laboratoryId": null
  },
+ "PATCH /clients/:id": {
+  "name": "Banco Andino",
+  "primaryColor": "#1A73E8",
+  "secondaryColor": null,
+  "logoLightPlate": false
+ },
  "PATCH /glossary-terms/:id": {
   "word": "IA",
   "shortDefinition": "Definición de Inteligencia artificial.",
@@ -43,6 +49,12 @@
   "guests": "",
   "courseId": null,
   "laboratoryId": null
+ },
+ "POST /clients": {
+  "name": "Banco Norte",
+  "primaryColor": "#1A73E8",
+  "secondaryColor": null,
+  "logoLightPlate": false
  },
  "POST /files/download-url": {
   "key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"

@@ -142,6 +142,8 @@ adminRoutes.get('/storage/video', async (c) => {
 const BACKUP_TABLES = [
   'ods_goals',
   'competencies',
+  // Antes de `users`: las cuentas van a apuntar a su cliente.
+  'clients',
   'users',
   'projects',
   'project_ods',
@@ -202,6 +204,16 @@ const BACKUP_TABLES = [
   // `storage_pending_deletes` NO va: es la cola de archivos por borrar, trabajo
   // pendiente y no datos. Restaurarla volvería a anotar archivos ya borrados.
 ] as const;
+
+/**
+ * Tablas que un respaldo hecho antes de que existieran no trae, y que por eso
+ * se conservan al restaurarlo. Solo las que se agregaron después de que hubo
+ * respaldos en uso; agregar una acá es decidir que un respaldo viejo no la
+ * vacíe.
+ */
+const TABLAS_POSTERIORES_A_RESPALDOS_VIEJOS: readonly (typeof BACKUP_TABLES)[number][] = [
+  'clients',
+];
 
 /**
  * Un valor del JSON, listo para pasarle al driver.
@@ -324,12 +336,23 @@ adminRoutes.post('/restore', async (c) => {
       generadas.add(`${fila.table_name}.${fila.column_name}`);
     }
 
+    // Una tabla que el archivo no trae porque es de DESPUÉS del respaldo se
+    // deja como está. Sin esto, restaurar un respaldo anterior a los clientes
+    // los borraba a todos —Enactus incluido, con su logo y sus colores— en vez
+    // de dejarlos como estaban.
+    const conservar = new Set(
+      TABLAS_POSTERIORES_A_RESPALDOS_VIEJOS.filter((t) => !(t in payload.data)),
+    );
+
     // En orden inverso, para no chocar con las claves ajenas.
     for (const table of [...BACKUP_TABLES].reverse()) {
+      if (conservar.has(table)) continue;
       await tx.execute(sql`delete from ${sql.identifier(table)}`);
     }
     for (const table of BACKUP_TABLES) {
+      if (conservar.has(table)) continue;
       const rows = payload.data[table] ?? [];
+
       restored[table] = rows.length;
       for (const row of rows) {
         const fila =

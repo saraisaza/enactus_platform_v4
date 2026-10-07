@@ -2844,5 +2844,29 @@
     "placeholders": {
       "color": {}
     }
+  },
+  "usuariosFiltroCliente": "Cliente",
+  "usuariosTodosLosClientes": "Todos los clientes",
+  "usuariosDeEmpresa": "Empresa · {empresa}",
+  "@usuariosDeEmpresa": {
+    "placeholders": {
+      "empresa": {}
+    }
+  },
+  "usuariosEligaEmpresa": "Elija la empresa a la que pertenece esta cuenta.",
+  "usuariosTipoEmpresa": "Empresa",
+  "usuariosVeMarcaEmpresa": "Como Open Learning, pero de una empresa cliente: recibe cursos uno por uno y ve la plataforma con la marca de su empresa.",
+  "usuariosSinEmpresasCliente": "Todavía no hay empresas cliente. Créelas en la pestaña Clientes.",
+  "usuariosEmpresaCliente": "Empresa cliente",
+  "usuariosEmpresaClienteOpcional": "Empresa cliente (opcional)",
+  "usuariosEmpresaClienteAyuda": "Verá la plataforma con el logo y los colores de esta empresa.",
+  "usuariosEmpresaClienteLxdAyuda": "Un LXD de una empresa ve la plataforma con su marca. Sin empresa, es de eduXaction.",
+  "clientesCuentas": "{cantidad, plural, =0{Sin cuentas} =1{1 cuenta} other{{cantidad} cuentas}}",
+  "@clientesCuentas": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
   }
 }

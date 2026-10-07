@@ -12,6 +12,7 @@ import {
   users,
 } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
+import { clienteParaCuenta } from '../services/cliente-de-cuenta';
 import { resolverUniversidad } from '../services/universidad';
 import { conflict, forbidden, notFound } from '../lib/errors';
 import { hashPassword } from '../lib/password';
@@ -47,6 +48,8 @@ const listQuery = paginationSchema.extend({
   laboratoryId: z.uuid().optional(),
   groupId: z.uuid().optional(),
   companyId: z.uuid().optional(),
+  /** Las cuentas de un cliente (empresa o Enactus). */
+  clientId: z.uuid().optional(),
   q: z.string().trim().optional(),
   /** `team` y/o `progress`. Ver el handler. */
   include: z.string().optional(),
@@ -219,6 +222,7 @@ userRoutes.get('/', async (c) => {
     );
   }
   if (query.companyId) filters.push(eq(users.companyId, query.companyId));
+  if (query.clientId) filters.push(eq(users.clientId, query.clientId));
   if (query.q) filters.push(ilike(users.name, `%${query.q}%`));
 
   const where = and(...filters);
@@ -447,6 +451,11 @@ const createBody = z.object({
   impactCode: z.string().trim().nullable().optional(),
   companyId: z.uuid().nullable().optional(),
   donorId: z.uuid().nullable().optional(),
+  /**
+   * El cliente (empresa o Enactus). Sin mandarlo, el que le toca: las cuentas
+   * de la red Enactus van a Enactus solas. Ver `services/cliente-de-cuenta.ts`.
+   */
+  clientId: z.uuid().nullable().optional(),
   profile: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -500,6 +509,8 @@ userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
       );
     }
     body.companyId = admin.id;
+    // Tampoco elige el cliente: su equipo queda con el que le toca.
+    body.clientId = undefined;
   }
 
   // Solo un superadmin crea otro superadmin: si no, un admin podría
@@ -515,11 +526,18 @@ userRoutes.post('/', requireRole(...ADMIN_ROLES, 'company'), async (c) => {
     .limit(1);
   if (existing) throw conflict('Ya existe una cuenta con ese correo.');
 
+  const clientId = await clienteParaCuenta(
+    db,
+    { role: body.role, studentType: body.studentType },
+    body.clientId,
+  );
+
   const { password, ...rest } = body;
   const [created] = await db
     .insert(users)
     .values({
       ...rest,
+      clientId,
       // Escritura doble mientras `university_id` y el texto convivan (R2). Si
       // vino `universityId`, el texto sale del catálogo y NO de lo que mandó
       // el cliente: las dos columnas tienen que decir lo mismo, y la del
@@ -583,12 +601,20 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     throw forbidden('Solo un superadmin puede otorgar el rol de superadmin.');
   }
 
+  const clientId = await clienteParaCuenta(
+    db,
+    { role, studentType },
+    body.clientId,
+    before.clientId,
+  );
+
   const { password, ...campos } = body;
 
   const [updated] = await db
     .update(users)
     .set({
       ...campos,
+      clientId,
       // Ver el alta. `undefined` = no lo mandaron, no se toca; `null` = se lo
       // quitan, y entonces se limpian LAS DOS columnas.
       ...(body.universityId !== undefined
@@ -616,10 +642,15 @@ userRoutes.patch('/:id', requireRole(...ADMIN_ROLES), async (c) => {
     action: 'user.update',
     entityType: 'user',
     entityId: id,
-    oldValue: { role: before.role, studentType: before.studentType },
+    oldValue: {
+      role: before.role,
+      studentType: before.studentType,
+      clientId: before.clientId,
+    },
     newValue: {
       role: updated!.role,
       studentType: updated!.studentType,
+      clientId: updated!.clientId,
       // Queda constancia de QUE se cambió, nunca de a qué.
       passwordReset: password !== undefined,
     },

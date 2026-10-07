@@ -231,7 +231,7 @@ class InitialsAvatar extends StatelessWidget {
     final initial = name.isEmpty ? '?' : name[0].toUpperCase();
     return CircleAvatar(
       radius: radius ?? (large ? 26 : null),
-      backgroundColor: large ? AppColors.gold : AppColors.slate,
+      backgroundColor: large ? AppColors.relleno : AppColors.slate,
       child: Text(
         initial,
         style: large
@@ -378,7 +378,8 @@ class ThinProgressBar extends StatelessWidget {
           value: v,
           minHeight: 6,
           backgroundColor: AppColors.surfaceAlt,
-          valueColor: AlwaysStoppedAnimation(color ?? AppColors.gold),
+          // Sin color propio, el secundario de la marca.
+          valueColor: AlwaysStoppedAnimation(color ?? AppColors.secundario),
         ),
       ),
     );
@@ -590,7 +591,7 @@ class ColombiaFlagBar extends StatelessWidget {
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: ColoredBox(color: AppColors.gold),
+      child: ColoredBox(color: AppColors.relleno),
     );
   }
 }

@@ -79,7 +79,7 @@ class LandingView extends StatelessWidget {
                   if (content.bannerVisible.isNotEmpty)
                     Container(
                       width: double.infinity,
-                      color: AppColors.gold,
+                      color: AppColors.relleno,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         content.bannerVisible,

@@ -4,6 +4,7 @@ import { createMiddleware } from 'hono/factory';
 import { users } from '../db/schema';
 import { forbidden, unauthorized } from '../lib/errors';
 import { verifyAccessToken } from '../lib/jwt';
+import { exigirClienteActivo } from '../services/cliente-de-cuenta';
 import type { AppEnv, AuthUser } from './context';
 
 /**
@@ -29,6 +30,7 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
     .limit(1);
 
   if (!user) throw unauthorized('La cuenta ya no existe o fue desactivada.');
+  await exigirClienteActivo(db, user);
 
   c.set('user', user);
   await next();

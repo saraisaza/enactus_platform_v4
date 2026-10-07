@@ -11,18 +11,41 @@ import 'marca.dart';
 /// [AppColors.chartSeries] en orden fijo.
 class AppColors {
   // Marca / UI
-  /// Acento de marca: el ámbar de eduXaction (identidad
+  /// Acento de marca como TEXTO, ÍCONO, BORDE o INDICADOR sobre las
+  /// superficies oscuras: el ámbar de eduXaction (identidad
   /// `assets/design_handoff_branding_eduxaction/brand-tokens.css`, token
-  /// `--exa-accent`) o el color primario del cliente de quien inició sesión.
+  /// `--exa-accent`) o el primario del cliente, aclarado lo justo para que se
+  /// lea (4.5:1).
+  ///
+  /// Para un FONDO con algo escrito encima —un botón, un avatar con
+  /// iniciales— va [relleno], el color exacto del cliente. Con la marca de
+  /// eduXaction los dos son #FFC107; con la de un cliente pueden no serlo: un
+  /// azul medio como relleno de botón se ve bien, y como título sobre el gris
+  /// no se lee.
   ///
   /// No es una constante: lo resuelve [Marca] (ver `marca.dart`), y por eso
   /// no puede ir dentro de una expresión `const`. Los valores de eduXaction
   /// viven en `PaletaMarca.eduXaction`; los certificados PDF son la única
   /// copia aparte, porque `PdfColor` no acepta un `Color`.
-  static Color get gold => Marca.instancia.paleta.primario;
+  static Color get gold => Marca.instancia.paleta.tintaSobreOscuro;
 
-  /// Hover del acento (`--exa-accent-bright` en la marca de eduXaction).
+  /// El primario exacto, para FONDOS con [ink] encima. Ver [gold].
+  static Color get relleno => Marca.instancia.paleta.primario;
+
+  /// Hover de [relleno] (`--exa-accent-bright` en la marca de eduXaction).
   static Color get goldBright => Marca.instancia.paleta.primarioBrillante;
+
+  /// Hover de [gold]: el texto de un botón con borde bajo el mouse.
+  static Color get acentoHover =>
+      Marca.instancia.paleta.tintaSobreOscuroBrillante;
+
+  /// El secundario: la opción activa del menú, insignias y barras de
+  /// progreso. Como fondo o barra; como texto, [secundarioTinta].
+  static Color get secundario => Marca.instancia.paleta.secundario;
+
+  /// [secundario] como texto o ícono sobre las superficies oscuras.
+  static Color get secundarioTinta =>
+      Marca.instancia.paleta.secundarioSobreOscuro;
 
   /// El ámbar de eduXaction, FIJO: lo que tiene que seguir siendo ámbar con
   /// la marca de cualquier cliente. Hoy, el logo animado — el logo de
@@ -203,7 +226,7 @@ int labOdsNumberFor(String labId) => AppColors.labOdsNumbers[labId] ?? 8;
 /// color asignado por el servidor— y eso obliga a que el color dependa de
 /// una lista que puede no haber cargado todavía.
 Color labColorFor(String labId) {
-  if (labId.isEmpty) return AppColors.gold;
+  if (labId.isEmpty) return AppColors.relleno;
   var huella = 0;
   for (final unidad in labId.codeUnits) {
     huella = (huella * 31 + unidad) & 0x1FFFFFFF;
@@ -252,7 +275,7 @@ int odsNumberFrom(String ods) {
 /// venga del ODS principal de un proyecto (Directorio de Proyectos, tarjeta
 /// "Tu proyecto" del Dashboard).
 Color odsColorFor(String ods) =>
-    AppColors.odsColors[odsNumberFrom(ods)] ?? AppColors.gold;
+    AppColors.odsColors[odsNumberFrom(ods)] ?? AppColors.relleno;
 
 /// Paleta clara/oscura del contenido del portal estudiante (handoffs
 /// `design_handoff_directorio_proyectos/README.md` y
@@ -449,7 +472,7 @@ class AppWeights {
 ThemeData buildAppTheme() {
   final base = ThemeData.dark(useMaterial3: true);
   final scheme = ColorScheme.dark(
-    primary: AppColors.gold,
+    primary: AppColors.relleno,
     onPrimary: AppColors.ink,
     secondary: AppColors.slateLight,
     onSecondary: Colors.white,
@@ -488,7 +511,7 @@ ThemeData buildAppTheme() {
             states.contains(WidgetState.hovered) ||
                     states.contains(WidgetState.focused)
                 ? AppColors.goldBright
-                : AppColors.gold),
+                : AppColors.relleno),
         foregroundColor: WidgetStatePropertyAll(AppColors.ink),
         elevation: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) return 1;
@@ -513,13 +536,16 @@ ThemeData buildAppTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
+        // Texto y borde sobre el fondo oscuro: el acento legible, y al pasar
+        // el mouse su versión más clara (no la del relleno, que con un
+        // cliente de acento oscuro se oscurece).
         foregroundColor: WidgetStateProperty.resolveWith((states) =>
             states.contains(WidgetState.hovered)
-                ? AppColors.goldBright
+                ? AppColors.acentoHover
                 : AppColors.gold),
         side: WidgetStateProperty.resolveWith((states) => BorderSide(
             color: states.contains(WidgetState.hovered)
-                ? AppColors.goldBright
+                ? AppColors.acentoHover
                 : AppColors.gold,
             width: states.contains(WidgetState.hovered) ? 1.6 : 1)),
         backgroundColor: WidgetStateProperty.resolveWith((states) =>

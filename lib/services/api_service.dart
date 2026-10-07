@@ -44,9 +44,11 @@ class ApiService {
   final http.Client _client;
   final TokenStore tokens;
 
-  /// Se dispara cuando la sesión se cayó del todo (el refresh también falló).
-  /// `AuthProvider` lo usa para limpiar el estado y volver al ingreso.
-  void Function()? onSessionExpired;
+  /// Se dispara cuando la sesión se cayó del todo (el refresh también falló,
+  /// o el cliente de la cuenta se desactivó). `AuthProvider` lo usa para
+  /// limpiar el estado y volver al ingreso; [motivo], si viene, es lo que la
+  /// pantalla de ingreso le dice a la persona.
+  void Function([String? motivo])? onSessionExpired;
 
   ApiService({http.Client? client, TokenStore? tokenStore})
       : _client = client ?? http.Client(),
@@ -238,7 +240,18 @@ class ApiService {
       throw AuthError();
     }
 
-    return _decode(response);
+    try {
+      return _decode(response);
+    } on ForbiddenError catch (e) {
+      // El cliente de la cuenta se desactivó: ningún pedido va a funcionar
+      // hasta que lo reactiven. Se cierra la sesión y se dice por qué, en vez
+      // de dejar cada pantalla mostrando «no tiene permiso».
+      if (authenticated && e.code == 'client_inactive') {
+        await tokens.clear();
+        onSessionExpired?.call(e.message);
+      }
+      rethrow;
+    }
   }
 
   /// Renueva la sesión. Un solo refresh a la vez (ver [_refreshInFlight]).
@@ -318,7 +331,8 @@ class ApiService {
       case 401:
         throw AuthError(message ?? tr.errorSesionExpirada);
       case 403:
-        throw ForbiddenError(message ?? tr.errorSinPermiso);
+        throw ForbiddenError(
+            message ?? tr.errorSinPermiso, code.isEmpty ? 'forbidden' : code);
       case 404:
         throw NotFoundError(message ?? tr.errorNoEncontrado);
       case 409:

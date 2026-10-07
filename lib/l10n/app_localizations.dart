@@ -9235,6 +9235,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Insignias sobre fondo claro: para que se lean, el secundario se oscureció a {color}.'**
   String clientesInformeSecundarioClaro(Object color);
+
+  /// No description provided for @usuariosFiltroCliente.
+  ///
+  /// In es, this message translates to:
+  /// **'Cliente'**
+  String get usuariosFiltroCliente;
+
+  /// No description provided for @usuariosTodosLosClientes.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los clientes'**
+  String get usuariosTodosLosClientes;
+
+  /// No description provided for @usuariosDeEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa · {empresa}'**
+  String usuariosDeEmpresa(Object empresa);
+
+  /// No description provided for @usuariosEligaEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Elija la empresa a la que pertenece esta cuenta.'**
+  String get usuariosEligaEmpresa;
+
+  /// No description provided for @usuariosTipoEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa'**
+  String get usuariosTipoEmpresa;
+
+  /// No description provided for @usuariosVeMarcaEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Como Open Learning, pero de una empresa cliente: recibe cursos uno por uno y ve la plataforma con la marca de su empresa.'**
+  String get usuariosVeMarcaEmpresa;
+
+  /// No description provided for @usuariosSinEmpresasCliente.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay empresas cliente. Créelas en la pestaña Clientes.'**
+  String get usuariosSinEmpresasCliente;
+
+  /// No description provided for @usuariosEmpresaCliente.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa cliente'**
+  String get usuariosEmpresaCliente;
+
+  /// No description provided for @usuariosEmpresaClienteOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa cliente (opcional)'**
+  String get usuariosEmpresaClienteOpcional;
+
+  /// No description provided for @usuariosEmpresaClienteAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Verá la plataforma con el logo y los colores de esta empresa.'**
+  String get usuariosEmpresaClienteAyuda;
+
+  /// No description provided for @usuariosEmpresaClienteLxdAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Un LXD de una empresa ve la plataforma con su marca. Sin empresa, es de eduXaction.'**
+  String get usuariosEmpresaClienteLxdAyuda;
+
+  /// No description provided for @clientesCuentas.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =0{Sin cuentas} =1{1 cuenta} other{{cantidad} cuentas}}'**
+  String clientesCuentas(int cantidad);
 }
 
 class _AppLocalizationsDelegate

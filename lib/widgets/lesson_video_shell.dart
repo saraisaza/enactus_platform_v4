@@ -133,7 +133,7 @@ class LessonVideoCover extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: activo
                                 ? AppColors.goldBright
-                                : AppColors.gold,
+                                : AppColors.relleno,
                             shape: BoxShape.circle,
                             boxShadow: const [
                               BoxShadow(

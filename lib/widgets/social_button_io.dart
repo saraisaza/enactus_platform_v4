@@ -56,7 +56,7 @@ class _BotonSocialIoState extends State<_BotonSocialIo> {
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: _hover ? AppColors.gold : AppColors.slateLight,
+                    color: _hover ? AppColors.relleno : AppColors.slateLight,
                     shape: BoxShape.circle,
                     boxShadow: _hover
                         ? [

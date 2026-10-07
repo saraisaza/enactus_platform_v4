@@ -92,10 +92,10 @@ void _asegurarEstilos() {
           box-shadow 180ms;
       }
       .enactus-boton-social:hover, .enactus-boton-social:focus-visible {
-        background: ${_css(AppColors.gold)};
+        background: ${_css(AppColors.relleno)};
         color: ${_css(AppColors.ink)};
         transform: scale(1.15);
-        box-shadow: 0 0 16px 1px ${_css(AppColors.gold, alpha: 0.45)};
+        box-shadow: 0 0 16px 1px ${_css(AppColors.relleno, alpha: 0.45)};
       }
       .enactus-boton-social svg { width: 18px; height: 18px; display: block; }
     ''';

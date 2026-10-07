@@ -2050,7 +2050,7 @@ class _ExpoCard extends StatelessWidget {
             // encoge al texto y no llega al borde de la tarjeta.
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
-            color: AppColors.gold,
+            color: AppColors.relleno,
             child: Stack(
               children: [
                 const Positioned.fill(child: CustomPaint(painter: StripePainter())),

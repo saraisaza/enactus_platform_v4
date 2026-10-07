@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/textos.dart';
+import '../models/client.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart';
 import '../providers/data_provider.dart';
@@ -12,6 +13,7 @@ import '../utils/constants.dart';
 import '../utils/formatos.dart';
 import '../utils/responsive.dart';
 import 'animated_logo.dart';
+import 'logo_de_cliente.dart';
 import 'common.dart';
 import 'cuenta.dart';
 import 'selector_idioma.dart';
@@ -46,6 +48,41 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     // lo demás ya puesto (logo + chip + buscador + campana + avatar con
     // nombre), desborda por un margen real (~46px), no solo en compact.
     final roomy = context.isExpanded;
+    final conLogoDeCliente = user?.client?.logoUrl != null;
+    // «Portal Estudiante», al lado del logo: solo donde hay lugar.
+    final etiquetaDelPortal = !compact && roomy && portalTitle != null
+        ? Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 220),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.slate,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                portalTitle!,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          )
+        : null;
+    final logos = _LogosDelEncabezado(
+      compacto: compact,
+      amplio: roomy,
+      marca: user?.client,
+      // Quien entra con la marca de un cliente vuelve al inicio de SU portal:
+      // la portada pública es la de eduXaction, con Enactus y sus
+      // laboratorios.
+      destino: user != null && (user.client?.tieneMarca ?? false)
+          ? AppRoutes.forRole(user.role)
+          : AppRoutes.landing,
+    );
 
     // El encabezado va dentro del cuerpo de la pantalla, no como `appBar`, así
     // que nadie le reservaba el espacio de la barra de estado: en un iPhone
@@ -78,76 +115,32 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                   tooltip: tr.comunMenu,
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
-              // El logotipo va en `Flexible` con `scaleDown`, y su alto baja
-              // en medium. Suelto a 135px de alto medía más de 300 de ancho, y
-              // con el menú de cuenta al otro extremo esta fila desbordaba en
-              // cualquier ventana por debajo de ~1100px — en TODOS los
-              // portales, porque todos heredan este encabezado.
-              Flexible(
-                child: compact
-                    // En el teléfono el logo mide 34 dp: el área tocable llega
-                    // a 48 alrededor, y el lector de pantalla dice qué hace.
-                    ? Semantics(
-                        button: true,
-                        label: tr.comunIrAlInicio,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => Navigator.of(context)
-                              .pushNamedAndRemoveUntil(
-                                  AppRoutes.landing, (_) => false),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                                minHeight: 48, minWidth: 48),
-                            child: const Align(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: 1,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: AnimatedLogo(height: 34, compact: true),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: AnimatedLogo(
-                          height: roomy ? 135 : 72,
-                          compact: false,
-                          onTap: () => Navigator.of(
-                            context,
-                          ).pushNamedAndRemoveUntil(
-                              AppRoutes.landing, (_) => false),
-                        ),
-                      ),
-              ),
-              if (!compact && roomy) ...[
-                const SizedBox(width: 16),
-                if (portalTitle != null)
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 220),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.slate,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      portalTitle!,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
+              // El logotipo va en `Flexible`: su alto baja en medium y, si aun
+              // así no cabe, se achica. Suelto a 135px de alto medía más de 300
+              // de ancho, y con el menú de cuenta al otro extremo esta fila
+              // desbordaba en cualquier ventana por debajo de ~1100px — en
+              // TODOS los portales, porque todos heredan este encabezado.
+              //
+              // Con un cliente con logo, el suyo va al lado del nuestro (ver
+              // [_LogosDelEncabezado]).
+              //
+              // Sin logo de cliente, el espacio libre se reparte con el
+              // `Spacer` como siempre. Con logo de cliente, la zona de logos
+              // y la etiqueta del portal toman TODO el espacio libre: repartido
+              // a medias, el del cliente nunca cabía.
+              if (!conLogoDeCliente) ...[
+                Flexible(child: logos),
+                ?etiquetaDelPortal,
+                const Spacer(),
+              ] else
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(child: logos),
+                      ?etiquetaDelPortal,
+                    ],
                   ),
-              ],
-              const Spacer(),
+                ),
               // En todos los portales y detalles, con o sin sesión. En el
               // teléfono y en medium solo dice "ES"/"EN": el nombre completo
               // aparece al abrirlo.
@@ -186,6 +179,105 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 // Buscador global: se expande al enfocar y sugiere estudiantes, cursos,
 // proyectos, universidades y empresas al instante.
 // ---------------------------------------------------------------------------
+
+/// El logo de eduXaction y, si la cuenta es de un cliente con logo, el del
+/// cliente al lado.
+///
+/// El de eduXaction no cambia nunca: ni de color ni de tamaño por culpa del
+/// otro. El del cliente toma el espacio que sobra; si falta espacio, se
+/// achica él primero, y si no hay ninguno, no se muestra.
+class _LogosDelEncabezado extends StatelessWidget {
+  final bool compacto;
+  final bool amplio;
+  final MarcaDeCliente? marca;
+  final String destino;
+
+  const _LogosDelEncabezado({
+    required this.compacto,
+    required this.amplio,
+    required this.marca,
+    required this.destino,
+  });
+
+  /// El alto que se le pasa a [AnimatedLogo]. El ancho que ocupa se midió:
+  /// el logotipo completo mide 2.25 veces este número; el compacto es un
+  /// cuadrado.
+  double get _altoNuestro => compacto ? 34 : (amplio ? 135 : 72);
+  double get _anchoNuestro => compacto ? 34 : _altoNuestro * 2.25;
+
+  /// El logo del cliente, a la altura de las letras del nuestro (el
+  /// logotipo se ve de unos 0.42 veces su `height`).
+  double get _altoCliente => compacto ? 28 : (amplio ? 56 : 32);
+  double get _anchoMaxCliente => compacto ? 96 : (amplio ? 220 : 140);
+
+  Widget _nuestro(BuildContext context) {
+    void ir() =>
+        Navigator.of(context).pushNamedAndRemoveUntil(destino, (_) => false);
+    if (compacto) {
+      // En el teléfono el logo mide 34 dp: el área tocable llega a 48
+      // alrededor, y el lector de pantalla dice qué hace.
+      return Semantics(
+        button: true,
+        label: tr.comunIrAlInicio,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: ir,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+            child: const Align(
+              alignment: Alignment.centerLeft,
+              widthFactor: 1,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: AnimatedLogo(height: 34, compact: true),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: AnimatedLogo(height: _altoNuestro, compact: false, onTap: ir),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = marca?.logoUrl;
+    if (url == null) return _nuestro(context);
+
+    return LayoutBuilder(builder: (context, limites) {
+      final hueco = compacto ? 8.0 : 16.0;
+      // El de eduXaction primero; el cliente, con lo que sobre.
+      final sobra = limites.maxWidth - _anchoNuestro - hueco * 2 - 1;
+      if (sobra < 32) return _nuestro(context);
+      final anchoCliente = sobra < _anchoMaxCliente ? sobra : _anchoMaxCliente;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(width: _anchoNuestro, child: _nuestro(context)),
+          SizedBox(width: hueco),
+          Container(
+            width: 1,
+            height: _altoCliente,
+            color: AppColors.textMuted.withValues(alpha: 0.6),
+          ),
+          SizedBox(width: hueco),
+          LogoDeCliente(
+            imagen: imagenDeLogo(url),
+            nombre: marca!.name,
+            placaClara: marca!.logoLightPlate,
+            altoMaximo: _altoCliente,
+            anchoMaximo: anchoCliente,
+          ),
+        ],
+      );
+    });
+  }
+}
 
 class _SearchHit {
   final String type;
@@ -606,7 +698,7 @@ class _AvatarMenu extends StatelessWidget {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.gold,
+              backgroundColor: AppColors.relleno,
               child: Text(
                 user.name[0].toUpperCase(),
                 style: TextStyle(
@@ -679,7 +771,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                 child: CircleAvatar(
                   radius: 17,
                   backgroundColor:
-                      _hover ? AppColors.goldBright : AppColors.gold,
+                      _hover ? AppColors.goldBright : AppColors.relleno,
                   child: Text(
                     widget.user.name.isNotEmpty
                         ? widget.user.name[0].toUpperCase()
@@ -775,7 +867,7 @@ class _NotificationBell extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.gold,
+                  color: AppColors.relleno,
                   shape: BoxShape.circle,
                 ),
                 child: Text(

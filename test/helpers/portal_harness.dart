@@ -73,8 +73,15 @@ FakeApi fakeDe(String role) {
   );
 }
 
-Widget appDe(String role) {
-  final api = fakeDe(role).build();
+Widget appDe(String role, {Map<String, Object?>? cambios}) {
+  final falsa = fakeDe(role);
+  // [cambios] se mezcla en el `/auth/me` del rol: la misma cuenta, con algo
+  // distinto (p. ej. la de una estudiante de una empresa cliente, con su
+  // marca).
+  if (cambios != null) {
+    falsa.routes['/auth/me'] = {...usuarioDe(role), ...cambios};
+  }
+  final api = falsa.build();
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);
   return EnactusApp(

@@ -179,13 +179,36 @@ paths:
         denormalización de Hive) y `sponsorName` (nombre de la empresa que la
         patrocina; `companyId` por sí solo no sirve para mostrarlo, y no existe
         un endpoint que le permita a un estudiante leer otra cuenta).
+
+        Para toda cuenta con cliente agrega `client`: la marca con la que ve
+        la plataforma (nombre, colores, logo con URL firmada). Sale de la fila
+        de la propia cuenta: la app nunca elige ni pide la marca de otro. Si su
+        cliente está desactivado, responde 403 `client_inactive` (igual que el
+        inicio de sesión y cualquier pedido con sesión).
       responses:
         '200':
           description: OK
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/User' }
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/User' }
+                  - type: object
+                    properties:
+                      client:
+                        type: [object, 'null']
+                        properties:
+                          id: { type: string, format: uuid }
+                          name: { type: string }
+                          logoUrl: { type: [string, 'null'], format: uri }
+                          logoWidth: { type: [integer, 'null'] }
+                          logoHeight: { type: [integer, 'null'] }
+                          logoLightPlate: { type: boolean }
+                          primaryColor: { type: [string, 'null'] }
+                          secondaryColor: { type: [string, 'null'] }
+                          hasLaboratories: { type: boolean }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: 'Su cliente está desactivado (`client_inactive`)' }
     patch:
       tags: [auth]
       summary: Editar el propio perfil
@@ -347,6 +370,7 @@ paths:
         - { name: laboratoryId, in: query, schema: { type: string, format: uuid } }
         - { name: groupId, in: query, schema: { type: string, format: uuid } }
         - { name: companyId, in: query, schema: { type: string, format: uuid } }
+        - { name: clientId, in: query, schema: { type: string, format: uuid }, description: 'Las cuentas de un cliente' }
         - { name: q, in: query, schema: { type: string }, description: 'Busca por nombre' }
         - name: include
           in: query
@@ -3168,6 +3192,7 @@ components:
         secondaryColor: { type: [string, 'null'] }
         hasLaboratories: { type: boolean, description: Solo Enactus (laboratorios y Ruta de Impacto) }
         active: { type: boolean }
+        accountCount: { type: integer, description: 'Cuentas vivas del cliente (solo en GET /clients)' }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     Error:
@@ -3231,6 +3256,13 @@ components:
         canGradeEnactus: { type: boolean }
         avatarS3Key: { type: string, nullable: true }
         joinedAt: { type: string, format: date-time, nullable: true }
+        clientId:
+          type: [string, 'null']
+          format: uuid
+          description: |
+            El cliente (empresa o Enactus). Nulo = de eduXaction directamente.
+            Al crear o editar, sin mandarlo: el que le toca (las cuentas de la
+            red Enactus van a Enactus solas). Ver `services/cliente-de-cuenta.ts`.
 
     CourseInput:
       type: object

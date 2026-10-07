@@ -478,7 +478,7 @@ class _BotonGrande extends StatelessWidget {
     return Semantics(
       excludeSemantics: true,
       child: Material(
-        color: AppColors.gold,
+        color: AppColors.relleno,
         shape: const CircleBorder(),
         elevation: 6,
         child: InkWell(

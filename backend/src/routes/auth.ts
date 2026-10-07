@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { Database } from '../db/client';
 import { auditLog, refreshTokens, users } from '../db/schema';
 import { publicUser } from '../lib/dto';
+import { exigirClienteActivo, marcaDelCliente } from '../services/cliente-de-cuenta';
 import {
   badRequest,
   conflict,
@@ -139,6 +140,10 @@ authRoutes.post('/login', async (c) => {
   // Entró bien: el contador de fallos de esta cuenta se borra.
   olvidarIntentos(clave);
 
+  // Después de comprobar la contraseña, y no antes: decir «su empresa está
+  // desactivada» a quien no sabe la clave confirmaría que la cuenta existe.
+  await exigirClienteActivo(db, user);
+
   const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
   // Campos explícitos: `tokens` trae además `refreshTokenId`, que es interno
   // y no tiene por qué salir en la respuesta.
@@ -199,6 +204,7 @@ authRoutes.post('/refresh', async (c) => {
     .where(and(eq(users.id, stored.userId), isNull(users.deletedAt)))
     .limit(1);
   if (!user) throw unauthorized('La cuenta ya no existe.');
+  await exigirClienteActivo(db, user);
 
   const tokens = await issueTokens(db, c.get('requestIp'), user.id, user.role);
   await db
@@ -263,7 +269,9 @@ authRoutes.get('/me', requireAuth, async (c) => {
  * cliente y la pantalla de perfil se quedaría sin proyecto hasta recargar.
  */
 async function meResponse(db: Database, user: AuthUser) {
-  const base = publicUser(user);
+  // La marca con la que esta cuenta ve la plataforma: la de SU cliente, leída
+  // de su propia fila. La app no elige ni pide la marca de nadie más.
+  const base = { ...publicUser(user), client: await marcaDelCliente(db, user.clientId) };
   if (user.role !== 'student' && user.role !== 'alumni') return base;
 
   const [team] = await db.execute<{

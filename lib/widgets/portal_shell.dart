@@ -213,19 +213,20 @@ class _PortalShellState extends State<PortalShell> {
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         backgroundColor: AppColors.slate,
-        indicatorColor: AppColors.gold,
+        // La opción activa va con el secundario de la marca.
+        indicatorColor: AppColors.secundario,
         labelTextStyle: WidgetStateProperty.resolveWith((estados) => TextStyle(
               fontSize: 11.5,
               fontWeight: estados.contains(WidgetState.selected)
                   ? FontWeight.w700
                   : FontWeight.w500,
               color: estados.contains(WidgetState.selected)
-                  ? AppColors.gold
+                  ? AppColors.secundarioTinta
                   : AppColors.textSecondary,
             )),
         iconTheme: WidgetStateProperty.resolveWith((estados) => IconThemeData(
               color: estados.contains(WidgetState.selected)
-                  ? AppColors.ink
+                  ? inkSobre(AppColors.secundario)
                   : AppColors.textSecondary,
             )),
       ),
@@ -330,8 +331,9 @@ class _SidebarItemState extends State<_SidebarItem> {
   @override
   Widget build(BuildContext context) {
     final active = widget.selected;
+    // La opción activa va con el secundario de la marca.
     final color = active
-        ? AppColors.gold
+        ? AppColors.secundarioTinta
         : (_hover ? AppColors.textPrimary : AppColors.textSecondary);
 
     return MouseRegion(
@@ -349,13 +351,13 @@ class _SidebarItemState extends State<_SidebarItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
             color: active
-                ? AppColors.gold.withValues(alpha: 0.12)
+                ? AppColors.secundario.withValues(alpha: 0.12)
                 : (_hover ? Colors.white.withValues(alpha: 0.05) : null),
             borderRadius: BorderRadius.circular(8),
             border: Border(
               left: BorderSide(
                 color: active
-                    ? AppColors.gold
+                    ? AppColors.secundario
                     : (_hover
                           ? AppColors.gold.withValues(alpha: 0.55)
                           : Colors.transparent),

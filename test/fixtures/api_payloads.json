@@ -2794,7 +2794,8 @@
           "hasLaboratories": true,
           "active": true,
           "createdAt": "2026-10-06T21:00:00.000Z",
-          "updatedAt": "2026-10-06T21:00:00.000Z"
+          "updatedAt": "2026-10-06T21:00:00.000Z",
+          "accountCount": 12
         },
         {
           "id": "2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02",
@@ -2809,7 +2810,8 @@
           "hasLaboratories": false,
           "active": true,
           "createdAt": "2026-10-06T21:05:00.000Z",
-          "updatedAt": "2026-10-06T21:05:00.000Z"
+          "updatedAt": "2026-10-06T21:05:00.000Z",
+          "accountCount": 2
         },
         {
           "id": "4a3b2c1d-0e9f-4a8b-b7c6-d5e4f3a2b103",
@@ -2824,7 +2826,8 @@
           "hasLaboratories": false,
           "active": false,
           "createdAt": "2026-10-06T21:06:00.000Z",
-          "updatedAt": "2026-10-06T21:07:00.000Z"
+          "updatedAt": "2026-10-06T21:07:00.000Z",
+          "accountCount": 0
         }
       ]
     }
@@ -2852,7 +2855,9 @@
       "canGradeOpenLearning": true,
       "canGradeEnactus": false,
       "profile": {},
-      "joinedAt": "2021-03-01T00:00:00.000Z"
+      "joinedAt": "2021-03-01T00:00:00.000Z",
+      "clientId": null,
+      "client": null
     },
     "admin": {
       "id": "5e430818-0a81-5e8f-9754-b7886062571e",
@@ -2873,7 +2878,9 @@
       "canGradeOpenLearning": true,
       "canGradeEnactus": false,
       "profile": {},
-      "joinedAt": "2021-06-01T00:00:00.000Z"
+      "joinedAt": "2021-06-01T00:00:00.000Z",
+      "clientId": null,
+      "client": null
     },
     "lxd": {
       "id": "1e9de679-603d-5b5b-9aa7-ed9e0ad9fe9f",
@@ -2902,7 +2909,9 @@
         "experience": "10 años en analítica y ML",
         "availability": "Martes y jueves 6-8 pm"
       },
-      "joinedAt": "2023-08-01T00:00:00.000Z"
+      "joinedAt": "2023-08-01T00:00:00.000Z",
+      "clientId": null,
+      "client": null
     },
     "mentor": {
       "id": "682dc3b1-aa55-59f1-98ee-7704177ec036",
@@ -2925,7 +2934,19 @@
       "profile": {
         "company": "Bancolombia"
       },
-      "joinedAt": "2024-05-01T00:00:00.000Z"
+      "joinedAt": "2024-05-01T00:00:00.000Z",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     },
     "advisor": {
       "id": "a9d853b6-8c40-5868-b5f7-706aea5b7829",
@@ -2946,7 +2967,19 @@
       "canGradeOpenLearning": true,
       "canGradeEnactus": false,
       "profile": {},
-      "joinedAt": "2022-01-15T00:00:00.000Z"
+      "joinedAt": "2022-01-15T00:00:00.000Z",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     },
     "company": {
       "id": "0e383be9-7d74-54eb-b3b3-19d19506d772",
@@ -2967,7 +3000,19 @@
       "canGradeOpenLearning": true,
       "canGradeEnactus": false,
       "profile": {},
-      "joinedAt": "2021-09-01T00:00:00.000Z"
+      "joinedAt": "2021-09-01T00:00:00.000Z",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     },
     "donor": {
       "id": "650391ed-f0cf-5b2c-a103-35a9d420ca33",
@@ -2988,7 +3033,19 @@
       "canGradeOpenLearning": true,
       "canGradeEnactus": false,
       "profile": {},
-      "joinedAt": "2022-03-01T00:00:00.000Z"
+      "joinedAt": "2022-03-01T00:00:00.000Z",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     },
     "student": {
       "id": "4a25a5c5-452b-5940-871c-b4cd5ea46cda",
@@ -3017,7 +3074,19 @@
         "projectName": "AquaVida",
         "roleInProject": "leader"
       },
-      "sponsorName": "Bancolombia"
+      "sponsorName": "Bancolombia",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     },
     "alumni": {
       "id": "8dd51763-9070-50a0-ac68-10608739f045",
@@ -3046,7 +3115,19 @@
         "projectName": "AquaVida",
         "roleInProject": "research"
       },
-      "sponsorName": "Bancolombia"
+      "sponsorName": "Bancolombia",
+      "clientId": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+      "client": {
+        "id": "7c1e9a52-3b7d-4f0e-9a51-0e6b1c2d3e41",
+        "name": "Enactus",
+        "logoWidth": null,
+        "logoHeight": null,
+        "logoLightPlate": false,
+        "primaryColor": null,
+        "secondaryColor": null,
+        "hasLaboratories": true,
+        "logoUrl": null
+      }
     }
   },
   "rutaProgress": {

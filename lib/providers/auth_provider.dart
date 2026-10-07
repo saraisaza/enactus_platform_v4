@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import '../utils/marca.dart';
 import '../services/api_errors.dart';
 import '../services/api_service.dart';
 import 'data_provider.dart';
@@ -45,6 +46,13 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggingIn => _loggingIn;
   ApiException? get loginError => _loginError;
 
+  String? _avisoDeSesion;
+
+  /// Por qué se cerró la sesión sin que la persona lo pidiera, si hay algo que
+  /// decirle (hoy: su cliente se desactivó). La pantalla de ingreso lo
+  /// muestra; se borra al volver a intentar entrar.
+  String? get avisoDeSesion => _avisoDeSesion;
+
   /// Hay una sesión guardada pero no se pudo comprobar: sin red, o el servidor
   /// falló. NO es lo mismo que "sin sesión".
   ///
@@ -77,6 +85,7 @@ class AuthProvider extends ChangeNotifier {
   Future<AppUser?> login(String email, String password) async {
     _loggingIn = true;
     _loginError = null;
+    _avisoDeSesion = null;
     notifyListeners();
     try {
       final user = AppUser.fromJson(await api.login(email, password));
@@ -123,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> updateProfile(Map<String, dynamic> changes) async {
     final json = await api.patch('/auth/me', body: changes);
     _currentUser = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
+    _aplicarMarca(_currentUser);
     notifyListeners();
   }
 
@@ -159,11 +169,21 @@ class AuthProvider extends ChangeNotifier {
     // El provider de datos necesita saber de quién son "mis" cursos, y tiene
     // que tirar todo su estado al cambiar de sesión.
     data.setCurrentUser(user?.id);
+    _aplicarMarca(user);
   }
 
-  void _onSessionExpired() {
+  /// La plataforma, con la marca del cliente de [user]; sin sesión o sin
+  /// cliente, con la de eduXaction. La marca sale de lo que respondió el
+  /// servidor sobre ESTA cuenta: la app no la elige.
+  void _aplicarMarca(AppUser? user) {
+    Marca.instancia.aplicar(user?.client?.paleta ?? PaletaMarca.eduXaction);
+  }
+
+  void _onSessionExpired([String? motivo]) {
     _currentUser = null;
+    _avisoDeSesion = motivo;
     data.setCurrentUser(null);
+    _aplicarMarca(null);
     notifyListeners();
   }
 }

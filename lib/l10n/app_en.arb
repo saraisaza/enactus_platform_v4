@@ -1520,5 +1520,17 @@
   "clientesInformeClaroAjustado": "Text on light backgrounds: your color gave {antes}:1 and was hard to read; it was darkened to {color} ({despues}:1).",
   "clientesInformeSecundarioIgual": "Badges: the secondary color is used as is.",
   "clientesInformeSecundarioOscuro": "Badges on dark backgrounds: so they can be read, the secondary was lightened to {color}.",
-  "clientesInformeSecundarioClaro": "Badges on light backgrounds: so they can be read, the secondary was darkened to {color}."
+  "clientesInformeSecundarioClaro": "Badges on light backgrounds: so they can be read, the secondary was darkened to {color}.",
+  "usuariosFiltroCliente": "Client",
+  "usuariosTodosLosClientes": "All clients",
+  "usuariosDeEmpresa": "Company · {empresa}",
+  "usuariosEligaEmpresa": "Choose the company this account belongs to.",
+  "usuariosTipoEmpresa": "Company",
+  "usuariosVeMarcaEmpresa": "Like Open Learning, but from a client company: receives courses one by one and sees the platform with their company's brand.",
+  "usuariosSinEmpresasCliente": "There are no client companies yet. Create them in the Clients tab.",
+  "usuariosEmpresaCliente": "Client company",
+  "usuariosEmpresaClienteOpcional": "Client company (optional)",
+  "usuariosEmpresaClienteAyuda": "They will see the platform with this company's logo and colors.",
+  "usuariosEmpresaClienteLxdAyuda": "An LXD of a company sees the platform with its brand. Without a company, they belong to eduXaction.",
+  "clientesCuentas": "{cantidad, plural, =0{No accounts} =1{1 account} other{{cantidad} accounts}}"
 }

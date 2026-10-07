@@ -4,6 +4,7 @@ import '../../l10n/textos.dart';
 import '../../widgets/university_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/client.dart';
 import '../../models/models.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
@@ -35,6 +36,9 @@ class _AdminUsersState extends State<AdminUsers> {
   static const _todos = 'todos';
   String _roleFilter = _todos;
 
+  /// `null` = de cualquier cliente.
+  String? _clientFilter;
+
   List<String> get _creatableRoles => [
         if (widget.isSuperAdmin) Roles.admin,
         Roles.student,
@@ -49,8 +53,10 @@ class _AdminUsersState extends State<AdminUsers> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final lista =
-        data.users(role: _roleFilter == _todos ? null : _roleFilter);
+    final lista = data.users(
+        role: _roleFilter == _todos ? null : _roleFilter,
+        clientId: _clientFilter);
+    final clientes = data.clients.valueOrNull ?? const <Client>[];
 
     return TabBody(
       title: tr.tabUsuarios,
@@ -79,6 +85,26 @@ class _AdminUsersState extends State<AdminUsers> {
               ),
           ],
         ),
+        if (clientes.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: DropdownButtonFormField<String?>(
+              initialValue: _clientFilter,
+              isExpanded: true,
+              decoration: InputDecoration(labelText: tr.usuariosFiltroCliente),
+              items: [
+                DropdownMenuItem<String?>(
+                    value: null, child: Text(tr.usuariosTodosLosClientes)),
+                for (final c in clientes)
+                  DropdownMenuItem<String?>(
+                      value: c.id,
+                      child: Text(c.name, overflow: TextOverflow.ellipsis)),
+              ],
+              onChanged: (v) => setState(() => _clientFilter = v),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         lista.when(
           loading: () => const CardListSkeleton(count: 5, height: 64),
@@ -306,7 +332,7 @@ class _UsersList extends StatelessWidget {
                   DataCell(Text(u.name)),
                   DataCell(Text(u.email)),
                   DataCell(Text(Roles.label(u.role))),
-                  DataCell(Text(_detalle(u))),
+                  DataCell(Text(_detalle(context, u))),
                   DataCell(_Acciones(
                     user: u,
                     canEdit: _canEdit(u),
@@ -327,9 +353,22 @@ class _UsersList extends StatelessWidget {
 /// Sale de lo que YA trae la fila. Antes cada celda cruzaba laboratorios,
 /// empresas y cursos por su cuenta: con la base en memoria eran búsquedas
 /// gratis, contra la red serían varias peticiones por fila.
-String _detalle(AppUser u) {
+String _detalle(BuildContext context, AppUser u) {
+  // Una cuenta de empresa se nombra por su empresa: «Open Learning» a secas
+  // escondería con qué marca entra y a quién pertenece.
+  final empresa = u.clientId == null
+      ? null
+      : context
+          .watch<DataProvider>()
+          .clients
+          .valueOrNull
+          ?.where((c) => c.id == u.clientId && !c.hasLaboratories)
+          .firstOrNull;
   final partes = <String>[
-    if (Roles.isStudentLike(u.role)) StudentType.label(u.studentType),
+    if (empresa != null)
+      tr.usuariosDeEmpresa(empresa.name)
+    else if (Roles.isStudentLike(u.role))
+      StudentType.label(u.studentType),
     if (u.university.isNotEmpty) u.university,
     if (u.role == Roles.company && u.companyName.isNotEmpty) u.companyName,
     if (u.role == Roles.donor && (u.impactCode ?? '').isNotEmpty) u.impactCode!,
@@ -362,7 +401,7 @@ class _UserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detalle = _detalle(user);
+    final detalle = _detalle(context, user);
     return HoverCard(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -545,7 +584,19 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   late final Map<String, TextEditingController> _profile;
 
   late String _role;
-  late String _studentType;
+
+  /// eduXaction, Open Learning o Empresa. «Empresa» no es un tipo más para el
+  /// servidor: es una cuenta de Open Learning que pertenece a una empresa
+  /// cliente, y por eso ve la plataforma con su marca.
+  late String _tipoCuenta;
+  static const _tipoEmpresa = 'empresa';
+
+  /// El tipo que viaja al servidor.
+  String get _studentType =>
+      _tipoCuenta == _tipoEmpresa ? StudentType.openLearning : _tipoCuenta;
+
+  /// La empresa cliente (estudiante de empresa, o LXD de una empresa).
+  String? _clientId;
   String? _studentCity;
   String? _alliedCompanyId;
   late bool _canGradeOpenLearning;
@@ -557,7 +608,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   bool get _isNew => widget.original == null;
 
   static Map<String, String> get _profileFields => {
-    'company': tr.rolEmpresa,
+    'company': tr.perfilCampoEmpresa,
     'position': tr.perfilCargo,
     'specialty': tr.perfilEspecialidad,
     'languages': tr.perfilIdiomas,
@@ -584,7 +635,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     };
 
     _role = u?.role ?? widget.creatableRoles.first;
-    _studentType = u?.studentType ?? StudentType.enactus;
+    _clientId = u?.clientId;
+    // Una cuenta de Open Learning con cliente es de una empresa: Enactus no
+    // admite cuentas de Open Learning (lo valida el servidor).
+    _tipoCuenta = u?.studentType == StudentType.openLearning && u?.clientId != null
+        ? _tipoEmpresa
+        : (u?.studentType ?? StudentType.enactus);
     // Al editar se parte de lo que ya tiene. Sin esto, abrir la ficha de
     // alguien y guardar sin tocar nada le BORRARÍA la universidad — el peor
     // tipo de pérdida de datos, porque no se hizo ningún cambio.
@@ -634,6 +690,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           tr.usuariosContrasenaMinima));
       return;
     }
+    final esDeEmpresa =
+        Roles.isStudentLike(_role) && _tipoCuenta == _tipoEmpresa;
+    if (esDeEmpresa && _clientId == null) {
+      setState(() => _error = ValidationError(tr.usuariosEligaEmpresa));
+      return;
+    }
     final eligioOtra = _universityId == UniversityPicker.otra;
     if (eligioOtra && _otraUniversidad.text.trim().length < 3) {
       setState(() => _error = ValidationError(
@@ -668,6 +730,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       // en toda la API.
       'studentType': esEstudiante ? _studentType : null,
       'companyId': esPersonalDeEmpresa ? _alliedCompanyId : null,
+      // El cliente se manda solo donde se elige: un estudiante de Open
+      // Learning (de una empresa o de ninguna) y un LXD. Las cuentas de la red
+      // Enactus no lo mandan: el servidor las deja en Enactus.
+      if (esEstudiante && _tipoCuenta != StudentType.enactus)
+        'clientId': esDeEmpresa ? _clientId : null,
+      if (_role == Roles.lxd) 'clientId': _clientId,
       if (_role == Roles.lxd || _role == Roles.mentor)
         'profile': {
           for (final e in _profile.entries) e.key: e.value.text.trim(),
@@ -882,23 +950,31 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           isExpanded: true,
-          initialValue: _studentType,
           decoration:
               InputDecoration(labelText: tr.usuariosTipoEstudiante),
+          initialValue: _tipoCuenta,
           items: [
             for (final t in StudentType.all)
               DropdownMenuItem(value: t, child: Text(StudentType.label(t))),
+            DropdownMenuItem(
+                value: _tipoEmpresa, child: Text(tr.usuariosTipoEmpresa)),
           ],
           onChanged:
-              _saving ? null : (v) => setState(() => _studentType = v!),
+              _saving ? null : (v) => setState(() => _tipoCuenta = v!),
         ),
         const SizedBox(height: 4),
         Text(
-          _studentType == StudentType.openLearning
-              ? tr.usuariosSoloCursos
-              : tr.usuariosVeLabs,
+          switch (_tipoCuenta) {
+            _tipoEmpresa => tr.usuariosVeMarcaEmpresa,
+            StudentType.openLearning => tr.usuariosSoloCursos,
+            _ => tr.usuariosVeLabs,
+          },
           style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
         ),
+        if (_tipoCuenta == _tipoEmpresa) ...[
+          const SizedBox(height: 12),
+          _selectorDeEmpresa(opcional: false),
+        ],
         const SizedBox(height: 12),
         _campo(_cedula, tr.perfilCedula),
         const SizedBox(height: 12),
@@ -936,6 +1012,8 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       ];
 
   List<Widget> _camposLxd(DataProvider data) => [
+        const SizedBox(height: 12),
+        _selectorDeEmpresa(opcional: true),
         const SizedBox(height: 12),
         _empresaAliada(data,
             ayuda: tr.usuariosLxdEmpresa),
@@ -983,6 +1061,54 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         _empresaAliada(data,
             ayuda: tr.usuariosMentorEmpresa),
       ];
+
+  /// La empresa cliente de la cuenta. Obligatoria para un estudiante de
+  /// empresa; opcional para un LXD (sin empresa, es de eduXaction).
+  Widget _selectorDeEmpresa({required bool opcional}) {
+    final data = context.watch<DataProvider>();
+    return data.clients.when(
+      loading: () => const CardListSkeleton(count: 1, height: 56),
+      error: (e) => ErrorBanner(e),
+      data: (clientes) {
+        // Enactus no va acá: sus cuentas llegan a él solas. Una empresa
+        // desactivada no admite cuentas nuevas, pero si ya era la de esta
+        // persona se sigue mostrando.
+        final empresas = clientes
+            .where((c) => !c.hasLaboratories && (c.active || c.id == _clientId))
+            .toList();
+        if (empresas.isEmpty && !opcional) {
+          return Text(tr.usuariosSinEmpresasCliente,
+              style: const TextStyle(
+                  fontSize: 12.5, color: AppColors.statusWarning));
+        }
+        return DropdownButtonFormField<String?>(
+          initialValue:
+              empresas.any((c) => c.id == _clientId) ? _clientId : null,
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: opcional
+                ? tr.usuariosEmpresaClienteOpcional
+                : tr.usuariosEmpresaCliente,
+            helperText: opcional
+                ? tr.usuariosEmpresaClienteLxdAyuda
+                : tr.usuariosEmpresaClienteAyuda,
+            helperMaxLines: 3,
+          ),
+          items: [
+            if (opcional)
+              DropdownMenuItem<String?>(
+                  value: null, child: Text(tr.usuariosNingunaEdu)),
+            for (final c in empresas)
+              DropdownMenuItem<String?>(
+                value: c.id,
+                child: Text(c.name, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: _saving ? null : (v) => setState(() => _clientId = v),
+        );
+      },
+    );
+  }
 
   Widget _empresaAliada(DataProvider data, {required String ayuda}) {
     return data.users(role: Roles.company).when(

@@ -132,7 +132,7 @@ void main() {
         client: MockClient((request) async => _json({
               'error': {'code': 'unauthorized', 'message': 'no vale'}
             }, 401)),
-      )..onSessionExpired = () => avisos++;
+      )..onSessionExpired = ([_]) => avisos++;
 
       await expectLater(api.get('/courses'), throwsA(isA<AuthError>()));
       expect(avisos, 1);

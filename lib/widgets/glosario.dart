@@ -668,7 +668,7 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
           style: TextButton.styleFrom(
             minimumSize: Size(letra == null ? 56 : 34, 34),
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            backgroundColor: elegida ? AppColors.gold : Colors.transparent,
+            backgroundColor: elegida ? AppColors.relleno : Colors.transparent,
             foregroundColor: elegida ? AppColors.ink : AppColors.textPrimary,
             disabledForegroundColor: AppColors.textMuted.withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

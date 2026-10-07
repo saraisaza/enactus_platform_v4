@@ -27,6 +27,7 @@ export function publicUser(user: UserRow) {
     impactCode: user.impactCode,
     companyId: user.companyId,
     donorId: user.donorId,
+    clientId: user.clientId,
     avatarS3Key: user.avatarS3Key,
     canGradeOpenLearning: user.canGradeOpenLearning,
     canGradeEnactus: user.canGradeEnactus,

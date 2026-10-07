@@ -21,6 +21,7 @@ import '../l10n/catalogos.dart';
 import '../l10n/textos.dart';
 import '../utils/formatos.dart';
 import '../utils/youtube.dart';
+import 'client.dart';
 import 'progress.dart';
 
 // ---------------------------------------------------------------------------
@@ -97,6 +98,14 @@ class AppUser {
   /// `GET /auth/me` y en `GET /users?include=team`.
   final String? sponsorName;
 
+  /// El cliente al que pertenece la cuenta (empresa o Enactus), o `null` si
+  /// es de eduXaction directamente.
+  final String? clientId;
+
+  /// La marca de su cliente. Solo llega en `/auth/me` (y en el ingreso), para
+  /// la cuenta de la sesión: nunca la de otra persona.
+  final MarcaDeCliente? client;
+
   /// Avance general: el promedio de sus cursos. Solo con
   /// `GET /users?include=progress` — lo usan las tablas de seguimiento del
   /// LXD, el Mentor y el Asesor.
@@ -129,6 +138,8 @@ class AppUser {
     this.joinedAt,
     this.team,
     this.sponsorName,
+    this.clientId,
+    this.client,
     this.overallProgress,
     this.reviewsCount,
   });
@@ -164,6 +175,10 @@ class AppUser {
             ? null
             : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
         sponsorName: j['sponsorName'] as String?,
+        clientId: j['clientId'] as String?,
+        client: j['client'] == null
+            ? null
+            : MarcaDeCliente.fromJson(Map<String, dynamic>.from(j['client'] as Map)),
         reviewsCount: (j['reviewsCount'] as num?)?.toInt(),
         overallProgress: j['overallProgress'] == null
             ? null

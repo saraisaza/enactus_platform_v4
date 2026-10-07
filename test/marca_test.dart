@@ -39,10 +39,14 @@ void main() {
   tearDown(Marca.instancia.restablecer);
 
   group('con la marca de eduXaction, los colores de siempre', () {
-    test('acento, hover y tinta sobre el acento', () {
+    test('acento, relleno, hover y tinta sobre el acento', () {
       expect(AppColors.gold, const Color(0xFFFFC107));
+      expect(AppColors.relleno, const Color(0xFFFFC107));
       expect(AppColors.goldBright, const Color(0xFFFFCF3D));
+      expect(AppColors.acentoHover, const Color(0xFFFFCF3D));
       expect(AppColors.ink, const Color(0xFF21120A));
+      expect(AppColors.secundario, const Color(0xFFFFC107));
+      expect(AppColors.secundarioTinta, const Color(0xFFFFC107));
     });
 
     test('el acento de las pestañas con modo claro y oscuro', () {
@@ -114,6 +118,8 @@ void main() {
         exigir('texto sobre el botón', p.sobrePrimario, p.primario, c);
         exigir('texto sobre el botón con el mouse encima', p.sobrePrimario,
             p.primarioBrillante, c);
+        exigir('texto de un botón con borde, con el mouse encima',
+            p.tintaSobreOscuroBrillante, const Color(0xFF35343A), c);
         // Los fondos oscuros y claros de la plataforma, todos.
         for (final fondo in const [
           Color(0xFF35343A), // página
@@ -145,7 +151,11 @@ void main() {
   group('cambiar de marca', () {
     test('cambia el acento, el tema y las pestañas de una vez', () {
       Marca.instancia.aplicar(PaletaMarca.desde(primario: _azul));
-      expect(AppColors.gold, _azul);
+      // Los fondos llevan el color exacto; el texto y los íconos sobre el
+      // gris, la versión que se lee.
+      expect(AppColors.relleno, _azul);
+      expect(AppColors.gold, Marca.instancia.paleta.tintaSobreOscuro);
+      expect(contraste(AppColors.gold, AppColors.background), greaterThanOrEqualTo(4.5));
       expect(AppColors.ink, Colors.white);
       expect(buildAppTheme().colorScheme.primary, _azul);
       expect(ContentColors.dark.goldInk,

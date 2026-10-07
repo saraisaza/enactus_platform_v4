@@ -207,4 +207,12 @@ export const MENSAJES_EN: ReadonlyArray<readonly [string, string]> = [
   ["Ya existe un cliente llamado «{0}».", "There is already a client called «{0}»."],
   ["No se encontró el cliente.", "The client was not found."],
   ["Enactus no se puede desactivar desde el panel: dejaría sin acceso a toda su red.", "Enactus cannot be deactivated from the panel: it would lock its whole network out."],
+  ["Administración es de eduXaction: una cuenta de admin no lleva cliente.", "Administration belongs to eduXaction: an admin account has no client."],
+  ["Esta cuenta es de la red Enactus: tiene que pertenecer al cliente Enactus.", "This account belongs to the Enactus network: it has to belong to the Enactus client."],
+  ["No existe ese cliente.", "That client does not exist."],
+  ["{0} está desactivado: no admite cuentas.", "{0} is deactivated: it does not accept accounts."],
+  ["{0} es para cuentas eduXaction, con laboratorios y Ruta. Una cuenta de Open Learning va sin cliente o en una empresa.", "{0} is for eduXaction accounts, with laboratories and the Impact Path. An Open Learning account goes without a client or in a company."],
+  ["{0} es una empresa: sus estudiantes son de Open Learning. Las cuentas eduXaction pertenecen a Enactus.", "{0} is a company: its students are Open Learning. eduXaction accounts belong to Enactus."],
+  ["Asesores, mentores de laboratorio, donantes y empresas aliadas son de la red Enactus: no pueden pertenecer a {0}.", "Advisors, laboratory mentors, donors and partner companies belong to the Enactus network: they cannot belong to {0}."],
+  ["El acceso de {0} a la plataforma está desactivado. Si cree que es un error, comuníquese con quien administra la plataforma en su organización.", "{0}'s access to the platform is deactivated. If you think this is a mistake, contact whoever manages the platform in your organization."],
 ];

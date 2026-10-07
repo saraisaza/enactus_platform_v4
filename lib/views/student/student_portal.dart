@@ -488,7 +488,7 @@ class _IdentityBand extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.gold,
+        color: AppColors.relleno,
         border: Border.all(color: colors.surface, width: 5),
       ),
       clipBehavior: Clip.antiAlias,
@@ -807,7 +807,7 @@ class _ProjectCard extends StatelessWidget {
             style: TextStyle(fontSize: 13.5, color: colors.text3)),
       );
     }
-    final odsColor = project!.ods.isNotEmpty ? odsColorFor(project!.ods.first) : AppColors.gold;
+    final odsColor = project!.ods.isNotEmpty ? odsColorFor(project!.ods.first) : AppColors.relleno;
     final odsNum = project!.ods.isNotEmpty ? odsNumberFrom(project!.ods.first) : 1;
     final stageIndex = projectStages.indexOf(project!.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
@@ -1279,7 +1279,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   children: [
                     CircleAvatar(
                       radius: 42,
-                      backgroundColor: AppColors.gold,
+                      backgroundColor: AppColors.relleno,
                       backgroundImage: appImageProvider(context, _avatarKey),
                       child: _avatarKey != null
                           ? null

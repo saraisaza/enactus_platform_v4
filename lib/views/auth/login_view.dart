@@ -61,7 +61,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    final enviando = context.watch<AuthProvider>().isLoggingIn;
+    final auth = context.watch<AuthProvider>();
+    final enviando = auth.isLoggingIn;
+    // Lo que falló al intentar entrar o, si nadie lo intentó todavía, por qué
+    // se cerró la sesión (el cliente de la cuenta se desactivó).
+    final error = _error ?? auth.avisoDeSesion;
     // Footer dentro del scroll: solo aparece al desplazarse al final.
     return Scaffold(
       body: SafeArea(
@@ -164,7 +168,7 @@ class _LoginViewState extends State<LoginView> {
                             ],
                           ),
                         ),
-                        if (_error != null) ...[
+                        if (error != null) ...[
                           const SizedBox(height: 12),
                           Row(
                             children: [
@@ -172,7 +176,7 @@ class _LoginViewState extends State<LoginView> {
                                   color: AppColors.statusCritical, size: 16),
                               const SizedBox(width: 6),
                               Expanded(
-                                child: Text(_error!,
+                                child: Text(error,
                                     style: const TextStyle(
                                         color: AppColors.statusCritical,
                                         fontSize: 13)),

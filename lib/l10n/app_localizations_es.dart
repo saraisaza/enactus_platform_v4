@@ -5469,4 +5469,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String clientesInformeSecundarioClaro(Object color) {
     return 'Insignias sobre fondo claro: para que se lean, el secundario se oscureció a $color.';
   }
+
+  @override
+  String get usuariosFiltroCliente => 'Cliente';
+
+  @override
+  String get usuariosTodosLosClientes => 'Todos los clientes';
+
+  @override
+  String usuariosDeEmpresa(Object empresa) {
+    return 'Empresa · $empresa';
+  }
+
+  @override
+  String get usuariosEligaEmpresa =>
+      'Elija la empresa a la que pertenece esta cuenta.';
+
+  @override
+  String get usuariosTipoEmpresa => 'Empresa';
+
+  @override
+  String get usuariosVeMarcaEmpresa =>
+      'Como Open Learning, pero de una empresa cliente: recibe cursos uno por uno y ve la plataforma con la marca de su empresa.';
+
+  @override
+  String get usuariosSinEmpresasCliente =>
+      'Todavía no hay empresas cliente. Créelas en la pestaña Clientes.';
+
+  @override
+  String get usuariosEmpresaCliente => 'Empresa cliente';
+
+  @override
+  String get usuariosEmpresaClienteOpcional => 'Empresa cliente (opcional)';
+
+  @override
+  String get usuariosEmpresaClienteAyuda =>
+      'Verá la plataforma con el logo y los colores de esta empresa.';
+
+  @override
+  String get usuariosEmpresaClienteLxdAyuda =>
+      'Un LXD de una empresa ve la plataforma con su marca. Sin empresa, es de eduXaction.';
+
+  @override
+  String clientesCuentas(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad cuentas',
+      one: '1 cuenta',
+      zero: 'Sin cuentas',
+    );
+    return '$_temp0';
+  }
 }

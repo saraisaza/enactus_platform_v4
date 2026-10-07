@@ -308,7 +308,7 @@ Widget _buildProjectCover(Project project, ContentColors colors,
     {required double height}) {
   final primaryOds = project.ods.isNotEmpty ? project.ods.first : '';
   final odsNum = primaryOds.isEmpty ? 1 : odsNumberFrom(primaryOds);
-  final odsColor = AppColors.odsColors[odsNum] ?? AppColors.gold;
+  final odsColor = AppColors.odsColors[odsNum] ?? AppColors.relleno;
   return SizedBox(
     height: height,
     width: double.infinity,
@@ -388,7 +388,7 @@ class _ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final odsColor =
-        project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
+        project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.relleno;
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 
@@ -671,7 +671,7 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
     // lista de ids sin rol, y había que cruzarla contra todos los usuarios.
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
-    final odsColor = project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
+    final odsColor = project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.relleno;
 
     return Scaffold(
       backgroundColor: colors.bg,

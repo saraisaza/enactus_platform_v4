@@ -304,7 +304,7 @@ class _Composer extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 22,
-            backgroundColor: AppColors.gold,
+            backgroundColor: AppColors.relleno,
             child: Text(me.name.isEmpty ? '?' : me.name[0].toUpperCase(),
                 style: TextStyle(
                     color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
@@ -640,7 +640,7 @@ class _PostCardState extends State<_PostCard> {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: AppColors.gold,
+                  backgroundColor: AppColors.relleno,
                   child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
                       style: TextStyle(
                           color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 17)),
@@ -1037,7 +1037,7 @@ class _ReplyTile extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.gold,
+            backgroundColor: AppColors.relleno,
             child: Text(authorName.isEmpty ? '?' : authorName[0].toUpperCase(),
                 style: TextStyle(
                     color: AppColors.ink, fontWeight: FontWeight.w700, fontSize: 12)),

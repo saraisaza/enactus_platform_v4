@@ -763,7 +763,7 @@ class _ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final odsColor =
-        project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.gold;
+        project.ods.isNotEmpty ? odsColorFor(project.ods.first) : AppColors.relleno;
     final stageIndex = projectStages.indexOf(project.stage);
     final currentIndex = stageIndex < 0 ? 0 : stageIndex;
 

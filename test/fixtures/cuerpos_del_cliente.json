@@ -37,6 +37,9 @@
   "email": "admin@enactus.co",
   "password": "Admin123"
  },
+ "POST /auth/logout": {
+  "refreshToken": "refresh-de-prueba"
+ },
  "POST /auth/me/deletion-request": {
   "password": "clave-equivocada"
  },
@@ -128,17 +131,18 @@
   "name": "Institución Universitaria de Prueba"
  },
  "POST /users": {
-  "name": "Estudiante Nueva",
-  "email": "nueva@prueba.co",
+  "name": "Ana",
+  "email": "ana@bancoandino.co",
   "phone": "",
   "cedula": "",
   "city": "",
-  "universityId": "dddddddd-0000-4000-8000-0000000000b1",
+  "universityId": null,
   "career": "",
   "companyName": "",
   "impactCode": null,
-  "studentType": "enactus",
+  "studentType": "open_learning",
   "companyId": null,
+  "clientId": "2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02",
   "role": "student",
   "password": "Clave123"
  },

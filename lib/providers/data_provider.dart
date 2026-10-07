@@ -985,6 +985,8 @@ class DataProvider extends ChangeNotifier {
     String? laboratoryId,
     String? groupId,
     String? companyId,
+    /// Las cuentas de un cliente (empresa o Enactus).
+    String? clientId,
     /// `team` y/o `progress`: el equipo y el avance general de cada persona,
     /// en dos consultas para toda la página en vez de cuatro por fila.
     String? include,
@@ -1000,6 +1002,7 @@ class DataProvider extends ChangeNotifier {
       'laboratoryId': ?laboratoryId,
       'groupId': ?groupId,
       'companyId': ?companyId,
+      'clientId': ?clientId,
       'include': ?include,
     };
     final key = query.entries.map((e) => '${e.key}=${e.value}').join('&');

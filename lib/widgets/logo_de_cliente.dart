@@ -3,6 +3,14 @@ import 'package:flutter/material.dart';
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 
+/// Cómo se pide la imagen de un logo a partir de su URL (ya firmada por el
+/// servidor).
+///
+/// Se puede reemplazar a propósito, y solo lo hacen las pruebas: en
+/// `flutter_test` no hay red, y sin esto ninguna captura podría mostrar un
+/// logo de verdad en el encabezado.
+ImageProvider Function(String url) imagenDeLogo = NetworkImage.new;
+
 /// El logo de un cliente, siempre dentro de una caja de [altoMaximo] ×
 /// [anchoMaximo], sin deformarse.
 ///

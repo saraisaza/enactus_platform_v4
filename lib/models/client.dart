@@ -32,6 +32,9 @@ class Client {
   /// `false` = desactivado: sus cuentas no pueden iniciar sesión.
   final bool active;
 
+  /// Cuántas cuentas tiene. Solo llega en la lista del panel.
+  final int accountCount;
+
   const Client({
     required this.id,
     required this.name,
@@ -44,6 +47,7 @@ class Client {
     this.secondaryColor,
     this.hasLaboratories = false,
     this.active = true,
+    this.accountCount = 0,
   });
 
   factory Client.fromJson(Map<String, dynamic> j) => Client(
@@ -58,10 +62,58 @@ class Client {
         secondaryColor: j['secondaryColor'] as String?,
         hasLaboratories: (j['hasLaboratories'] as bool?) ?? false,
         active: (j['active'] as bool?) ?? true,
+        accountCount: (j['accountCount'] as num?)?.toInt() ?? 0,
       );
 
   /// La paleta con la que se ve este cliente.
   PaletaMarca get paleta => paletaDeColores(primaryColor, secondaryColor);
+}
+
+/// La marca con la que ve la plataforma quien inició sesión: la de su
+/// cliente, tal como la manda el servidor en `/auth/me`.
+///
+/// No es [Client]: lleva solo lo que hace falta para pintar —sin la key del
+/// logo ni el estado— y la URL del logo ya firmada.
+class MarcaDeCliente {
+  final String id;
+  final String name;
+  final String? logoUrl;
+  final int? logoWidth;
+  final int? logoHeight;
+  final bool logoLightPlate;
+  final String? primaryColor;
+  final String? secondaryColor;
+  final bool hasLaboratories;
+
+  const MarcaDeCliente({
+    required this.id,
+    required this.name,
+    this.logoUrl,
+    this.logoWidth,
+    this.logoHeight,
+    this.logoLightPlate = false,
+    this.primaryColor,
+    this.secondaryColor,
+    this.hasLaboratories = false,
+  });
+
+  factory MarcaDeCliente.fromJson(Map<String, dynamic> j) => MarcaDeCliente(
+        id: j['id'] as String,
+        name: (j['name'] as String?) ?? '',
+        logoUrl: j['logoUrl'] as String?,
+        logoWidth: (j['logoWidth'] as num?)?.toInt(),
+        logoHeight: (j['logoHeight'] as num?)?.toInt(),
+        logoLightPlate: (j['logoLightPlate'] as bool?) ?? false,
+        primaryColor: j['primaryColor'] as String?,
+        secondaryColor: j['secondaryColor'] as String?,
+        hasLaboratories: (j['hasLaboratories'] as bool?) ?? false,
+      );
+
+  PaletaMarca get paleta => paletaDeColores(primaryColor, secondaryColor);
+
+  /// `true` si el cliente tiene algo propio que mostrar: colores o logo. Sin
+  /// nada, la cuenta se ve exactamente como eduXaction.
+  bool get tieneMarca => primaryColor != null || logoUrl != null;
 }
 
 /// La paleta de dos colores guardados como texto.

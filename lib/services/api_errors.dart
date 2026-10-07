@@ -38,9 +38,13 @@ class AuthError extends ApiException {
 }
 
 /// Hay sesión, pero el rol no puede hacer eso. Reintentar nunca ayuda.
+///
+/// Conserva el `code` del servidor: `client_inactive` (el cliente de la
+/// cuenta está desactivado) no es «no tiene permiso para esto», y la app lo
+/// trata distinto —cierra la sesión y dice por qué—.
 class ForbiddenError extends ApiException {
-  ForbiddenError([String? message])
-      : super(message ?? tr.errorSinPermiso, code: 'forbidden');
+  ForbiddenError([String? message, String code = 'forbidden'])
+      : super(message ?? tr.errorSinPermiso, code: code);
 }
 
 /// El recurso no existe — o está fuera del alcance de este rol, que el

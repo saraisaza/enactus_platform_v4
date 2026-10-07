@@ -107,11 +107,28 @@ async function conUrlDelLogo(fila: FilaCliente) {
 clientRoutes.get('/', async (c) => {
   const filas = await c
     .get('db')
-    .select(columnas)
+    .select({
+      ...columnas,
+      // Cuántas cuentas vivas tiene: es lo que dice cuánto afecta editarlo o
+      // desactivarlo, y lo que permite revisar la asignación de Enactus.
+      // `clients.id` escrito con la tabla: interpolado, Drizzle lo deja como
+      // `"id"` a secas, y dentro de la subconsulta eso es el id de la CUENTA.
+      // El conteo daba siempre cero.
+      accountCount: sql<number>`(select count(*)::int from users u
+                                  where u.client_id = clients.id
+                                    and u.deleted_at is null)`,
+    })
     .from(clients)
     // Enactus primero: es el cliente que más cuentas tiene.
     .orderBy(desc(clients.hasLaboratories), asc(clients.name));
-  return c.json({ data: await Promise.all(filas.map(conUrlDelLogo)) });
+  return c.json({
+    data: await Promise.all(
+      filas.map(async ({ accountCount, ...fila }) => ({
+        ...(await conUrlDelLogo(fila)),
+        accountCount,
+      })),
+    ),
+  });
 });
 
 /**

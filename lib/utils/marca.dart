@@ -71,6 +71,10 @@ class PaletaMarca {
   /// La marca como color de TEXTO sobre las superficies oscuras.
   final Color tintaSobreOscuro;
 
+  /// [tintaSobreOscuro] al pasar el mouse (el texto de un botón con borde).
+  /// Más clara, nunca más oscura: sobre el gris, más clara se lee mejor.
+  final Color tintaSobreOscuroBrillante;
+
   /// La marca como color de TEXTO sobre las superficies claras (las pestañas
   /// que tienen modo claro).
   final Color tintaSobreClaro;
@@ -87,6 +91,7 @@ class PaletaMarca {
     required this.primarioBrillante,
     required this.sobrePrimario,
     required this.tintaSobreOscuro,
+    required this.tintaSobreOscuroBrillante,
     required this.tintaSobreClaro,
     required this.suaveSobreOscuro,
     required this.suaveSobreClaro,
@@ -105,6 +110,7 @@ class PaletaMarca {
     primarioBrillante: Color(0xFFFFCF3D),
     sobrePrimario: tintaOscura,
     tintaSobreOscuro: Color(0xFFFFC107),
+    tintaSobreOscuroBrillante: Color(0xFFFFCF3D),
     tintaSobreClaro: Color(0xFF8A6A00),
     suaveSobreOscuro: Color(0x29FFC107), // rgba(255,193,7,.16)
     suaveSobreClaro: Color(0x3DFFC107), // rgba(255,193,7,.24)
@@ -140,6 +146,8 @@ class PaletaMarca {
     final brillante = sobre == Colors.white
         ? Color.lerp(primario, Colors.black, 0.15)!
         : Color.lerp(primario, Colors.white, 0.22)!;
+    final tintaSobreOscuro =
+        legibleSobre(primario, fondoOscuroMasClaro, aclarando: true);
     return PaletaMarca._(
       primario: primario,
       secundario: secundarioOpaco,
@@ -149,8 +157,9 @@ class PaletaMarca {
           legibleSobre(secundarioOpaco, fondoClaroMasOscuro, aclarando: false),
       primarioBrillante: brillante,
       sobrePrimario: sobre,
-      tintaSobreOscuro:
-          legibleSobre(primario, fondoOscuroMasClaro, aclarando: true),
+      tintaSobreOscuro: tintaSobreOscuro,
+      tintaSobreOscuroBrillante:
+          Color.lerp(tintaSobreOscuro, Colors.white, 0.22)!,
       tintaSobreClaro:
           legibleSobre(primario, fondoClaroMasOscuro, aclarando: false),
       suaveSobreOscuro: primario.withValues(alpha: 0.16),
@@ -199,6 +208,7 @@ class PaletaMarca {
       other.primarioBrillante == primarioBrillante &&
       other.sobrePrimario == sobrePrimario &&
       other.tintaSobreOscuro == tintaSobreOscuro &&
+      other.tintaSobreOscuroBrillante == tintaSobreOscuroBrillante &&
       other.tintaSobreClaro == tintaSobreClaro &&
       other.suaveSobreOscuro == suaveSobreOscuro &&
       other.suaveSobreClaro == suaveSobreClaro;
@@ -206,7 +216,8 @@ class PaletaMarca {
   @override
   int get hashCode => Object.hash(primario, secundario, secundarioSobreOscuro,
       secundarioSobreClaro, primarioBrillante, sobrePrimario, tintaSobreOscuro,
-      tintaSobreClaro, suaveSobreOscuro, suaveSobreClaro);
+      tintaSobreOscuroBrillante, tintaSobreClaro, suaveSobreOscuro,
+      suaveSobreClaro);
 }
 
 /// Contraste WCAG 2.x entre dos colores opacos: de 1:1 (iguales) a 21:1

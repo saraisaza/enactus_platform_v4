@@ -39,6 +39,7 @@ import 'package:enactus_platform/l10n/textos.dart';
 import 'package:enactus_platform/utils/app_theme.dart';
 import 'package:enactus_platform/utils/constants.dart';
 import 'package:enactus_platform/utils/marca.dart';
+import 'package:enactus_platform/widgets/logo_de_cliente.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
 import 'package:enactus_platform/widgets/vista_previa_marca.dart';
 
@@ -69,21 +70,24 @@ String _nombre(String texto) {
       .replaceAll(RegExp(r'^-|-$'), '');
 }
 
-/// Un logo de prueba: un círculo y una palabra en azul marino, con fondo
-/// transparente. Oscuro a propósito: es el caso que pide la placa clara.
-Future<Uint8List> _logoDePrueba() async {
+/// Un logo de prueba: un círculo y una palabra, con fondo transparente. Por
+/// defecto en azul marino —oscuro a propósito: es el caso que pide la placa
+/// clara—; con [claro], el círculo azul y la palabra en blanco.
+Future<Uint8List> _logoDePrueba({String palabra = 'NORTE', bool claro = false}) async {
   final grabadora = ui.PictureRecorder();
   final lienzo = Canvas(grabadora);
-  const tinta = Color(0xFF0B2D5B);
-  lienzo.drawCircle(const Offset(60, 60), 44, Paint()..color = tinta);
+  const marino = Color(0xFF0B2D5B);
+  final tinta = claro ? const Color(0xFFFFFFFF) : marino;
+  lienzo.drawCircle(const Offset(60, 60), 44,
+      Paint()..color = claro ? const Color(0xFF1A73E8) : marino);
   final parrafo = (ui.ParagraphBuilder(ui.ParagraphStyle(
           fontFamily: AppFonts.display, fontSize: 84))
         ..pushStyle(ui.TextStyle(color: tinta, fontWeight: FontWeight.w700))
-        ..addText('NORTE'))
+        ..addText(palabra))
       .build()
     ..layout(const ui.ParagraphConstraints(width: 400));
   lienzo.drawParagraph(parrafo, const Offset(122, 4));
-  final imagen = await grabadora.endRecording().toImage(420, 120);
+  final imagen = await grabadora.endRecording().toImage(440, 120);
   final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
   return datos!.buffer.asUint8List();
 }
@@ -257,6 +261,78 @@ void main() {
           warnIfMissed: false);
       await _esperar(tester);
       await _capturar(tester, 'selector_de_color');
+    });
+  });
+
+  group('una cuenta de empresa cliente', () {
+    // Una estudiante de Banco Andino: Open Learning, con la marca de su
+    // empresa. Es lo que ve al iniciar sesión, en vivo: encabezado con los
+    // dos logos, el azul en los acentos y el secundario en la opción activa.
+    Map<String, Object?> cuenta({required bool placa}) => {
+          'studentType': 'open_learning',
+          'clientId': '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02',
+          'client': {
+            'id': '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02',
+            'name': placa ? 'Banco Norte' : 'Banco Andino',
+            'logoUrl': 'https://logos.prueba/logo.png',
+            'logoWidth': 440,
+            'logoHeight': 120,
+            'logoLightPlate': placa,
+            'primaryColor': placa ? '#0B2D5B' : '#1A73E8',
+            'secondaryColor': placa ? '#E8A93D' : '#0B5394',
+            'hasLaboratories': false,
+          },
+        };
+    late Uint8List logoClaro;
+    late Uint8List logoOscuro;
+
+    setUp(conSesionGuardada);
+    tearDown(() {
+      imagenDeLogo = NetworkImage.new;
+      Marca.instancia.restablecer();
+    });
+
+    Future<void> montarComo(WidgetTester tester, {required bool placa}) async {
+      final logos = await tester.runAsync(() async =>
+          (await _logoDePrueba(palabra: 'ANDINO', claro: true), await _logoDePrueba()));
+      logoClaro = logos!.$1;
+      logoOscuro = logos.$2;
+      final imagen = MemoryImage(placa ? logoOscuro : logoClaro);
+      imagenDeLogo = (_) => imagen;
+      await montar(tester, appDe(Roles.student, cambios: cuenta(placa: placa)));
+      await tester.runAsync(() => precacheImage(imagen, tester.element(find.byType(MaterialApp))));
+      await _esperar(tester);
+    }
+
+    testWidgets('en escritorio, todas sus pestañas', (tester) async {
+      fijarTamano(tester, const Size(1440, 900));
+      await montarComo(tester, placa: false);
+      final barra = find.descendant(
+          of: find.byType(PortalShell), matching: find.byType(ListView));
+      for (final rotulo in rotulosDeBarraLateral(tester, barra)) {
+        await tester.tap(
+            find.descendant(of: barra.first, matching: find.text(rotulo)).first,
+            warnIfMissed: false);
+        await _esperar(tester);
+        await _capturar(tester, 'empresa_escritorio_${_nombre(rotulo)}');
+      }
+    });
+
+    for (final (etiqueta, tamano) in const [
+      ('tablet', Size(900, 1000)),
+      ('telefono', Size(390, 844)),
+    ]) {
+      testWidgets('en $etiqueta', (tester) async {
+        fijarTamano(tester, tamano);
+        await montarComo(tester, placa: false);
+        await _capturar(tester, 'empresa_$etiqueta');
+      });
+    }
+
+    testWidgets('con un logo oscuro, sobre la placa clara', (tester) async {
+      fijarTamano(tester, const Size(1440, 900));
+      await montarComo(tester, placa: true);
+      await _capturar(tester, 'empresa_logo_oscuro_con_placa');
     });
   });
 }

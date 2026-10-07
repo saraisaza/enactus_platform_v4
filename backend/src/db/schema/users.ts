@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { softDelete, timestamps } from './_shared';
+import { clients } from './clients';
 import { universities } from './universities';
 import { studentType, userRole } from './enums';
 
@@ -113,6 +114,18 @@ export const users = pgTable(
       onDelete: 'set null',
     }),
 
+    /**
+     * El cliente al que pertenece la cuenta: una empresa, o Enactus. Decide
+     * con qué marca ve la plataforma al iniciar sesión, y si puede entrar
+     * (un cliente desactivado deja afuera a sus cuentas).
+     *
+     * Nulo = de eduXaction directamente: el personal (admin, LXD propios) y
+     * Open Learning sin empresa. Una sola empresa por cuenta.
+     *
+     * `restrict`: un cliente con cuentas no se borra; se desactiva.
+     */
+    clientId: uuid().references(() => clients.id, { onDelete: 'restrict' }),
+
     /** Key en S3. Reemplaza el `avatarBase64` que hoy vive dentro del registro. */
     avatarS3Key: text('avatar_s3_key'),
     joinedAt: timestamp({ withTimezone: true }),
@@ -133,6 +146,7 @@ export const users = pgTable(
     index('users_role_idx').on(t.role),
     index('users_company_id_idx').on(t.companyId),
     index('users_donor_id_idx').on(t.donorId),
+    index('users_client_id_idx').on(t.clientId),
     // LEGADO, se va en R4 junto con la columna: `studentsForAdvisor` filtraba
     // por universidad exacta. Que esa comparación frágil estuviera INDEXADA es
     // lo que la hacía difícil de sospechar — respondía rápido y devolvía cero.
@@ -143,6 +157,13 @@ export const users = pgTable(
     check(
       'users_student_type_matches_role',
       sql`(${t.role} in ('student','alumni')) = (${t.studentType} is not null)`,
+    ),
+    // Administración es de eduXaction: una cuenta de admin con cliente vería
+    // la plataforma con la marca de una empresa y podría quedar afuera si esa
+    // empresa se desactiva.
+    check(
+      'users_admins_sin_cliente',
+      sql`${t.role} not in ('admin', 'superadmin') or ${t.clientId} is null`,
     ),
     check(
       'users_impact_code_only_donor',

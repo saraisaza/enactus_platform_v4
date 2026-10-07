@@ -104,6 +104,11 @@ class _TarjetaDeCliente extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: AppWeights.uiSemibold,
                 color: AppColors.textPrimary)),
+        const SizedBox(height: 2),
+        // Cuántas cuentas afecta editarlo o desactivarlo.
+        Text(tr.clientesCuentas(cliente.accountCount),
+            style: const TextStyle(
+                fontSize: 12.5, color: AppColors.textSecondary)),
         const SizedBox(height: 6),
         Wrap(
           spacing: 6,
@@ -220,7 +225,7 @@ class _CajaDeLogo extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12))
           : LogoDeCliente(
-              imagen: NetworkImage(url!),
+              imagen: imagenDeLogo(url!),
               nombre: nombre,
               placaClara: placaClara,
               altoMaximo: 44,
@@ -308,7 +313,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
     if (_logoNuevo != null) return MemoryImage(_logoNuevo!);
     final url = widget.original?.logoUrl;
     if (_logoQuitado || url == null) return null;
-    return NetworkImage(url);
+    return imagenDeLogo(url);
   }
 
   @override

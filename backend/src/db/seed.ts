@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 
 import { hashPassword } from '../lib/password';
@@ -327,6 +328,16 @@ async function seedUsers(db: Db) {
       joinedAt: at('2023-01-15'),
     },
   ]);
+
+  // Las cuentas de Enactus, a su cliente: lo mismo que hace el relleno de la
+  // migración 0014 en una base que ya tenía gente. Acá la migración corre
+  // ANTES de que existan las cuentas, así que su relleno no las alcanza.
+  await db.execute(sql`
+    update users
+       set client_id = (select id from clients where has_laboratories)
+     where client_id is null
+       and (student_type = 'enactus'
+            or role in ('advisor', 'mentor', 'donor', 'company'))`);
 }
 
 // ---------------------------------------------------------------------------

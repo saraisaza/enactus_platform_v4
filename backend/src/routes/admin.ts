@@ -211,6 +211,9 @@ const BACKUP_TABLES = [
  * respaldos en uso; agregar una acá es decidir que un respaldo viejo no la
  * vacíe.
  */
+/** Columnas de `users` que apuntan a otra cuenta. Ver la restauración. */
+const REFERENCIAS_ENTRE_CUENTAS = ['company_id', 'donor_id', 'advisor_id'];
+
 const TABLAS_POSTERIORES_A_RESPALDOS_VIEJOS: readonly (typeof BACKUP_TABLES)[number][] = [
   'clients',
 ];
@@ -354,8 +357,15 @@ adminRoutes.post('/restore', async (c) => {
       const rows = payload.data[table] ?? [];
 
       restored[table] = rows.length;
+      // Las referencias de una cuenta a otra (su empresa aliada, su donante,
+      // su asesor) se ponen DESPUÉS de insertar todas las cuentas. El respaldo
+      // las trae en el orden en que estaban guardadas, y PostgreSQL guarda al
+      // final cada fila que se edita: insertándolas con la referencia puesta,
+      // una cuenta que salía antes que su empresa hacía fallar la clave ajena
+      // y, con ella, la restauración entera.
+      const referenciasPendientes: { id: unknown; columnas: Record<string, unknown> }[] = [];
       for (const row of rows) {
-        const fila =
+        let fila =
           table === 'users'
             ? {
                 ...row,
@@ -363,6 +373,18 @@ adminRoutes.post('/restore', async (c) => {
                   hashesActuales.get(String(row.id)) ?? hashInservible,
               }
             : row;
+        if (table === 'users') {
+          const columnas: Record<string, unknown> = {};
+          for (const col of REFERENCIAS_ENTRE_CUENTAS) {
+            if (fila[col] !== null && fila[col] !== undefined) {
+              columnas[col] = fila[col];
+              fila = { ...fila, [col]: null };
+            }
+          }
+          if (Object.keys(columnas).length > 0) {
+            referenciasPendientes.push({ id: fila.id, columnas });
+          }
+        }
 
         const cols = Object.keys(fila).filter(
           (col) => !generadas.has(`${table}.${col}`),
@@ -379,6 +401,15 @@ adminRoutes.post('/restore', async (c) => {
         await tx.execute(
           sql`insert into ${sql.identifier(table)} (${identifiers}) values (${values})`,
         );
+      }
+      for (const { id, columnas } of referenciasPendientes) {
+        const asignaciones = sql.join(
+          Object.entries(columnas).map(
+            ([col, valor]) => sql`${sql.identifier(col)} = ${valorParaSql(valor)}`,
+          ),
+          sql`, `,
+        );
+        await tx.execute(sql`update users set ${asignaciones} where id = ${id}`);
       }
     }
   });

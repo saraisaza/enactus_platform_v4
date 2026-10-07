@@ -128,6 +128,36 @@ describe('respaldo → destrucción → restauración', () => {
     expect(await foto()).toEqual(antes);
   });
 
+  it('restaura aunque una cuenta salga antes que la cuenta a la que apunta', async () => {
+    // Una cuenta puede apuntar a otra: a su empresa aliada, a su donante, a su
+    // asesor. El respaldo las saca en el orden en que estén guardadas, y ese
+    // orden no es el de alta: PostgreSQL mueve cada fila que se edita (la
+    // migración 0014 editó cientos al asignarles Enactus). La restauración las
+    // insertaba en ese orden, la clave ajena rechazaba la primera que salía
+    // antes que su empresa y la restauración entera fallaba.
+    //
+    // Acá se arma el peor caso a propósito —las cuentas que apuntan a otra,
+    // primero— en vez de depender de cómo haya quedado guardada la tabla.
+    const { accessToken } = await login(app, 'superadmin1@enactus.co', 'Super123');
+    const respaldo = await respaldar(accessToken);
+    type Cuenta = { id: string; company_id: string | null; donor_id: string | null };
+    const apunta = (u: Cuenta) => Boolean(u.company_id ?? u.donor_id);
+    const cuentas = respaldo.data.users as Cuenta[];
+    respaldo.data.users = [...cuentas.filter(apunta), ...cuentas.filter((u) => !apunta(u))];
+    expect(cuentas.some(apunta), 'el sembrado tiene que traer cuentas que apunten a otra')
+      .toBe(true);
+
+    const antes = await sql`
+      select id, company_id, donor_id, advisor_id from users order by id`;
+    const res = await app.request('/admin/restore', {
+      ...json({ version: respaldo.version, data: respaldo.data, confirm: CONFIRM }),
+      headers: { 'content-type': 'application/json', ...auth(accessToken) },
+    });
+    expect(res.status, `la restauración falló: ${await res.clone().text()}`).toBe(200);
+    expect(await sql`select id, company_id, donor_id, advisor_id from users order by id`)
+      .toEqual(antes);
+  });
+
   it('después de restaurar, la gente puede ENTRAR', async () => {
     // El corazón del bug: las contraseñas no viajan en el archivo. Si la
     // restauración no las conserva, la base queda "restaurada" y nadie puede

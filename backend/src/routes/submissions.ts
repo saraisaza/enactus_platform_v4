@@ -22,6 +22,7 @@ import {
   requireCanGrade,
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
+import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
 
 export const submissionRoutes = new Hono<AppEnv>();
 submissionRoutes.use('*', requireAuth);
@@ -141,6 +142,8 @@ submissionRoutes.get('/', async (c) => {
                                         where u.university = ${user.university}
                                           and u.university <> '')`,
     );
+  } else if (user.role === 'supervisor') {
+    filters.push(sql`${submissions.studentId} in ${genteDeLaEmpresa(user.clientId)}`);
   } else if (user.role !== 'admin' && user.role !== 'superadmin') {
     // Empresa y Donante no ven entregas.
     return c.json(paginated([], 0, query));
@@ -305,6 +308,9 @@ submissionRoutes.post('/:id/grade', requireCanGrade, async (c) => {
   assertCanGrade(user, course?.isOpenLearning ?? false);
   if (user.role === 'lxd' && course && course.creatorId !== user.id) {
     throw forbidden('Solo puede calificar entregas de los cursos que usted creó.');
+  }
+  if (user.role === 'supervisor' && !(await supervisorAlcanza(db, user, submission.studentId))) {
+    throw forbidden('Solo puede calificar entregas de la gente de su empresa.');
   }
 
   assertGradeInRange(parsed.gradingMode, parsed.grade);

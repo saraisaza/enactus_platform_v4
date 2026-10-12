@@ -6,6 +6,7 @@ import { courses, staffNotes } from '../db/schema';
 import { forbidden, notFound } from '../lib/errors';
 import { currentUser, requireAuth } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
+import { genteDeLaEmpresa } from '../services/alcance-supervisor';
 
 /**
  * Seguimiento de un curso: quiénes lo cursan, cómo van y las notas privadas
@@ -46,6 +47,18 @@ async function loadTrackableCourse(
       select 1 as ok from laboratory_mentors lm
        where lm.user_id = ${user.id}
          and lm.laboratory_id = ${course.laboratoryId}
+       limit 1
+    `);
+    if (ok) return course;
+  }
+
+  if (user.role === 'supervisor') {
+    // Un supervisor sigue a la gente de su empresa: le sirve si alguno cursa
+    // esto. La lista, después, trae solo a esos (ver más abajo).
+    const [ok] = await db.execute<{ ok: number }>(sql`
+      select 1 as ok from student_course_access a
+       where a.course_id = ${course.id}
+         and a.student_id in ${genteDeLaEmpresa(user.clientId)}
        limit 1
     `);
     if (ok) return course;
@@ -136,6 +149,8 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
       left join staff_notes n
              on n.student_id = u.id and n.course_id = a.course_id
      where a.course_id = ${course.id}
+       and (${user.role !== 'supervisor'}
+            or u.id in ${genteDeLaEmpresa(user.clientId)})
      order by u.name
   `);
 
@@ -232,8 +247,9 @@ courseTrackingRoutes.put('/:id/students/:studentId/note', async (c) => {
   const studentId = c.req.param('studentId');
   const { note } = noteBody.parse(await c.req.json());
 
-  // Un asesor acompaña, pero no escribe en el cuaderno del curso.
-  if (user.role === 'advisor') {
+  // Un asesor —o el supervisor de una empresa— acompaña, pero no escribe en
+  // el cuaderno del curso: ese es del equipo docente.
+  if (user.role === 'advisor' || user.role === 'supervisor') {
     throw forbidden('Los comentarios del curso los escribe su equipo docente.');
   }
 

@@ -12,6 +12,7 @@ import {
   users,
 } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
+import { genteDeLaEmpresa } from '../services/alcance-supervisor';
 import { clienteParaCuenta } from '../services/cliente-de-cuenta';
 import { resolverUniversidad } from '../services/universidad';
 import { conflict, forbidden, notFound } from '../lib/errors';
@@ -148,6 +149,13 @@ function scopeFor(user: AuthUser) {
   if (user.role === 'donor') {
     // Solo los estudiantes que apoya.
     return and(alive, eq(users.donorId, user.id))!;
+  }
+
+  if (user.role === 'supervisor') {
+    // La gente de su empresa que cursa. Sin datos de contacto (ver
+    // `canSeeContactDetails`): para acompañar su avance no hacen falta la
+    // cédula ni el teléfono de nadie.
+    return and(alive, sql`${users.id} in ${genteDeLaEmpresa(user.clientId)}`)!;
   }
 
   // Estudiante y alumni: no tienen directorio de personas. Su equipo llega
@@ -427,7 +435,7 @@ const createBody = z.object({
   password: z.string().min(6, 'La contraseña necesita al menos 6 caracteres.'),
   role: z.enum([
     'superadmin', 'admin', 'lxd', 'mentor', 'advisor',
-    'company', 'donor', 'student', 'alumni',
+    'company', 'donor', 'student', 'alumni', 'supervisor',
   ]),
   studentType: z.enum(['enactus', 'open_learning']).nullable().optional(),
   phone: z.string().trim().default(''),

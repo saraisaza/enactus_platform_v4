@@ -6,7 +6,7 @@
 // —el calendario por 354 px, el mapa por 300— y 28 con la letra a 1.3x, que
 // es la que usa mucha gente mayor o con baja visión.
 //
-// Acá se recorren TODAS las pestañas de los nueve portales a 360 dp, con la
+// Acá se recorren TODAS las pestañas de los diez portales a 360 dp, con la
 // barra de estado de un iPhone con notch, a 1.0x y a 1.3x, bajando hasta el
 // final de cada una. Cualquier desborde es un fallo, con el archivo y la línea.
 //

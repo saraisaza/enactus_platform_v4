@@ -3,6 +3,7 @@ import { type SQL, and, eq, isNull, sql } from 'drizzle-orm';
 import type { Database } from '../db/client';
 import { courses } from '../db/schema';
 import { forbidden } from '../lib/errors';
+import { genteDeLaEmpresa } from './alcance-supervisor';
 import type { AuthUser } from '../middleware/context';
 
 /**
@@ -73,6 +74,16 @@ export function visibleCoursesFilter(user: AuthUser): SQL | null {
         sql`${courses.creatorId} in (select u.id from users u
                                       where u.company_id = ${user.id}
                                         and u.role = 'lxd')`,
+      )!;
+
+    case 'supervisor':
+      // Publicados: los exclusivos de su empresa y los que cursa su gente.
+      return and(
+        alive,
+        eq(courses.status, 'published'),
+        sql`(${courses.clientId} = ${user.clientId}
+             or ${courses.id} in (select a.course_id from student_course_access a
+                                   where a.student_id in ${genteDeLaEmpresa(user.clientId)}))`,
       )!;
 
     case 'advisor':

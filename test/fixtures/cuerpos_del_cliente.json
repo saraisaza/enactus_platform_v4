@@ -59,6 +59,11 @@
   "secondaryColor": null,
   "logoLightPlate": false
  },
+ "POST /courses": {
+  "name": "Crédito",
+  "laboratoryId": null,
+  "isOpenLearning": true
+ },
  "POST /files/download-url": {
   "key": "avatars/f6b1359e-759a-4658-9bd6-8903bac73706.png"
  },

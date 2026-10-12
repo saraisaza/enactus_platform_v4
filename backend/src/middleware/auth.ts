@@ -87,6 +87,15 @@ export const isStudentLike = (role: string): boolean =>
  */
 export function assertCanGrade(user: AuthUser, isOpenLearning: boolean): void {
   if (user.role === 'admin' || user.role === 'superadmin') return;
+  // El supervisor de una empresa puede calificar a su gente si quiere: los
+  // cursos de una empresa son de Open Learning, y es ese permiso el que cuenta
+  // (por defecto activo; el Admin lo puede quitar).
+  if (user.role === 'supervisor') {
+    if (!isOpenLearning || !user.canGradeOpenLearning) {
+      throw forbidden('Su Admin no le dio permiso de calificar en Open Learning.');
+    }
+    return;
+  }
   if (user.role !== 'lxd') {
     throw forbidden('Solo un LXD (o un administrador) puede calificar.');
   }
@@ -111,10 +120,14 @@ export const requireCanGrade = createMiddleware<AppEnv>(async (c, next) => {
   const user = currentUser(c);
   if (
     user.role !== 'lxd' &&
+    user.role !== 'supervisor' &&
     user.role !== 'admin' &&
     user.role !== 'superadmin'
   ) {
     throw forbidden('Solo un LXD (o un administrador) puede calificar.');
+  }
+  if (user.role === 'supervisor' && !user.canGradeOpenLearning) {
+    throw forbidden('Su Admin no le dio permiso de calificar.');
   }
   if (
     user.role === 'lxd' &&

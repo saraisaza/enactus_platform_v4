@@ -14,7 +14,8 @@ El trabajo va por etapas, cada una probada en staging antes de la siguiente:
 3. **Asignar cuentas y aplicar la marca** — hecha: cada cuenta con su
    cliente, la marca al entrar, el logo en el encabezado y el cliente
    desactivado deja afuera.
-4. Portal del Manager / Supervisor.
+4. **Manager / Supervisor y cursos exclusivos** — hecha: el portal del
+   supervisor, cursos que solo se asignan a la gente de una empresa.
 5. Blindaje (aislamiento entre clientes) y producción.
 6. Certificados con molde, para toda la plataforma.
 
@@ -131,6 +132,7 @@ Quién puede pertenecer a qué (`services/cliente-de-cuenta.ts`):
 | Asesor, mentor de laboratorio, donante, empresa aliada | Enactus, siempre |
 | Estudiante o alumni de Open Learning | Ninguno, o una empresa |
 | LXD | Ninguno, o una empresa |
+| Manager / Supervisor | Una empresa, siempre (no Enactus) |
 
 Sin mandar el cliente, cada cuenta queda con el que le toca. En el panel,
 «Empresa» en el tipo de estudiante es una cuenta de Open Learning con su
@@ -151,3 +153,39 @@ desactivado no la saca de su cliente; asignar una nueva, sí se rechaza.
 cuentas (empresa aliada, donante, asesor) y las completa al final: el orden
 del archivo no es el de alta.
 
+## Manager / Supervisor y cursos exclusivos (etapa 4)
+
+Migración 0015: el rol `supervisor` y `courses.client_id`.
+
+**El supervisor** acompaña a la gente de SU empresa: ve a sus estudiantes y
+alumni, su avance, sus entregas (y las califica si tiene el permiso), cómo va
+cada curso y quién se certificó. Su portal tiene cuatro pestañas: Personas,
+Calificaciones, Cursos y Certificados.
+
+Qué es «su gente» está definido en un solo lugar,
+`backend/src/services/alcance-supervisor.ts`, y lo usan todas las puertas:
+listado y detalle de personas, entregas (ver y calificar), archivos de las
+entregas, certificados, seguimiento de cursos y avance por curso. La app no
+filtra nada: lo hace el servidor. No escribe en el cuaderno del curso (eso es
+del equipo docente) y no ve datos de contacto.
+
+El permiso de calificar es el de Open Learning (`can_grade_open_learning`), y
+se cambia desde el formulario de la cuenta como el de un LXD. La base exige
+que todo supervisor tenga cliente.
+
+**Cursos exclusivos.** Un curso con `client_id` solo se asigna a cuentas de esa
+empresa: el servidor rechaza la asignación (409, con el nombre del curso) y
+el diálogo de asignar ni lo ofrece. Reglas:
+
+- Es de Open Learning y no va en un laboratorio (lo exige también la base).
+- Enactus no tiene cursos exclusivos: los suyos llegan por laboratorio.
+- Un LXD de una empresa crea los cursos de su empresa, lo pida o no; en su
+  diálogo de «Nuevo curso» no aparecen las opciones de Open Learning ni de
+  laboratorio. Un LXD de Enactus o de eduXaction crea cursos sin marca.
+- De qué empresa es un curso lo cambia solo un administrador, en el editor
+  del curso (Restricciones → «Exclusivo de una empresa»).
+
+**Lo que falta, para la etapa 5.** Hoy el asesor, el mentor y el LXD pueden
+llegar por id a estudiantes de cualquier cliente; el blindaje entre clientes
+cierra esas puertas antes de producción. Los certificados de curso no existen
+todavía (solo los de la Ruta): llegan con la etapa 6.

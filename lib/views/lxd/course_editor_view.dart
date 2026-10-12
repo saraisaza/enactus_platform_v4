@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/textos.dart';
 import '../../models/authoring.dart';
 import '../../models/models.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
@@ -1182,6 +1183,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
   String? _openDate;
   String? _closeDate;
   String? _sponsorId;
+  String? _clientId;
 
   bool _saving = false;
   ApiException? _error;
@@ -1195,7 +1197,19 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
     _openDate = c.openDate;
     _closeDate = c.closeDate;
     _sponsorId = c.sponsorCompanyId;
+    _clientId = c.clientId;
   }
+
+  /// De qué empresa es un curso lo decide un administrador.
+  bool get _esAdmin {
+    final rol = context.read<AuthProvider>().currentUser?.role;
+    return rol == Roles.admin || rol == Roles.superAdmin;
+  }
+
+  /// Solo un curso de Open Learning, fuera de los laboratorios, puede ser
+  /// exclusivo de una empresa: los de laboratorio son de Enactus.
+  bool get _puedeSerExclusivo =>
+      widget.course.isOpenLearning && widget.course.laboratoryId == null;
 
   @override
   void dispose() {
@@ -1215,6 +1229,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
         'openDate': _openDate,
         'closeDate': _closeDate,
         'sponsorCompanyId': _sponsorId,
+        if (_esAdmin && _puedeSerExclusivo) 'clientId': _clientId,
       });
       if (!mounted) return;
       setState(() => _saving = false);
@@ -1364,6 +1379,49 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           tr.constructorPatrocinioTexto,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
         ),
+        if (_puedeSerExclusivo && _esAdmin) ...[
+          SectionTitle(tr.constructorExclusivo),
+          data.clients.when(
+            loading: () => const CardListSkeleton(count: 1, height: 60),
+            error: (e) => ErrorBanner(e),
+            data: (clientes) {
+              // Enactus no: sus cursos le llegan a su gente por laboratorio.
+              // Una empresa desactivada solo aparece si ya era la del curso.
+              final empresas = clientes
+                  .where((c) =>
+                      !c.hasLaboratories && (c.active || c.id == _clientId))
+                  .toList();
+              return DropdownButtonFormField<String?>(
+                isExpanded: true,
+                initialValue:
+                    empresas.any((c) => c.id == _clientId) ? _clientId : null,
+                decoration:
+                    InputDecoration(labelText: tr.constructorExclusivoDe),
+                items: [
+                  DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text(tr.constructorExclusivoNinguna)),
+                  for (final empresa in empresas)
+                    DropdownMenuItem<String?>(
+                        value: empresa.id, child: Text(empresa.name)),
+                ],
+                onChanged:
+                    _saving ? null : (v) => setState(() => _clientId = v),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          Text(
+            tr.constructorExclusivoTexto,
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+          ),
+        ] else if (widget.course.clientId != null) ...[
+          SectionTitle(tr.constructorExclusivo),
+          Text(
+            tr.constructorExclusivoDeSuEmpresa,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+        ],
         const SizedBox(height: 20),
         _SaveButton(
             saving: _saving, onPressed: invalidWindow ? null : _save),

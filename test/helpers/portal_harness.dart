@@ -30,6 +30,7 @@ const rolesDePortal = [
   Roles.advisor,
   Roles.company,
   Roles.donor,
+  Roles.supervisor,
   Roles.student,
   Roles.alumni,
 ];
@@ -73,7 +74,13 @@ FakeApi fakeDe(String role) {
   );
 }
 
-Widget appDe(String role, {Map<String, Object?>? cambios}) {
+Widget appDe(
+  String role, {
+  Map<String, Object?>? cambios,
+  // Entrega el doble de la API, para agregarle rutas o mirar lo que la
+  // pantalla mandó (como en [appPublica]).
+  void Function(FakeApi api)? conApi,
+}) {
   final falsa = fakeDe(role);
   // [cambios] se mezcla en el `/auth/me` del rol: la misma cuenta, con algo
   // distinto (p. ej. la de una estudiante de una empresa cliente, con su
@@ -81,6 +88,7 @@ Widget appDe(String role, {Map<String, Object?>? cambios}) {
   if (cambios != null) {
     falsa.routes['/auth/me'] = {...usuarioDe(role), ...cambios};
   }
+  conApi?.call(falsa);
   final api = falsa.build();
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);

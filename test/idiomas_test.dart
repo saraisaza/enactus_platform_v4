@@ -10,7 +10,7 @@
 //    vez el del navegador (inglés si es inglés, español si no), el selector
 //    cambia todo sin recargar y la elección queda guardada.
 // 4. ¿Cada portal, entero, sale en inglés? Se recorren todas las pestañas de
-//    los nueve portales con la interfaz en inglés y ningún texto de la
+//    los diez portales con la interfaz en inglés y ningún texto de la
 //    interfaz puede quedar en español.
 
 import 'dart:convert';

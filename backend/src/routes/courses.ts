@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import {
+  clients,
   courseCompetencies,
   courseLearningOutcomes,
   courseModules,
@@ -68,6 +69,11 @@ const courseBody = z.object({
   openDate: z.iso.date('La fecha de apertura tiene que ser AAAA-MM-DD.').nullable().optional(),
   closeDate: z.iso.date('La fecha de cierre tiene que ser AAAA-MM-DD.').nullable().optional(),
   sponsorCompanyId: z.uuid().nullable().optional(),
+  /**
+   * Exclusivo de una empresa cliente. Solo lo decide un administrador; los
+   * cursos de un LXD de una empresa nacen con su empresa.
+   */
+  clientId: z.uuid().nullable().optional(),
 });
 
 const courseUpdate = parcial(courseBody);
@@ -360,10 +366,24 @@ courseRoutes.post('/', requireRole(...CONTENT_ROLES), async (c) => {
   await assertSponsorIsCompany(db, body.sponsorCompanyId);
   assertDateWindow(body.openDate ?? null, body.closeDate ?? null);
 
+  // Un LXD de una empresa crea para su empresa, lo pida o no: si no, su
+  // curso quedaría disponible para cualquier otra. Un admin elige. Un LXD de
+  // Enactus crea cursos sin marca de exclusivo: los de Enactus le llegan a su
+  // gente por laboratorio.
+  const clientId =
+    user.role === 'lxd'
+      ? await clienteExclusivoDelLxd(db, user.clientId)
+      : (body.clientId ?? null);
+  await assertClienteDelCurso(db, clientId, {
+    isOpenLearning: body.isOpenLearning ?? false,
+    laboratoryId: body.laboratoryId ?? null,
+  });
+
   const [created] = await db
     .insert(courses)
     .values({
       ...body,
+      clientId,
       laboratoryId: body.laboratoryId ?? null,
       creatorId: user.id,
       // Un curso nace en borrador: publicar es un acto explícito.
@@ -381,6 +401,20 @@ courseRoutes.patch('/:id', requireRole(...CONTENT_ROLES), async (c) => {
   const course = await loadEditableCourse(db, c.req.param('id'), user);
 
   await assertSponsorIsCompany(db, body.sponsorCompanyId);
+  if (body.clientId !== undefined && body.clientId !== course.clientId) {
+    if (user.role !== 'admin' && user.role !== 'superadmin') {
+      throw forbidden('De qué empresa es un curso lo decide un administrador.');
+    }
+  }
+  await assertClienteDelCurso(
+    db,
+    body.clientId !== undefined ? body.clientId : course.clientId,
+    {
+      isOpenLearning: body.isOpenLearning ?? course.isOpenLearning,
+      laboratoryId:
+        body.laboratoryId !== undefined ? body.laboratoryId : course.laboratoryId,
+    },
+  );
   // Las fechas se validan sobre el resultado, no sobre lo que llegó: en un
   // parcheo que solo manda el cierre, la apertura con la que tiene que ser
   // coherente es la que ya está guardada.
@@ -397,6 +431,51 @@ courseRoutes.patch('/:id', requireRole(...CONTENT_ROLES), async (c) => {
 
   return c.json(updated);
 });
+
+/** La empresa de la que son los cursos que crea un LXD; ninguna si es de Enactus. */
+async function clienteExclusivoDelLxd(
+  db: AppEnv['Variables']['db'],
+  clientId: string | null,
+): Promise<string | null> {
+  if (!clientId) return null;
+  const [cliente] = await db
+    .select({ labs: clients.hasLaboratories })
+    .from(clients)
+    .where(eq(clients.id, clientId))
+    .limit(1);
+  return cliente && !cliente.labs ? clientId : null;
+}
+
+/**
+ * Un curso exclusivo es de una EMPRESA cliente y de Open Learning.
+ *
+ * Los laboratorios son de Enactus: un curso de laboratorio no puede ser de
+ * una empresa (la base también lo impide), y uno de Enactus no se marca como
+ * exclusivo de Enactus —sus cursos ya llegan solo a su gente, por laboratorio—.
+ */
+async function assertClienteDelCurso(
+  db: AppEnv['Variables']['db'],
+  clientId: string | null,
+  curso: { isOpenLearning: boolean; laboratoryId: string | null },
+): Promise<void> {
+  if (!clientId) return;
+  const [cliente] = await db
+    .select({ name: clients.name, labs: clients.hasLaboratories })
+    .from(clients)
+    .where(eq(clients.id, clientId))
+    .limit(1);
+  if (!cliente) throw conflict('No existe ese cliente.');
+  if (cliente.labs) {
+    throw conflict(
+      `Los cursos de ${cliente.name} le llegan a su gente por laboratorio: no se marcan como exclusivos.`,
+    );
+  }
+  if (curso.laboratoryId || !curso.isOpenLearning) {
+    throw conflict(
+      `Un curso exclusivo de ${cliente.name} es de Open Learning y no va en un laboratorio.`,
+    );
+  }
+}
 
 /**
  * El patrocinador de un curso tiene que ser una cuenta de empresa viva.

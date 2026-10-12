@@ -61,6 +61,10 @@ export async function clienteParaCuenta(
     return null;
   }
 
+  if (cuenta.role === 'supervisor' && !pedido && !anterior) {
+    throw conflict('Un supervisor es de una empresa cliente: elija cuál.');
+  }
+
   if (pedido === undefined) {
     if (anterior !== undefined && anterior !== null) {
       // Edición sin tocar el cliente: se conserva si sigue valiendo para el
@@ -79,6 +83,9 @@ export async function clienteParaCuenta(
     return clientePorDefecto(db, cuenta);
   }
   if (pedido === null) {
+    if (cuenta.role === 'supervisor') {
+      throw conflict('Un supervisor es de una empresa cliente: elija cuál.');
+    }
     if (debeSerDeEnactus(cuenta)) {
       throw conflict(
         'Esta cuenta es de la red Enactus: tiene que pertenecer al cliente Enactus.',
@@ -116,6 +123,11 @@ async function validar(
   }
 
   if (cliente.labs) {
+    if (cuenta.role === 'supervisor') {
+      throw conflict(
+        `${cliente.name} acompaña a su gente con mentores de laboratorio: un supervisor es de una empresa cliente.`,
+      );
+    }
     if (esEstudiante(cuenta.role) && cuenta.studentType !== 'enactus') {
       throw conflict(
         `${cliente.name} es para cuentas eduXaction, con laboratorios y Ruta. Una cuenta de Open Learning va sin cliente o en una empresa.`,

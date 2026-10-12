@@ -3245,7 +3245,11 @@ components:
         email: { type: string }
         role:
           type: string
-          enum: [superadmin, admin, advisor, donor, lxd, mentor, company, student, alumni]
+          enum: [superadmin, admin, advisor, donor, lxd, mentor, company, student, alumni, supervisor]
+          description: |
+            `supervisor` es el Manager / Supervisor de una empresa cliente: ve a
+            la gente de su empresa (entregas, avance, certificados) y puede
+            calificarla si tiene permiso de Open Learning. Siempre tiene cliente.
         studentType:
           type: string
           nullable: true
@@ -3280,6 +3284,13 @@ components:
         certifiedHours: { type: integer, minimum: 0 }
         maxStudents: { type: integer, minimum: 0, description: '0 = sin límite' }
         visible: { type: boolean }
+        clientId:
+          type: [string, 'null']
+          format: uuid
+          description: |
+            Exclusivo de una empresa cliente: solo se asigna a cuentas de esa
+            empresa. Es de Open Learning y no va en un laboratorio. Lo decide un
+            administrador; el curso de un LXD de una empresa nace con ella.
 
     Course:
       allOf:

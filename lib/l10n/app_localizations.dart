@@ -9307,6 +9307,156 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{cantidad, plural, =0{Sin cuentas} =1{1 cuenta} other{{cantidad} cuentas}}'**
   String clientesCuentas(int cantidad);
+
+  /// No description provided for @rolSupervisor.
+  ///
+  /// In es, this message translates to:
+  /// **'Manager / Supervisor'**
+  String get rolSupervisor;
+
+  /// No description provided for @usuariosSupervisorAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Acompaña a las personas de una empresa: ve su avance, sus entregas y quién se certificó. Solo ve a la gente de su empresa.'**
+  String get usuariosSupervisorAyuda;
+
+  /// No description provided for @usuariosSupervisorCalifica.
+  ///
+  /// In es, this message translates to:
+  /// **'Puede calificar entregas'**
+  String get usuariosSupervisorCalifica;
+
+  /// No description provided for @usuariosSupervisorCalificaAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Si está apagado, ve las entregas pero no las califica.'**
+  String get usuariosSupervisorCalificaAyuda;
+
+  /// No description provided for @supervisorPortal.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal de supervisión'**
+  String get supervisorPortal;
+
+  /// No description provided for @supervisorTabGente.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas de su empresa'**
+  String get supervisorTabGente;
+
+  /// No description provided for @supervisorTabGenteCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas'**
+  String get supervisorTabGenteCorto;
+
+  /// No description provided for @supervisorGenteSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo va cada persona en sus cursos. Toque una para ver su perfil.'**
+  String get supervisorGenteSubtitulo;
+
+  /// No description provided for @supervisorSinGente.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay personas de su empresa en la plataforma.'**
+  String get supervisorSinGente;
+
+  /// No description provided for @supervisorSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cursos asignados'**
+  String get supervisorSinCursos;
+
+  /// No description provided for @supervisorCursosTerminados.
+  ///
+  /// In es, this message translates to:
+  /// **'{terminados} de {total} cursos terminados'**
+  String supervisorCursosTerminados(int terminados, int total);
+
+  /// No description provided for @supervisorEntregasSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las entregas de las personas de su empresa.'**
+  String get supervisorEntregasSubtitulo;
+
+  /// No description provided for @supervisorCursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los cursos de las personas de su empresa. Abra uno para ver cómo va cada quien.'**
+  String get supervisorCursosSubtitulo;
+
+  /// No description provided for @supervisorSinCursosAun.
+  ///
+  /// In es, this message translates to:
+  /// **'Las personas de su empresa todavía no tienen cursos.'**
+  String get supervisorSinCursosAun;
+
+  /// No description provided for @supervisorVerAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver avance'**
+  String get supervisorVerAvance;
+
+  /// No description provided for @supervisorCertificadosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quién de su empresa se certificó.'**
+  String get supervisorCertificadosSubtitulo;
+
+  /// No description provided for @supervisorSinCertificados.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía nadie de su empresa se ha certificado.'**
+  String get supervisorSinCertificados;
+
+  /// No description provided for @lxdCursoDeEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Será un curso de Open Learning, exclusivo de {empresa}: solo se podrá asignar a su gente.'**
+  String lxdCursoDeEmpresa(String empresa);
+
+  /// No description provided for @constructorExclusivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Exclusivo de una empresa'**
+  String get constructorExclusivo;
+
+  /// No description provided for @constructorExclusivoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa'**
+  String get constructorExclusivoDe;
+
+  /// No description provided for @constructorExclusivoNinguna.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna: para cualquier estudiante'**
+  String get constructorExclusivoNinguna;
+
+  /// No description provided for @constructorExclusivoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Un curso exclusivo solo se puede asignar a las personas de esa empresa.'**
+  String get constructorExclusivoTexto;
+
+  /// No description provided for @constructorExclusivoDeSuEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Este curso es exclusivo de su empresa: solo se asigna a su gente.'**
+  String get constructorExclusivoDeSuEmpresa;
+
+  /// No description provided for @asignarDeOtraEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'De otra empresa'**
+  String get asignarDeOtraEmpresa;
+
+  /// No description provided for @asignarExclusivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Exclusivo'**
+  String get asignarExclusivo;
 }
 
 class _AppLocalizationsDelegate

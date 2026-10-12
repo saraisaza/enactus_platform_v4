@@ -1,8 +1,9 @@
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { certificates } from '../db/schema';
+import { forbidden } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
 import {
   assertCanGrade,
@@ -14,6 +15,7 @@ import {
 } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
 import { issueRutaCertificate } from '../services/certificates';
+import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
 
 export const certificateRoutes = new Hono<AppEnv>();
 certificateRoutes.use('*', requireAuth);
@@ -62,7 +64,13 @@ certificateRoutes.get('/', async (c) => {
   const targetId = query.studentId ?? (isStudentLike(user.role) ? user.id : null);
 
   if (targetId) {
-    assertSelfOr(user, targetId, ['admin', 'superadmin', 'advisor', 'mentor', 'lxd']);
+    if (user.role === 'supervisor') {
+      if (!(await supervisorAlcanza(db, user, targetId))) {
+        throw forbidden('Solo puede ver a la gente de su empresa.');
+      }
+    } else {
+      assertSelfOr(user, targetId, ['admin', 'superadmin', 'advisor', 'mentor', 'lxd']);
+    }
     const rows = await db
       .select()
       .from(certificates)
@@ -73,6 +81,17 @@ certificateRoutes.get('/', async (c) => {
 
   // Sin `studentId`, cada rol ve lo suyo: el emisor los que emitió, el
   // administrador todos.
+  if (user.role === 'supervisor') {
+    // Quién de su empresa se certificó: es una de las tres cosas que le
+    // importan, junto con el avance y las entregas.
+    const rows = await db
+      .select()
+      .from(certificates)
+      .where(sql`${certificates.studentId} in ${genteDeLaEmpresa(user.clientId)}`)
+      .orderBy(desc(certificates.issuedAt));
+    return c.json(paginated(rows, rows.length, query));
+  }
+
   const rows =
     user.role === 'admin' || user.role === 'superadmin'
       ? await db

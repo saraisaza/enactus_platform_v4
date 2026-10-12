@@ -161,6 +161,13 @@ export const users = pgTable(
     // Administración es de eduXaction: una cuenta de admin con cliente vería
     // la plataforma con la marca de una empresa y podría quedar afuera si esa
     // empresa se desactiva.
+    // Un supervisor lo es DE una empresa: sin cliente no tendría a quién ver.
+    // Se compara como texto: el valor 'supervisor' entra al tipo en la misma
+    // migración, y PostgreSQL no deja usarlo como enum en esa transacción.
+    check(
+      'users_supervisor_con_cliente',
+      sql`${t.role}::text <> 'supervisor' or ${t.clientId} is not null`,
+    ),
     check(
       'users_admins_sin_cliente',
       sql`${t.role} not in ('admin', 'superadmin') or ${t.clientId} is null`,

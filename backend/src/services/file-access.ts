@@ -4,6 +4,7 @@ import type { Database } from '../db/client';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import { isStudentLike } from '../middleware/auth';
 import type { AuthUser } from '../middleware/context';
+import { supervisorAlcanza } from './alcance-supervisor';
 
 /**
  * Quién puede LEER qué archivo.
@@ -495,6 +496,13 @@ async function assertSubmissionVisible(
        limit 1
     `);
     if (!ok) throw notFound('No encontramos ese archivo.');
+    return;
+  }
+
+  if (user.role === 'supervisor') {
+    if (!(await supervisorAlcanza(db, user, row.studentId))) {
+      throw notFound('No encontramos ese archivo.');
+    }
     return;
   }
 

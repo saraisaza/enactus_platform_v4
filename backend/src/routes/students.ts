@@ -18,6 +18,7 @@ import {
   rutaProgressFor,
 } from '../services/progress';
 import { videoProgressForCourse } from '../services/video-progress';
+import { supervisorAlcanza } from '../services/alcance-supervisor';
 
 export const studentRoutes = new Hono<AppEnv>();
 studentRoutes.use('*', requireAuth);
@@ -77,6 +78,10 @@ async function loadTarget(
       throw forbidden(
         'Solo puede ver a los estudiantes de los laboratorios que patrocina.',
       );
+    }
+  } else if (viewer.role === 'supervisor') {
+    if (!(await supervisorAlcanza(db, viewer, targetId))) {
+      throw forbidden('Solo puede ver a la gente de su empresa.');
     }
   } else {
     assertSelfOr(viewer, targetId, STAFF);

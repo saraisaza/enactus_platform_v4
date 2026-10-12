@@ -164,6 +164,7 @@ class _StudentAssignmentsDialogState extends State<_StudentAssignmentsDialog> {
               const SizedBox(height: 12),
               if (_esOpenLearning)
                 _ListaDeCursos(
+                  clientId: widget.student.clientId,
                   seleccion: _seleccion!,
                   habilitado: !_saving,
                   onToggle: _alternar,
@@ -270,11 +271,14 @@ class _ListaDeLaboratorios extends StatelessWidget {
 }
 
 class _ListaDeCursos extends StatelessWidget {
+  /// La empresa del estudiante: los cursos exclusivos de otra no se ofrecen.
+  final String? clientId;
   final Set<String> seleccion;
   final bool habilitado;
   final void Function(String id, bool marcado) onToggle;
 
   const _ListaDeCursos({
+    required this.clientId,
     required this.seleccion,
     required this.habilitado,
     required this.onToggle,
@@ -289,7 +293,16 @@ class _ListaDeCursos extends StatelessWidget {
             // Los de Open Learning primero: son los pensados para estas
             // cuentas. Los demás se pueden asignar igual —un curso de
             // laboratorio sirve suelto— pero no son lo que se busca primero.
-            final ordenados = [...cursos]..sort((a, b) {
+            // Un curso exclusivo de otra empresa no se le puede asignar (el
+            // servidor lo rechaza): no se ofrece. Si ya lo tenía, se muestra
+            // para que se pueda quitar.
+            final ordenados = cursos
+                .where((c) =>
+                    c.clientId == null ||
+                    c.clientId == clientId ||
+                    seleccion.contains(c.id))
+                .toList()
+              ..sort((a, b) {
                 if (a.isOpenLearning != b.isOpenLearning) {
                   return a.isOpenLearning ? -1 : 1;
                 }
@@ -311,7 +324,10 @@ class _ListaDeCursos extends StatelessWidget {
                     title: Text(curso.name,
                         style: const TextStyle(fontSize: 13),
                         overflow: TextOverflow.ellipsis),
-                    subtitle: _Subtitulo(curso: curso),
+                    subtitle: _Subtitulo(
+                        curso: curso,
+                        deOtraEmpresa: curso.clientId != null &&
+                            curso.clientId != clientId),
                     value: seleccion.contains(curso.id),
                     onChanged: habilitado
                         ? (v) => onToggle(curso.id, v == true)
@@ -328,8 +344,9 @@ class _ListaDeCursos extends StatelessWidget {
 /// Learning, y si el estudiante lo va a poder ver.
 class _Subtitulo extends StatelessWidget {
   final Course curso;
+  final bool deOtraEmpresa;
 
-  const _Subtitulo({required this.curso});
+  const _Subtitulo({required this.curso, this.deOtraEmpresa = false});
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +356,10 @@ class _Subtitulo extends StatelessWidget {
       children: [
         if (curso.isOpenLearning)
           _Etiqueta('Open Learning', color: AppColors.gold),
+        if (deOtraEmpresa)
+          _Etiqueta(tr.asignarDeOtraEmpresa, color: AppColors.statusCritical)
+        else if (curso.clientId != null)
+          _Etiqueta(tr.asignarExclusivo, color: AppColors.textSecondary),
         if (!visible)
           _Etiqueta(
             curso.status == 'published' ? tr.constructorOculto : tr.estadoBorrador,

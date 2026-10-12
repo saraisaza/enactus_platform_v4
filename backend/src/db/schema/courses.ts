@@ -16,6 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { softDelete, timestamps } from './_shared';
+import { clients } from './clients';
 import { competencies, odsGoals } from './catalogs';
 import {
   courseLevel,
@@ -83,6 +84,13 @@ export const courses = pgTable(
       onDelete: 'set null',
     }),
 
+    /**
+     * Curso EXCLUSIVO de una empresa cliente: solo se asigna a cuentas de esa
+     * empresa. Nulo = de eduXaction, para quien se le asigne. Los cursos de
+     * un LXD de una empresa nacen con su empresa.
+     */
+    clientId: uuid().references(() => clients.id, { onDelete: 'restrict' }),
+
     ...timestamps,
     ...softDelete,
   },
@@ -90,6 +98,13 @@ export const courses = pgTable(
     index('courses_laboratory_id_idx').on(t.laboratoryId),
     index('courses_creator_id_idx').on(t.creatorId),
     index('courses_sponsor_company_id_idx').on(t.sponsorCompanyId),
+    index('courses_client_id_idx').on(t.clientId),
+    // Los laboratorios son de Enactus: un curso de laboratorio no puede ser
+    // exclusivo de una empresa.
+    check(
+      'courses_exclusivo_sin_laboratorio',
+      sql`${t.clientId} is null or ${t.laboratoryId} is null`,
+    ),
     index('courses_status_idx').on(t.status),
     index('courses_is_open_learning_idx').on(t.isOpenLearning),
     index('courses_deleted_at_idx').on(t.deletedAt),

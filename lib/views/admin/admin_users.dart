@@ -48,6 +48,7 @@ class _AdminUsersState extends State<AdminUsers> {
         Roles.advisor,
         Roles.company,
         Roles.donor,
+        Roles.supervisor,
       ];
 
   @override
@@ -691,7 +692,8 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       return;
     }
     final esDeEmpresa =
-        Roles.isStudentLike(_role) && _tipoCuenta == _tipoEmpresa;
+        (Roles.isStudentLike(_role) && _tipoCuenta == _tipoEmpresa) ||
+            _role == Roles.supervisor;
     if (esDeEmpresa && _clientId == null) {
       setState(() => _error = ValidationError(tr.usuariosEligaEmpresa));
       return;
@@ -735,7 +737,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       // Enactus no lo mandan: el servidor las deja en Enactus.
       if (esEstudiante && _tipoCuenta != StudentType.enactus)
         'clientId': esDeEmpresa ? _clientId : null,
-      if (_role == Roles.lxd) 'clientId': _clientId,
+      if (_role == Roles.lxd || _role == Roles.supervisor) 'clientId': _clientId,
       if (_role == Roles.lxd || _role == Roles.mentor)
         'profile': {
           for (final e in _profile.entries) e.key: e.value.text.trim(),
@@ -781,6 +783,11 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           openLearning: _canGradeOpenLearning,
           enactus: _canGradeEnactus,
         );
+      }
+      // El supervisor solo califica Open Learning: los cursos de su empresa.
+      if (_role == Roles.supervisor &&
+          guardado.canGradeOpenLearning != _canGradeOpenLearning) {
+        await data.setCanGrade(guardado.id, openLearning: _canGradeOpenLearning);
       }
 
       if (!mounted) return;
@@ -916,6 +923,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         if (esEstudiante) ..._camposEstudiante(),
         if (_role == Roles.lxd) ..._camposLxd(data),
         if (_role == Roles.mentor) ..._camposMentor(data),
+        if (_role == Roles.supervisor) ..._camposSupervisor(),
         if (_role == Roles.advisor) ...[
           const SizedBox(height: 12),
           UniversityPicker(
@@ -1060,6 +1068,26 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         const SizedBox(height: 12),
         _empresaAliada(data,
             ayuda: tr.usuariosMentorEmpresa),
+      ];
+
+  List<Widget> _camposSupervisor() => [
+        const SizedBox(height: 12),
+        Text(tr.usuariosSupervisorAyuda,
+            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+        const SizedBox(height: 12),
+        _selectorDeEmpresa(opcional: false),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr.usuariosSupervisorCalifica,
+              style: const TextStyle(fontSize: 14)),
+          subtitle: Text(tr.usuariosSupervisorCalificaAyuda,
+              style: const TextStyle(fontSize: 12)),
+          value: _canGradeOpenLearning,
+          activeThumbColor: AppColors.gold,
+          onChanged: _saving
+              ? null
+              : (v) => setState(() => _canGradeOpenLearning = v),
+        ),
       ];
 
   /// La empresa cliente de la cuenta. Obligatoria para un estudiante de

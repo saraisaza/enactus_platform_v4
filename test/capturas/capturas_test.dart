@@ -1,7 +1,7 @@
 // Capturas de pantalla de toda la plataforma, para comparar antes y después.
 //
 // No es una prueba de comportamiento: es una regla para medir cambios de
-// aspecto. Toma una imagen de cada pestaña de los nueve portales en
+// aspecto. Toma una imagen de cada pestaña de los diez portales en
 // escritorio, de cada portal en teléfono, de las pantallas públicas y del
 // modo claro del estudiante, y las compara contra las de una corrida anterior.
 //
@@ -34,15 +34,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
 
 import 'package:enactus_platform/l10n/textos.dart';
+import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/utils/app_theme.dart';
 import 'package:enactus_platform/utils/constants.dart';
 import 'package:enactus_platform/utils/marca.dart';
+import 'package:enactus_platform/views/admin/admin_users.dart';
 import 'package:enactus_platform/widgets/logo_de_cliente.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
 import 'package:enactus_platform/widgets/vista_previa_marca.dart';
 
+import '../helpers/fake_api.dart';
 import '../helpers/portal_harness.dart';
 
 /// Carga todas las familias declaradas en el `FontManifest.json` del bundle
@@ -333,6 +337,79 @@ void main() {
       fijarTamano(tester, const Size(1440, 900));
       await montarComo(tester, placa: true);
       await _capturar(tester, 'empresa_logo_oscuro_con_placa');
+    });
+  });
+
+  group('el supervisor y los cursos exclusivos', () {
+    // El portal del supervisor sale en «escritorio, todas las pestañas» y en
+    // «teléfono», con los demás portales. Acá, lo que no es un portal.
+    setUp(conSesionGuardada);
+    tearDown(Marca.instancia.restablecer);
+
+    testWidgets('un LXD de una empresa crea un curso nuevo', (tester) async {
+      fijarTamano(tester, const Size(1440, 900));
+      await montar(
+        tester,
+        appDe(Roles.lxd, cambios: {
+          'clientId': '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02',
+          'client': {
+            'id': '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02',
+            'name': 'Banco Andino',
+            'logoLightPlate': false,
+            'primaryColor': '#1A73E8',
+            'secondaryColor': '#0B5394',
+            'hasLaboratories': false,
+          },
+        }),
+      );
+      await tester.tap(find.text(tr.tabMisCursos).first);
+      await _esperar(tester);
+      await tester.tap(find.text(tr.lxdNuevoCurso).first);
+      await _esperar(tester);
+      await _capturar(tester, 'lxd_empresa_nuevo_curso');
+    });
+
+    testWidgets('el admin crea un supervisor', (tester) async {
+      fijarTamano(tester, const Size(1280, 1100));
+      final api = FakeApi(routes: {
+        '/clients': {
+          'data': [
+            {'id': 'enactus', 'name': 'Enactus', 'hasLaboratories': true, 'active': true},
+            {
+              'id': '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02',
+              'name': 'Banco Andino',
+              'hasLaboratories': false,
+              'active': true,
+            },
+          ],
+        },
+      }, fallback: (_) => {'data': <Object>[]});
+      await tester.pumpWidget(ChangeNotifierProvider<DataProvider>.value(
+        value: DataProvider(api.build()),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildAppTheme(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () => showUserDialog(context,
+                      creatableRoles: const [Roles.supervisor],
+                      isSuperAdmin: false),
+                  child: const Text('abrir'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('abrir'));
+      await _esperar(tester);
+      await tester.tap(find.text(tr.usuariosEmpresaCliente));
+      await _esperar(tester);
+      await tester.tap(find.text('Banco Andino').last);
+      await _esperar(tester);
+      await _capturar(tester, 'admin_nuevo_supervisor');
     });
   });
 }

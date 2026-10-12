@@ -91,6 +91,50 @@ def tiene_datos(cuerpo):
     return cuerpo is not None
 
 
+SUPERVISORA = ("supervisora@bancoandino.co", "Supervisor123")
+
+
+def crear_supervisora(token):
+    """Una empresa de ejemplo con su supervisora; devuelve la sesión de ella.
+
+    Si ya existen (se corrió dos veces sin `db:reset`), las reutiliza.
+    """
+    correo, clave = SUPERVISORA
+    estado, cuerpo = pedir("POST", "/auth/login", cuerpo={"email": correo, "password": clave})
+    if estado == 200:
+        return cuerpo["user"]
+
+    estado, cliente = pedir(
+        "POST",
+        "/clients",
+        token,
+        {"name": "Banco Andino", "primaryColor": "#1A73E8", "secondaryColor": "#0B5394"},
+    )
+    if estado != 201:
+        print(f"  ✗ empresa de ejemplo: HTTP {estado} {cliente}", file=sys.stderr)
+        return None
+    estado, cuerpo = pedir(
+        "POST",
+        "/users",
+        token,
+        {
+            "name": "Laura Méndez",
+            "email": correo,
+            "password": clave,
+            "role": "supervisor",
+            "clientId": cliente["id"],
+        },
+    )
+    if estado != 201:
+        print(f"  ✗ supervisora de ejemplo: HTTP {estado} {cuerpo}", file=sys.stderr)
+        return None
+    estado, cuerpo = pedir("POST", "/auth/login", cuerpo={"email": correo, "password": clave})
+    if estado != 200:
+        print(f"  ✗ sesión supervisora: HTTP {estado}", file=sys.stderr)
+        return None
+    return cuerpo["user"]
+
+
 def main():
     estado, _ = pedir("GET", "/health")
     if estado != 200:
@@ -220,7 +264,16 @@ def main():
         return 1
     print(f"  ✓ /students/:id/ruta-progress  ({len(ruta_progreso['laboratories'])} labs)")
 
-    salida = pathlib.Path(__file__).resolve().parent.parent / "test/fixtures"
+    # El Manager / Supervisor es de una empresa cliente, y el sembrado no trae
+    # ninguna: las empresas las crea cada instalación. Se crea una al final
+    # —después de capturar todo lo demás, para no cambiar lo que vieron las
+    # otras cuentas— y se guarda la sesión de su supervisora.
+    usuarios["supervisor"] = crear_supervisora(tokens["superadmin"])
+    if usuarios["supervisor"] is None:
+        return 1
+    print("  ✓ sesión supervisor (empresa de ejemplo)")
+
+    salida =pathlib.Path(__file__).resolve().parent.parent / "test/fixtures"
     salida.mkdir(parents=True, exist_ok=True)
     destino = salida / "api_payloads.json"
     destino.write_text(

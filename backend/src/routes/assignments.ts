@@ -234,6 +234,27 @@ assignmentRoutes.put('/:id/courses', async (c) => {
   const courseIds = [...new Set(ids)];
   await assertExisten(db, courseIds, courses, 'Hay cursos que ya no existen.');
 
+  // Un curso exclusivo de una empresa solo va a la gente de esa empresa.
+  const ajenos =
+    courseIds.length === 0
+      ? []
+      : await db
+          .select({ id: courses.id, name: courses.name })
+          .from(courses)
+          .where(
+            and(
+              inArray(courses.id, courseIds),
+              sql`${courses.clientId} is not null
+                  and ${courses.clientId} is distinct from ${student.clientId}`,
+            ),
+          );
+  if (ajenos.length > 0) {
+    throw conflict(
+      `${ajenos.map((c) => c.name).join(', ')}: es exclusivo de otra empresa y no se puede asignar a ${student.name}.`,
+      { cursos: ajenos.map((c) => c.id) },
+    );
+  }
+
   const antes = await db
     .select({ id: studentCourses.courseId })
     .from(studentCourses)

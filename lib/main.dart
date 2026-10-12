@@ -28,6 +28,7 @@ import 'views/shared/user_detail_view.dart';
 import 'views/shared/projects_directory_view.dart' show ProjectDetailView;
 import 'views/student/course_detail_view.dart';
 import 'views/student/student_portal.dart';
+import 'views/supervisor/supervisor_portal.dart';
 import 'widgets/async_states.dart';
 
 Future<void> main() async {
@@ -281,6 +282,8 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
       page = const _RoleGuard(role: Roles.company, child: CompanyPortal());
     case AppRoutes.donor:
       page = const _RoleGuard(role: Roles.donor, child: DonorPortal());
+    case AppRoutes.supervisor:
+      page = const _RoleGuard(role: Roles.supervisor, child: SupervisorPortal());
     case String name when name.startsWith('${AppRoutes.projects}/'):
       page = _AuthGuard(
           child: ProjectDetailView(

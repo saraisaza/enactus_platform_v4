@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/textos.dart';
+import '../../models/client.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
 import '../../providers/auth_provider.dart';
@@ -507,6 +508,15 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
   bool _creating = false;
   ApiException? _error;
 
+  /// La empresa cliente de este LXD, si es de una; Enactus no cuenta: sus
+  /// cursos van por laboratorio.
+  MarcaDeCliente? get _empresa {
+    final user = context.read<AuthProvider>().currentUser;
+    final cliente = user?.client;
+    if (user?.role != 'lxd' || cliente == null) return null;
+    return cliente.hasLaboratories ? null : cliente;
+  }
+
   @override
   void dispose() {
     _name.dispose();
@@ -525,10 +535,13 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
     });
     try {
       // El id lo asigna PostgreSQL: el cliente ya no lo inventa.
+      // Un LXD de una empresa solo crea cursos de Open Learning, fuera de
+      // los laboratorios: el servidor los marca como exclusivos de su empresa.
+      final deOpenLearning = _empresa != null || _isOpenLearning;
       final course = await context.read<DataProvider>().createCourse(
             name: _name.text.trim(),
-            laboratoryId: _isOpenLearning ? null : _labId,
-            isOpenLearning: _isOpenLearning,
+            laboratoryId: deOpenLearning ? null : _labId,
+            isOpenLearning: deOpenLearning,
           );
       if (!mounted) return;
       Navigator.pop(context);
@@ -550,6 +563,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    final empresa = _empresa;
 
     return AlertDialog(
       title: Text(tr.lxdNuevoCurso, style: TextStyle(fontSize: 18)),
@@ -568,46 +582,52 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                     InputDecoration(labelText: tr.lxdNombreDelCurso),
               ),
               const SizedBox(height: 14),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(tr.lxdCursoOpenLearning,
-                    style: TextStyle(fontSize: 14)),
-                subtitle: Text(
-                    tr.lxdCursoOpenLearningTexto,
-                    style: TextStyle(fontSize: 12)),
-                value: _isOpenLearning,
-                activeThumbColor: AppColors.gold,
-                onChanged: _creating
-                    ? null
-                    : (v) => setState(() {
-                          _isOpenLearning = v;
-                          if (v) _labId = null;
-                        }),
-              ),
-              if (!_isOpenLearning) ...[
-                const SizedBox(height: 8),
-                data.laboratories.when(
-                  loading: () => const Skeleton(height: 48),
-                  error: (_) => Text(
-                      tr.lxdLabsNoCargan,
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 12.5)),
-                  data: (labs) => DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: _labId,
-                    decoration: InputDecoration(
-                        labelText: tr.lxdLaboratorioOpcional),
-                    items: [
-                      DropdownMenuItem(
-                          value: null, child: Text(tr.lxdSinAsignarAun)),
-                      for (final lab in labs)
-                        DropdownMenuItem(
-                            value: lab.id, child: Text(lab.name)),
-                    ],
-                    onChanged:
-                        _creating ? null : (v) => setState(() => _labId = v),
-                  ),
+              if (empresa != null)
+                Text(tr.lxdCursoDeEmpresa(empresa.name),
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 13))
+              else ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr.lxdCursoOpenLearning,
+                      style: TextStyle(fontSize: 14)),
+                  subtitle: Text(
+                      tr.lxdCursoOpenLearningTexto,
+                      style: TextStyle(fontSize: 12)),
+                  value: _isOpenLearning,
+                  activeThumbColor: AppColors.gold,
+                  onChanged: _creating
+                      ? null
+                      : (v) => setState(() {
+                            _isOpenLearning = v;
+                            if (v) _labId = null;
+                          }),
                 ),
+                if (!_isOpenLearning) ...[
+                  const SizedBox(height: 8),
+                  data.laboratories.when(
+                    loading: () => const Skeleton(height: 48),
+                    error: (_) => Text(
+                        tr.lxdLabsNoCargan,
+                        style: TextStyle(
+                            color: AppColors.textMuted, fontSize: 12.5)),
+                    data: (labs) => DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      initialValue: _labId,
+                      decoration: InputDecoration(
+                          labelText: tr.lxdLaboratorioOpcional),
+                      items: [
+                        DropdownMenuItem(
+                            value: null, child: Text(tr.lxdSinAsignarAun)),
+                        for (final lab in labs)
+                          DropdownMenuItem(
+                              value: lab.id, child: Text(lab.name)),
+                      ],
+                      onChanged:
+                          _creating ? null : (v) => setState(() => _labId = v),
+                    ),
+                  ),
+                ],
               ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -823,8 +843,20 @@ class _CourseAdminCard extends StatelessWidget {
 // Calificaciones
 // ---------------------------------------------------------------------------
 
+/// La pestaña de calificaciones, para otro portal que la comparte (el del
+/// Supervisor de una empresa). Qué entregas trae lo decide el servidor según
+/// quién pregunta: acá no se filtra nada.
+class VistaDeCalificaciones extends StatelessWidget {
+  final String? subtitulo;
+  const VistaDeCalificaciones({super.key, this.subtitulo});
+
+  @override
+  Widget build(BuildContext context) => _LxdGrading(subtitulo: subtitulo);
+}
+
 class _LxdGrading extends StatelessWidget {
-  const _LxdGrading();
+  final String? subtitulo;
+  const _LxdGrading({this.subtitulo});
 
   @override
   Widget build(BuildContext context) {
@@ -836,7 +868,7 @@ class _LxdGrading extends StatelessWidget {
 
     return TabBody(
       title: tr.tabCalificaciones,
-      subtitle: tr.lxdCalificacionesSubtitulo,
+      subtitle: subtitulo ?? tr.lxdCalificacionesSubtitulo,
       children: [
         // El permiso lo decide el Admin y lo verifica el servidor. Acá solo
         // se explica por qué no hay nada que hacer.

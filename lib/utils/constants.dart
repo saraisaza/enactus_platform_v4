@@ -32,6 +32,10 @@ class Roles {
   static const company = 'company';
   static const donor = 'donor';
 
+  /// Manager / Supervisor de una empresa cliente: ve a la gente de su
+  /// empresa —entregas, avance, certificados— y puede calificarla.
+  static const supervisor = 'supervisor';
+
   static const all = [
     superAdmin,
     admin,
@@ -42,6 +46,7 @@ class Roles {
     student,
     alumni,
     mentor,
+    supervisor,
   ];
 
   /// Un Alumni tiene exactamente los mismos accesos y permisos que un
@@ -61,6 +66,7 @@ class Roles {
         advisor => tr.rolAsesorAcademico,
         company => tr.rolEmpresa,
         donor => tr.rolDonante,
+        supervisor => tr.rolSupervisor,
         _ => role,
       };
 }
@@ -77,6 +83,7 @@ class AppRoutes {
   static const advisor = '/advisor';
   static const company = '/company';
   static const donor = '/donor';
+  static const supervisor = '/supervisor';
   static const projects = '/proyectos';
   static const courses = '/cursos';
 
@@ -101,6 +108,7 @@ class AppRoutes {
         Roles.advisor => advisor,
         Roles.company => company,
         Roles.donor => donor,
+        Roles.supervisor => supervisor,
         _ => landing,
       };
 }

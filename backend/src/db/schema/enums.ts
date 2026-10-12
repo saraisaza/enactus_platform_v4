@@ -25,6 +25,9 @@ export const userRole = pgEnum('user_role', [
   'company',
   'student',
   'alumni',
+  // Manager / Supervisor de una empresa cliente: ve a la gente de su empresa,
+  // sus entregas, su avance y quién se certificó, y puede calificar.
+  'supervisor',
 ]);
 
 /**

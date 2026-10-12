@@ -2868,5 +2868,47 @@
         "type": "int"
       }
     }
-  }
+  },
+  "rolSupervisor": "Manager / Supervisor",
+  "usuariosSupervisorAyuda": "Acompaña a las personas de una empresa: ve su avance, sus entregas y quién se certificó. Solo ve a la gente de su empresa.",
+  "usuariosSupervisorCalifica": "Puede calificar entregas",
+  "usuariosSupervisorCalificaAyuda": "Si está apagado, ve las entregas pero no las califica.",
+  "supervisorPortal": "Portal de supervisión",
+  "supervisorTabGente": "Personas de su empresa",
+  "supervisorTabGenteCorto": "Personas",
+  "supervisorGenteSubtitulo": "Cómo va cada persona en sus cursos. Toque una para ver su perfil.",
+  "supervisorSinGente": "Todavía no hay personas de su empresa en la plataforma.",
+  "supervisorSinCursos": "Sin cursos asignados",
+  "supervisorCursosTerminados": "{terminados} de {total} cursos terminados",
+  "@supervisorCursosTerminados": {
+    "placeholders": {
+      "terminados": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "supervisorEntregasSubtitulo": "Las entregas de las personas de su empresa.",
+  "supervisorCursosSubtitulo": "Los cursos de las personas de su empresa. Abra uno para ver cómo va cada quien.",
+  "supervisorSinCursosAun": "Las personas de su empresa todavía no tienen cursos.",
+  "supervisorVerAvance": "Ver avance",
+  "supervisorCertificadosSubtitulo": "Quién de su empresa se certificó.",
+  "supervisorSinCertificados": "Todavía nadie de su empresa se ha certificado.",
+  "lxdCursoDeEmpresa": "Será un curso de Open Learning, exclusivo de {empresa}: solo se podrá asignar a su gente.",
+  "@lxdCursoDeEmpresa": {
+    "placeholders": {
+      "empresa": {
+        "type": "String"
+      }
+    }
+  },
+  "constructorExclusivo": "Exclusivo de una empresa",
+  "constructorExclusivoDe": "Empresa",
+  "constructorExclusivoNinguna": "Ninguna: para cualquier estudiante",
+  "constructorExclusivoTexto": "Un curso exclusivo solo se puede asignar a las personas de esa empresa.",
+  "constructorExclusivoDeSuEmpresa": "Este curso es exclusivo de su empresa: solo se asigna a su gente.",
+  "asignarDeOtraEmpresa": "De otra empresa",
+  "asignarExclusivo": "Exclusivo"
 }

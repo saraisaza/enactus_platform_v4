@@ -48,11 +48,16 @@ adminRoutes.patch('/users/:id/can-grade', async (c) => {
     .limit(1);
   if (!target) throw notFound('No se encontró el usuario.');
 
-  if (target.role !== 'lxd') {
+  if (target.role !== 'lxd' && target.role !== 'supervisor') {
     throw conflict(
-      'El permiso de calificar solo aplica a cuentas LXD. Admin y superadmin califican sin él.',
+      'El permiso de calificar solo aplica a cuentas LXD y supervisores. Admin y superadmin califican sin él.',
       { role: target.role },
     );
+  }
+  // El supervisor es de una empresa: califica cursos de Open Learning, nunca
+  // los de Enactus.
+  if (target.role === 'supervisor' && body.canGradeEnactus === true) {
+    throw conflict('Un supervisor califica cursos de su empresa, que son de Open Learning.');
   }
 
   const before = {

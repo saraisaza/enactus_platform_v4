@@ -1535,6 +1535,10 @@ class Course {
   final bool visible;
   final String? sponsorCompanyId;
 
+  /// Exclusivo de una empresa cliente: solo se asigna a cuentas de esa
+  /// empresa. `null` = de eduXaction, para quien se le asigne.
+  final String? clientId;
+
   /// Solo con `?include=modules` (y `lessons` para las lecciones).
   final List<CourseModule> modules;
 
@@ -1587,6 +1591,7 @@ class Course {
     this.maxStudents = 0,
     this.visible = true,
     this.sponsorCompanyId,
+    this.clientId,
     this.modules = const [],
     this.laboratoryName,
     this.creatorName,
@@ -1643,6 +1648,7 @@ class Course {
         maxStudents: (j['maxStudents'] as num?)?.toInt() ?? 0,
         visible: (j['visible'] as bool?) ?? true,
         sponsorCompanyId: j['sponsorCompanyId'] as String?,
+        clientId: j['clientId'] as String?,
         modules: (j['modules'] as List? ?? const [])
             .map((e) =>
                 CourseModule.fromJson(Map<String, dynamic>.from(e as Map)))

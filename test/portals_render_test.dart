@@ -54,7 +54,7 @@ import 'helpers/portal_harness.dart';
 /// Mínimo de textos que tiene que dibujar el cuerpo de una pestaña.
 ///
 /// El número sale de medir, no de estimar: recorriendo las 63 pestañas de los
-/// nueve portales, la más escueta ("Recursos Comunicaciones" del Mentor,
+/// diez portales, la más escueta ("Recursos Comunicaciones" del Mentor,
 /// "Certificados" del Estudiante) dibuja 3 y la más cargada cientos. Una
 /// pestaña en blanco dibuja 0.
 ///
@@ -146,7 +146,7 @@ void main() {
           of: find.byType(PortalShell), matching: find.byType(ListView));
       expect(barra, findsWidgets,
           reason: 'No se encontró la barra lateral de ${Roles.label(role)}. '
-              'Antes esto era un `return` y las nueve pruebas de pestañas '
+              'Antes esto era un `return` y las diez pruebas de pestañas '
               'pasaban sin tocar ninguna.');
 
       final rotulos = rotulosDeBarraLateral(tester, barra);

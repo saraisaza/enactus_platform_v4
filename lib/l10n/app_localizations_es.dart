@@ -5521,4 +5521,95 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get rolSupervisor => 'Manager / Supervisor';
+
+  @override
+  String get usuariosSupervisorAyuda =>
+      'Acompaña a las personas de una empresa: ve su avance, sus entregas y quién se certificó. Solo ve a la gente de su empresa.';
+
+  @override
+  String get usuariosSupervisorCalifica => 'Puede calificar entregas';
+
+  @override
+  String get usuariosSupervisorCalificaAyuda =>
+      'Si está apagado, ve las entregas pero no las califica.';
+
+  @override
+  String get supervisorPortal => 'Portal de supervisión';
+
+  @override
+  String get supervisorTabGente => 'Personas de su empresa';
+
+  @override
+  String get supervisorTabGenteCorto => 'Personas';
+
+  @override
+  String get supervisorGenteSubtitulo =>
+      'Cómo va cada persona en sus cursos. Toque una para ver su perfil.';
+
+  @override
+  String get supervisorSinGente =>
+      'Todavía no hay personas de su empresa en la plataforma.';
+
+  @override
+  String get supervisorSinCursos => 'Sin cursos asignados';
+
+  @override
+  String supervisorCursosTerminados(int terminados, int total) {
+    return '$terminados de $total cursos terminados';
+  }
+
+  @override
+  String get supervisorEntregasSubtitulo =>
+      'Las entregas de las personas de su empresa.';
+
+  @override
+  String get supervisorCursosSubtitulo =>
+      'Los cursos de las personas de su empresa. Abra uno para ver cómo va cada quien.';
+
+  @override
+  String get supervisorSinCursosAun =>
+      'Las personas de su empresa todavía no tienen cursos.';
+
+  @override
+  String get supervisorVerAvance => 'Ver avance';
+
+  @override
+  String get supervisorCertificadosSubtitulo =>
+      'Quién de su empresa se certificó.';
+
+  @override
+  String get supervisorSinCertificados =>
+      'Todavía nadie de su empresa se ha certificado.';
+
+  @override
+  String lxdCursoDeEmpresa(String empresa) {
+    return 'Será un curso de Open Learning, exclusivo de $empresa: solo se podrá asignar a su gente.';
+  }
+
+  @override
+  String get constructorExclusivo => 'Exclusivo de una empresa';
+
+  @override
+  String get constructorExclusivoDe => 'Empresa';
+
+  @override
+  String get constructorExclusivoNinguna =>
+      'Ninguna: para cualquier estudiante';
+
+  @override
+  String get constructorExclusivoTexto =>
+      'Un curso exclusivo solo se puede asignar a las personas de esa empresa.';
+
+  @override
+  String get constructorExclusivoDeSuEmpresa =>
+      'Este curso es exclusivo de su empresa: solo se asigna a su gente.';
+
+  @override
+  String get asignarDeOtraEmpresa => 'De otra empresa';
+
+  @override
+  String get asignarExclusivo => 'Exclusivo';
 }

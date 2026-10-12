@@ -91,7 +91,13 @@ async function loadTarget(
     .from(users)
     .where(and(eq(users.id, targetId), isNull(users.deletedAt)))
     .limit(1);
-  if (!target || !isStudentLike(target.role)) {
+  // De otro cliente es lo mismo que no existir: un 403 acá confirmaría que
+  // esa persona existe, y quien pregunta podría ir probando ids.
+  if (
+    !target ||
+    !isStudentLike(target.role) ||
+    (viewer.clientId && target.id !== viewer.id && target.clientId !== viewer.clientId)
+  ) {
     throw notFound('No se encontró el estudiante.');
   }
   return target;

@@ -5,6 +5,7 @@ import { users } from '../db/schema';
 import { forbidden, unauthorized } from '../lib/errors';
 import { verifyAccessToken } from '../lib/jwt';
 import { exigirClienteActivo } from '../services/cliente-de-cuenta';
+import { exigirLadoEnactus } from '../services/frontera-de-cliente';
 import type { AppEnv, AuthUser } from './context';
 
 /**
@@ -158,7 +159,9 @@ export function assertSelfOr(
 
 /**
  * Bloquea a los estudiantes de Open Learning en todo lo que es exclusivo de
- * Enactus: laboratorios, fases, Ruta de Impacto, proyectos, grupos, foro.
+ * Enactus: laboratorios, fases, Ruta de Impacto, proyectos, grupos, foro. Y a
+ * toda cuenta de una empresa cliente, del rol que sea: su LXD o su supervisor
+ * no son estudiantes, pero tampoco son de Enactus.
  *
  * Devuelve 403, nunca una respuesta vacía: una respuesta vacía haría ver un
  * bug de permisos como si fuera "no hay datos".
@@ -173,5 +176,6 @@ export const requireEnactus = createMiddleware<AppEnv>(async (c, next) => {
       'Su cuenta es de Open Learning: no incluye laboratorios ni Ruta de Impacto.',
     );
   }
+  await exigirLadoEnactus(c.get('db'), user);
   await next();
 });

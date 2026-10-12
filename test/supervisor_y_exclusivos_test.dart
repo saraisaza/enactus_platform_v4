@@ -25,6 +25,7 @@ import 'package:enactus_platform/utils/marca.dart';
 import 'package:enactus_platform/views/admin/admin_users.dart';
 import 'package:enactus_platform/views/admin/student_assignments_dialog.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
+import 'package:enactus_platform/views/lxd/course_editor_view.dart';
 
 import 'helpers/fake_api.dart';
 import 'helpers/portal_harness.dart';
@@ -274,6 +275,54 @@ void main() {
       await _pasos(tester);
       expect(find.text(tr.lxdCursoOpenLearning), findsOneWidget);
       expect(find.textContaining('Banco Andino'), findsNothing);
+    });
+  });
+
+  group('una cuenta de empresa no pide lo que es de Enactus', () {
+    // Laboratorios, proyectos y equipos: el servidor se los niega a una
+    // cuenta de empresa (etapa 5). Si la app los pidiera igual, la pestaña
+    // mostraría un error en vez de no estar.
+    bool esDeEnactus(String pedido) =>
+        RegExp(r' /(laboratories|projects|groups)(/|$)').hasMatch(pedido);
+
+    Future<FakeApi> recorrer(WidgetTester tester, String rol) async {
+      fijarTamano(tester, const Size(1440, 900));
+      late FakeApi api;
+      await montar(
+        tester,
+        appDe(rol, cambios: _marcaAndino(), conApi: (falsa) => api = falsa),
+      );
+      final barra = find.descendant(
+          of: find.byType(PortalShell), matching: find.byType(ListView));
+      for (final rotulo in rotulosDeBarraLateral(tester, barra)) {
+        await tester.tap(
+            find.descendant(of: barra.first, matching: find.text(rotulo)).first,
+            warnIfMissed: false);
+        await _pasos(tester);
+      }
+      return api;
+    }
+
+    testWidgets('el LXD de la empresa, en todo su portal y en el editor',
+        (tester) async {
+      final api = await recorrer(tester, Roles.lxd);
+      expect(find.text(tr.tabProyectosCorto), findsNothing);
+      expect(find.text(tr.tabCertificaciones), findsNothing);
+
+      await tester.tap(find.text(tr.tabMisCursos).first);
+      await _pasos(tester);
+      await tester.tap(find.text(tr.lxdConstructor).first);
+      await _pasos(tester);
+      expect(find.byType(CourseEditorView), findsOneWidget);
+
+      expect(api.requested.where(esDeEnactus), isEmpty,
+          reason: 'pidió: ${api.requested.where(esDeEnactus).toSet()}');
+    });
+
+    testWidgets('el supervisor, en todo su portal', (tester) async {
+      final api = await recorrer(tester, Roles.supervisor);
+      expect(api.requested.where(esDeEnactus), isEmpty,
+          reason: 'pidió: ${api.requested.where(esDeEnactus).toSet()}');
     });
   });
 }

@@ -13,6 +13,7 @@ import {
 } from '../db/schema';
 import { limitedUser, publicUser } from '../lib/dto';
 import { genteDeLaEmpresa } from '../services/alcance-supervisor';
+import { delMismoCliente } from '../services/frontera-de-cliente';
 import { clienteParaCuenta } from '../services/cliente-de-cuenta';
 import { resolverUniversidad } from '../services/universidad';
 import { conflict, forbidden, notFound } from '../lib/errors';
@@ -83,7 +84,7 @@ const listQuery = paginationSchema.extend({
  * Cada regla es la MISMA que ya usa el resto de la API para ese rol, para que
  * no haya dos definiciones de "mis estudiantes" que puedan discrepar.
  */
-function scopeFor(user: AuthUser) {
+function alcanceDelRol(user: AuthUser) {
   const alive = isNull(users.deletedAt);
 
   if (user.role === 'admin' || user.role === 'superadmin') return alive;
@@ -161,6 +162,19 @@ function scopeFor(user: AuthUser) {
   // Estudiante y alumni: no tienen directorio de personas. Su equipo llega
   // dentro del proyecto, con el rol de cada integrante.
   return SIN_DIRECTORIO;
+}
+
+/**
+ * El alcance de cada rol, sin cruzar de un cliente a otro.
+ *
+ * La regla del rol puede ser ancha —«los de mi universidad» incluía a la
+ * estudiante de una empresa que estudia ahí—; la frontera de cliente va
+ * encima (ver `services/frontera-de-cliente.ts`).
+ */
+function scopeFor(user: AuthUser) {
+  const alcance = alcanceDelRol(user);
+  if (typeof alcance === 'symbol') return alcance;
+  return and(alcance, delMismoCliente(user, users.id))!;
 }
 
 /** Marcas para los dos casos que NO son un filtro. Ver `Alcance` arriba. */

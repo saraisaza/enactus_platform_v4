@@ -16,7 +16,8 @@ El trabajo va por etapas, cada una probada en staging antes de la siguiente:
    desactivado deja afuera.
 4. **Manager / Supervisor y cursos exclusivos** — hecha: el portal del
    supervisor, cursos que solo se asignan a la gente de una empresa.
-5. Blindaje (aislamiento entre clientes) y producción.
+5. **Frontera entre clientes** — hecha: ninguna cuenta alcanza a personas de
+   otro cliente. Falta pasar a producción.
 6. Certificados con molde, para toda la plataforma.
 
 ## Cómo funciona el color
@@ -185,7 +186,48 @@ el diálogo de asignar ni lo ofrece. Reglas:
 - De qué empresa es un curso lo cambia solo un administrador, en el editor
   del curso (Restricciones → «Exclusivo de una empresa»).
 
-**Lo que falta, para la etapa 5.** Hoy el asesor, el mentor y el LXD pueden
-llegar por id a estudiantes de cualquier cliente; el blindaje entre clientes
-cierra esas puertas antes de producción. Los certificados de curso no existen
-todavía (solo los de la Ruta): llegan con la etapa 6.
+Los certificados de curso no existen todavía (solo los de la Ruta): llegan
+con la etapa 6.
+
+## La frontera entre clientes (etapa 5)
+
+**La regla.** Una cuenta que pertenece a un cliente —Enactus o una empresa—
+solo alcanza a personas de ESE cliente. Las cuentas sin cliente (la
+administración y los LXD de eduXaction) atienden a todos.
+
+Está en un solo lugar, `backend/src/services/frontera-de-cliente.ts`, y va
+ENCIMA de la regla de cada rol: el asesor sigue viendo «a los de su
+universidad», el mentor «a los de sus laboratorios», pero ninguno cruza a otro
+cliente aunque su regla lo alcance. Las puertas que la aplican:
+
+| Puerta | De otro cliente |
+|---|---|
+| Directorio y ficha (`/users`) | No aparece; la ficha da 404 |
+| Avance y Ruta (`/students/:id/...`) | 404 |
+| Certificados de una persona | 404 |
+| Entregas: lista, calificar, comentar (mentor) | No aparecen; 404 |
+| Archivos de una entrega | 404 |
+| Seguimiento de un curso: lista y cifras | No aparece; el asesor no abre el curso |
+| Avisos (`POST /notifications`) | 403 |
+
+De otro cliente responde 404, igual que si no existiera: un 403 confirmaría
+que esa persona existe.
+
+**Lo que es de Enactus.** Laboratorios, proyectos, equipos y la Ruta de
+Impacto: `requireEnactus` ya cortaba a los estudiantes de Open Learning, y
+ahora corta además a toda cuenta de una empresa, del rol que sea (su LXD, su
+supervisor). En la app, el LXD de una empresa no tiene las pestañas
+«Proyectos» ni «Certificaciones».
+
+**Lo que se arregló de paso.** Un mentor podía reescribir el comentario de
+CUALQUIER entrega de la plataforma (`POST /submissions/:id/review` no miraba
+de quién era): ahora comenta solo las de su lista.
+
+**Un cambio visible.** Un asesor de Enactus ya no ve a estudiantes de Open
+Learning sin empresa de su universidad: Enactus es un cliente más, y su gente
+es la de Enactus.
+
+Las pruebas: `backend/tests/frontera-entre-clientes.test.ts` (cada puerta,
+desde los dos lados, y que cada quien conserve lo suyo) y, en la app,
+`test/supervisor_y_exclusivos_test.dart` (una cuenta de empresa recorre su
+portal y el editor sin pedir nada de Enactus).

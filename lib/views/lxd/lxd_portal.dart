@@ -33,6 +33,10 @@ class LxdPortal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Un LXD de una empresa no tiene proyectos ni certificados de Ruta: son
+    // de Enactus.
+    final deEmpresa =
+        context.watch<AuthProvider>().currentUser?.esDeEmpresa ?? false;
     return PortalShell(
       portalTitle: tr.lxdPortal,
       tabs: [
@@ -42,10 +46,11 @@ class LxdPortal extends StatelessWidget {
             destacada: true,
             icon: Icons.groups_outlined,
             builder: (_) => const _LxdStudents()),
-        PortalTab(
-            label: tr.tabProyectosCorto,
-            icon: Icons.lightbulb_outline,
-            builder: (_) => const _LxdProjects()),
+        if (!deEmpresa)
+          PortalTab(
+              label: tr.tabProyectosCorto,
+              icon: Icons.lightbulb_outline,
+              builder: (_) => const _LxdProjects()),
         PortalTab(
             label: tr.tabCalendario,
             destacada: true,
@@ -63,10 +68,11 @@ class LxdPortal extends StatelessWidget {
             destacada: true,
             icon: Icons.grading_outlined,
             builder: (_) => const _LxdGrading()),
-        PortalTab(
-            label: tr.tabCertificaciones,
-            icon: Icons.workspace_premium_outlined,
-            builder: (_) => const _LxdCertificates()),
+        if (!deEmpresa)
+          PortalTab(
+              label: tr.tabCertificaciones,
+              icon: Icons.workspace_premium_outlined,
+              builder: (_) => const _LxdCertificates()),
         PortalTab(
             label: tr.tabMiPerfil,
             shortLabel: tr.tabPerfilCorto,
@@ -512,9 +518,8 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
   /// cursos van por laboratorio.
   MarcaDeCliente? get _empresa {
     final user = context.read<AuthProvider>().currentUser;
-    final cliente = user?.client;
-    if (user?.role != 'lxd' || cliente == null) return null;
-    return cliente.hasLaboratories ? null : cliente;
+    if (user?.role != 'lxd' || !user!.esDeEmpresa) return null;
+    return user.client;
   }
 
   @override

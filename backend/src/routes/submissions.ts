@@ -23,6 +23,7 @@ import {
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
+import { delMismoCliente, mismoCliente } from '../services/frontera-de-cliente';
 
 export const submissionRoutes = new Hono<AppEnv>();
 submissionRoutes.use('*', requireAuth);
@@ -124,18 +125,7 @@ submissionRoutes.get('/', async (c) => {
                                        where c.creator_id = ${user.id})`,
     );
   } else if (user.role === 'mentor') {
-    filters.push(
-      sql`(case when exists (select 1 from mentor_review_courses m
-                              where m.mentor_id = ${user.id})
-             then ${submissions.courseId} in (select m.course_id from mentor_review_courses m
-                                               where m.mentor_id = ${user.id})
-             else ${submissions.courseId} in (
-                    select c.id from courses c
-                     where c.laboratory_id in (select lm.laboratory_id
-                                                 from laboratory_mentors lm
-                                                where lm.user_id = ${user.id}))
-           end)`,
-    );
+    filters.push(entregasDelMentor(user));
   } else if (user.role === 'advisor') {
     filters.push(
       sql`${submissions.studentId} in (select u.id from users u
@@ -148,6 +138,9 @@ submissionRoutes.get('/', async (c) => {
     // Empresa y Donante no ven entregas.
     return c.json(paginated([], 0, query));
   }
+  // Y nunca las de otro cliente, aunque la regla del rol alcance (el asesor
+  // ve «los de su universidad», y ahí puede estudiar gente de una empresa).
+  filters.push(delMismoCliente(user, submissions.studentId));
 
   if (query.courseId) filters.push(eq(submissions.courseId, query.courseId));
   if (query.studentId) filters.push(eq(submissions.studentId, query.studentId));
@@ -312,6 +305,9 @@ submissionRoutes.post('/:id/grade', requireCanGrade, async (c) => {
   if (user.role === 'supervisor' && !(await supervisorAlcanza(db, user, submission.studentId))) {
     throw forbidden('Solo puede calificar entregas de la gente de su empresa.');
   }
+  if (!(await mismoCliente(db, user, submission.studentId))) {
+    throw notFound('No se encontró la entrega.');
+  }
 
   assertGradeInRange(parsed.gradingMode, parsed.grade);
 
@@ -377,6 +373,22 @@ submissionRoutes.post('/:id/review', async (c) => {
   const { feedback } = reviewBody.parse(await c.req.json());
   const db = c.get('db');
   const submission = await loadSubmission(db, c.req.param('id'));
+  // El mentor comenta lo que ve en su lista, y nada más: antes podía
+  // reescribir el comentario de CUALQUIER entrega de la plataforma.
+  if (user.role === 'mentor') {
+    const [enSuLista] = await db
+      .select({ id: submissions.id })
+      .from(submissions)
+      .where(
+        and(
+          eq(submissions.id, submission.id),
+          entregasDelMentor(user),
+          delMismoCliente(user, submissions.studentId),
+        ),
+      )
+      .limit(1);
+    if (!enSuLista) throw notFound('No se encontró la entrega.');
+  }
 
   const [updated] = await db
     .update(submissions)
@@ -433,6 +445,24 @@ submissionRoutes.delete('/:id', async (c) => {
 // ---------------------------------------------------------------------------
 
 type Db = AppEnv['Variables']['db'];
+
+/**
+ * Las entregas que revisa un mentor: las de los cursos que tiene asignados
+ * para revisar; si no tiene ninguno asignado, las de los cursos de sus
+ * laboratorios (regla `reviewableCoursesForMentor`).
+ */
+function entregasDelMentor(user: AuthUser) {
+  return sql`(case when exists (select 1 from mentor_review_courses m
+                                 where m.mentor_id = ${user.id})
+                then ${submissions.courseId} in (select m.course_id from mentor_review_courses m
+                                                  where m.mentor_id = ${user.id})
+                else ${submissions.courseId} in (
+                       select c.id from courses c
+                        where c.laboratory_id in (select lm.laboratory_id
+                                                    from laboratory_mentors lm
+                                                   where lm.user_id = ${user.id}))
+              end)`;
+}
 
 async function loadSubmission(db: Db, id: string) {
   const [row] = await db

@@ -147,6 +147,11 @@ class AppUser {
   bool get isEnactusStudent => studentType == StudentType.enactus;
   bool get isOpenLearning => studentType == StudentType.openLearning;
 
+  /// La cuenta es de una EMPRESA cliente (un cliente sin laboratorios).
+  /// Laboratorios, proyectos, equipos y la Ruta son de Enactus: el servidor
+  /// se los niega, y la app no los ofrece.
+  bool get esDeEmpresa => client != null && !client!.hasLaboratories;
+
   /// Valor del perfil libre, o cadena vacía. Evita repetir el cast.
   String profileField(String key) => (profile[key] as String?) ?? '';
 

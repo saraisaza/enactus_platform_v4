@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { certificates } from '../db/schema';
-import { forbidden } from '../lib/errors';
+import { forbidden, notFound } from '../lib/errors';
 import { paginated, paginationSchema } from '../lib/pagination';
 import {
   assertCanGrade,
@@ -16,6 +16,7 @@ import {
 import type { AppEnv } from '../middleware/context';
 import { issueRutaCertificate } from '../services/certificates';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
+import { mismoCliente } from '../services/frontera-de-cliente';
 
 export const certificateRoutes = new Hono<AppEnv>();
 certificateRoutes.use('*', requireAuth);
@@ -70,6 +71,10 @@ certificateRoutes.get('/', async (c) => {
       }
     } else {
       assertSelfOr(user, targetId, ['admin', 'superadmin', 'advisor', 'mentor', 'lxd']);
+    }
+    // De otro cliente es lo mismo que no existir.
+    if (!(await mismoCliente(db, user, targetId))) {
+      throw notFound('No se encontró el estudiante.');
     }
     const rows = await db
       .select()

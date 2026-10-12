@@ -7,6 +7,7 @@ import { forbidden, notFound } from '../lib/errors';
 import { currentUser, requireAuth } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import { genteDeLaEmpresa } from '../services/alcance-supervisor';
+import { delMismoCliente } from '../services/frontera-de-cliente';
 
 /**
  * Seguimiento de un curso: quiénes lo cursan, cómo van y las notas privadas
@@ -65,13 +66,16 @@ async function loadTrackableCourse(
   }
 
   if (user.role === 'advisor' && user.university) {
-    // Un asesor sigue a los de su universidad: le sirve si alguno cursa esto.
+    // Un asesor sigue a los de su universidad —y de su cliente: en la misma
+    // universidad puede estudiar gente de una empresa—, y le sirve el curso
+    // si alguno de ellos lo cursa.
     const [ok] = await db.execute<{ ok: number }>(sql`
       select 1 as ok
         from student_course_access a
         join users u on u.id = a.student_id
        where a.course_id = ${course.id}
          and u.university = ${user.university}
+         and ${delMismoCliente(user, sql`u.id`)}
        limit 1
     `);
     if (ok) return course;
@@ -151,6 +155,9 @@ courseTrackingRoutes.get('/:id/students', async (c) => {
      where a.course_id = ${course.id}
        and (${user.role !== 'supervisor'}
             or u.id in ${genteDeLaEmpresa(user.clientId)})
+       -- Un curso general lo cursa gente de varios clientes: cada quien ve
+       -- a los del suyo (ver services/frontera-de-cliente.ts).
+       and ${delMismoCliente(user, sql`u.id`)}
      order by u.name
   `);
 
@@ -203,15 +210,19 @@ courseTrackingRoutes.get('/:id/stats', async (c) => {
            (select avg(s.grade)::text from submissions s
              where s.course_id = ${course.id}
                and s.graded_at is not null
-               and s.deleted_at is null)                        as "avgGrade",
+               and s.deleted_at is null
+               and ${delMismoCliente(user, sql`s.student_id`)})  as "avgGrade",
            (select count(*)::int from submissions s
              where s.course_id = ${course.id}
                and s.graded_at is null
-               and s.deleted_at is null)                        as pending
+               and s.deleted_at is null
+               and ${delMismoCliente(user, sql`s.student_id`)})  as pending
       from student_course_access a
       left join course_progress cp
              on cp.student_id = a.student_id and cp.course_id = a.course_id
      where a.course_id = ${course.id}
+       -- Las cifras, de la misma gente que muestra la lista.
+       and ${delMismoCliente(user, sql`a.student_id`)}
   `);
 
   return c.json({
@@ -258,6 +269,7 @@ courseTrackingRoutes.put('/:id/students/:studentId/note', async (c) => {
   const [enrolled] = await db.execute<{ ok: number }>(sql`
     select 1 as ok from student_course_access
      where course_id = ${course.id} and student_id = ${studentId}
+       and ${delMismoCliente(user, sql`student_id`)}
      limit 1
   `);
   if (!enrolled) {

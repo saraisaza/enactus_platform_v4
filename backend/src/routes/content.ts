@@ -20,6 +20,7 @@ import {
   requireRole,
 } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
+import { delMismoCliente } from '../services/frontera-de-cliente';
 
 // ---------------------------------------------------------------------------
 // Evidencias de impacto (Donante)
@@ -506,6 +507,7 @@ async function notifiableUserIds(
      where u.deleted_at is null
        and u.id = any(${sql.param(ids)}::uuid[])
        and (${alcancePropio} or ${porTalento})
+       and ${delMismoCliente(sender, sql`u.id`)}
   `);
   return rows.map((r) => r.id);
 }

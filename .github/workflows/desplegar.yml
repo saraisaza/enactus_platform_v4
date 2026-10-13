@@ -117,6 +117,13 @@ jobs:
     name: Desplegar a staging
     needs: construir
     runs-on: ubuntu-latest
+    # develop y main despliegan los DOS a staging, y la cola de arriba es por
+    # rama: subidas a la vez, las dos corridas actualizaban la misma Lambda al
+    # mismo tiempo y una fallaba en «Publicar la API» (pasó el 2026-10-13, y
+    # producción quedó sin desplegar). Esta cola es del ENTORNO: se esperan.
+    concurrency:
+      group: entorno-staging
+      cancel-in-progress: false
     environment:
       name: staging
       url: https://staging.eduxaction.com
@@ -146,6 +153,8 @@ jobs:
       #    borrar rompe ahí. Ver "Migraciones compatibles" en RUNBOOK.md.
       - name: Migraciones sobre enactus_staging
         run: |
+          # Si otra corrida la está actualizando, se espera a que termine.
+          aws lambda wait function-updated --function-name enactus-db-tareas
           aws lambda update-function-code --function-name enactus-db-tareas \
             --zip-file fileb://backend/infra/tareas.zip --output text > /dev/null
           aws lambda wait function-updated --function-name enactus-db-tareas
@@ -166,6 +175,8 @@ jobs:
 
       - name: Publicar la API
         run: |
+          # Si otra corrida la está actualizando, se espera a que termine.
+          aws lambda wait function-updated --function-name enactus-api-staging
           aws lambda update-function-code --function-name enactus-api-staging \
             --zip-file fileb://backend/infra/api.zip --output text > /dev/null
           aws lambda wait function-updated --function-name enactus-api-staging
@@ -245,6 +256,8 @@ jobs:
 
       - name: Migraciones sobre enactus_prod
         run: |
+          # Si otra corrida la está actualizando, se espera a que termine.
+          aws lambda wait function-updated --function-name enactus-db-tareas
           aws lambda update-function-code --function-name enactus-db-tareas \
             --zip-file fileb://backend/infra/tareas.zip --output text > /dev/null
           aws lambda wait function-updated --function-name enactus-db-tareas
@@ -265,6 +278,8 @@ jobs:
 
       - name: Publicar la API
         run: |
+          # Si otra corrida la está actualizando, se espera a que termine.
+          aws lambda wait function-updated --function-name enactus-api-prod
           aws lambda update-function-code --function-name enactus-api-prod \
             --zip-file fileb://backend/infra/api.zip --output text > /dev/null
           aws lambda wait function-updated --function-name enactus-api-prod

@@ -17,8 +17,8 @@ El trabajo va por etapas, cada una probada en staging antes de la siguiente:
 4. **Manager / Supervisor y cursos exclusivos** — hecha: el portal del
    supervisor, cursos que solo se asignan a la gente de una empresa.
 5. **Frontera entre clientes** — hecha y en producción (2026-10-12).
-6. **Certificados** — parte 1 hecha: certificados de curso automáticos y
-   verificación pública con QR. Parte 2: el molde de cada cliente.
+6. **Certificados** — hecha: certificados de curso automáticos,
+   verificación pública con QR y el molde de cada cliente.
 
 ## Cómo funciona el color
 
@@ -263,3 +263,41 @@ el id (UUID), no por el código: los de la Ruta son de cinco cifras y por
 código se podría sacar la lista de quiénes se certificaron. Responde solo lo
 que el certificado dice impreso, con un límite de 30 consultas por minuto. La
 web del QR es la del mismo entorno (`EnlacesWeb`, deducida de la API).
+
+## El molde de cada cliente (etapa 6, parte 2)
+
+**Qué es.** Un diseño hecho afuera —en Canva, PowerPoint— subido como PDF de
+una página, PNG o JPG (hasta 8 MB), y dónde va cada dato: nombre y curso
+(obligatorios), fecha, horas, código, QR y firma (un PNG aparte, hasta 1 MB).
+Las posiciones se guardan en fracciones de la página, así el mismo molde se
+ve igual en el editor, en cualquier pantalla, y en el PDF.
+
+**Dónde se edita.** Admin → Clientes → «Certificado» en la tarjeta de cada
+cliente, o «Certificado de eduXaction» arriba. El editor muestra el molde con
+datos de ejemplo encima: cada dato se arrastra a su lugar y se ensancha desde
+su borde derecho; al costado se elige el tamaño, la alineación, la letra
+(Oswald o DM Sans), la negrita y el color. «Vista previa del PDF» arma el
+certificado de ejemplo con el molde todavía sin guardar.
+
+En una pantalla táctil, tocar un dato es agarrarlo (`ImmediateMultiDrag`): con
+un arrastre común, la página que se desplaza se quedaba con el movimiento
+vertical y los datos solo se movían de lado.
+
+**Cuál se usa.** El del cliente emisor del certificado
+(`certificates.issuer_client_id`, que se guarda al emitirlo: si la persona
+cambia de empresa, su certificado no cambia de molde); si ese cliente no
+tiene, el de eduXaction; si tampoco hay, el diseño de siempre. Cambiar el
+molde cambia cómo se imprimen también los ya emitidos.
+
+**Cómo se imprime.** La app pide `GET /certificates/:id/template` (solo quien
+puede ver ese certificado), baja el fondo y la firma por URL firmada, y arma
+el PDF con el paquete `pdf`. Un fondo PDF se convierte en imagen a 200 ppp
+(con `printing`; en la web, con el pdf.js que trae `web/pdfjs`). El QR va
+sobre blanco, para que se lea sobre cualquier fondo.
+
+**Lo que verifica el servidor.** Que el archivo esté en `certificate-templates/`,
+exista, pese lo permitido y sea lo que dice ser por sus primeros bytes (el tipo
+se toma del archivo, no de la petición); la firma, PNG. Las posiciones, dentro
+de la página y solo de los datos conocidos. Reemplazar un archivo encola el
+anterior para borrarlo. Los moldes van en el respaldo.
+

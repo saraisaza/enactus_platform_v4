@@ -5689,4 +5689,135 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get constructorEntregaCertificadoTexto =>
       'Whoever completes every lesson receives their certificate right away, with the certified hours.';
+
+  @override
+  String get clientesCertificado => 'Certificate';
+
+  @override
+  String get clientesCertificadoEduxaction => 'eduXaction certificate';
+
+  @override
+  String moldeTitulo(String cliente) {
+    return 'Certificate · $cliente';
+  }
+
+  @override
+  String moldeExplicacion(String cliente) {
+    return 'Upload the $cliente certificate design (a one-page PDF or an image made in Canva or PowerPoint) and drag each field into place. When a certificate is issued, the platform writes each person\'s details.';
+  }
+
+  @override
+  String get moldeSinMolde => 'No template yet';
+
+  @override
+  String get moldeSinMoldeTexto =>
+      'Meanwhile, certificates use the eduXaction design.';
+
+  @override
+  String get moldeSubir => 'Upload template (PDF, PNG or JPG)';
+
+  @override
+  String get moldeCambiar => 'Change template';
+
+  @override
+  String get moldeSubirFirma => 'Upload signature (PNG)';
+
+  @override
+  String get moldeCambiarFirma => 'Change signature';
+
+  @override
+  String get moldeQuitarFirma => 'Remove signature';
+
+  @override
+  String get moldeDatos => 'Certificate fields';
+
+  @override
+  String get moldeDatosAyuda =>
+      'Check the ones it includes; tap one to adjust it and drag it over the template.';
+
+  @override
+  String get moldeObligatorio => 'required';
+
+  @override
+  String get moldeAncho => 'Width';
+
+  @override
+  String get moldeTamano => 'Size';
+
+  @override
+  String get moldeAlinearIzquierda => 'Align left';
+
+  @override
+  String get moldeAlinearCentro => 'Center';
+
+  @override
+  String get moldeAlinearDerecha => 'Align right';
+
+  @override
+  String get moldeLetraTitulo => 'Headings (Oswald)';
+
+  @override
+  String get moldeLetraTexto => 'Text (DM Sans)';
+
+  @override
+  String get moldeNegrita => 'Bold';
+
+  @override
+  String get moldeColor => 'Text color';
+
+  @override
+  String get moldeVistaPrevia => 'PDF preview';
+
+  @override
+  String get moldeArchivoDePrueba => 'sample-certificate.pdf';
+
+  @override
+  String get moldeQuitar => 'Remove template';
+
+  @override
+  String get moldeQuitarTitulo => 'Remove the template?';
+
+  @override
+  String moldeQuitarTexto(String cliente) {
+    return '$cliente certificates will go back to the platform design, including those already issued.';
+  }
+
+  @override
+  String get moldeNoSeLee =>
+      'We could not read that file. Export it again as PDF, PNG or JPG.';
+
+  @override
+  String moldePesado(String mb, int maximo) {
+    return 'The file is $mb MB and the maximum is $maximo MB.';
+  }
+
+  @override
+  String get moldeCursoEjemplo => 'Course name';
+
+  @override
+  String get moldeLienzo => 'Certificate template: drag each field into place';
+
+  @override
+  String get moldePersonaEjemplo => 'Jane Smith';
+
+  @override
+  String get moldeCampoNombre => 'Name';
+
+  @override
+  String get moldeCampoCurso => 'Course';
+
+  @override
+  String get moldeCampoFecha => 'Date';
+
+  @override
+  String get moldeCampoHoras => 'Hours';
+
+  @override
+  String get moldeCampoCodigo => 'Code';
+
+  @override
+  String get moldeCampoQr => 'QR code';
+
+  @override
+  String get moldeCampoFirma => 'Signature';
 }

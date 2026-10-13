@@ -209,6 +209,7 @@ export async function issueRutaCertificate(
       issuerId: input.issuerId,
       studentNameSnapshot: student.name,
       laboratoryNameSnapshot: lab.name,
+      issuerClientId: student.clientId,
       issuerNameSnapshot: issuer?.name ?? '',
       hours: await rutaHours(db, lab.id),
       labContentVersion: lab.contentVersion,
@@ -269,12 +270,14 @@ export async function emitirCertificadoDeCurso(
     horas: number;
     persona: string;
     emisor: string;
+    cliente: string | null;
   }>(sql`
     select cp.is_complete as completo, cp.total_lessons::int as lecciones,
            c.name as curso,
            (case when c.certified_hours > 0 then c.certified_hours
                  else c.estimated_hours end)::int as horas,
-           u.name as persona, coalesce(cl.name, 'eduXaction') as emisor
+           u.name as persona, coalesce(cl.name, 'eduXaction') as emisor,
+           u.client_id as cliente
       from course_progress cp
       join courses c on c.id = cp.course_id
                     and c.deleted_at is null and c.generates_certificate
@@ -297,6 +300,7 @@ export async function emitirCertificadoDeCurso(
       studentNameSnapshot: datos.persona,
       courseNameSnapshot: datos.curso,
       issuerNameSnapshot: datos.emisor,
+      issuerClientId: datos.cliente,
       hours: datos.horas,
       requirementsSnapshot: { lessons: datos.lecciones },
     })

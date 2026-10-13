@@ -22,6 +22,7 @@ export * from './enums';
 export * from './catalogs';
 export * from './universities';
 export * from './clients';
+export * from './certificate-templates';
 export * from './users';
 export * from './orgs';
 export * from './labs';

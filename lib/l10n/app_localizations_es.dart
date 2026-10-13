@@ -5668,4 +5668,136 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get constructorEntregaCertificadoTexto =>
       'Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas.';
+
+  @override
+  String get clientesCertificado => 'Certificado';
+
+  @override
+  String get clientesCertificadoEduxaction => 'Certificado de eduXaction';
+
+  @override
+  String moldeTitulo(String cliente) {
+    return 'Certificado · $cliente';
+  }
+
+  @override
+  String moldeExplicacion(String cliente) {
+    return 'Suba el diseño del certificado de $cliente —un PDF de una página o una imagen hecha en Canva o PowerPoint— y arrastre cada dato a su lugar. Al emitir un certificado, la plataforma escribe los datos de cada persona.';
+  }
+
+  @override
+  String get moldeSinMolde => 'Todavía no hay molde';
+
+  @override
+  String get moldeSinMoldeTexto =>
+      'Mientras tanto, los certificados salen con el diseño de eduXaction.';
+
+  @override
+  String get moldeSubir => 'Subir molde (PDF, PNG o JPG)';
+
+  @override
+  String get moldeCambiar => 'Cambiar molde';
+
+  @override
+  String get moldeSubirFirma => 'Subir firma (PNG)';
+
+  @override
+  String get moldeCambiarFirma => 'Cambiar firma';
+
+  @override
+  String get moldeQuitarFirma => 'Quitar firma';
+
+  @override
+  String get moldeDatos => 'Datos del certificado';
+
+  @override
+  String get moldeDatosAyuda =>
+      'Marque los que lleva; toque uno para ajustarlo y arrástrelo sobre el molde.';
+
+  @override
+  String get moldeObligatorio => 'obligatorio';
+
+  @override
+  String get moldeAncho => 'Ancho';
+
+  @override
+  String get moldeTamano => 'Tamaño';
+
+  @override
+  String get moldeAlinearIzquierda => 'Alinear a la izquierda';
+
+  @override
+  String get moldeAlinearCentro => 'Centrar';
+
+  @override
+  String get moldeAlinearDerecha => 'Alinear a la derecha';
+
+  @override
+  String get moldeLetraTitulo => 'Títulos (Oswald)';
+
+  @override
+  String get moldeLetraTexto => 'Texto (DM Sans)';
+
+  @override
+  String get moldeNegrita => 'Negrita';
+
+  @override
+  String get moldeColor => 'Color del texto';
+
+  @override
+  String get moldeVistaPrevia => 'Vista previa del PDF';
+
+  @override
+  String get moldeArchivoDePrueba => 'certificado-de-prueba.pdf';
+
+  @override
+  String get moldeQuitar => 'Quitar molde';
+
+  @override
+  String get moldeQuitarTitulo => '¿Quitar el molde?';
+
+  @override
+  String moldeQuitarTexto(String cliente) {
+    return 'Los certificados de $cliente volverán al diseño de la plataforma, también los ya emitidos.';
+  }
+
+  @override
+  String get moldeNoSeLee =>
+      'No pudimos leer ese archivo. Expórtelo de nuevo como PDF, PNG o JPG.';
+
+  @override
+  String moldePesado(String mb, int maximo) {
+    return 'El archivo pesa $mb MB y el máximo es $maximo MB.';
+  }
+
+  @override
+  String get moldeCursoEjemplo => 'Nombre del curso';
+
+  @override
+  String get moldeLienzo =>
+      'Molde del certificado: arrastre cada dato a su lugar';
+
+  @override
+  String get moldePersonaEjemplo => 'María Fernanda Pérez';
+
+  @override
+  String get moldeCampoNombre => 'Nombre';
+
+  @override
+  String get moldeCampoCurso => 'Curso';
+
+  @override
+  String get moldeCampoFecha => 'Fecha';
+
+  @override
+  String get moldeCampoHoras => 'Horas';
+
+  @override
+  String get moldeCampoCodigo => 'Código';
+
+  @override
+  String get moldeCampoQr => 'Código QR';
+
+  @override
+  String get moldeCampoFirma => 'Firma';
 }

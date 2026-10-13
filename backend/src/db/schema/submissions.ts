@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { softDelete, timestamps } from './_shared';
+import { clients } from './clients';
 import { courses, lessons } from './courses';
 import { gradingMode } from './enums';
 import { laboratories, rutaModules } from './labs';
@@ -170,6 +171,13 @@ export const certificates = pgTable(
     laboratoryId: uuid().references(() => laboratories.id, { onDelete: 'restrict' }),
     /** Certificado de curso: lo emite el servidor al completarlo (etapa 6). */
     courseId: uuid().references(() => courses.id, { onDelete: 'restrict' }),
+    /**
+     * El cliente que emite: el de la persona al emitirse (su empresa, o
+     * Enactus); nulo = eduXaction. Decide el molde con que se imprime, y se
+     * guarda para que un certificado viejo no cambie de molde si la persona
+     * cambia de empresa.
+     */
+    issuerClientId: uuid().references(() => clients.id, { onDelete: 'set null' }),
     /** Quién emitió. FK real, no el string suelto `issuerName` de hoy. */
     issuerId: uuid().references(() => users.id, { onDelete: 'set null' }),
 
@@ -191,6 +199,7 @@ export const certificates = pgTable(
     uniqueIndex('certificates_student_lab_unique').on(t.studentId, t.laboratoryId),
     uniqueIndex('certificates_student_course_unique').on(t.studentId, t.courseId),
     index('certificates_course_id_idx').on(t.courseId),
+    index('certificates_issuer_client_id_idx').on(t.issuerClientId),
     check(
       'certificates_de_lab_o_de_curso',
       sql`(${t.laboratoryId} is null) <> (${t.courseId} is null)`,

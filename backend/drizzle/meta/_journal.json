@@ -120,6 +120,13 @@
       "when": 1791866187723,
       "tag": "0016_certificados_de_curso",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791869217445,
+      "tag": "0017_moldes_de_certificado",
+      "breakpoints": true
     }
   ]
 }

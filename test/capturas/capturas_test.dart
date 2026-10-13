@@ -27,6 +27,7 @@
 @Tags(['capturas'])
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -37,11 +38,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'package:enactus_platform/l10n/textos.dart';
+import 'package:enactus_platform/models/client.dart';
+import 'package:enactus_platform/models/molde_certificado.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/utils/app_theme.dart';
 import 'package:enactus_platform/utils/constants.dart';
 import 'package:enactus_platform/utils/marca.dart';
 import 'package:enactus_platform/views/admin/admin_users.dart';
+import 'package:enactus_platform/views/admin/editor_molde_certificado.dart';
 import 'package:enactus_platform/widgets/logo_de_cliente.dart';
 import 'package:enactus_platform/widgets/portal_shell.dart';
 import 'package:enactus_platform/widgets/vista_previa_marca.dart';
@@ -92,6 +96,36 @@ Future<Uint8List> _logoDePrueba({String palabra = 'NORTE', bool claro = false}) 
     ..layout(const ui.ParagraphConstraints(width: 400));
   lienzo.drawParagraph(parrafo, const Offset(122, 4));
   final imagen = await grabadora.endRecording().toImage(440, 120);
+  final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
+  return datos!.buffer.asUint8List();
+}
+
+/// Un molde de ejemplo, como el que haría una empresa en Canva: fondo claro,
+/// una banda del color de la marca, un marco y el título ya impreso.
+Future<Uint8List> _moldeDePrueba() async {
+  const ancho = 1684.0, alto = 1190.0; // A4 horizontal a 144 ppp
+  final grabadora = ui.PictureRecorder();
+  final lienzo = Canvas(grabadora);
+  lienzo.drawRect(const Rect.fromLTWH(0, 0, ancho, alto),
+      Paint()..color = const Color(0xFFFBF7F0));
+  lienzo.drawRect(const Rect.fromLTWH(0, 0, ancho, 70),
+      Paint()..color = const Color(0xFFF8931B));
+  lienzo.drawRect(
+      const Rect.fromLTWH(40, 110, ancho - 80, alto - 150),
+      Paint()
+        ..color = const Color(0xFF465668)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4);
+  final titulo = (ui.ParagraphBuilder(ui.ParagraphStyle(
+          fontFamily: AppFonts.display, fontSize: 64, textAlign: TextAlign.center))
+        ..pushStyle(ui.TextStyle(
+            color: const Color(0xFF465668), letterSpacing: 6))
+        ..addText('CERTIFICADO DE FORMACIÓN'))
+      .build()
+    ..layout(const ui.ParagraphConstraints(width: ancho));
+  lienzo.drawParagraph(titulo, const Offset(0, 220));
+  final imagen =
+      await grabadora.endRecording().toImage(ancho.toInt(), alto.toInt());
   final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
   return datos!.buffer.asUint8List();
 }
@@ -442,6 +476,65 @@ void main() {
         );
         await _esperar(tester);
         await _capturar(tester, archivo);
+      });
+    }
+  });
+
+  group('el molde del certificado', () {
+    const idAndino = '2f8d4b61-9c0a-4e7b-8d12-5a6b7c8d9e02';
+    setUp(conSesionGuardada);
+
+    for (final (etiqueta, tamano) in const [
+      ('escritorio', Size(1440, 1000)),
+      ('telefono', Size(390, 844)),
+    ]) {
+      testWidgets('el editor, en $etiqueta', (tester) async {
+        fijarTamano(tester, tamano);
+        final fondo = (await tester.runAsync(_moldeDePrueba))!;
+        await montar(
+          tester,
+          appDe(Roles.admin, conApi: (api) {
+            api.routes['/clients/$idAndino/certificate-template'] = {
+              'template': {
+                'clientId': idAndino,
+                'backgroundKind': 'png',
+                'pageWidth': 842,
+                'pageHeight': 595,
+                'backgroundS3Key': 'certificate-templates/fondo.png',
+                'signatureS3Key': null,
+                'backgroundUrl': 'https://s3.prueba/certificate-templates/fondo.png',
+                'signatureUrl': null,
+                'fields': {
+                  for (final e in MoldeDeCertificado.camposPorOmision().entries)
+                    if (e.key != 'firma')
+                      e.key: e.value.toJson(
+                          imagen: MoldeDeCertificado.camposDeImagen
+                              .contains(e.key)),
+                },
+              },
+            };
+            api.routes['/certificate-templates/fondo.png'] = fondo;
+          }),
+        );
+        if (etiqueta == 'telefono') {
+          // En el teléfono se abre directo: el recorrido por «Más» ya lo
+          // cubre la captura del editor de clientes.
+          unawaited(mostrarEditorDeMolde(
+              tester.element(find.byType(PortalShell)),
+              const Client(id: idAndino, name: 'Banco Andino')));
+        } else {
+          await tester.tap(find.text(tr.tabClientes).last, warnIfMissed: false);
+          await _esperar(tester);
+          // La segunda tarjeta: Banco Andino.
+          await tester.tap(find.text(tr.clientesCertificado).at(1),
+              warnIfMissed: false);
+        }
+        for (var i = 0; i < 4; i++) {
+          await tester.runAsync(
+              () => Future<void>.delayed(const Duration(milliseconds: 60)));
+          await _esperar(tester);
+        }
+        await _capturar(tester, 'molde_editor_$etiqueta');
       });
     }
   });

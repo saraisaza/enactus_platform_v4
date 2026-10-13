@@ -149,6 +149,7 @@ const BACKUP_TABLES = [
   'competencies',
   // Antes de `users`: las cuentas van a apuntar a su cliente.
   'clients',
+  'certificate_templates',
   'users',
   'projects',
   'project_ods',
@@ -221,6 +222,7 @@ const REFERENCIAS_ENTRE_CUENTAS = ['company_id', 'donor_id', 'advisor_id'];
 
 const TABLAS_POSTERIORES_A_RESPALDOS_VIEJOS: readonly (typeof BACKUP_TABLES)[number][] = [
   'clients',
+  'certificate_templates',
 ];
 
 /**

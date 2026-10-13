@@ -6,6 +6,7 @@ import '../l10n/textos.dart';
 import '../models/authoring.dart';
 import '../models/client.dart';
 import '../models/glossary.dart';
+import '../models/molde_certificado.dart';
 import '../models/models.dart';
 import '../models/progress.dart';
 import '../services/api_errors.dart';
@@ -453,6 +454,64 @@ class DataProvider extends ChangeNotifier {
     );
     return info['key'] as String;
   }
+
+  // -------------------------------------------------------------------------
+  // Moldes de certificado (etapa 6, parte 2)
+  // -------------------------------------------------------------------------
+  //
+  // `owner` es el id del cliente, o `eduxaction` para el de la plataforma.
+
+  /// El molde de un cliente, o `null` si no tiene.
+  Future<MoldeDeCertificado?> moldeDeCliente(String owner) async {
+    final json = await api.get('/clients/$owner/certificate-template');
+    final t = (json as Map)['template'];
+    return t == null
+        ? null
+        : MoldeDeCertificado.fromJson(Map<String, dynamic>.from(t as Map));
+  }
+
+  Future<MoldeDeCertificado> guardarMolde(
+      String owner, MoldeDeCertificado molde) async {
+    final json = await api.put('/clients/$owner/certificate-template',
+        body: molde.toJson());
+    return MoldeDeCertificado.fromJson(
+        Map<String, dynamic>.from((json as Map)['template'] as Map));
+  }
+
+  Future<void> quitarMolde(String owner) =>
+      api.delete('/clients/$owner/certificate-template');
+
+  /// Sube el fondo (`background`) o la firma (`signature`) de un molde y
+  /// devuelve su key.
+  Future<String> subirArchivoDeMolde(
+    List<int> bytes, {
+    required String uso,
+    required String contentType,
+    void Function(double progress)? onProgress,
+  }) async {
+    final signed = await api.post('/clients/certificate-template-upload-url',
+        body: {'use': uso, 'contentType': contentType, 'sizeBytes': bytes.length});
+    final info = Map<String, dynamic>.from(signed as Map);
+    await api.uploadToSignedUrl(
+      uploadUrl: info['uploadUrl'] as String,
+      bytes: bytes,
+      contentType: contentType,
+      onProgress: onProgress,
+    );
+    return info['key'] as String;
+  }
+
+  /// El molde con que se imprime un certificado, o `null` (diseño de siempre).
+  Future<MoldeDeCertificado?> moldeDeCertificado(String certificateId) async {
+    final json = await api.get('/certificates/$certificateId/template');
+    final t = (json as Map)['template'];
+    return t == null
+        ? null
+        : MoldeDeCertificado.fromJson(Map<String, dynamic>.from(t as Map));
+  }
+
+  /// Un archivo de una URL firmada (el fondo o la firma de un molde).
+  Future<Uint8List> bajarArchivo(String url) => api.bajarArchivo(url);
 
   /// La universidad por su id, o `null` si no está en el catálogo cargado.
   ///

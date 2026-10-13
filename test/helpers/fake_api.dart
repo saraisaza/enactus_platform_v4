@@ -92,6 +92,11 @@ class FakeApi {
         // vacío, que haría pasar una prueba por la razón equivocada.
         fail('El fake no tiene respuesta para $path. Agréguela en `routes`.');
       }
+      // Un archivo (el fondo de un molde, por ejemplo): se devuelve tal cual.
+      if (body is List<int>) {
+        return http.Response.bytes(body, statuses[path] ?? 200,
+            headers: {'content-type': 'application/octet-stream'});
+      }
       return http.Response(
           jsonEncode(body), statuses[conMetodo] ?? statuses[path] ?? 200,
           headers: {'content-type': 'application/json'});

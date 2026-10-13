@@ -226,4 +226,10 @@ export const MENSAJES_EN: ReadonlyArray<readonly [string, string]> = [
   ["Un supervisor califica cursos de su empresa, que son de Open Learning.", "A supervisor grades their company's courses, which are Open Learning."],
   ["Los laboratorios, los proyectos y los equipos son de Enactus: su cuenta es de una empresa.", "Laboratories, projects and teams belong to Enactus: your account belongs to a company."],
   ["No encontramos ese certificado.", "We could not find that certificate."],
+  ["La firma tiene que ser un PNG, idealmente con fondo transparente.", "The signature has to be a PNG, ideally with a transparent background."],
+  ["El molde tiene que ser un PDF, un PNG o un JPG. Expórtelo de nuevo.", "The template has to be a PDF, a PNG or a JPG. Export it again."],
+  ["El archivo tiene que subirse desde el editor del certificado.", "The file has to be uploaded from the certificate editor."],
+  ["El archivo no llegó al almacenamiento. Súbalo de nuevo.", "The file did not reach storage. Upload it again."],
+  ["Ese cliente no tiene molde de certificado.", "That client has no certificate template."],
+  ["El archivo pesa {0} MB y el máximo es {1} MB.", "The file is {0} MB and the maximum is {1} MB."],
 ];

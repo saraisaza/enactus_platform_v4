@@ -16,6 +16,7 @@ import '../../widgets/logo_de_cliente.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/selector_color.dart';
 import '../../widgets/vista_previa_marca.dart';
+import 'editor_molde_certificado.dart';
 
 /// Los clientes de la plataforma —Enactus y las empresas— y su marca.
 ///
@@ -32,6 +33,13 @@ class AdminClients extends StatelessWidget {
       title: tr.clientesTitulo,
       subtitle: tr.clientesSubtitulo,
       actions: [
+        // El molde de eduXaction: el de quien no tiene cliente, y el de los
+        // clientes que no subieron el suyo.
+        OutlinedButton.icon(
+          icon: const Icon(Icons.workspace_premium_outlined, size: 18),
+          label: Text(tr.clientesCertificadoEduxaction),
+          onPressed: () => mostrarEditorDeMolde(context, null),
+        ),
         ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 18),
           label: Text(tr.clientesNuevo),
@@ -147,6 +155,11 @@ class _TarjetaDeCliente extends StatelessWidget {
           icon: const Icon(Icons.edit_outlined, size: 16),
           label: Text(tr.comunEditar),
           onPressed: () => mostrarEditorDeCliente(context, cliente),
+        ),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.workspace_premium_outlined, size: 16),
+          label: Text(tr.clientesCertificado),
+          onPressed: () => mostrarEditorDeMolde(context, cliente),
         ),
         // Enactus no se apaga desde acá: dejaría sin acceso a toda su red.
         if (!cliente.hasLaboratories)

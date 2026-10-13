@@ -13,8 +13,9 @@ import {
   requireAuth,
   requireCanGrade,
 } from '../middleware/auth';
-import type { AppEnv } from '../middleware/context';
+import type { AppEnv, AuthUser } from '../middleware/context';
 import { issueRutaCertificate } from '../services/certificates';
+import { moldeParaCertificado, moldeParaLaApp } from '../services/moldes-de-certificado';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
 import { mismoCliente } from '../services/frontera-de-cliente';
 
@@ -112,4 +113,42 @@ certificateRoutes.get('/', async (c) => {
           .orderBy(desc(certificates.issuedAt));
 
   return c.json(paginated(rows, rows.length, query));
+});
+
+/**
+ * ¿[user] puede ver el certificado [cert]? Las mismas reglas que el listado:
+ * la persona, quien lo emitió, la administración, el supervisor de su empresa
+ * y el equipo (asesor, mentor, LXD) del mismo cliente.
+ */
+async function puedeVerCertificado(
+  db: AppEnv['Variables']['db'],
+  user: AuthUser,
+  cert: typeof certificates.$inferSelect,
+): Promise<boolean> {
+  if (user.role === 'admin' || user.role === 'superadmin') return true;
+  if (cert.studentId === user.id || cert.issuerId === user.id) return true;
+  if (user.role === 'supervisor') return supervisorAlcanza(db, user, cert.studentId);
+  if (user.role === 'advisor' || user.role === 'mentor' || user.role === 'lxd') {
+    return mismoCliente(db, user, cert.studentId);
+  }
+  return false;
+}
+
+/**
+ * El molde con que se imprime un certificado: el de su cliente emisor, o el
+ * de eduXaction; `null` = el diseño de siempre. Con los enlaces firmados del
+ * fondo y la firma, para que la app arme el PDF.
+ */
+certificateRoutes.get('/:id/template', async (c) => {
+  const db = c.get('db');
+  const [cert] = await db
+    .select()
+    .from(certificates)
+    .where(eq(certificates.id, c.req.param('id')))
+    .limit(1);
+  if (!cert || !(await puedeVerCertificado(db, currentUser(c), cert))) {
+    throw notFound('No encontramos ese certificado.');
+  }
+  const molde = await moldeParaCertificado(db, cert.issuerClientId);
+  return c.json({ template: molde ? await moldeParaLaApp(molde) : null });
 });

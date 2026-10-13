@@ -151,6 +151,49 @@
   "role": "student",
   "password": "Clave123"
  },
+ "PUT /clients/:id/certificate-template": {
+  "backgroundS3Key": "certificate-templates/fondo.png",
+  "pageWidth": 842.0,
+  "pageHeight": 595.0,
+  "fields": {
+   "nombre": {
+    "x": 0.1385,
+    "y": 0.3184,
+    "w": 0.8,
+    "size": 0.06,
+    "align": "center",
+    "color": "#1F1F1F",
+    "font": "display",
+    "bold": true
+   },
+   "curso": {
+    "x": 0.1,
+    "y": 0.55,
+    "w": 0.8,
+    "size": 0.035,
+    "align": "center",
+    "color": "#1F1F1F",
+    "font": "sans",
+    "bold": false
+   },
+   "fecha": {
+    "x": 0.08,
+    "y": 0.84,
+    "w": 0.3,
+    "size": 0.025,
+    "align": "left",
+    "color": "#1F1F1F",
+    "font": "sans",
+    "bold": false
+   },
+   "qr": {
+    "x": 0.84,
+    "y": 0.74,
+    "w": 0.1
+   }
+  },
+  "signatureS3Key": null
+ },
  "PUT /glossary-terms/:id/review": {
   "status": "review"
  },

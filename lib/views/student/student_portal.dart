@@ -227,7 +227,7 @@ class _StudentCertificates extends StatelessWidget {
                             icon: Icon(kIsWeb ? Icons.download : Icons.ios_share,
                                 size: 16),
                             label: Text(kIsWeb ? tr.comunDescargar : tr.comunCompartir),
-                            onPressed: () => PdfService.download(cert),
+                            onPressed: () => PdfService.download(context, cert),
                           ),
                         ];
                         // Angosto (un teléfono): los botones debajo del texto.
@@ -1088,7 +1088,7 @@ class _CertificateRow extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.download_outlined, color: colors.goldInk),
               tooltip: tr.certificadoDescargar,
-              onPressed: () => PdfService.download(cert),
+              onPressed: () => PdfService.download(context, cert),
             ),
           ],
         ),

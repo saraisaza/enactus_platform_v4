@@ -2953,5 +2953,76 @@
   "verificarNoEncontrado": "No encontramos este certificado",
   "verificarNoEncontradoTexto": "Revise que el enlace esté completo. Si lo abrió desde el código de un certificado y no aparece, ese certificado no fue emitido en esta plataforma.",
   "constructorEntregaCertificado": "¿Este curso entrega certificado?",
-  "constructorEntregaCertificadoTexto": "Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas."
+  "constructorEntregaCertificadoTexto": "Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas.",
+  "clientesCertificado": "Certificado",
+  "clientesCertificadoEduxaction": "Certificado de eduXaction",
+  "moldeTitulo": "Certificado · {cliente}",
+  "@moldeTitulo": {
+    "placeholders": {
+      "cliente": {
+        "type": "String"
+      }
+    }
+  },
+  "moldeExplicacion": "Suba el diseño del certificado de {cliente} —un PDF de una página o una imagen hecha en Canva o PowerPoint— y arrastre cada dato a su lugar. Al emitir un certificado, la plataforma escribe los datos de cada persona.",
+  "@moldeExplicacion": {
+    "placeholders": {
+      "cliente": {
+        "type": "String"
+      }
+    }
+  },
+  "moldeSinMolde": "Todavía no hay molde",
+  "moldeSinMoldeTexto": "Mientras tanto, los certificados salen con el diseño de eduXaction.",
+  "moldeSubir": "Subir molde (PDF, PNG o JPG)",
+  "moldeCambiar": "Cambiar molde",
+  "moldeSubirFirma": "Subir firma (PNG)",
+  "moldeCambiarFirma": "Cambiar firma",
+  "moldeQuitarFirma": "Quitar firma",
+  "moldeDatos": "Datos del certificado",
+  "moldeDatosAyuda": "Marque los que lleva; toque uno para ajustarlo y arrástrelo sobre el molde.",
+  "moldeObligatorio": "obligatorio",
+  "moldeAncho": "Ancho",
+  "moldeTamano": "Tamaño",
+  "moldeAlinearIzquierda": "Alinear a la izquierda",
+  "moldeAlinearCentro": "Centrar",
+  "moldeAlinearDerecha": "Alinear a la derecha",
+  "moldeLetraTitulo": "Títulos (Oswald)",
+  "moldeLetraTexto": "Texto (DM Sans)",
+  "moldeNegrita": "Negrita",
+  "moldeColor": "Color del texto",
+  "moldeVistaPrevia": "Vista previa del PDF",
+  "moldeArchivoDePrueba": "certificado-de-prueba.pdf",
+  "moldeQuitar": "Quitar molde",
+  "moldeQuitarTitulo": "¿Quitar el molde?",
+  "moldeQuitarTexto": "Los certificados de {cliente} volverán al diseño de la plataforma, también los ya emitidos.",
+  "@moldeQuitarTexto": {
+    "placeholders": {
+      "cliente": {
+        "type": "String"
+      }
+    }
+  },
+  "moldeNoSeLee": "No pudimos leer ese archivo. Expórtelo de nuevo como PDF, PNG o JPG.",
+  "moldePesado": "El archivo pesa {mb} MB y el máximo es {maximo} MB.",
+  "@moldePesado": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      },
+      "maximo": {
+        "type": "int"
+      }
+    }
+  },
+  "moldeCursoEjemplo": "Nombre del curso",
+  "moldeLienzo": "Molde del certificado: arrastre cada dato a su lugar",
+  "moldePersonaEjemplo": "María Fernanda Pérez",
+  "moldeCampoNombre": "Nombre",
+  "moldeCampoCurso": "Curso",
+  "moldeCampoFecha": "Fecha",
+  "moldeCampoHoras": "Horas",
+  "moldeCampoCodigo": "Código",
+  "moldeCampoQr": "Código QR",
+  "moldeCampoFirma": "Firma"
 }

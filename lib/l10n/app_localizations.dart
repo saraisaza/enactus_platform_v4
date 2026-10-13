@@ -9547,6 +9547,246 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas.'**
   String get constructorEntregaCertificadoTexto;
+
+  /// No description provided for @clientesCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado'**
+  String get clientesCertificado;
+
+  /// No description provided for @clientesCertificadoEduxaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado de eduXaction'**
+  String get clientesCertificadoEduxaction;
+
+  /// No description provided for @moldeTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado · {cliente}'**
+  String moldeTitulo(String cliente);
+
+  /// No description provided for @moldeExplicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Suba el diseño del certificado de {cliente} —un PDF de una página o una imagen hecha en Canva o PowerPoint— y arrastre cada dato a su lugar. Al emitir un certificado, la plataforma escribe los datos de cada persona.'**
+  String moldeExplicacion(String cliente);
+
+  /// No description provided for @moldeSinMolde.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay molde'**
+  String get moldeSinMolde;
+
+  /// No description provided for @moldeSinMoldeTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Mientras tanto, los certificados salen con el diseño de eduXaction.'**
+  String get moldeSinMoldeTexto;
+
+  /// No description provided for @moldeSubir.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir molde (PDF, PNG o JPG)'**
+  String get moldeSubir;
+
+  /// No description provided for @moldeCambiar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar molde'**
+  String get moldeCambiar;
+
+  /// No description provided for @moldeSubirFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir firma (PNG)'**
+  String get moldeSubirFirma;
+
+  /// No description provided for @moldeCambiarFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar firma'**
+  String get moldeCambiarFirma;
+
+  /// No description provided for @moldeQuitarFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar firma'**
+  String get moldeQuitarFirma;
+
+  /// No description provided for @moldeDatos.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos del certificado'**
+  String get moldeDatos;
+
+  /// No description provided for @moldeDatosAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Marque los que lleva; toque uno para ajustarlo y arrástrelo sobre el molde.'**
+  String get moldeDatosAyuda;
+
+  /// No description provided for @moldeObligatorio.
+  ///
+  /// In es, this message translates to:
+  /// **'obligatorio'**
+  String get moldeObligatorio;
+
+  /// No description provided for @moldeAncho.
+  ///
+  /// In es, this message translates to:
+  /// **'Ancho'**
+  String get moldeAncho;
+
+  /// No description provided for @moldeTamano.
+  ///
+  /// In es, this message translates to:
+  /// **'Tamaño'**
+  String get moldeTamano;
+
+  /// No description provided for @moldeAlinearIzquierda.
+  ///
+  /// In es, this message translates to:
+  /// **'Alinear a la izquierda'**
+  String get moldeAlinearIzquierda;
+
+  /// No description provided for @moldeAlinearCentro.
+  ///
+  /// In es, this message translates to:
+  /// **'Centrar'**
+  String get moldeAlinearCentro;
+
+  /// No description provided for @moldeAlinearDerecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Alinear a la derecha'**
+  String get moldeAlinearDerecha;
+
+  /// No description provided for @moldeLetraTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Títulos (Oswald)'**
+  String get moldeLetraTitulo;
+
+  /// No description provided for @moldeLetraTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Texto (DM Sans)'**
+  String get moldeLetraTexto;
+
+  /// No description provided for @moldeNegrita.
+  ///
+  /// In es, this message translates to:
+  /// **'Negrita'**
+  String get moldeNegrita;
+
+  /// No description provided for @moldeColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Color del texto'**
+  String get moldeColor;
+
+  /// No description provided for @moldeVistaPrevia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa del PDF'**
+  String get moldeVistaPrevia;
+
+  /// No description provided for @moldeArchivoDePrueba.
+  ///
+  /// In es, this message translates to:
+  /// **'certificado-de-prueba.pdf'**
+  String get moldeArchivoDePrueba;
+
+  /// No description provided for @moldeQuitar.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar molde'**
+  String get moldeQuitar;
+
+  /// No description provided for @moldeQuitarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quitar el molde?'**
+  String get moldeQuitarTitulo;
+
+  /// No description provided for @moldeQuitarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Los certificados de {cliente} volverán al diseño de la plataforma, también los ya emitidos.'**
+  String moldeQuitarTexto(String cliente);
+
+  /// No description provided for @moldeNoSeLee.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos leer ese archivo. Expórtelo de nuevo como PDF, PNG o JPG.'**
+  String get moldeNoSeLee;
+
+  /// No description provided for @moldePesado.
+  ///
+  /// In es, this message translates to:
+  /// **'El archivo pesa {mb} MB y el máximo es {maximo} MB.'**
+  String moldePesado(String mb, int maximo);
+
+  /// No description provided for @moldeCursoEjemplo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del curso'**
+  String get moldeCursoEjemplo;
+
+  /// No description provided for @moldeLienzo.
+  ///
+  /// In es, this message translates to:
+  /// **'Molde del certificado: arrastre cada dato a su lugar'**
+  String get moldeLienzo;
+
+  /// No description provided for @moldePersonaEjemplo.
+  ///
+  /// In es, this message translates to:
+  /// **'María Fernanda Pérez'**
+  String get moldePersonaEjemplo;
+
+  /// No description provided for @moldeCampoNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get moldeCampoNombre;
+
+  /// No description provided for @moldeCampoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso'**
+  String get moldeCampoCurso;
+
+  /// No description provided for @moldeCampoFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get moldeCampoFecha;
+
+  /// No description provided for @moldeCampoHoras.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas'**
+  String get moldeCampoHoras;
+
+  /// No description provided for @moldeCampoCodigo.
+  ///
+  /// In es, this message translates to:
+  /// **'Código'**
+  String get moldeCampoCodigo;
+
+  /// No description provided for @moldeCampoQr.
+  ///
+  /// In es, this message translates to:
+  /// **'Código QR'**
+  String get moldeCampoQr;
+
+  /// No description provided for @moldeCampoFirma.
+  ///
+  /// In es, this message translates to:
+  /// **'Firma'**
+  String get moldeCampoFirma;
 }
 
 class _AppLocalizationsDelegate

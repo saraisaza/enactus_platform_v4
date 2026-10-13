@@ -924,6 +924,74 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '413': { description: El logo pesa más de 1 MB }
 
+  /clients/certificate-template-upload-url:
+    post:
+      tags: [clients]
+      summary: Permiso para subir el fondo o la firma de un molde de certificado
+      description: |
+        Fondo: PDF de una página, PNG o JPG, hasta 8 MB. Firma: PNG, hasta 1 MB.
+        La key la arma el servidor, en `certificate-templates/`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [use, contentType, sizeBytes]
+              properties:
+                use: { type: string, enum: [background, signature] }
+                contentType: { type: string }
+                sizeBytes: { type: integer }
+      responses:
+        '200': { description: URL firmada para el PUT y la key }
+        '400': { description: Tipo no permitido }
+        '413': { description: Pesa más de lo permitido }
+
+  /clients/{owner}/certificate-template:
+    parameters:
+      - in: path
+        name: owner
+        required: true
+        description: Id del cliente, o `eduxaction` para el molde de la plataforma.
+        schema: { type: string }
+    get:
+      tags: [clients]
+      summary: El molde de certificado de un cliente
+      responses:
+        '200': { description: '`{ template }`, o `{ template: null }` si no tiene' }
+        '404': { description: No existe ese cliente }
+    put:
+      tags: [clients]
+      summary: Guardar el molde de certificado de un cliente
+      description: |
+        Verifica los archivos ya subidos mirando sus primeros bytes: el tipo del
+        fondo sale del archivo, no de la petición. Las posiciones van en
+        fracciones de la página (0 a 1). `nombre` y `curso` son obligatorios;
+        `fecha`, `horas`, `codigo`, `qr` y `firma`, opcionales. Reemplazar un
+        archivo encola el anterior para borrarlo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [backgroundS3Key, pageWidth, pageHeight, fields]
+              properties:
+                backgroundS3Key: { type: string }
+                pageWidth: { type: number }
+                pageHeight: { type: number }
+                fields: { type: object }
+                signatureS3Key: { type: string, nullable: true }
+      responses:
+        '200': { description: Guardado }
+        '400': { description: Archivo o posiciones no válidos }
+    delete:
+      tags: [clients]
+      summary: Quitar el molde (vuelve al de eduXaction o al diseño de siempre)
+      responses:
+        '204': { description: Quitado }
+        '404': { description: No tenía molde }
+
   /clients/{id}:
     patch:
       tags: [clients]
@@ -1970,6 +2038,20 @@ paths:
         - { $ref: '#/components/parameters/pageSize' }
         - { in: query, name: studentId, schema: { type: string, format: uuid } }
       responses: { '200': { description: Página de certificados } }
+
+  /certificates/{id}/template:
+    get:
+      tags: [certificates]
+      summary: El molde con que se imprime un certificado
+      description: |
+        El de su cliente emisor; si no tiene, el de eduXaction; si tampoco,
+        `null` (el diseño de siempre). Con los enlaces firmados del fondo y la
+        firma. Solo para quien puede ver ese certificado.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: '`{ template }` o `{ template: null }`' }
+        '404': { description: No existe, o no es suyo }
 
   /certificate-verification/{id}:
     get:

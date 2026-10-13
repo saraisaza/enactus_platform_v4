@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import type { Database } from '../db/client';
-import { auditLog, clients, storagePendingDeletes } from '../db/schema';
+import { auditLog, certificateTemplates, clients, storagePendingDeletes } from '../db/schema';
 import { badRequest, conflict, notFound, payloadTooLarge } from '../lib/errors';
 import { mediaStorage } from '../lib/media-storage';
 import { parcial } from '../lib/parcial';
@@ -13,6 +13,16 @@ import { BYTES_PARA_RECONOCER_PNG, medidasDePng } from '../lib/png';
 import { createDownloadUrl, isStorageConfigured } from '../lib/s3';
 import { ADMIN_ROLES, currentUser, requireAuth, requireRole } from '../middleware/auth';
 import type { AppEnv } from '../middleware/context';
+import {
+  CARPETA_MOLDES,
+  MAX_FIRMA_BYTES,
+  MAX_FONDO_BYTES,
+  TIPOS_DE_FONDO,
+  moldeBody,
+  moldeDe,
+  moldeParaLaApp,
+  verificarArchivoDeMolde,
+} from '../services/moldes-de-certificado';
 import { drainStorageDeletes } from '../services/storage-cleanup';
 
 /**
@@ -326,4 +336,145 @@ clientRoutes.patch('/:id', async (c) => {
     ip: c.get('requestIp'),
   });
   return c.json(await conUrlDelLogo(despues!));
+});
+
+// ---------------------------------------------------------------------------
+// El molde del certificado de un cliente (etapa 6, parte 2)
+// ---------------------------------------------------------------------------
+//
+// `:owner` es el id del cliente, o `eduxaction` para el molde de la
+// plataforma: el de quien no tiene cliente y el de los clientes sin molde.
+
+const subidaDeMoldeBody = z.object({
+  use: z.enum(['background', 'signature']),
+  contentType: z.string().trim().min(1),
+  sizeBytes: z.number().int().positive(),
+});
+
+/** Permiso para subir el fondo o la firma de un molde. */
+clientRoutes.post('/certificate-template-upload-url', async (c) => {
+  const body = subidaDeMoldeBody.parse(await c.req.json());
+  const esFirma = body.use === 'signature';
+  const tipo = esFirma
+    ? body.contentType === 'image/png'
+      ? 'png'
+      : null
+    : (TIPOS_DE_FONDO[body.contentType] ?? null);
+  if (!tipo) {
+    throw badRequest(
+      esFirma
+        ? 'La firma tiene que ser un PNG, idealmente con fondo transparente.'
+        : 'El molde tiene que ser un PDF, un PNG o un JPG. Expórtelo de nuevo.',
+      { allowed: esFirma ? ['image/png'] : Object.keys(TIPOS_DE_FONDO) },
+    );
+  }
+  const maximo = esFirma ? MAX_FIRMA_BYTES : MAX_FONDO_BYTES;
+  if (body.sizeBytes > maximo) {
+    throw payloadTooLarge(
+      `El archivo pesa ${(body.sizeBytes / 1024 / 1024).toFixed(1)} MB y el máximo es ${maximo / 1024 / 1024} MB.`,
+      { maxBytes: maximo },
+    );
+  }
+  const key = `${CARPETA_MOLDES}${randomUUID()}.${tipo === 'jpeg' ? 'jpg' : tipo}`;
+  const uploadUrl = await mediaStorage().signPutObject(key, body.contentType, body.sizeBytes);
+  return c.json({ key, uploadUrl, method: 'PUT', headers: { 'Content-Type': body.contentType } });
+});
+
+/** El cliente dueño del molde: un id que existe, o `null` para eduXaction. */
+async function duenoDelMolde(db: Database, owner: string): Promise<string | null> {
+  if (owner === 'eduxaction') return null;
+  if (!z.uuid().safeParse(owner).success) throw notFound('No existe ese cliente.');
+  const [cliente] = await db
+    .select({ id: clients.id })
+    .from(clients)
+    .where(eq(clients.id, owner))
+    .limit(1);
+  if (!cliente) throw notFound('No existe ese cliente.');
+  return cliente.id;
+}
+
+/** Encola para borrar los archivos que un molde dejó de usar. */
+async function soltarArchivos(db: Database, keys: (string | null | undefined)[]) {
+  const sueltas = keys.filter((k): k is string => Boolean(k));
+  if (sueltas.length === 0) return;
+  await db
+    .insert(storagePendingDeletes)
+    .values(sueltas.map((key) => ({ key, reason: 'certificate_template_replaced' })))
+    .onConflictDoNothing();
+  await drainStorageDeletes(db);
+}
+
+clientRoutes.get('/:owner/certificate-template', async (c) => {
+  const db = c.get('db');
+  const molde = await moldeDe(db, await duenoDelMolde(db, c.req.param('owner')));
+  return c.json({ template: molde ? await moldeParaLaApp(molde) : null });
+});
+
+clientRoutes.put('/:owner/certificate-template', async (c) => {
+  const admin = currentUser(c);
+  const db = c.get('db');
+  const clientId = await duenoDelMolde(db, c.req.param('owner'));
+  const body = moldeBody.parse(await c.req.json());
+
+  // El tipo sale del archivo, no de lo que diga la petición.
+  const backgroundKind = await verificarArchivoDeMolde(body.backgroundS3Key, 'fondo');
+  if (body.signatureS3Key) await verificarArchivoDeMolde(body.signatureS3Key, 'firma');
+
+  const antes = await moldeDe(db, clientId);
+  const valores = {
+    backgroundS3Key: body.backgroundS3Key,
+    backgroundKind,
+    pageWidth: body.pageWidth,
+    pageHeight: body.pageHeight,
+    fields: body.fields,
+    signatureS3Key: body.signatureS3Key,
+    updatedAt: new Date(),
+  };
+  const [guardado] = antes
+    ? await db
+        .update(certificateTemplates)
+        .set(valores)
+        .where(eq(certificateTemplates.id, antes.id))
+        .returning()
+    : await db
+        .insert(certificateTemplates)
+        .values({ ...valores, clientId })
+        .returning();
+
+  if (antes) {
+    await soltarArchivos(db, [
+      antes.backgroundS3Key !== body.backgroundS3Key ? antes.backgroundS3Key : null,
+      antes.signatureS3Key !== body.signatureS3Key ? antes.signatureS3Key : null,
+    ]);
+  }
+  await db.insert(auditLog).values({
+    actorId: admin.id,
+    action: 'certificate_template.save',
+    entityType: 'certificate_template',
+    entityId: guardado!.id,
+    oldValue: antes ? { backgroundS3Key: antes.backgroundS3Key, fields: antes.fields } : null,
+    newValue: { clientId, backgroundS3Key: body.backgroundS3Key, fields: body.fields },
+    ip: c.get('requestIp'),
+  });
+  return c.json({ template: await moldeParaLaApp(guardado!) });
+});
+
+/** Quitar el molde: los certificados vuelven al de eduXaction o al de siempre. */
+clientRoutes.delete('/:owner/certificate-template', async (c) => {
+  const admin = currentUser(c);
+  const db = c.get('db');
+  const antes = await moldeDe(db, await duenoDelMolde(db, c.req.param('owner')));
+  if (!antes) throw notFound('Ese cliente no tiene molde de certificado.');
+
+  await db.delete(certificateTemplates).where(eq(certificateTemplates.id, antes.id));
+  await soltarArchivos(db, [antes.backgroundS3Key, antes.signatureS3Key]);
+  await db.insert(auditLog).values({
+    actorId: admin.id,
+    action: 'certificate_template.delete',
+    entityType: 'certificate_template',
+    entityId: antes.id,
+    oldValue: { clientId: antes.clientId, backgroundS3Key: antes.backgroundS3Key },
+    ip: c.get('requestIp'),
+  });
+  return c.body(null, 204);
 });

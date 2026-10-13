@@ -177,6 +177,25 @@ class ApiService {
     }
   }
 
+  /// Baja un archivo de una URL firmada (el fondo de un molde, la firma).
+  ///
+  /// Sin el token de la sesión: la firma de la URL es el permiso, y mandarle
+  /// el token al almacenamiento sería entregárselo a un tercero.
+  Future<Uint8List> bajarArchivo(String url) async {
+    final http.Response res;
+    try {
+      res = await _client.get(Uri.parse(url)).timeout(_timeout);
+    } on TimeoutException {
+      throw NetworkError();
+    } on http.ClientException {
+      throw NetworkError();
+    }
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ServerError(res.statusCode);
+    }
+    return res.bodyBytes;
+  }
+
   // -------------------------------------------------------------------------
   // Interno
   // -------------------------------------------------------------------------

@@ -1971,6 +1971,36 @@ paths:
         - { in: query, name: studentId, schema: { type: string, format: uuid } }
       responses: { '200': { description: Página de certificados } }
 
+  /certificate-verification/{id}:
+    get:
+      tags: [certificates]
+      summary: Verificar un certificado (sin sesión)
+      description: |
+        Lo que abre el QR impreso en el certificado. Se busca por el id (UUID,
+        imposible de adivinar), no por el código visible, para que nadie pueda
+        recorrer los códigos y sacar la lista de quiénes se certificaron.
+        Responde solo lo que el certificado ya dice impreso. Limitado a 30
+        consultas por minuto por IP.
+      security: []
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: El certificado existe
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  studentName: { type: string }
+                  kind: { type: string, enum: [course, ruta] }
+                  title: { type: string }
+                  hours: { type: integer }
+                  issuer: { type: string }
+                  issuedAt: { type: string, format: date-time }
+        '404': { description: No existe }
+
   /certificates/ruta:
     post:
       tags: [certificates]

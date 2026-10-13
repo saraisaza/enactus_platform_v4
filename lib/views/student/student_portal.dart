@@ -195,7 +195,7 @@ class _StudentCertificates extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      tr.certificadoRutaDe(cert.laboratoryName),
+                                      cert.descripcion,
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w700)),
                                   Text(
@@ -1074,7 +1074,7 @@ class _CertificateRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(tr.certificadoRutaDe(cert.laboratoryName),
+                  Text(cert.descripcion,
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

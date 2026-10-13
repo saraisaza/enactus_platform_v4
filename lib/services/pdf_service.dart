@@ -6,12 +6,13 @@ import 'package:printing/printing.dart';
 
 import '../l10n/textos.dart';
 import '../models/models.dart';
+import '../utils/constants.dart';
 import '../utils/formatos.dart';
 import '../widgets/visor_pdf.dart';
 
 /// Genera certificados en PDF con el logo institucional.
 class PdfService {
-  // Los tres valores de `AppColors` repetidos a mano: `PdfColor` no acepta
+  // Los dos valores de `AppColors` repetidos a mano: `PdfColor` no acepta
   // un `Color` de Flutter, así que no hay forma de referenciar el token
   // desde acá. Es una de las dos excepciones documentadas en
   // `app_theme.dart` — y por serlo, hay que acordarse de moverlos cuando la
@@ -19,7 +20,6 @@ class PdfService {
   // viejos, imprimiendo certificados con la identidad anterior.
   static const _gold = PdfColor.fromInt(0xFFFFC107); // AppColors.gold
   static const _dark = PdfColor.fromInt(0xFF17171A); // AppColors.surface
-  static const _slate = PdfColor.fromInt(0xFF26262A); // AppColors.slate
 
   /// Construye el documento del certificado.
   static Future<pw.Document> buildCertificate(Certificate cert) async {
@@ -61,7 +61,7 @@ class PdfService {
                           fontWeight: pw.FontWeight.normal)),
                 ]),
               ),
-              pw.SizedBox(height: 24),
+              pw.SizedBox(height: 16),
               pw.Text(
                 tr.certificadoTitulo,
                 style: pw.TextStyle(
@@ -71,7 +71,7 @@ class PdfService {
                   letterSpacing: 2,
                 ),
               ),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: 14),
               pw.Text(tr.certificadoSeCertifica,
                   style: const pw.TextStyle(color: PdfColors.grey300, fontSize: 14)),
               pw.SizedBox(height: 10),
@@ -84,11 +84,14 @@ class PdfService {
                 ),
               ),
               pw.SizedBox(height: 10),
-              pw.Text(tr.certificadoCompleto,
+              pw.Text(
+                  cert.esDeCurso
+                      ? tr.certificadoCompletoCurso
+                      : tr.certificadoCompleto,
                   style: const pw.TextStyle(color: PdfColors.grey300, fontSize: 14)),
               pw.SizedBox(height: 8),
               pw.Text(
-                cert.laboratoryName,
+                cert.titulo,
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(
                   color: _gold,
@@ -104,7 +107,7 @@ class PdfService {
                       color: PdfColors.grey300, fontSize: 12),
                 ),
               ],
-              pw.SizedBox(height: 28),
+              pw.SizedBox(height: 18),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
                 children: [
@@ -126,20 +129,32 @@ class PdfService {
                         style: const pw.TextStyle(
                             color: PdfColors.grey400, fontSize: 10)),
                   ]),
+                  // El QR abre la verificación pública; va sobre blanco
+                  // porque, invertido sobre el fondo oscuro, muchos lectores
+                  // no lo reconocen. Debajo, el código para quien lo escriba.
+                  pw.Column(children: [
+                    pw.Container(
+                      padding: const pw.EdgeInsets.all(3),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.white,
+                        borderRadius: pw.BorderRadius.circular(3),
+                      ),
+                      child: pw.BarcodeWidget(
+                        barcode: pw.Barcode.qrCode(),
+                        data: EnlacesWeb.verificarCertificado(cert.id),
+                        width: 58,
+                        height: 58,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(tr.certificadoCodigo(cert.code),
+                        style: const pw.TextStyle(
+                            color: PdfColors.grey300, fontSize: 8)),
+                    pw.Text(tr.certificadoEscanee,
+                        style: const pw.TextStyle(
+                            color: PdfColors.grey400, fontSize: 8)),
+                  ]),
                 ],
-              ),
-              pw.SizedBox(height: 24),
-              pw.Container(
-                padding:
-                    const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: pw.BoxDecoration(
-                  color: _slate,
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Text(
-                  tr.certificadoCodigo(cert.code),
-                  style: const pw.TextStyle(color: PdfColors.grey300, fontSize: 10),
-                ),
               ),
               pw.SizedBox(height: 12),
               pw.Text(
@@ -164,7 +179,7 @@ class PdfService {
     await Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute<void>(
         builder: (_) => VisorPdf(
-          titulo: tr.certificadoTituloVisor(cert.laboratoryName),
+          titulo: tr.certificadoTituloVisor(cert.titulo),
           nombreArchivo: tr.certificadoArchivo(cert.code),
           cargar: () async => (await buildCertificate(cert)).save(),
         ),

@@ -412,4 +412,37 @@ void main() {
       await _capturar(tester, 'admin_nuevo_supervisor');
     });
   });
+
+  group('la verificación de un certificado', () {
+    const id = 'cccccccc-0000-4000-8000-0000000000c1';
+    for (final (archivo, existe, tamano) in const [
+      ('verificar_valido_escritorio', true, Size(1280, 900)),
+      ('verificar_valido_telefono', true, Size(390, 844)),
+      ('verificar_no_encontrado', false, Size(1280, 900)),
+    ]) {
+      testWidgets(archivo, (tester) async {
+        fijarTamano(tester, tamano);
+        await montar(
+          tester,
+          appPublica('${AppRoutes.verificar}/$id', conApi: (api) {
+            if (!existe) {
+              api.notFound.add('/certificate-verification/$id');
+              return;
+            }
+            api.routes['/certificate-verification/$id'] = {
+              'code': 'CUR-2026-1A2B3C4D',
+              'studentName': 'Ana María Torres',
+              'kind': 'course',
+              'title': 'Seguridad eléctrica en obra',
+              'hours': 12,
+              'issuer': 'Nelson Electric',
+              'issuedAt': '2026-10-12T15:00:00.000Z',
+            };
+          }),
+        );
+        await _esperar(tester);
+        await _capturar(tester, archivo);
+      });
+    }
+  });
 }

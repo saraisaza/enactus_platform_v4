@@ -1891,6 +1891,11 @@ class Certificate {
   final String laboratoryId;
   final String studentName;
   final String laboratoryName;
+
+  /// Certificado de un curso (lo emite el servidor al completarlo); `null`
+  /// en uno de la Ruta de Impacto.
+  final String? courseId;
+  final String? courseName;
   final String issuerName;
   final int hours;
   final DateTime issuedAt;
@@ -1902,10 +1907,22 @@ class Certificate {
     required this.laboratoryId,
     required this.studentName,
     required this.laboratoryName,
+    this.courseId,
+    this.courseName,
     this.issuerName = '',
     this.hours = 0,
     required this.issuedAt,
   });
+
+  bool get esDeCurso => courseId != null;
+
+  /// Lo que certifica: el curso, o el laboratorio de la Ruta.
+  String get titulo => esDeCurso ? (courseName ?? '') : laboratoryName;
+
+  /// Una línea para las listas: «Curso · X» o «Ruta de Impacto · X».
+  String get descripcion => esDeCurso
+      ? tr.certificadoCursoDe(titulo)
+      : tr.certificadoRutaDe(laboratoryName);
 
   factory Certificate.fromJson(Map<String, dynamic> j) => Certificate(
         id: j['id'] as String,
@@ -1914,6 +1931,8 @@ class Certificate {
         laboratoryId: (j['laboratoryId'] as String?) ?? '',
         studentName: (j['studentNameSnapshot'] as String?) ?? '',
         laboratoryName: (j['laboratoryNameSnapshot'] as String?) ?? '',
+        courseId: j['courseId'] as String?,
+        courseName: j['courseNameSnapshot'] as String?,
         issuerName: (j['issuerNameSnapshot'] as String?) ?? '',
         hours: (j['hours'] as num?)?.toInt() ?? 0,
         issuedAt: _date(j['issuedAt']) ?? DateTime.now(),
@@ -2053,7 +2072,7 @@ class AppNotification {
         'entrega_calificada' => tr.avisoEntregaCalificadaTitulo,
         'entrega_revisada' || 'mentor_comento' => tr.avisoEntregaRevisadaTitulo,
         'foro_reporte' => tr.avisoForoReporteTitulo,
-        'certificado_nuevo' => tr.avisoCertificadoTitulo,
+        'certificado_nuevo' || 'certificado_curso' => tr.avisoCertificadoTitulo,
         'solicitud_patrocinados' => tr.mapaSolicitudTitulo,
         _ => title,
       };
@@ -2065,6 +2084,7 @@ class AppNotification {
         'mentor_comento' => tr.avisoMentorComentoCuerpo(_p('tarea')),
         'foro_reporte' => tr.avisoForoReporteCuerpo,
         'certificado_nuevo' => tr.avisoCertificadoCuerpo(_p('laboratorio')),
+        'certificado_curso' => tr.avisoCertificadoCursoCuerpo(_p('curso')),
         'solicitud_patrocinados' =>
           '${tr.mapaSolicitudTexto}\n\n${tr.avisoFirma(_p('remitente'), _p('correo'))}',
         _ => body,
@@ -2530,4 +2550,37 @@ class GalleryImage {
 DateTime? _date(Object? raw) {
   if (raw is! String || raw.isEmpty) return null;
   return DateTime.tryParse(raw)?.toLocal();
+}
+
+/// Lo que responde la verificación pública de un certificado (el QR): solo lo
+/// que el certificado ya dice impreso.
+class CertificadoVerificado {
+  final String code;
+  final String studentName;
+  final bool esDeCurso;
+  final String titulo;
+  final int hours;
+  final String issuer;
+  final DateTime issuedAt;
+
+  const CertificadoVerificado({
+    required this.code,
+    required this.studentName,
+    required this.esDeCurso,
+    required this.titulo,
+    required this.hours,
+    required this.issuer,
+    required this.issuedAt,
+  });
+
+  factory CertificadoVerificado.fromJson(Map<String, dynamic> j) =>
+      CertificadoVerificado(
+        code: (j['code'] as String?) ?? '',
+        studentName: (j['studentName'] as String?) ?? '',
+        esDeCurso: j['kind'] == 'course',
+        titulo: (j['title'] as String?) ?? '',
+        hours: (j['hours'] as num?)?.toInt() ?? 0,
+        issuer: (j['issuer'] as String?) ?? '',
+        issuedAt: _date(j['issuedAt']) ?? DateTime.now(),
+      );
 }

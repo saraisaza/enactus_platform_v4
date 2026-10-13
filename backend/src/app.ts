@@ -11,6 +11,7 @@ import type { AppEnv } from './middleware/context';
 import { authRoutes } from './routes/auth';
 import { adminRoutes } from './routes/admin';
 import { certificateRoutes } from './routes/certificates';
+import { verificacionRoutes } from './routes/verificacion';
 import {
   calendarRoutes,
   commResourceRoutes,
@@ -200,6 +201,7 @@ export function createApp(database: Database = defaultDb) {
   app.route('/progress', progressRoutes);
   app.route('/students', studentRoutes);
   app.route('/certificates', certificateRoutes);
+  app.route('/certificate-verification', verificacionRoutes);
   app.route('/laboratories', labRoutes);
   // Escritura de laboratorios y de su Ruta de Impacto: otro rol (solo Admin)
   // y otra clase de regla que la lectura, así que otro archivo.

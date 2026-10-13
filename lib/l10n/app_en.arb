@@ -1557,5 +1557,20 @@
   "constructorExclusivoTexto": "An exclusive course can only be assigned to the people of that company.",
   "constructorExclusivoDeSuEmpresa": "This course is exclusive to your company: it is only assigned to its people.",
   "asignarDeOtraEmpresa": "Another company's",
-  "asignarExclusivo": "Exclusive"
+  "asignarExclusivo": "Exclusive",
+  "certificadoCursoDe": "Course · {curso}",
+  "certificadoCompletoCurso": "completed the course",
+  "certificadoEscanee": "Scan the code to verify it",
+  "avisoCertificadoCursoCuerpo": "You received the certificate for completing the course {curso}.",
+  "verificarValido": "Valid certificate",
+  "verificarCompletoCurso": "Completed the course {curso}.",
+  "verificarCompletoRuta": "Completed the Impact Path of the {laboratorio} laboratory.",
+  "verificarHoras": "Certified hours",
+  "verificarEmitidoPor": "Issued by",
+  "verificarFecha": "Issue date",
+  "verificarCodigo": "Code",
+  "verificarNoEncontrado": "We could not find this certificate",
+  "verificarNoEncontradoTexto": "Check that the link is complete. If you opened it from a certificate's code and it does not appear, that certificate was not issued on this platform.",
+  "constructorEntregaCertificado": "Does this course award a certificate?",
+  "constructorEntregaCertificadoTexto": "Whoever completes every lesson receives their certificate right away, with the certified hours."
 }

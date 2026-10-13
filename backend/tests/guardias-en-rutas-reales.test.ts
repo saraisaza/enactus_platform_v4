@@ -50,6 +50,9 @@ const PUBLICAS = new Set([
   'GET /site-content',
   'GET /projects',
   'GET /projects/:id',
+  // Lo que abre el QR de un certificado: cualquiera verifica que es real.
+  // Por id (imposible de adivinar) y solo con lo que el certificado dice.
+  'GET /certificate-verification/:id',
 ]);
 
 /**
@@ -74,6 +77,8 @@ const ESTUDIANTE_PUEDE = [
   // tiene la sesión, y pide la contraseña.
   /^POST \/auth\/me\/deletion-request$/,
   /^POST \/auth\/(login|refresh|logout)$/,
+  // Verificar un certificado es público (el QR): también para un estudiante.
+  /^GET \/certificate-verification\/:id$/,
   /^GET \/(courses|laboratories|projects|groups|certificates|evidences)/,
   /^GET \/(calendar-events|communication-resources|notifications)/,
   // El foro, MENOS la cola de reportes: esa es del equipo que modera, y con el

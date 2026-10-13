@@ -9457,6 +9457,96 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Exclusivo'**
   String get asignarExclusivo;
+
+  /// No description provided for @certificadoCursoDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso · {curso}'**
+  String certificadoCursoDe(String curso);
+
+  /// No description provided for @certificadoCompletoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'completó el curso'**
+  String get certificadoCompletoCurso;
+
+  /// No description provided for @certificadoEscanee.
+  ///
+  /// In es, this message translates to:
+  /// **'Escanee el código para verificarlo'**
+  String get certificadoEscanee;
+
+  /// No description provided for @avisoCertificadoCursoCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibió el certificado por completar el curso {curso}.'**
+  String avisoCertificadoCursoCuerpo(String curso);
+
+  /// No description provided for @verificarValido.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado válido'**
+  String get verificarValido;
+
+  /// No description provided for @verificarCompletoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Completó el curso {curso}.'**
+  String verificarCompletoCurso(String curso);
+
+  /// No description provided for @verificarCompletoRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Completó la Ruta de Impacto del laboratorio {laboratorio}.'**
+  String verificarCompletoRuta(String laboratorio);
+
+  /// No description provided for @verificarHoras.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas certificadas'**
+  String get verificarHoras;
+
+  /// No description provided for @verificarEmitidoPor.
+  ///
+  /// In es, this message translates to:
+  /// **'Emitido por'**
+  String get verificarEmitidoPor;
+
+  /// No description provided for @verificarFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de emisión'**
+  String get verificarFecha;
+
+  /// No description provided for @verificarCodigo.
+  ///
+  /// In es, this message translates to:
+  /// **'Código'**
+  String get verificarCodigo;
+
+  /// No description provided for @verificarNoEncontrado.
+  ///
+  /// In es, this message translates to:
+  /// **'No encontramos este certificado'**
+  String get verificarNoEncontrado;
+
+  /// No description provided for @verificarNoEncontradoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Revise que el enlace esté completo. Si lo abrió desde el código de un certificado y no aparece, ese certificado no fue emitido en esta plataforma.'**
+  String get verificarNoEncontradoTexto;
+
+  /// No description provided for @constructorEntregaCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Este curso entrega certificado?'**
+  String get constructorEntregaCertificado;
+
+  /// No description provided for @constructorEntregaCertificadoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas.'**
+  String get constructorEntregaCertificadoTexto;
 }
 
 class _AppLocalizationsDelegate

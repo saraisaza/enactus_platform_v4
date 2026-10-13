@@ -9,6 +9,7 @@ import {
   rutaProgressLessons,
 } from '../db/schema';
 import { forbidden, notFound } from '../lib/errors';
+import { emitirCertificadoDeCurso } from './certificates';
 
 /**
  * Alternar una lección: el único punto donde un estudiante escribe progreso.
@@ -162,6 +163,8 @@ async function toggleCourseLesson(
   }
 
   await db.insert(progressLessons).values({ progressId, lessonId });
+  // Si con esta lección terminó el curso, recibe su certificado ahora.
+  await emitirCertificadoDeCurso(db, studentId, courseId);
   return true;
 }
 

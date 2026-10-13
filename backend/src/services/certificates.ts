@@ -1,4 +1,4 @@
-import { randomInt } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import type { Database } from '../db/client';
@@ -239,4 +239,84 @@ export async function issueRutaCertificate(
   });
 
   return created!;
+}
+
+/**
+ * Emite el certificado de un curso, si corresponde. Lo llama quien acaba de
+ * marcar una lección como completa (el estudiante, o la calificación de una
+ * actividad): si con eso el curso quedó completo y el curso entrega
+ * certificado, la persona lo recibe en ese momento.
+ *
+ * No falla si no corresponde —todavía faltan lecciones, el curso no entrega
+ * certificado, ya lo tenía—: devuelve `null`. El requisito lo hace cumplir
+ * además la base (`enforce_ruta_certificate_requirements`).
+ *
+ * Solo cursos fuera de un laboratorio: en uno de laboratorio, «cuenta para
+ * certificado» significa que sus horas suman al de la Ruta de Impacto.
+ *
+ * El emisor es el cliente de la persona (su empresa, o Enactus); sin cliente,
+ * eduXaction. Es también de quién es el molde con el que se imprime.
+ */
+export async function emitirCertificadoDeCurso(
+  db: Database,
+  studentId: string,
+  courseId: string,
+): Promise<typeof certificates.$inferSelect | null> {
+  const [datos] = await db.execute<{
+    completo: boolean;
+    lecciones: number;
+    curso: string;
+    horas: number;
+    persona: string;
+    emisor: string;
+  }>(sql`
+    select cp.is_complete as completo, cp.total_lessons::int as lecciones,
+           c.name as curso,
+           (case when c.certified_hours > 0 then c.certified_hours
+                 else c.estimated_hours end)::int as horas,
+           u.name as persona, coalesce(cl.name, 'eduXaction') as emisor
+      from course_progress cp
+      join courses c on c.id = cp.course_id
+                    and c.deleted_at is null and c.generates_certificate
+                    -- En un curso de laboratorio, «cuenta para certificado»
+                    -- quiere decir que sus horas van al de la Ruta: ese se
+                    -- emite al completar la Ruta entera, no por curso.
+                    and c.laboratory_id is null
+      join users u on u.id = cp.student_id and u.deleted_at is null
+      left join clients cl on cl.id = u.client_id
+     where cp.student_id = ${studentId} and cp.course_id = ${courseId}
+  `);
+  if (!datos?.completo) return null;
+
+  const [creado] = await db
+    .insert(certificates)
+    .values({
+      code: `CUR-${new Date().getFullYear()}-${randomBytes(4).toString('hex').toUpperCase()}`,
+      studentId,
+      courseId,
+      studentNameSnapshot: datos.persona,
+      courseNameSnapshot: datos.curso,
+      issuerNameSnapshot: datos.emisor,
+      hours: datos.horas,
+      requirementsSnapshot: { lessons: datos.lecciones },
+    })
+    .onConflictDoNothing({ target: [certificates.studentId, certificates.courseId] })
+    .returning();
+  if (!creado) return null; // ya lo tenía
+
+  await db.insert(notifications).values({
+    userId: studentId,
+    title: 'Nuevo certificado',
+    body: `Recibió el certificado del curso ${datos.curso}.`,
+    kind: 'certificado_curso',
+    params: { curso: datos.curso },
+  });
+  await db.insert(auditLog).values({
+    actorId: null,
+    action: 'certificate.issue',
+    entityType: 'certificate',
+    entityId: creado.id,
+    newValue: { studentId, courseId, code: creado.code, hours: creado.hours },
+  });
+  return creado;
 }

@@ -3,6 +3,7 @@ library;
 
 import '../l10n/textos.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 
 class Roles {
   static const superAdmin = 'superadmin';
@@ -87,6 +88,9 @@ class AppRoutes {
   static const projects = '/proyectos';
   static const courses = '/cursos';
 
+  /// Verificación pública de un certificado (el QR): `/verificar/<id>`.
+  static const verificar = '/verificar';
+
   /// Perfil de un usuario (cualquier rol) — ver `UserDetailView`. Antes
   /// solo existía `StudentDetailView`, alcanzable con `Navigator.push` pero
   /// sin URL con nombre.
@@ -119,6 +123,29 @@ class SocialLinks {
   // https y con www: la página se sirve por HTTPS y un enlace en claro
   // provoca un salto extra y una advertencia en algunos navegadores.
   static const linkedin = 'https://www.linkedin.com/company/enactuscolombia/';
+}
+
+/// La web de la plataforma en ESTE entorno: los enlaces que salen de la app
+/// —el QR de un certificado— tienen que abrir el mismo entorno, no siempre
+/// producción. Se deduce de la API (`api.X` → `X`, `staging-api.X` →
+/// `staging.X`) y se puede fijar al compilar con `--dart-define=WEB_URL=...`.
+class EnlacesWeb {
+  static const _fijada = String.fromEnvironment('WEB_URL');
+
+  static String get base {
+    if (_fijada.isNotEmpty) return _fijada;
+    final host = Uri.tryParse(ApiService.baseUrl)?.host ?? '';
+    if (host.startsWith('staging-api.')) {
+      return 'https://staging.${host.substring('staging-api.'.length)}';
+    }
+    if (host.startsWith('api.')) return 'https://${host.substring('api.'.length)}';
+    return 'https://eduxaction.com';
+  }
+
+  /// La página pública que verifica un certificado. Con `#`: la web usa esa
+  /// forma de ruta, que se abre sin que el servidor tenga que conocerla.
+  static String verificarCertificado(String id) =>
+      '$base/#${AppRoutes.verificar}/$id';
 }
 
 /// Páginas públicas que App Store y Google Play exigen enlazar desde la app

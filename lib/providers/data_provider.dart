@@ -286,6 +286,14 @@ class DataProvider extends ChangeNotifier {
     return course;
   }
 
+  /// Verificación pública de un certificado (lo que abre su QR): sin sesión.
+  Future<CertificadoVerificado> verificarCertificado(String id) async {
+    final json =
+        await api.get('/certificate-verification/$id', authenticated: false);
+    return CertificadoVerificado.fromJson(
+        Map<String, dynamic>.from(json as Map));
+  }
+
   Future<Course> updateCourse(String id, Map<String, dynamic> changes) async {
     final json = await api.patch('/courses/$id', body: changes);
     final course = Course.fromJson(Map<String, dynamic>.from(json as Map));

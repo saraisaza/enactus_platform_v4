@@ -48,7 +48,9 @@ const courseBody = z.object({
   level: z.enum(['basic', 'intermediate', 'advanced']).default('basic'),
   estimatedHours: z.number().int().min(0).default(0),
   language: z.string().trim().default('es'),
-  generatesCertificate: z.boolean().default(false),
+  /** Sin decirlo: los de Open Learning entregan certificado; los de
+   *  laboratorio certifican con la Ruta (ver `POST /`). */
+  generatesCertificate: z.boolean().optional(),
   certifiedHours: z.number().int().min(0).default(0),
   maxStudents: z.number().int().min(0).default(0),
   visible: z.boolean().default(true),
@@ -383,6 +385,7 @@ courseRoutes.post('/', requireRole(...CONTENT_ROLES), async (c) => {
     .insert(courses)
     .values({
       ...body,
+      generatesCertificate: body.generatesCertificate ?? (body.isOpenLearning ?? false),
       clientId,
       laboratoryId: body.laboratoryId ?? null,
       creatorId: user.id,

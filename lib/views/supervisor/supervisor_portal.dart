@@ -243,7 +243,7 @@ class _SusCertificados extends StatelessWidget {
                                             fontWeight: AppWeights.uiSemibold,
                                             color: AppColors.textPrimary)),
                                     Text(
-                                        '${c.laboratoryName} · ${fechaCorta(c.issuedAt)}',
+                                        '${c.titulo} · ${fechaCorta(c.issuedAt)}',
                                         style: const TextStyle(
                                             fontSize: 12.5,
                                             color: AppColors.textSecondary)),

@@ -2910,5 +2910,48 @@
   "constructorExclusivoTexto": "Un curso exclusivo solo se puede asignar a las personas de esa empresa.",
   "constructorExclusivoDeSuEmpresa": "Este curso es exclusivo de su empresa: solo se asigna a su gente.",
   "asignarDeOtraEmpresa": "De otra empresa",
-  "asignarExclusivo": "Exclusivo"
+  "asignarExclusivo": "Exclusivo",
+  "certificadoCursoDe": "Curso · {curso}",
+  "@certificadoCursoDe": {
+    "placeholders": {
+      "curso": {
+        "type": "String"
+      }
+    }
+  },
+  "certificadoCompletoCurso": "completó el curso",
+  "certificadoEscanee": "Escanee el código para verificarlo",
+  "avisoCertificadoCursoCuerpo": "Recibió el certificado por completar el curso {curso}.",
+  "@avisoCertificadoCursoCuerpo": {
+    "placeholders": {
+      "curso": {
+        "type": "String"
+      }
+    }
+  },
+  "verificarValido": "Certificado válido",
+  "verificarCompletoCurso": "Completó el curso {curso}.",
+  "@verificarCompletoCurso": {
+    "placeholders": {
+      "curso": {
+        "type": "String"
+      }
+    }
+  },
+  "verificarCompletoRuta": "Completó la Ruta de Impacto del laboratorio {laboratorio}.",
+  "@verificarCompletoRuta": {
+    "placeholders": {
+      "laboratorio": {
+        "type": "String"
+      }
+    }
+  },
+  "verificarHoras": "Horas certificadas",
+  "verificarEmitidoPor": "Emitido por",
+  "verificarFecha": "Fecha de emisión",
+  "verificarCodigo": "Código",
+  "verificarNoEncontrado": "No encontramos este certificado",
+  "verificarNoEncontradoTexto": "Revise que el enlace esté completo. Si lo abrió desde el código de un certificado y no aparece, ese certificado no fue emitido en esta plataforma.",
+  "constructorEntregaCertificado": "¿Este curso entrega certificado?",
+  "constructorEntregaCertificadoTexto": "Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas."
 }

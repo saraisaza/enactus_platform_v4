@@ -23,6 +23,7 @@ import {
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
+import { emitirCertificadoDeCurso } from '../services/certificates';
 import { delMismoCliente, mismoCliente } from '../services/frontera-de-cliente';
 
 export const submissionRoutes = new Hono<AppEnv>();
@@ -510,6 +511,8 @@ async function markLessonComplete(
     .insert(progressLessons)
     .values({ progressId: row!.id, lessonId })
     .onConflictDoNothing();
+  // Calificar la última actividad puede ser lo que completa el curso.
+  await emitirCertificadoDeCurso(db, studentId, courseId);
 }
 
 export type { AuthUser };

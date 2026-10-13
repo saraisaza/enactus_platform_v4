@@ -16,9 +16,9 @@ El trabajo va por etapas, cada una probada en staging antes de la siguiente:
    desactivado deja afuera.
 4. **Manager / Supervisor y cursos exclusivos** — hecha: el portal del
    supervisor, cursos que solo se asignan a la gente de una empresa.
-5. **Frontera entre clientes** — hecha: ninguna cuenta alcanza a personas de
-   otro cliente. Falta pasar a producción.
-6. Certificados con molde, para toda la plataforma.
+5. **Frontera entre clientes** — hecha y en producción (2026-10-12).
+6. **Certificados** — parte 1 hecha: certificados de curso automáticos y
+   verificación pública con QR. Parte 2: el molde de cada cliente.
 
 ## Cómo funciona el color
 
@@ -231,3 +231,35 @@ Las pruebas: `backend/tests/frontera-entre-clientes.test.ts` (cada puerta,
 desde los dos lados, y que cada quien conserve lo suyo) y, en la app,
 `test/supervisor_y_exclusivos_test.dart` (una cuenta de empresa recorre su
 portal y el editor sin pedir nada de Enactus).
+
+## Certificados de curso (etapa 6, parte 1)
+
+Decisiones de Sara (2026-10-12): el molde es un PDF o una imagen, uno por
+cliente (quien no tenga usa el de eduXaction), con nombre, curso, fecha,
+horas, firma y código con QR; el certificado de un curso se emite solo al
+terminarlo.
+
+**Cuándo se emite.** Al completar todas las lecciones de un curso que
+«entrega certificado», sea porque la persona marcó la última o porque le
+calificaron la última actividad (`emitirCertificadoDeCurso`, en
+`services/certificates.ts`). Una sola vez por persona y curso. La base lo
+hace cumplir: el candado que exigía la Ruta completa exige ahora, para uno de
+curso, el curso completo (migración 0016).
+
+**Solo cursos fuera de un laboratorio.** En uno de laboratorio, «cuenta para
+certificado» significa que sus horas suman al de la Ruta de Impacto, que se
+emite al completarla entera: no hay certificado por curso ahí.
+
+**Por defecto.** Los cursos de Open Learning entregan certificado (la
+migración los encendió y emitió el suyo a quien ya los había terminado); el
+LXD puede apagarlo en el editor (Evaluación y certificado).
+
+**Emisor.** El cliente de la persona (su empresa, o Enactus); sin cliente,
+eduXaction. Es también de quién será el molde (parte 2).
+
+**Verificación.** El QR del PDF abre `<web>/#/verificar/<id>`, una página
+pública que pide `GET /certificate-verification/:id` sin sesión. Se busca por
+el id (UUID), no por el código: los de la Ruta son de cinco cifras y por
+código se podría sacar la lista de quiénes se certificaron. Responde solo lo
+que el certificado dice impreso, con un límite de 30 consultas por minuto. La
+web del QR es la del mismo entorno (`EnlacesWeb`, deducida de la API).

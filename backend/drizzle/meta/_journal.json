@@ -113,6 +113,13 @@
       "when": 1791837605293,
       "tag": "0015_supervisores_y_cursos_exclusivos",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791866187723,
+      "tag": "0016_certificados_de_curso",
+      "breakpoints": true
     }
   ]
 }

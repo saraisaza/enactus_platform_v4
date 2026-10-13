@@ -5612,4 +5612,60 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get asignarExclusivo => 'Exclusivo';
+
+  @override
+  String certificadoCursoDe(String curso) {
+    return 'Curso · $curso';
+  }
+
+  @override
+  String get certificadoCompletoCurso => 'completó el curso';
+
+  @override
+  String get certificadoEscanee => 'Escanee el código para verificarlo';
+
+  @override
+  String avisoCertificadoCursoCuerpo(String curso) {
+    return 'Recibió el certificado por completar el curso $curso.';
+  }
+
+  @override
+  String get verificarValido => 'Certificado válido';
+
+  @override
+  String verificarCompletoCurso(String curso) {
+    return 'Completó el curso $curso.';
+  }
+
+  @override
+  String verificarCompletoRuta(String laboratorio) {
+    return 'Completó la Ruta de Impacto del laboratorio $laboratorio.';
+  }
+
+  @override
+  String get verificarHoras => 'Horas certificadas';
+
+  @override
+  String get verificarEmitidoPor => 'Emitido por';
+
+  @override
+  String get verificarFecha => 'Fecha de emisión';
+
+  @override
+  String get verificarCodigo => 'Código';
+
+  @override
+  String get verificarNoEncontrado => 'No encontramos este certificado';
+
+  @override
+  String get verificarNoEncontradoTexto =>
+      'Revise que el enlace esté completo. Si lo abrió desde el código de un certificado y no aparece, ese certificado no fue emitido en esta plataforma.';
+
+  @override
+  String get constructorEntregaCertificado =>
+      '¿Este curso entrega certificado?';
+
+  @override
+  String get constructorEntregaCertificadoTexto =>
+      'Quien complete todas las lecciones recibe su certificado al instante, con las horas certificadas.';
 }

@@ -22,6 +22,7 @@ import 'views/mentor/mentor_portal.dart';
 import 'views/lxd/lxd_portal.dart';
 import 'views/public/landing_view.dart';
 import 'views/public/not_found_view.dart';
+import 'views/public/verificar_certificado_view.dart';
 import 'views/public/sin_conexion_view.dart';
 import 'views/shared/lab_detail_view.dart';
 import 'views/shared/user_detail_view.dart';
@@ -292,6 +293,12 @@ Route<dynamic> _generateRoute(RouteSettings settings) {
       page = _AuthGuard(
           child: CourseDetailView(
               courseId: name.substring('${AppRoutes.courses}/'.length)));
+    // Pública, sin sesión: lo que abre el QR de un certificado.
+    case AppRoutes.verificar:
+      page = const VerificarCertificadoView();
+    case String name when name.startsWith('${AppRoutes.verificar}/'):
+      page = VerificarCertificadoView(
+          id: name.substring('${AppRoutes.verificar}/'.length));
     case String name when name.startsWith('${AppRoutes.users}/'):
       page = _AuthGuard(
           child: UserDetailView(

@@ -163,14 +163,19 @@ export const certificates = pgTable(
     studentId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'restrict' }),
-    laboratoryId: uuid()
-      .notNull()
-      .references(() => laboratories.id, { onDelete: 'restrict' }),
+    /**
+     * Un certificado es de la Ruta de Impacto de un laboratorio O de un curso,
+     * nunca de los dos (`certificates_de_lab_o_de_curso`).
+     */
+    laboratoryId: uuid().references(() => laboratories.id, { onDelete: 'restrict' }),
+    /** Certificado de curso: lo emite el servidor al completarlo (etapa 6). */
+    courseId: uuid().references(() => courses.id, { onDelete: 'restrict' }),
     /** Quién emitió. FK real, no el string suelto `issuerName` de hoy. */
     issuerId: uuid().references(() => users.id, { onDelete: 'set null' }),
 
     studentNameSnapshot: text().notNull(),
-    laboratoryNameSnapshot: text().notNull(),
+    laboratoryNameSnapshot: text(),
+    courseNameSnapshot: text(),
     issuerNameSnapshot: text().notNull(),
     hours: integer().notNull().default(0),
     labContentVersion: integer().notNull().default(1),
@@ -182,8 +187,21 @@ export const certificates = pgTable(
   },
   (t) => [
     uniqueIndex('certificates_code_unique').on(t.code),
-    // Un solo certificado por estudiante y laboratorio.
+    // Un solo certificado por estudiante y laboratorio, y por estudiante y curso.
     uniqueIndex('certificates_student_lab_unique').on(t.studentId, t.laboratoryId),
+    uniqueIndex('certificates_student_course_unique').on(t.studentId, t.courseId),
+    index('certificates_course_id_idx').on(t.courseId),
+    check(
+      'certificates_de_lab_o_de_curso',
+      sql`(${t.laboratoryId} is null) <> (${t.courseId} is null)`,
+    ),
+    // El nombre de lo que certifica, guardado al emitir: si el curso o el
+    // laboratorio cambian de nombre, el certificado dice lo que decía.
+    check(
+      'certificates_con_su_nombre',
+      sql`(${t.laboratoryId} is null or ${t.laboratoryNameSnapshot} is not null)
+          and (${t.courseId} is null or ${t.courseNameSnapshot} is not null)`,
+    ),
     index('certificates_student_id_idx').on(t.studentId),
     index('certificates_laboratory_id_idx').on(t.laboratoryId),
     index('certificates_issuer_id_idx').on(t.issuerId),

@@ -225,4 +225,5 @@ export const MENSAJES_EN: ReadonlyArray<readonly [string, string]> = [
   ["{0}: es exclusivo de otra empresa y no se puede asignar a {1}.", "{0}: it is exclusive to another company and cannot be assigned to {1}."],
   ["Un supervisor califica cursos de su empresa, que son de Open Learning.", "A supervisor grades their company's courses, which are Open Learning."],
   ["Los laboratorios, los proyectos y los equipos son de Enactus: su cuenta es de una empresa.", "Laboratories, projects and teams belong to Enactus: your account belongs to a company."],
+  ["No encontramos ese certificado.", "We could not find that certificate."],
 ];

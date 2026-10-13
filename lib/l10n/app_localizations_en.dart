@@ -5633,4 +5633,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get asignarExclusivo => 'Exclusive';
+
+  @override
+  String certificadoCursoDe(String curso) {
+    return 'Course · $curso';
+  }
+
+  @override
+  String get certificadoCompletoCurso => 'completed the course';
+
+  @override
+  String get certificadoEscanee => 'Scan the code to verify it';
+
+  @override
+  String avisoCertificadoCursoCuerpo(String curso) {
+    return 'You received the certificate for completing the course $curso.';
+  }
+
+  @override
+  String get verificarValido => 'Valid certificate';
+
+  @override
+  String verificarCompletoCurso(String curso) {
+    return 'Completed the course $curso.';
+  }
+
+  @override
+  String verificarCompletoRuta(String laboratorio) {
+    return 'Completed the Impact Path of the $laboratorio laboratory.';
+  }
+
+  @override
+  String get verificarHoras => 'Certified hours';
+
+  @override
+  String get verificarEmitidoPor => 'Issued by';
+
+  @override
+  String get verificarFecha => 'Issue date';
+
+  @override
+  String get verificarCodigo => 'Code';
+
+  @override
+  String get verificarNoEncontrado => 'We could not find this certificate';
+
+  @override
+  String get verificarNoEncontradoTexto =>
+      'Check that the link is complete. If you opened it from a certificate\'s code and it does not appear, that certificate was not issued on this platform.';
+
+  @override
+  String get constructorEntregaCertificado =>
+      'Does this course award a certificate?';
+
+  @override
+  String get constructorEntregaCertificadoTexto =>
+      'Whoever completes every lesson receives their certificate right away, with the certified hours.';
 }

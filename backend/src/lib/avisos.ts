@@ -15,6 +15,8 @@ export const TIPOS_DE_AVISO = [
   'foro_reporte',
   /** Se emitió un certificado. `params.laboratorio`. */
   'certificado_nuevo',
+  /** Se emitió el certificado de un curso (al completarlo). `params.curso`. */
+  'certificado_curso',
   /** El mentor avisa que comentó (lo manda la app). `params.tarea`. */
   'mentor_comento',
   /** Un aliado pide estudiantes patrocinados. `params.remitente`, `params.correo`. */

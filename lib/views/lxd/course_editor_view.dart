@@ -1130,6 +1130,9 @@ class _CertificateSectionState extends State<_CertificateSection> {
 
   @override
   Widget build(BuildContext context) {
+    // En un curso de laboratorio, el certificado es el de la Ruta: sus horas
+    // suman ahí. Fuera de un laboratorio, el curso entrega el suyo.
+    final deLaboratorio = widget.course.laboratoryId != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1140,9 +1143,13 @@ class _CertificateSectionState extends State<_CertificateSection> {
         ],
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(tr.constructorCuentaCertificado),
+          title: Text(deLaboratorio
+              ? tr.constructorCuentaCertificado
+              : tr.constructorEntregaCertificado),
           subtitle: Text(
-              tr.constructorCuentaCertificadoTexto,
+              deLaboratorio
+                  ? tr.constructorCuentaCertificadoTexto
+                  : tr.constructorEntregaCertificadoTexto,
               style: TextStyle(fontSize: 12)),
           value: _generates,
           activeThumbColor: AppColors.gold,

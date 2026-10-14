@@ -142,10 +142,20 @@ class EnlacesWeb {
     return 'https://eduxaction.com';
   }
 
-  /// La página pública que verifica un certificado. Con `#`: la web usa esa
-  /// forma de ruta, que se abre sin que el servidor tenga que conocerla.
+  /// La página pública que verifica un certificado. Sin `#`: la web usa
+  /// rutas de verdad (`utils/url_strategy.dart`) y CloudFront sirve la app en
+  /// cualquier ruta.
   static String verificarCertificado(String id) =>
-      '$base/#${AppRoutes.verificar}/$id';
+      '$base${AppRoutes.verificar}/$id';
+
+  /// Los QR de los certificados impresos el 13 y 14 de octubre de 2026 decían
+  /// `/#/verificar/<id>`, y con rutas sin `#` la app abría la portada. Esta es
+  /// la ruta a la que tiene que llevar esa dirección, o `null` si no es una
+  /// de esas. Hay PDF descargados con ese QR: el arreglo tiene que alcanzarlos.
+  static String? rutaDeQrViejo(Uri direccion) {
+    final fragmento = direccion.fragment;
+    return fragmento.startsWith('${AppRoutes.verificar}/') ? fragmento : null;
+  }
 }
 
 /// Páginas públicas que App Store y Google Play exigen enlazar desde la app

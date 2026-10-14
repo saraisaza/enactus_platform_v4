@@ -257,12 +257,15 @@ LXD puede apagarlo en el editor (Evaluación y certificado).
 **Emisor.** El cliente de la persona (su empresa, o Enactus); sin cliente,
 eduXaction. Es también de quién será el molde (parte 2).
 
-**Verificación.** El QR del PDF abre `<web>/#/verificar/<id>`, una página
+**Verificación.** El QR del PDF abre `<web>/verificar/<id>`, una página
 pública que pide `GET /certificate-verification/:id` sin sesión. Se busca por
 el id (UUID), no por el código: los de la Ruta son de cinco cifras y por
 código se podría sacar la lista de quiénes se certificaron. Responde solo lo
 que el certificado dice impreso, con un límite de 30 consultas por minuto. La
 web del QR es la del mismo entorno (`EnlacesWeb`, deducida de la API).
+Los QR impresos el 13 y 14 de octubre de 2026 decían `/#/verificar/<id>`
+(la web usa rutas sin `#`, y esos abrían la portada): la app los reconoce al
+arrancar y lleva a su verificación (`EnlacesWeb.rutaDeQrViejo`).
 
 ## El molde de cada cliente (etapa 6, parte 2)
 

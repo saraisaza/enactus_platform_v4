@@ -65,7 +65,13 @@ Future<void> main() async {
   final data = DataProvider(api);
   final auth = AuthProvider(api, data);
 
-  runApp(EnactusApp(api: api, data: data, auth: auth));
+  runApp(EnactusApp(
+    api: api,
+    data: data,
+    auth: auth,
+    // Un QR viejo de certificado (`/#/verificar/<id>`): a su verificación.
+    initialRoute: kIsWeb ? EnlacesWeb.rutaDeQrViejo(Uri.base) : null,
+  ));
 }
 
 class EnactusApp extends StatefulWidget {

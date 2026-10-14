@@ -49,8 +49,21 @@ void main() {
     });
 
     test('el QR lleva a la verificación pública de ESE certificado', () {
+      // Sin `#`: la web usa rutas de verdad. Con `#`, la app abría la portada.
       expect(EnlacesWeb.verificarCertificado(_id),
-          'https://eduxaction.com/#/verificar/$_id');
+          'https://eduxaction.com/verificar/$_id');
+    });
+
+    test('un QR viejo, con #, todavía lleva a su verificación', () {
+      expect(
+          EnlacesWeb.rutaDeQrViejo(
+              Uri.parse('https://eduxaction.com/#/verificar/$_id')),
+          '/verificar/$_id');
+      expect(EnlacesWeb.rutaDeQrViejo(Uri.parse('https://eduxaction.com/login')),
+          isNull);
+      expect(
+          EnlacesWeb.rutaDeQrViejo(Uri.parse('https://eduxaction.com/#/admin')),
+          isNull);
     });
 
     test('su PDF se arma', () async {

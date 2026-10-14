@@ -11,8 +11,10 @@ import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import '../utils/formatos.dart';
+import '../utils/marca.dart';
 import '../utils/responsive.dart';
 import 'animated_logo.dart';
+import 'colores_encabezado.dart';
 import 'logo_de_cliente.dart';
 import 'common.dart';
 import 'cuenta.dart';
@@ -49,22 +51,35 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     // nombre), desborda por un margen real (~46px), no solo en compact.
     final roomy = context.isExpanded;
     final conLogoDeCliente = user?.client?.logoUrl != null;
-    // «Portal Estudiante», al lado del logo: solo donde hay lugar.
-    final etiquetaDelPortal = !compact && roomy && portalTitle != null
+    // Con logo de cliente, el encabezado es de su marca: claro si su logo es
+    // oscuro (el que pedía placa), para que el logo vaya directo sobre el
+    // fondo; si no, oscuro con el tono de su marca.
+    final colores = !conLogoDeCliente
+        ? ColoresEncabezado.oscuro
+        : user!.client!.logoLightPlate
+            ? ColoresEncabezado.claroDeMarca
+            : ColoresEncabezado.oscuro.conFondo(AppColors.barraLateral);
+    final deCliente = Marca.instancia.paleta.esDeCliente;
+    // «Portal Estudiante», al lado del logo: solo donde hay lugar. Con el
+    // logo de un cliente, solo en pantallas anchas: el logo va primero.
+    final etiquetaDelPortal = !compact &&
+            roomy &&
+            portalTitle != null &&
+            (!conLogoDeCliente || MediaQuery.sizeOf(context).width >= 1280)
         ? Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 220),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: deCliente ? AppColors.secundario : AppColors.slate,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 portalTitle!,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.gold,
+                  color: deCliente ? AppColors.sobreSecundario : AppColors.gold,
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
@@ -91,9 +106,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     // reserva ese margen con el mismo fondo, y los íconos del sistema van en
     // claro sobre el gris de la marca.
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: colores.claro
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
+      child: AmbitoEncabezado(
+      colores: colores,
       child: Container(
-      color: AppColors.background,
+      color: colores.fondo,
       padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
       child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -102,16 +121,16 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
         Container(
           height: compact ? 64 : 160,
           padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 20),
-          decoration: const BoxDecoration(
-            color: AppColors.background,
-            border: Border(bottom: BorderSide(color: AppColors.border)),
+          decoration: BoxDecoration(
+            color: colores.fondo,
+            border: Border(bottom: BorderSide(color: colores.borde)),
           ),
           child: Row(
             children: [
               if (showMenuButton && compact)
                 IconButton(
                   icon: const Icon(Icons.menu),
-                  color: AppColors.textPrimary,
+                  color: colores.texto,
                   tooltip: tr.comunMenu,
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
@@ -138,6 +157,8 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     children: [
                       Flexible(child: logos),
                       ?etiquetaDelPortal,
+                      // Un respiro antes del selector de idioma.
+                      SizedBox(width: compact ? 4 : 12),
                     ],
                   ),
                 ),
@@ -153,7 +174,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                 ] else
                   IconButton(
                     icon: const Icon(Icons.search),
-                    color: AppColors.textSecondary,
+                    color: colores.textoSecundario,
                     tooltip: tr.comunBuscar,
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
@@ -171,6 +192,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       ],
     ),
     ),
+    ),
     );
   }
 }
@@ -181,11 +203,13 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
 // ---------------------------------------------------------------------------
 
 /// El logo de eduXaction y, si la cuenta es de un cliente con logo, el del
-/// cliente al lado.
+/// cliente.
 ///
-/// El de eduXaction no cambia nunca: ni de color ni de tamaño por culpa del
-/// otro. El del cliente toma el espacio que sobra; si falta espacio, se
-/// achica él primero, y si no hay ninguno, no se muestra.
+/// Sin cliente, el de eduXaction como siempre. Con la marca de un cliente, el
+/// suyo manda: va primero y grande, directo sobre el fondo del encabezado
+/// (que ya se pintó para él: claro si su logo es oscuro), y el de eduXaction
+/// lo acompaña después, chico. Si falta espacio, el del cliente se achica;
+/// si no hay ninguno, queda solo el de eduXaction.
 class _LogosDelEncabezado extends StatelessWidget {
   final bool compacto;
   final bool amplio;
@@ -203,16 +227,19 @@ class _LogosDelEncabezado extends StatelessWidget {
   /// el logotipo completo mide 2.25 veces este número; el compacto es un
   /// cuadrado.
   double get _altoNuestro => compacto ? 34 : (amplio ? 135 : 72);
-  double get _anchoNuestro => compacto ? 34 : _altoNuestro * 2.25;
 
-  /// El logo del cliente, a la altura de las letras del nuestro (el
-  /// logotipo se ve de unos 0.42 veces su `height`).
-  double get _altoCliente => compacto ? 28 : (amplio ? 56 : 32);
-  double get _anchoMaxCliente => compacto ? 96 : (amplio ? 220 : 140);
+  /// Con la marca de un cliente, el de eduXaction va chico: el protagonista
+  /// es el del cliente. (32 es el mínimo de la regla de marca para la X.)
+  double get _altoNuestroChico => compacto ? 32 : (amplio ? 44 : 36);
+  double get _anchoNuestroChico => compacto ? 32 : _altoNuestroChico * 2.25;
+
+  double get _altoCliente => compacto ? 34 : (amplio ? 80 : 48);
+  double get _anchoMaxCliente => compacto ? 150 : (amplio ? 480 : 260);
+
+  void _ir(BuildContext context) =>
+      Navigator.of(context).pushNamedAndRemoveUntil(destino, (_) => false);
 
   Widget _nuestro(BuildContext context) {
-    void ir() =>
-        Navigator.of(context).pushNamedAndRemoveUntil(destino, (_) => false);
     if (compacto) {
       // En el teléfono el logo mide 34 dp: el área tocable llega a 48
       // alrededor, y el lector de pantalla dice qué hace.
@@ -221,7 +248,7 @@ class _LogosDelEncabezado extends StatelessWidget {
         label: tr.comunIrAlInicio,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: ir,
+          onTap: () => _ir(context),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             child: const Align(
@@ -240,39 +267,83 @@ class _LogosDelEncabezado extends StatelessWidget {
     return FittedBox(
       fit: BoxFit.scaleDown,
       alignment: Alignment.centerLeft,
-      child: AnimatedLogo(height: _altoNuestro, compact: false, onTap: ir),
+      child: AnimatedLogo(
+          height: _altoNuestro, compact: false, onTap: () => _ir(context)),
     );
   }
+
+  /// El de eduXaction al lado del de un cliente: chico, y en su versión
+  /// para fondo claro si el encabezado es claro.
+  Widget _nuestroChico(BuildContext context, {required bool claro}) =>
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: AnimatedLogo(
+          height: _altoNuestroChico,
+          compact: compacto,
+          onLight: claro,
+          onTap: () => _ir(context),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     final url = marca?.logoUrl;
     if (url == null) return _nuestro(context);
+    final colores = ColoresEncabezado.of(context);
 
     return LayoutBuilder(builder: (context, limites) {
-      final hueco = compacto ? 8.0 : 16.0;
-      // El de eduXaction primero; el cliente, con lo que sobre.
-      final sobra = limites.maxWidth - _anchoNuestro - hueco * 2 - 1;
-      if (sobra < 32) return _nuestro(context);
-      final anchoCliente = sobra < _anchoMaxCliente ? sobra : _anchoMaxCliente;
+      final hueco = compacto ? 10.0 : 18.0;
+      // Si falta espacio, lo primero que se va es el nuestro: el protagonista
+      // es el del cliente. Después, el del cliente se achica.
+      final sobraConElNuestro =
+          limites.maxWidth - _anchoNuestroChico - hueco * 2 - 1;
+      final conElNuestro = sobraConElNuestro >= 110;
+      final disponible = conElNuestro ? sobraConElNuestro : limites.maxWidth;
+      final anchoCliente =
+          disponible < _anchoMaxCliente ? disponible : _anchoMaxCliente;
+      if (anchoCliente < 40) {
+        return _nuestroChico(context, claro: colores.claro);
+      }
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(width: _anchoNuestro, child: _nuestro(context)),
-          SizedBox(width: hueco),
-          Container(
-            width: 1,
-            height: _altoCliente,
-            color: AppColors.textMuted.withValues(alpha: 0.6),
+          // El del cliente lleva a su portal, como el nuestro. Se anuncia con
+          // su nombre («Logo de …»), como botón.
+          Semantics(
+            button: true,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _ir(context),
+                child: LogoDeCliente(
+                  imagen: imagenDeLogo(url),
+                  nombre: marca!.name,
+                  // El encabezado ya se pintó para este logo: claro si es
+                  // oscuro. Sin caja alrededor.
+                  placaClara: false,
+                  altoMaximo: _altoCliente,
+                  anchoMaximo: anchoCliente,
+                ),
+              ),
+            ),
           ),
-          SizedBox(width: hueco),
-          LogoDeCliente(
-            imagen: imagenDeLogo(url),
-            nombre: marca!.name,
-            placaClara: marca!.logoLightPlate,
-            altoMaximo: _altoCliente,
-            anchoMaximo: anchoCliente,
-          ),
+          if (conElNuestro) ...[
+            SizedBox(width: hueco),
+            Container(
+              width: 1,
+              height: _altoCliente * 0.6,
+              color: colores.claro
+                  ? colores.borde
+                  : AppColors.textMuted.withValues(alpha: 0.6),
+            ),
+            SizedBox(width: hueco),
+            SizedBox(
+              width: _anchoNuestroChico,
+              child: _nuestroChico(context, claro: colores.claro),
+            ),
+          ],
         ],
       );
     });
@@ -387,6 +458,7 @@ class _GlobalSearchState extends State<_GlobalSearch> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    final colores = ColoresEncabezado.of(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOut,
@@ -400,13 +472,21 @@ class _GlobalSearchState extends State<_GlobalSearch> {
         fieldViewBuilder: (context, ctrl, focus, onSubmit) => TextField(
           controller: ctrl,
           focusNode: focus,
-          style: const TextStyle(fontSize: 13.5),
+          style: TextStyle(fontSize: 13.5, color: colores.texto),
           decoration: InputDecoration(
             hintText: tr.busquedaPista,
+            // Sobre el encabezado claro de un cliente, un campo claro.
+            fillColor: colores.campo,
+            hintStyle: TextStyle(color: colores.textoTenue),
+            enabledBorder: colores.claro
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: colores.borde))
+                : null,
             prefixIcon: Icon(
               Icons.search,
               size: 19,
-              color: _focused ? AppColors.gold : AppColors.textMuted,
+              color: _focused ? colores.acento : colores.textoTenue,
             ),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
@@ -748,6 +828,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
 
   @override
   Widget build(BuildContext context) {
+    final colores = ColoresEncabezado.of(context);
     // En compact no entra el nombre/rol en línea junto al resto del header
     // — el avatar solo (círculo con inicial) sigue abriendo el mismo menú.
     final compact = context.isCompact;
@@ -801,7 +882,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: _hover ? AppColors.gold : AppColors.textPrimary,
+                      color: _hover ? colores.acento : colores.texto,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -810,8 +891,8 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
                     Roles.label(widget.user.role),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
+                    style: TextStyle(
+                      color: colores.textoTenue,
                       fontSize: 11,
                     ),
                   ),
@@ -822,7 +903,7 @@ class _HoverableAvatarState extends State<HoverableAvatar> {
             Icon(
               Icons.keyboard_arrow_down,
               size: 18,
-              color: _hover ? AppColors.gold : AppColors.textMuted,
+              color: _hover ? colores.acento : colores.textoTenue,
             ),
           ],
         ],
@@ -850,7 +931,7 @@ class _NotificationBell extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
-          color: AppColors.textSecondary,
+          color: ColoresEncabezado.of(context).textoSecundario,
           hoverColor: AppColors.gold.withValues(alpha: 0.1),
           tooltip: tr.notificacionesTitulo,
           onPressed: () => _showPanel(context),

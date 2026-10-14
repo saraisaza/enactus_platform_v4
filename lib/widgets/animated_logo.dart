@@ -138,7 +138,8 @@ class _Wordmark extends StatelessWidget {
           child: _SweepingX(
               fontSize: fontSize,
               fontWeight: FontWeight.w700,
-              letterSpacing: letterSpacing),
+              letterSpacing: letterSpacing,
+              onLight: onLight),
         ),
         TextSpan(
             text: 'action',
@@ -196,10 +197,15 @@ class _SweepingX extends StatefulWidget {
   final double fontSize;
   final FontWeight fontWeight;
   final double letterSpacing;
+
+  /// Sobre fondo claro la X va en la tinta oscura del resto del logotipo:
+  /// blanca —con su halo blanco— desaparecía, y del logo quedaba «edu action».
+  final bool onLight;
   const _SweepingX(
       {required this.fontSize,
       required this.fontWeight,
-      required this.letterSpacing});
+      required this.letterSpacing,
+      this.onLight = false});
 
   @override
   State<_SweepingX> createState() => _SweepingXState();
@@ -245,11 +251,12 @@ class _SweepingXState extends State<_SweepingX>
       fontWeight: widget.fontWeight,
       letterSpacing: widget.letterSpacing,
       height: 1,
-      color: Colors.white,
+      color: widget.onLight ? const Color(0xFF101014) : Colors.white,
       shadows: [
-        Shadow(
-            color: Colors.white.withValues(alpha: 0.75),
-            blurRadius: widget.fontSize * 0.22),
+        if (!widget.onLight)
+          Shadow(
+              color: Colors.white.withValues(alpha: 0.75),
+              blurRadius: widget.fontSize * 0.22),
       ],
     );
     return Stack(

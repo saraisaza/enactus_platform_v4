@@ -43,6 +43,13 @@ class AppColors {
   /// progreso. Como fondo o barra; como texto, [secundarioTinta].
   static Color get secundario => Marca.instancia.paleta.secundario;
 
+  /// La barra lateral: el gris de siempre, o el oscuro con el tono de la
+  /// marca de un cliente.
+  static Color get barraLateral => Marca.instancia.paleta.superficieDeMarca;
+
+  /// La tinta sobre el secundario usado como relleno.
+  static Color get sobreSecundario => Marca.instancia.paleta.sobreSecundario;
+
   /// [secundario] como texto o ícono sobre las superficies oscuras.
   static Color get secundarioTinta =>
       Marca.instancia.paleta.secundarioSobreOscuro;

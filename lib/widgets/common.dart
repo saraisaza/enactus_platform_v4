@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
+import '../utils/marca.dart';
 import '../utils/responsive.dart';
 
 /// Construye un widget en función de si el mouse está encima.
@@ -588,10 +589,20 @@ class ColombiaFlagBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final paleta = Marca.instancia.paleta;
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: ColoredBox(color: AppColors.relleno),
+      // Con la marca de un cliente, sus dos colores: del primario al
+      // secundario.
+      child: paleta.esDeCliente
+          ? DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [paleta.primario, paleta.secundario]),
+              ),
+            )
+          : ColoredBox(color: AppColors.relleno),
     );
   }
 }

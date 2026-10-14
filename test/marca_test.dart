@@ -190,22 +190,31 @@ void main() {
       fijarTamano(tester, const Size(1440, 900));
       await montar(tester, appDe('student'));
 
-      Color franja() => tester
-          .widget<ColoredBox>(find.descendant(
-              of: find.byType(ColombiaFlagBar).first,
-              matching: find.byType(ColoredBox)))
-          .color;
-      expect(franja(), const Color(0xFFFFC107));
+      // Los colores de la franja: uno solo con eduXaction; con la marca de
+      // un cliente, el degradé de su primario a su secundario.
+      List<Color> franja() {
+        final barra = find.byType(ColombiaFlagBar).first;
+        final liso = find.descendant(of: barra, matching: find.byType(ColoredBox));
+        if (liso.evaluate().isNotEmpty) {
+          return [tester.widget<ColoredBox>(liso).color];
+        }
+        final caja = tester.widget<DecoratedBox>(
+            find.descendant(of: barra, matching: find.byType(DecoratedBox)));
+        return ((caja.decoration as BoxDecoration).gradient! as LinearGradient)
+            .colors;
+      }
+      expect(franja(), [const Color(0xFFFFC107)]);
 
       // Es un widget `const` en el código de partida: sin el redibujado de
       // `Marca.aplicar`, se quedaría en ámbar aunque el tema cambiara.
+      // (Sin secundario, el secundario es el primario: azul a azul.)
       Marca.instancia.aplicar(PaletaMarca.desde(primario: _azul));
       await tester.pump();
-      expect(franja(), _azul);
+      expect(franja(), [_azul, _azul]);
 
       Marca.instancia.restablecer();
       await tester.pump();
-      expect(franja(), const Color(0xFFFFC107));
+      expect(franja(), [const Color(0xFFFFC107)]);
     });
   });
 

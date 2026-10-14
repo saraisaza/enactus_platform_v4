@@ -8,6 +8,7 @@ import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
 import '../utils/app_theme.dart';
+import '../utils/marca.dart';
 import '../utils/constants.dart';
 import '../utils/responsive.dart';
 import 'app_footer.dart';
@@ -183,7 +184,7 @@ class _PortalShellState extends State<PortalShell> {
                       // Barra lateral
                       Container(
                         width: wide ? 230 : 64,
-                        color: AppColors.slate,
+                        color: AppColors.barraLateral,
                         child: ListView(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           children: [
@@ -212,7 +213,7 @@ class _PortalShellState extends State<PortalShell> {
     final posicion = enBarra.indexOf(_selected);
     return NavigationBarTheme(
       data: NavigationBarThemeData(
-        backgroundColor: AppColors.slate,
+        backgroundColor: AppColors.barraLateral,
         // La opción activa va con el secundario de la marca.
         indicatorColor: AppColors.secundario,
         labelTextStyle: WidgetStateProperty.resolveWith((estados) => TextStyle(
@@ -273,7 +274,7 @@ class _PortalShellState extends State<PortalShell> {
   /// `Scaffold`/`Drawer`, no sirve para eso).
   Widget _buildDrawer() {
     return Drawer(
-      backgroundColor: AppColors.slate,
+      backgroundColor: AppColors.barraLateral,
       child: SafeArea(
         child: Builder(
           builder: (drawerContext) => ListView(
@@ -331,9 +332,12 @@ class _SidebarItemState extends State<_SidebarItem> {
   @override
   Widget build(BuildContext context) {
     final active = widget.selected;
-    // La opción activa va con el secundario de la marca.
+    // La opción activa va con el secundario de la marca. Con la marca de un
+    // cliente, en pleno —relleno del secundario, borde del primario—: es lo
+    // que más se ve de su identidad mientras se navega.
+    final deCliente = Marca.instancia.paleta.esDeCliente;
     final color = active
-        ? AppColors.secundarioTinta
+        ? (deCliente ? AppColors.sobreSecundario : AppColors.secundarioTinta)
         : (_hover ? AppColors.textPrimary : AppColors.textSecondary);
 
     return MouseRegion(
@@ -351,13 +355,15 @@ class _SidebarItemState extends State<_SidebarItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
             color: active
-                ? AppColors.secundario.withValues(alpha: 0.12)
+                ? (deCliente
+                    ? AppColors.secundario
+                    : AppColors.secundario.withValues(alpha: 0.12))
                 : (_hover ? Colors.white.withValues(alpha: 0.05) : null),
             borderRadius: BorderRadius.circular(8),
             border: Border(
               left: BorderSide(
                 color: active
-                    ? AppColors.secundario
+                    ? (deCliente ? AppColors.relleno : AppColors.secundario)
                     : (_hover
                           ? AppColors.gold.withValues(alpha: 0.55)
                           : Colors.transparent),

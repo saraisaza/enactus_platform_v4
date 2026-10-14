@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
+import 'colores_encabezado.dart';
 
 /// Desplegable "Español / English" de la barra superior.
 ///
@@ -22,6 +23,8 @@ class SelectorIdioma extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final idioma = Idioma.instancia;
+    // Sobre el encabezado claro de un cliente, en oscuro.
+    final colores = ColoresEncabezado.of(context);
     return ListenableBuilder(
       listenable: idioma,
       builder: (context, _) {
@@ -38,10 +41,10 @@ class SelectorIdioma extends StatelessWidget {
                 dropdownColor: AppColors.surfaceAlt,
                 borderRadius: BorderRadius.circular(8),
                 focusColor: Colors.transparent,
-                icon: const Icon(Icons.expand_more,
-                    size: 18, color: AppColors.textSecondary),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                icon: Icon(Icons.expand_more,
+                    size: 18, color: colores.textoSecundario),
+                style: TextStyle(
+                  color: colores.texto,
                   fontFamily: AppFonts.ui,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -51,8 +54,8 @@ class SelectorIdioma extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.language,
-                            size: 18, color: AppColors.textSecondary),
+                        Icon(Icons.language,
+                            size: 18, color: colores.textoSecundario),
                         const SizedBox(width: 6),
                         Text(compacto ? c.toUpperCase() : nombres[c]!),
                       ],

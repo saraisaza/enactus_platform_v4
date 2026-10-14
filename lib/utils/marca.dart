@@ -83,6 +83,18 @@ class PaletaMarca {
   final Color suaveSobreOscuro;
   final Color suaveSobreClaro;
 
+  /// `true` en la paleta de un cliente: la plataforma deja que su marca se
+  /// note también en la estructura (barra lateral, franja superior,
+  /// encabezado), no solo en los acentos.
+  final bool esDeCliente;
+
+  /// El fondo de la barra lateral (y del encabezado oscuro de un cliente): un
+  /// oscuro con el tono del secundario. Con eduXaction, el gris de siempre.
+  final Color superficieDeMarca;
+
+  /// La tinta que va sobre el secundario como relleno (la opción activa).
+  final Color sobreSecundario;
+
   const PaletaMarca._({
     required this.primario,
     required this.secundario,
@@ -95,6 +107,9 @@ class PaletaMarca {
     required this.tintaSobreClaro,
     required this.suaveSobreOscuro,
     required this.suaveSobreClaro,
+    this.esDeCliente = false,
+    this.superficieDeMarca = const Color(0xFF26262A),
+    this.sobreSecundario = tintaOscura,
   });
 
   /// La marca de eduXaction, con los valores exactos del handoff de branding.
@@ -164,7 +179,27 @@ class PaletaMarca {
           legibleSobre(primario, fondoClaroMasOscuro, aclarando: false),
       suaveSobreOscuro: primario.withValues(alpha: 0.16),
       suaveSobreClaro: primario.withValues(alpha: 0.24),
+      esDeCliente: true,
+      // Del color más oscuro de la marca: el que hace de «estructura» (el
+      // pizarra de Nelson, el azul marino de un banco), no el de acento.
+      superficieDeMarca: superficieDe(
+          primario.computeLuminance() < secundarioOpaco.computeLuminance()
+              ? primario
+              : secundarioOpaco),
+      sobreSecundario: _mejorTintaSobre(secundarioOpaco),
     );
+  }
+
+  /// Un fondo oscuro con el tono de [color]: tan oscuro como el gris de la
+  /// barra lateral de siempre —el texto claro encima se lee igual—, pero con
+  /// su matiz. Un color sin matiz (un gris) da un oscuro neutro: no se inventa
+  /// un tono que la marca no tiene. Uno muy saturado se calma, para que la
+  /// barra no grite al lado del contenido.
+  static Color superficieDe(Color color) {
+    final hsl = HSLColor.fromColor(color);
+    final saturacion =
+        hsl.saturation < 0.05 ? 0.0 : hsl.saturation.clamp(0.24, 0.42);
+    return hsl.withSaturation(saturacion).withLightness(0.17).toColor();
   }
 
   /// La tinta que más contrasta sobre [fondo]: la oscura de la plataforma o
@@ -211,13 +246,16 @@ class PaletaMarca {
       other.tintaSobreOscuroBrillante == tintaSobreOscuroBrillante &&
       other.tintaSobreClaro == tintaSobreClaro &&
       other.suaveSobreOscuro == suaveSobreOscuro &&
-      other.suaveSobreClaro == suaveSobreClaro;
+      other.suaveSobreClaro == suaveSobreClaro &&
+      other.esDeCliente == esDeCliente &&
+      other.superficieDeMarca == superficieDeMarca &&
+      other.sobreSecundario == sobreSecundario;
 
   @override
   int get hashCode => Object.hash(primario, secundario, secundarioSobreOscuro,
       secundarioSobreClaro, primarioBrillante, sobrePrimario, tintaSobreOscuro,
       tintaSobreOscuroBrillante, tintaSobreClaro, suaveSobreOscuro,
-      suaveSobreClaro);
+      suaveSobreClaro, esDeCliente, superficieDeMarca, sobreSecundario);
 }
 
 /// Contraste WCAG 2.x entre dos colores opacos: de 1:1 (iguales) a 21:1

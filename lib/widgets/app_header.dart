@@ -233,10 +233,11 @@ class _LogosDelEncabezado extends StatelessWidget {
   double get _altoNuestroChico => compacto ? 32 : (amplio ? 44 : 36);
   double get _anchoNuestroChico => compacto ? 32 : _altoNuestroChico * 2.25;
 
-  // Un 25 % más chico que la primera versión en escritorio y tableta: a
-  // pedido de Sara, se veía demasiado grande. En el teléfono ya era chico.
-  double get _altoCliente => compacto ? 34 : (amplio ? 60 : 36);
-  double get _anchoMaxCliente => compacto ? 150 : (amplio ? 360 : 195);
+  // En escritorio y tableta, dos veces un 25 % más chico que la primera
+  // versión, a pedido de Sara: se veía demasiado grande. En el teléfono ya
+  // era chico.
+  double get _altoCliente => compacto ? 34 : (amplio ? 45 : 27);
+  double get _anchoMaxCliente => compacto ? 150 : (amplio ? 270 : 146);
 
   void _ir(BuildContext context) =>
       Navigator.of(context).pushNamedAndRemoveUntil(destino, (_) => false);

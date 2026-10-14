@@ -28,12 +28,19 @@ function cargarPdfjs() {
  * Las páginas se dibujan a medida que entran en pantalla: un PDF de cien
  * páginas no se rasteriza entero de entrada.
  *
+ * `alLlegarAlFinal`, si viene, se llama UNA vez cuando se ve el final del
+ * documento: así la lección de lectura se completa al recorrerla, no al
+ * abrirla. Un documento que entra entero en pantalla llega al final enseguida.
+ *
  * Nunca rechaza: resuelve con '' si se dibujó, o con el mensaje para mostrar
  * si no. Un string es más fácil de cruzar a Dart que un `Error` de JS.
  */
-export async function mostrarPdf(contenedor, url) {
+export async function mostrarPdf(contenedor, url, alLlegarAlFinal) {
   try {
     await dibujarDocumento(contenedor, url);
+    if (typeof alLlegarAlFinal === 'function') {
+      vigilarElFinal(contenedor, alLlegarAlFinal);
+    }
     return '';
   } catch (error) {
     return error instanceof Error && error.message
@@ -101,6 +108,25 @@ async function dibujarDocumento(contenedor, url) {
     contenedor.appendChild(hoja);
     observador.observe(hoja);
   }
+}
+
+/**
+ * Una marca invisible después de la última página: cuando entra en pantalla,
+ * la persona recorrió el documento hasta el final.
+ */
+function vigilarElFinal(contenedor, alLlegarAlFinal) {
+  const final = document.createElement('div');
+  final.style.cssText = 'height:1px;';
+  contenedor.appendChild(final);
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      if (!entradas.some((e) => e.isIntersecting)) return;
+      observador.disconnect();
+      alLlegarAlFinal();
+    },
+    { root: contenedor },
+  );
+  observador.observe(final);
 }
 
 async function dibujarPagina(documento, hoja) {

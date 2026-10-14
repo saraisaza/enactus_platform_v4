@@ -22,7 +22,7 @@ export 'lesson_video_shell.dart' show formatVideoTime;
 /// de quien abrió la lección sin mirar el video.
 ///
 /// **El avance lo decide [VideoWatchTracker]**, no este widget: acá solo se
-/// le pasan los eventos del reproductor. Con [onProgress] y [onWatched] en
+/// le pasan los eventos del reproductor. Con [onProgress] en
 /// `null` no se sigue nada — es la vista previa del LXD, o alguien del equipo
 /// mirando el curso de un estudiante.
 ///
@@ -39,7 +39,6 @@ class YoutubeLessonPlayer extends StatefulWidget {
     this.resumeAt,
     this.watchedRatio,
     this.onProgress,
-    this.onWatched,
     this.loadTimeout = const Duration(seconds: 20),
     this.borderRadius = 12,
   });
@@ -53,11 +52,9 @@ class YoutubeLessonPlayer extends StatefulWidget {
   /// Cuánto había visto (0..1), para la barrita sobre la miniatura.
   final double? watchedRatio;
 
-  /// Posición y duración en segundos, cuando conviene guardarlas.
-  final void Function(int positionSec, int? durationSec)? onProgress;
-
-  /// Pasó el 90% o terminó. Llega una sola vez.
-  final VoidCallback? onWatched;
+  /// Cada guardado del avance: dónde retomar y el tramo que se vio. Con
+  /// esto el servidor completa la lección (ver [VideoWatchTracker]).
+  final void Function(VideoSave save)? onProgress;
 
   final Duration loadTimeout;
 
@@ -117,8 +114,7 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
     videoStateUpdateInterval: 1000,
   );
 
-  bool get _sigueAvance =>
-      widget.onProgress != null || widget.onWatched != null;
+  bool get _sigueAvance => widget.onProgress != null;
 
   Future<void> _activar() async {
     final intento = ++_intento;
@@ -127,8 +123,7 @@ class _YoutubeLessonPlayerState extends State<YoutubeLessonPlayer> {
     final controller = _ControladorLeccion(params: _params);
     if (_sigueAvance) {
       _tracker = VideoWatchTracker(
-        onSave: (p, d) => widget.onProgress?.call(p, d),
-        onWatched: widget.onWatched,
+        onSave: (guardado) => widget.onProgress?.call(guardado),
       );
     }
     _subs

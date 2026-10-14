@@ -579,7 +579,8 @@ listado del estudiante           → solo los 2 cursos de sus laboratorios
 
 | Método | Ruta |
 |---|---|
-| POST | `/progress/lessons/:lessonId/toggle` |
+| POST | `/progress/lessons/:lessonId/complete` (desde 2026-10-14: en orden y con su prueba, ver `docs/avance/README.md`) |
+| POST | `/progress/lessons/:lessonId/toggle` (nombre viejo de `complete`; ya no alterna) |
 | GET | `/students/:id/ruta-progress` |
 | GET | `/students/:id/course-progress/:courseId` |
 | GET | `/students/:id/certificate-eligibility/:laboratoryId` |

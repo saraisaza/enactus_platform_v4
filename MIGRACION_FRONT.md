@@ -323,19 +323,18 @@ aceptándose como enlace.
 
 ### El avance del estudiante
 
-- `lesson_video_progress` guarda `position_sec` (dónde retomar) y
-  `furthest_sec` (lo más lejos que llegó; solo crece). No es completitud y no
-  alimenta ninguna vista de `0001_completeness.sql`.
-- `VideoWatchTracker` decide cuándo guardar: cada 15 s de reproducción, al
-  pausar, al terminar y al cerrar. Nunca dos veces la misma posición.
-- Al pasar el 90% (o al terminar) el cliente completa la lección con
-  `toggleLessonIfPending`, igual que al aprobar un quiz. **El servidor no la
-  completa solo**: si lo hiciera, quien la desmarcó para repasarla la vería
-  marcarse de nuevo en el primer guardado, porque `furthest_sec` ya estaba al
-  final.
-- `toggleLessonIfPending` ahora ignora un segundo pedido mientras el primero
-  está en vuelo: el video cruza el 90% y termina un segundo después, y los dos
-  veían la lección pendiente — el segundo toggle la desmarcaba.
+- `lesson_video_progress` guarda `position_sec` (dónde retomar),
+  `furthest_sec` (lo más lejos que llegó; solo crece) y, desde la migración
+  0020, `watched_segments`/`watched_sec`: los tramos que de verdad se
+  reprodujeron. No alimenta ninguna vista de `0001_completeness.sql`.
+- `VideoWatchTracker` decide cuándo guardar: al arrancar (el punto de
+  partida), cada 15 s de reproducción, al pausar, al saltar, al terminar y al
+  cerrar. Cada guardado lleva el tramo visto desde el anterior; un salto
+  cierra el tramo, así que **adelantar no suma**.
+- **Lo completa el servidor**, en el mismo guardado, cuando lo visto llega al
+  90% (`services/video-progress.ts`); el cliente ya no pide «toggle». Ver
+  `docs/avance/README.md` (2026-10-14): desde entonces no existe marcar ni
+  desmarcar a mano.
 - El equipo que abre el curso de un estudiante ve cuánto vio, pero el
   reproductor no guarda nada a su nombre.
 

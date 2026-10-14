@@ -30,11 +30,12 @@ enum DeadlineStatus {
       this == DeadlineStatus.overdue || this == DeadlineStatus.approaching;
 }
 
-/// Hasta dónde vio una persona el video de una lección.
+/// Hasta dónde vio una persona el video de una lección, y cuánto vio.
 ///
-/// No es completitud: la lección se completa por el toggle de siempre. Esto
-/// sirve para retomar donde quedó —en cualquier dispositivo— y para mostrar
-/// cuánto vio.
+/// Sirve para retomar donde quedó —en cualquier dispositivo— y para mostrar
+/// cuánto vio. La lección la completa el SERVIDOR cuando [watchedSec] llega
+/// al 90% de la duración: lo visto de verdad, no la posición a la que se
+/// adelantó (`services/video-progress.ts`).
 class VideoProgress {
   final String lessonId;
 
@@ -47,18 +48,23 @@ class VideoProgress {
   /// La que reportó el reproductor; `null` si nunca llegó a saberla.
   final int? durationSec;
 
+  /// Los segundos distintos que de verdad se reprodujeron. Saltar no suma.
+  final int watchedSec;
+
   const VideoProgress({
     required this.lessonId,
     this.positionSec = 0,
     this.furthestSec = 0,
     this.durationSec,
+    this.watchedSec = 0,
   });
 
-  /// Cuánto vio, 0..1. `null` sin duración: no hay de qué sacar un porcentaje.
+  /// Cuánto vio de verdad, 0..1. `null` sin duración: no hay de qué sacar un
+  /// porcentaje.
   double? get watchedRatio {
     final duration = durationSec;
     if (duration == null || duration <= 0) return null;
-    return (furthestSec / duration).clamp(0.0, 1.0);
+    return (watchedSec / duration).clamp(0.0, 1.0);
   }
 
   /// Desde dónde arrancar el reproductor, o `null` para arrancar del principio.
@@ -75,7 +81,8 @@ class VideoProgress {
   }
 
   /// El mismo avance con una posición nueva, como lo calcula el servidor:
-  /// [furthestSec] nunca baja y una duración nula no borra la conocida.
+  /// [furthestSec] nunca baja y una duración nula no borra la conocida. Lo
+  /// visto ([watchedSec]) no se toca: eso lo cuenta el servidor.
   VideoProgress advancedTo(int position, {int? duration}) {
     final newDuration = duration ?? durationSec;
     final clamped = newDuration == null || position <= newDuration
@@ -86,6 +93,7 @@ class VideoProgress {
       positionSec: clamped,
       furthestSec: clamped > furthestSec ? clamped : furthestSec,
       durationSec: newDuration,
+      watchedSec: watchedSec,
     );
   }
 
@@ -96,6 +104,7 @@ class VideoProgress {
         positionSec: (j['positionSec'] as num?)?.toInt() ?? 0,
         furthestSec: (j['furthestSec'] as num?)?.toInt() ?? 0,
         durationSec: (j['durationSec'] as num?)?.toInt(),
+        watchedSec: (j['watchedSec'] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -117,6 +126,19 @@ class CourseProgress {
   /// el detalle del curso lo trae, no el resumen del listado.
   final List<VideoProgress> videoProgress;
 
+  /// La lección que le toca: la primera sin completar, en el orden del
+  /// curso. `null` si las completó todas.
+  final String? nextLessonId;
+
+  /// Si el servidor informó [nextLessonId]. Uno anterior a la migración 0020
+  /// no lo manda, y entonces no se dibujan candados: sin el dato, bloquear
+  /// dejaría el curso entero cerrado.
+  final bool knowsLessonOrder;
+
+  /// Si trae [completedLessonIds]: el detalle de un curso. El resumen del
+  /// listado de cursos solo trae los totales.
+  final bool hasLessonDetail;
+
   const CourseProgress({
     required this.courseId,
     this.courseName = '',
@@ -126,6 +148,9 @@ class CourseProgress {
     this.isComplete = false,
     this.completedLessonIds = const [],
     this.videoProgress = const [],
+    this.nextLessonId,
+    this.knowsLessonOrder = false,
+    this.hasLessonDetail = false,
   });
 
   /// Progreso vacío, para un curso que el estudiante todavía no empezó.
@@ -134,6 +159,14 @@ class CourseProgress {
 
   bool isLessonComplete(String lessonId) =>
       completedLessonIds.contains(lessonId);
+
+  /// Si la lección se puede abrir: ya la completó (y la repasa) o es la que
+  /// le toca. Las lecciones se hacen en orden; el servidor hace cumplir lo
+  /// mismo (`services/avance-de-leccion.ts`).
+  bool isLessonAvailable(String lessonId) =>
+      !knowsLessonOrder ||
+      isLessonComplete(lessonId) ||
+      lessonId == nextLessonId;
 
   VideoProgress? videoProgressFor(String lessonId) =>
       videoProgress.where((v) => v.lessonId == lessonId).firstOrNull;
@@ -147,6 +180,9 @@ class CourseProgress {
         isComplete: (j['isComplete'] as bool?) ?? false,
         completedLessonIds:
             List<String>.from(j['completedLessonIds'] as List? ?? const []),
+        nextLessonId: j['nextLessonId'] as String?,
+        knowsLessonOrder: j.containsKey('nextLessonId'),
+        hasLessonDetail: j.containsKey('completedLessonIds'),
         videoProgress: (j['videoProgress'] as List? ?? const [])
             .map((e) =>
                 VideoProgress.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -275,6 +311,10 @@ class OwnLesson {
   final VideoProgress? videoProgress;
   final bool isComplete;
 
+  /// Si ya le toca: el módulo está desbloqueado y las lecciones propias
+  /// anteriores, completas (o esta ya lo está, y se repasa).
+  final bool isUnlocked;
+
   const OwnLesson({
     required this.id,
     required this.title,
@@ -289,6 +329,7 @@ class OwnLesson {
     this.videoYoutubeId,
     this.videoProgress,
     this.isComplete = false,
+    this.isUnlocked = true,
   });
 
   bool get isActivity => type == LessonType.activity;
@@ -328,6 +369,8 @@ class OwnLesson {
               )
             : null,
         isComplete: (j['isComplete'] as bool?) ?? false,
+        // Un servidor anterior a la 0020 no lo manda: sin el dato, abierta.
+        isUnlocked: (j['isUnlocked'] as bool?) ?? true,
       );
 }
 
@@ -498,12 +541,13 @@ class RutaProgress {
       );
 }
 
-/// Efecto de marcar o desmarcar una lección, tal como lo devuelve
-/// `POST /progress/lessons/:id/toggle`.
+/// Efecto de completar una lección, tal como lo devuelven
+/// `POST /progress/lessons/:id/complete`, el quiz aprobado, la entrega de la
+/// Ruta y el guardado del video que llega al 90%.
 ///
 /// Trae el recálculo completo hacia arriba —curso, módulo, fase y Ruta— en una
 /// sola respuesta, así que la pantalla no necesita volver a preguntar nada.
-class ToggleImpact {
+class LessonImpact {
   final String lessonId;
   final bool completed;
   final CourseProgress? course;
@@ -511,7 +555,7 @@ class ToggleImpact {
   /// Un mismo curso puede estar en la Ruta de varios laboratorios.
   final List<RutaImpact> rutaImpact;
 
-  const ToggleImpact({
+  const LessonImpact({
     required this.lessonId,
     required this.completed,
     required this.course,
@@ -526,7 +570,7 @@ class ToggleImpact {
     return null;
   }
 
-  factory ToggleImpact.fromJson(Map<String, dynamic> j) => ToggleImpact(
+  factory LessonImpact.fromJson(Map<String, dynamic> j) => LessonImpact(
         lessonId: j['lessonId'] as String,
         completed: (j['completed'] as bool?) ?? false,
         course: j['course'] == null
@@ -539,7 +583,7 @@ class ToggleImpact {
       );
 }
 
-/// Cómo quedó la Ruta de un laboratorio tras marcar una lección.
+/// Cómo quedó la Ruta de un laboratorio tras completar una lección.
 class RutaImpact {
   final String laboratoryId;
   final String moduleId;
@@ -647,6 +691,10 @@ class QuizResult {
   /// `{ idDePregunta: acertó }`.
   final Map<String, bool> correctness;
 
+  /// Aprobar completa la lección en el servidor; esto es cómo quedó todo.
+  /// `null` si no aprobó.
+  final LessonImpact? impact;
+
   const QuizResult({
     required this.attemptId,
     required this.score,
@@ -654,6 +702,7 @@ class QuizResult {
     required this.correctCount,
     required this.totalQuestions,
     this.correctness = const {},
+    this.impact,
   });
 
   bool isCorrect(String questionId) => correctness[questionId] ?? false;
@@ -667,6 +716,10 @@ class QuizResult {
         correctness: Map<String, bool>.from(
             (j['correctness'] as Map? ?? const {}).map(
                 (key, value) => MapEntry('$key', value == true))),
+        impact: j['impact'] is Map
+            ? LessonImpact.fromJson(
+                Map<String, dynamic>.from(j['impact'] as Map))
+            : null,
       );
 }
 

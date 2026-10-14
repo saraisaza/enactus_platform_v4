@@ -26,6 +26,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:enactus_platform/models/models.dart';
+import 'package:enactus_platform/models/progress.dart';
 import 'package:enactus_platform/providers/auth_provider.dart';
 import 'package:enactus_platform/providers/data_provider.dart';
 import 'package:enactus_platform/services/api_errors.dart';
@@ -258,7 +259,7 @@ void main() {
     expect(await s.data.mySurveyResponse(survey.id), respuestas);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
-  test('marcar una lección recalcula curso, módulo y fase de una sola vez',
+  test('completar no alterna: lo hecho sigue hecho, y lo demás pide su prueba',
       () async {
     if (!up) return;
     final s = await signIn(_enactus);
@@ -267,21 +268,19 @@ void main() {
     final course = await load<Course>(() => s.data.courseById(courses.first.id));
     final lesson = course.modules.first.lessons.first;
 
-    final antes = s.data.courseProgress(course.id).valueOrNull!;
-    final impact = await s.data.toggleLesson(lesson.id, course.id);
+    final antes = await load<CourseProgress>(() => s.data.courseProgress(course.id));
+    try {
+      await s.data.completeLesson(lesson.id, courseId: course.id);
+    } on ConflictError catch (e) {
+      // Un video sin ver, por ejemplo: el 409 dice qué falta.
+      expect(e.message, isNotEmpty);
+    }
     final despues = s.data.courseProgress(course.id).valueOrNull!;
 
-    expect(impact.lessonId, lesson.id);
-    expect(
-        despues.completedLessons,
-        impact.completed
-            ? antes.completedLessons + 1
-            : antes.completedLessons - 1);
-    // El recálculo hacia arriba viene en la MISMA respuesta.
-    expect(impact.course, isNotNull);
-
-    // Se deja como estaba.
-    await s.data.toggleLesson(lesson.id, course.id);
+    // Nunca se desmarca: lo completado sigue completado.
+    expect(despues.completedLessons, greaterThanOrEqualTo(antes.completedLessons));
+    expect(despues.isLessonComplete(lesson.id) || !antes.isLessonComplete(lesson.id),
+        isTrue);
   }, timeout: const Timeout(Duration(seconds: 45)));
 
   test('el laboratorio trae mentores, LXD y el avance del grupo', () async {

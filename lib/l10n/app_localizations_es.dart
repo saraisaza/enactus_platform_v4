@@ -1927,16 +1927,72 @@ class AppLocalizationsEs extends AppLocalizations {
   String get leccionCompletada => 'Completada';
 
   @override
-  String get leccionMarcarPendiente => 'Marcar como pendiente';
-
-  @override
-  String get leccionMarcarCompletada => 'Marcar como completada';
-
-  @override
   String get rutaCompletada => '¡Completó la Ruta de Impacto! 🎉';
 
   @override
   String get leccionCompletadaExclama => '¡Lección completada!';
+
+  @override
+  String leccionBloqueada(Object anterior) {
+    return 'Bloqueada: primero complete «$anterior».';
+  }
+
+  @override
+  String get leccionBloqueadaSinNombre =>
+      'Bloqueada: primero complete las lecciones anteriores.';
+
+  @override
+  String get leccionSeCompletaVideo => 'Se completa al ver el video completo.';
+
+  @override
+  String get leccionSeCompletaLectura =>
+      'Se completa al leer el material hasta el final.';
+
+  @override
+  String get leccionSeCompletaEnlace => 'Se completa al abrir el enlace.';
+
+  @override
+  String get leccionSeCompletaQuiz => 'Se completa al aprobar el quiz.';
+
+  @override
+  String get leccionSeCompletaEncuesta =>
+      'Se completa al responder la encuesta.';
+
+  @override
+  String get leccionSeCompletaActividad =>
+      'Se completa cuando su entrega sea calificada como aprobada.';
+
+  @override
+  String get leccionSeCompletaEntrega => 'Se completa al hacer su entrega.';
+
+  @override
+  String get actividadEnRevision => 'Entregada · espera calificación';
+
+  @override
+  String get actividadNoAprobada => 'No aprobada · entregue de nuevo';
+
+  @override
+  String get actividadSeCompletaAprobada =>
+      'Esta lección se completa cuando su entrega sea calificada como aprobada. Mientras tanto, la siguiente queda bloqueada.';
+
+  @override
+  String get lecturaLlegueAlFinal =>
+      'Llegue hasta la última página para completar la lección.';
+
+  @override
+  String get lecturaDescargueParaCompletar =>
+      'Descargue el archivo para completar la lección.';
+
+  @override
+  String get lecturaCompletada => 'Lectura completada.';
+
+  @override
+  String get entregaVaciaRuta =>
+      'Escriba un comentario o adjunte un archivo para entregar.';
+
+  @override
+  String get videoSeCompletaAlVerlo =>
+      'La lección se completa al ver el 90 % del video. Adelantarlo no cuenta.';
 
   @override
   String get cursoNoPuedeResponder =>

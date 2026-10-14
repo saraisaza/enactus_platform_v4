@@ -70,7 +70,7 @@ async function certificadoDe(correo: string, clientId: string | null) {
   });
   await pedir(`/users/${persona.id}/courses`, 'PUT', admin, { ids: [curso.id] });
   const token = (await login(t.app, correo, 'Clave123')).accessToken;
-  await pedir(`/progress/lessons/${leccion.id}/toggle`, 'POST', token);
+  await pedir(`/progress/lessons/${leccion.id}/complete`, 'POST', token);
   const [cert] = await sql<{ id: string; issuerClientId: string | null }[]>`
     select id, issuer_client_id as "issuerClientId" from certificates
      where student_id = ${persona.id}`;

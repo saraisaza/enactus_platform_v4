@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
+import 'aviso_de_lectura.dart';
 import 'pdf_view_io.dart' if (dart.library.js_interop) 'pdf_view_web.dart';
 import 'visor_pdf.dart';
 
@@ -19,6 +20,11 @@ import 'visor_pdf.dart';
 ///
 /// Recibe la URL ya firmada: quien llama la pide al servidor y muestra el
 /// error de permisos como hasta ahora.
+///
+/// Con [onReadToEnd] es el material de una lección, y avisa cuando la
+/// persona lo recorrió —es lo que completa una lección de lectura—: un PDF,
+/// al llegar a la última página; una imagen, al verla; un archivo que no se
+/// puede mostrar, al descargarlo. Abajo se ve qué falta.
 class FileViewer {
   FileViewer._();
 
@@ -27,6 +33,7 @@ class FileViewer {
     required String url,
     String? fileName,
     String? s3Key,
+    VoidCallback? onReadToEnd,
   }) async {
     final nombre = _nombreVisible(fileName, s3Key, url);
     final tipo = _tipoDe(fileName, s3Key);
@@ -36,13 +43,14 @@ class FileViewer {
     // Imprimir—: abrirlo con la aplicación del sistema sacaba a la persona de
     // la lección en el teléfono.
     if (tipo == _Tipo.pdf && !visorPdfDisponible) {
-      await abrirPdf(context, url, titulo: nombre);
+      await abrirPdf(context, url, titulo: nombre, onReachedEnd: onReadToEnd);
       return;
     }
 
     await showDialog<void>(
       context: context,
-      builder: (_) => _FileViewerDialog(url: url, nombre: nombre, tipo: tipo),
+      builder: (_) => _FileViewerDialog(
+          url: url, nombre: nombre, tipo: tipo, onReadToEnd: onReadToEnd),
     );
   }
 
@@ -70,7 +78,8 @@ class FileViewer {
 
 enum _Tipo { pdf, imagen, otro }
 
-Future<void> _abrirAfuera(BuildContext context, String url) async {
+/// Devuelve si se pudo abrir.
+Future<bool> _abrirAfuera(BuildContext context, String url) async {
   final uri = Uri.tryParse(url);
   final ok = uri != null &&
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -78,21 +87,58 @@ Future<void> _abrirAfuera(BuildContext context, String url) async {
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(tr.archivoNoAbre)));
   }
+  return ok;
 }
 
-class _FileViewerDialog extends StatelessWidget {
+class _FileViewerDialog extends StatefulWidget {
   final String url;
   final String nombre;
   final _Tipo tipo;
+  final VoidCallback? onReadToEnd;
 
   const _FileViewerDialog({
     required this.url,
     required this.nombre,
     required this.tipo,
+    this.onReadToEnd,
   });
 
   @override
+  State<_FileViewerDialog> createState() => _FileViewerDialogState();
+}
+
+class _FileViewerDialogState extends State<_FileViewerDialog> {
+  bool _leido = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Una imagen se ve entera apenas se abre.
+    if (widget.tipo == _Tipo.imagen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _terminoDeLeer());
+    }
+  }
+
+  /// Una sola vez: la última página puede volver a verse, y descargar dos
+  /// veces no es leer dos veces.
+  void _terminoDeLeer() {
+    final aviso = widget.onReadToEnd;
+    if (aviso == null || _leido || !mounted) return;
+    setState(() => _leido = true);
+    aviso();
+  }
+
+  /// Descargar un archivo que no se puede mostrar acá es la única forma de
+  /// leerlo, así que cuenta como recorrido.
+  Future<void> _descargar() async {
+    if (await _abrirAfuera(context, widget.url)) _terminoDeLeer();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final url = widget.url;
+    final nombre = widget.nombre;
+    final tipo = widget.tipo;
     final pantalla = MediaQuery.sizeOf(context);
     final compacta = pantalla.width < 600;
 
@@ -114,10 +160,21 @@ class _FileViewerDialog extends StatelessWidget {
             if (tipo == _Tipo.otro)
               _Aviso(
                 mensaje: tr.archivoNoVisible,
-                url: url,
+                onDescargar: _descargar,
               )
             else
-              Expanded(child: _Contenido(url: url, tipo: tipo)),
+              Expanded(
+                child: _Contenido(
+                  url: url,
+                  tipo: tipo,
+                  onReachedEnd: _terminoDeLeer,
+                  onDescargar: _descargar,
+                ),
+              ),
+            if (widget.onReadToEnd != null && tipo != _Tipo.imagen)
+              AvisoDeLectura(leido: _leido, tipo: tipo == _Tipo.pdf
+                  ? AvisoDeLecturaTipo.pdf
+                  : AvisoDeLecturaTipo.archivo),
           ],
         ),
       ),
@@ -179,16 +236,24 @@ class _Encabezado extends StatelessWidget {
 class _Contenido extends StatelessWidget {
   final String url;
   final _Tipo tipo;
+  final VoidCallback onReachedEnd;
+  final VoidCallback onDescargar;
 
-  const _Contenido({required this.url, required this.tipo});
+  const _Contenido({
+    required this.url,
+    required this.tipo,
+    required this.onReachedEnd,
+    required this.onDescargar,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Si no se pudo mostrar, descargarlo es la forma de leerlo.
     Widget fallo(String mensaje) =>
-        Center(child: _Aviso(mensaje: mensaje, url: url));
+        Center(child: _Aviso(mensaje: mensaje, onDescargar: onDescargar));
 
     if (tipo == _Tipo.pdf) {
-      return PdfView(url: url, errorBuilder: fallo);
+      return PdfView(url: url, errorBuilder: fallo, onReachedEnd: onReachedEnd);
     }
     return InteractiveViewer(
       maxScale: 6,
@@ -209,9 +274,9 @@ class _Contenido extends StatelessWidget {
 
 class _Aviso extends StatelessWidget {
   final String mensaje;
-  final String url;
+  final VoidCallback onDescargar;
 
-  const _Aviso({required this.mensaje, required this.url});
+  const _Aviso({required this.mensaje, required this.onDescargar});
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +293,7 @@ class _Aviso extends StatelessWidget {
           FilledButton.icon(
             icon: const Icon(Icons.download_outlined, size: 18),
             label: Text(tr.comunDescargar),
-            onPressed: () => _abrirAfuera(context, url),
+            onPressed: onDescargar,
           ),
         ],
       ),

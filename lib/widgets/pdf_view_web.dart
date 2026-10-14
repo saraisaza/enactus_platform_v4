@@ -20,7 +20,15 @@ class PdfView extends StatefulWidget {
   /// Qué mostrar si el PDF no se pudo dibujar.
   final Widget Function(String message) errorBuilder;
 
-  const PdfView({super.key, required this.url, required this.errorBuilder});
+  /// Se llama una vez, cuando se ve el final del documento.
+  final VoidCallback? onReachedEnd;
+
+  const PdfView({
+    super.key,
+    required this.url,
+    required this.errorBuilder,
+    this.onReachedEnd,
+  });
 
   @override
   State<PdfView> createState() => _PdfViewState();
@@ -35,9 +43,17 @@ class _PdfViewState extends State<PdfView> {
     try {
       final visor = Uri.parse(web.document.baseURI).resolve('visor_pdf.js');
       final modulo = await importModule(visor.toString().toJS).toDart;
+      final alFinal = widget.onReachedEnd;
       final resultado = await modulo
           .callMethod<JSPromise<JSString>>(
-              'mostrarPdf'.toJS, contenedor, widget.url.toJS)
+              'mostrarPdf'.toJS,
+              contenedor,
+              widget.url.toJS,
+              alFinal == null
+                  ? null
+                  : (() {
+                      if (mounted) alFinal();
+                    }).toJS)
           .toDart;
       error = resultado.toDart;
     } catch (_) {

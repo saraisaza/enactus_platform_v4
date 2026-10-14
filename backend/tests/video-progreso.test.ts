@@ -8,10 +8,11 @@ import { seedId, seedTestDatabase } from './helpers/db';
 /**
  * Hasta dónde vio el video cada estudiante (`PUT /progress/lessons/:id/video`).
  *
- * Es una escritura de avance, así que se le exige lo mismo que al toggle: la
- * hace solo el propio estudiante, solo sobre lo que tiene asignado, y quien
- * no tiene acceso recibe una negativa — nunca una escritura que «no pasó
- * nada». Y se le exige lo que la distingue del toggle: NO completa la lección.
+ * Es una escritura de avance, así que se le exige lo mismo que a completar:
+ * la hace solo el propio estudiante, solo sobre lo que tiene asignado, y
+ * quien no tiene acceso recibe una negativa — nunca una escritura que «no
+ * pasó nada». Y saltar hasta el final NO completa la lección: lo que la
+ * completa es lo visto de verdad (ver `avance-en-orden.test.ts`).
  */
 
 let app: ReturnType<typeof makeTestApp>['app'];
@@ -118,10 +119,10 @@ describe('guardar la posición', () => {
     expect(p.furthestSec).toBe(900);
   });
 
-  it('llegar al final NO completa la lección: eso es el toggle', async () => {
-    // Si completara sola, quien desmarcó la lección para repasarla la vería
-    // marcarse otra vez en el primer guardado. Una lección nueva, porque en
-    // el seed est1 ya tiene `crs_ia_1` completo.
+  it('saltar al final NO completa la lección: adelantar no es ver', async () => {
+    // La posición dice dónde retomar, no qué vio. Una lección nueva, porque
+    // en el seed est1 ya tiene `crs_ia_1` completo (y queda última: todas
+    // las anteriores están hechas, así que le toca).
     const creada = await enviar(
       'POST',
       `/modules/${seedId('mia1')}/lessons`,
@@ -133,8 +134,13 @@ describe('guardar la posición', () => {
       videoId: 'dQw4w9WgXcQ',
     });
 
+    await guardar(id, est1Token, { positionSec: 0, durationSec: 212 });
     const res = await guardar(id, est1Token, { positionSec: 212, durationSec: 212 });
     expect(res.status).toBe(200);
+    const p = await leer<Posicion & { watchedSec: number; completion: unknown }>(res);
+    expect(p.furthestSec).toBe(212);
+    expect(p.watchedSec).toBe(0);
+    expect(p.completion).toBeNull();
 
     const [fila] = await sql<{ n: number }[]>`
       select count(*)::int as n

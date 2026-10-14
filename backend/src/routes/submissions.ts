@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   auditLog,
   courses,
+  lessonActivities,
   notifications,
   submissionFiles,
   submissions,
@@ -20,6 +21,16 @@ import {
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
+import {
+  type Leccion,
+  type Lugar,
+  cargarLeccion,
+  exigirDisponibleSiPendiente,
+  impactoDeLeccion,
+  lugarDeLeccion,
+  notaAprobatoria,
+  registrarCompleta,
+} from '../services/avance-de-leccion';
 import { marcarLeccionCompleta } from '../services/leccion-completa';
 import { delMismoCliente, mismoCliente } from '../services/frontera-de-cliente';
 
@@ -254,6 +265,13 @@ submissionRoutes.post('/', async (c) => {
     if (!lab) throw forbidden('No está asignado a ese laboratorio.');
   }
 
+  // Una entrega de una lección es lo que la completa (en la Ruta) o lo que se
+  // califica para completarla (en un curso): tiene que ser una actividad de
+  // ESE curso o módulo, tocarle ya, y traer lo que la actividad pide.
+  const actividad = parsed.lessonId
+    ? await actividadQueLeToca(db, user.id, parsed)
+    : null;
+
   const [created] = await db
     .insert(submissions)
     .values({
@@ -274,8 +292,64 @@ submissionRoutes.post('/', async (c) => {
           .returning(fileColumns)
       : [];
 
-  return c.json({ ...created, files }, 201);
+  // En la Ruta, entregar ES completar: el Mentor revisa y comenta, pero no
+  // pone nota. En un curso, la lección espera a que la califiquen aprobada.
+  let impact = null;
+  if (actividad && actividad.lugar.kind === 'ruta') {
+    await registrarCompleta(db, user.id, actividad.leccion, actividad.lugar);
+    impact = await impactoDeLeccion(db, user.id, actividad.leccion);
+  }
+
+  return c.json({ ...created, files, impact }, 201);
 });
+
+/**
+ * La actividad de [body.lessonId], si le toca entregarla ahora; si no, el
+ * error que explica por qué. Valida también lo que pide la actividad (texto,
+ * archivo, cuántos): antes lo revisaba solo la pantalla.
+ */
+async function actividadQueLeToca(
+  db: Db,
+  studentId: string,
+  body: z.infer<typeof createBody>,
+): Promise<{ leccion: Leccion; lugar: Lugar }> {
+  const leccion = await cargarLeccion(db, body.lessonId!);
+  const lugar = await lugarDeLeccion(db, studentId, leccion);
+  const esDeAca =
+    lugar.kind === 'curso'
+      ? lugar.courseId === body.courseId
+      : lugar.rutaModuleId === body.rutaModuleId;
+  if (!esDeAca) {
+    throw conflict('Esa lección no pertenece al curso o módulo de la entrega.');
+  }
+  if (leccion.type !== 'activity') {
+    throw conflict('Esa lección no es una actividad: no recibe entregas.', {
+      type: leccion.type,
+    });
+  }
+  await exigirDisponibleSiPendiente(db, studentId, leccion, lugar);
+
+  const [config] = await db
+    .select()
+    .from(lessonActivities)
+    .where(eq(lessonActivities.lessonId, leccion.id))
+    .limit(1);
+  const tieneTexto = body.comment.trim().length > 0;
+  const archivos = body.files.length;
+  if (config?.requiresText && !tieneTexto) {
+    throw badRequest('Esta actividad pide una respuesta escrita.');
+  }
+  if (config?.requiresFile && archivos === 0) {
+    throw badRequest('Esta actividad pide adjuntar al menos un archivo.');
+  }
+  if (config && archivos > config.maxFiles) {
+    throw badRequest(`Esta actividad acepta hasta ${config.maxFiles} archivos.`);
+  }
+  if (!tieneTexto && archivos === 0) {
+    throw badRequest('La entrega está vacía: escriba su respuesta o adjunte un archivo.');
+  }
+  return { leccion, lugar };
+}
 
 /**
  * Calificar.
@@ -323,10 +397,16 @@ submissionRoutes.post('/:id/grade', requireCanGrade, async (c) => {
     .where(eq(submissions.id, submission.id))
     .returning();
 
-  // Calificar una actividad de curso es lo que la completa: a diferencia del
-  // quiz (que se autocompleta al aprobar), la actividad depende de esta
-  // revisión. Se marca completa, nunca se alterna.
-  if (submission.courseId && submission.lessonId && submission.studentId) {
+  // Calificarla APROBADA es lo que completa una actividad de curso: el quiz
+  // se completa al aprobarlo, la actividad con esta revisión. Una nota que no
+  // aprueba no la completa —el estudiante vuelve a entregar— y nunca la
+  // des-completa si ya lo estaba.
+  if (
+    submission.courseId &&
+    submission.lessonId &&
+    submission.studentId &&
+    notaAprobatoria(parsed.gradingMode, grade)
+  ) {
     await markLessonComplete(
       db,
       submission.studentId,

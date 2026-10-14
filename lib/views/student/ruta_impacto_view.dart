@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -2262,9 +2263,17 @@ class _ModuleBody extends StatelessWidget {
                         ],
                         if (module.ownLessons.isNotEmpty) ...[
                           SectionTitle(tr.rutaEntregasLecturas),
-                          for (final lesson in module.ownLessons)
+                          for (final (i, lesson) in module.ownLessons.indexed)
                             _OwnLessonRow(
-                                moduleId: module.moduleId, lesson: lesson),
+                              moduleId: module.moduleId,
+                              lesson: lesson,
+                              // Para el candado: la primera anterior que falta.
+                              lockedBehind: module.ownLessons
+                                  .take(i)
+                                  .where((l) => !l.isComplete)
+                                  .firstOrNull
+                                  ?.title,
+                            ),
                         ],
                         // "Sin contenido aún" no es lo mismo que "pendiente":
                         // acá no hay nada que la persona pueda hacer.
@@ -2398,53 +2407,87 @@ class _ModuleCourseRow extends StatelessWidget {
 
 /// Una lectura o entrega propia del módulo.
 ///
-/// Una lectura se marca al abrirla; una entrega se marca al entregar. En los
-/// dos casos el que decide es el mismo endpoint que usa cualquier lección de
-/// curso, así que el avance del módulo, de la fase y de la Ruta se recalcula
-/// solo con la respuesta.
+/// Se hacen en orden, y nada se marca a mano: una lectura se completa al
+/// recorrerla (un PDF, al llegar a la última página), un video al verlo y una
+/// entrega al entregarla. Lo decide el servidor, y su respuesta recalcula el
+/// módulo, la fase y la Ruta.
 class _OwnLessonRow extends StatelessWidget {
   final String moduleId;
   final OwnLesson lesson;
-  const _OwnLessonRow({required this.moduleId, required this.lesson});
+
+  /// La lección anterior que falta, para decirlo en el candado.
+  final String? lockedBehind;
+
+  const _OwnLessonRow({
+    required this.moduleId,
+    required this.lesson,
+    this.lockedBehind,
+  });
+
+  String get _lockedMessage {
+    final anterior = lockedBehind;
+    return anterior == null
+        ? tr.leccionBloqueadaSinNombre
+        : tr.leccionBloqueada(anterior);
+  }
 
   @override
   Widget build(BuildContext context) {
     final done = lesson.isComplete;
+    final locked = !done && !lesson.isUnlocked;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: HoverCard(
-        onTap: () => lesson.isActivity
-            ? _submit(context)
-            : _openReading(context),
-        child: Row(
-          children: [
-            Icon(
-              done ? Icons.check_circle : lessonTypeIcon(lesson.type),
-              color: done ? AppColors.statusGood : AppColors.gold,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(lesson.title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          decoration: done ? TextDecoration.lineThrough : null,
-                          color: done
-                              ? AppColors.textMuted
-                              : AppColors.textPrimary)),
-                  Text(
-                      lesson.isActivity
-                          ? tr.rutaEntrega
-                          : lessonTypeLabel(lesson.type),
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
-                ],
+      child: Opacity(
+        opacity: locked ? 0.55 : 1,
+        child: HoverCard(
+          onTap: () => locked
+              ? showAppSnack(context, _lockedMessage)
+              : lesson.isActivity
+                  ? _submit(context)
+                  : _openReading(context),
+          child: Row(
+            children: [
+              Icon(
+                done
+                    ? Icons.check_circle
+                    : locked
+                        ? Icons.lock_outline
+                        : lessonTypeIcon(lesson.type),
+                color: done
+                    ? AppColors.statusGood
+                    : locked
+                        ? AppColors.textMuted
+                        : AppColors.gold,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(lesson.title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            decoration:
+                                done ? TextDecoration.lineThrough : null,
+                            color: done
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary)),
+                    Text(
+                        locked
+                            ? _lockedMessage
+                            : lesson.isActivity
+                                ? (done
+                                    ? tr.rutaEntrega
+                                    : '${tr.rutaEntrega} · ${tr.leccionSeCompletaEntrega}')
+                                : lessonTypeLabel(lesson.type),
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2452,38 +2495,50 @@ class _OwnLessonRow extends StatelessWidget {
 
   Future<void> _openReading(BuildContext context) async {
     final data = context.read<DataProvider>();
+    final done = lesson.isComplete;
 
     if (lesson.type == LessonType.video) {
-      // Su propia Ruta: el avance del video se guarda para retomar.
-      await VideoPlayerDialog.show(context, lesson.toLesson(),
-          trackProgress: true);
-    } else {
-      final key = lesson.resourceS3Key;
-      final url = lesson.externalUrl;
-      if (key != null && key.isNotEmpty) {
-        try {
-          final signed = await data.resolveFileUrl(key);
-          if (!context.mounted) return;
-          await FileViewer.show(context,
-              url: signed, fileName: lesson.resourceFileName, s3Key: key);
-        } on ApiException catch (e) {
-          if (context.mounted) showAppSnack(context, e.message);
-          return;
-        }
-      } else if (url != null && url.isNotEmpty) {
-        await abrirRecurso(context, url, titulo: lesson.title);
-      } else {
-        if (context.mounted) {
-          showAppSnack(context, tr.rutaLecturaSinMaterial);
-        }
-        return;
-      }
+      // Su propia Ruta: el avance del video se guarda, y el servidor la
+      // completa cuando se vio el 90%. Uno sin seguimiento (Vimeo), al verlo.
+      final leccion = lesson.toLesson();
+      await VideoPlayerDialog.show(context, leccion, trackProgress: true);
+      if (leccion.youtubeVideoId != null || leccion.isUploadedVideo) return;
+      if (context.mounted) await _completar(context);
+      return;
     }
 
-    // Abrirla la da por vista. `IfPending` y no un toggle: volver a abrirla
-    // no debería desmarcarla.
+    final key = lesson.resourceS3Key;
+    final url = lesson.externalUrl;
+    if (key != null && key.isNotEmpty) {
+      try {
+        final signed = await data.resolveFileUrl(key);
+        if (!context.mounted) return;
+        await FileViewer.show(context,
+            url: signed,
+            fileName: lesson.resourceFileName,
+            s3Key: key,
+            onReadToEnd:
+                done ? null : () => unawaited(_completar(context)));
+      } on ApiException catch (e) {
+        if (context.mounted) showAppSnack(context, e.message);
+      }
+    } else if (url != null && url.isNotEmpty) {
+      // Un enlace se completa al abrirlo: lo que hay del otro lado no se ve.
+      final ok = await abrirRecurso(context, url, titulo: lesson.title);
+      if (ok && context.mounted) await _completar(context);
+    } else {
+      if (context.mounted) {
+        showAppSnack(context, tr.rutaLecturaSinMaterial);
+        // Sin material no hay nada que recorrer: no puede trabar el módulo.
+        await _completar(context);
+      }
+    }
+  }
+
+  Future<void> _completar(BuildContext context) async {
+    if (lesson.isComplete) return;
     try {
-      await data.toggleRutaLessonIfPending(lesson.id);
+      await context.read<DataProvider>().completeLesson(lesson.id);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
     }
@@ -2520,11 +2575,18 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
   }
 
   Future<void> _send() async {
+    // Una entrega vacía no es una entrega (y el servidor la rechaza).
+    if (_comment.text.trim().isEmpty && _files.isEmpty) {
+      setState(() => _error = ValidationError(tr.entregaVaciaRuta));
+      return;
+    }
     setState(() {
       _sending = true;
       _error = null;
     });
     try {
+      // Entregar la completa en el servidor; la respuesta trae cómo quedó la
+      // Ruta y el provider la aplica.
       final data = context.read<DataProvider>();
       await data.createSubmission(
         rutaModuleId: widget.moduleId,
@@ -2533,7 +2595,6 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
         comment: _comment.text.trim(),
         files: _files.map((f) => f.toJson()).toList(),
       );
-      await data.toggleRutaLessonIfPending(widget.lesson.id);
       if (!mounted) return;
       Navigator.pop(context);
       showSuccessCheck(context, tr.actividadEntregaEnviada);

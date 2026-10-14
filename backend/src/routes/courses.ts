@@ -951,7 +951,7 @@ async function loadLessons(db: Db, moduleId: string) {
               from lesson_activities a where a.lesson_id = l.id) as activity
       from lessons l
      where l.course_module_id = ${moduleId}
-     order by l.order_index
+     order by l.order_index, l.id
   `);
 }
 

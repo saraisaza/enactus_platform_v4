@@ -3380,18 +3380,6 @@ abstract class AppLocalizations {
   /// **'Completada'**
   String get leccionCompletada;
 
-  /// No description provided for @leccionMarcarPendiente.
-  ///
-  /// In es, this message translates to:
-  /// **'Marcar como pendiente'**
-  String get leccionMarcarPendiente;
-
-  /// No description provided for @leccionMarcarCompletada.
-  ///
-  /// In es, this message translates to:
-  /// **'Marcar como completada'**
-  String get leccionMarcarCompletada;
-
   /// No description provided for @rutaCompletada.
   ///
   /// In es, this message translates to:
@@ -3403,6 +3391,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'¡Lección completada!'**
   String get leccionCompletadaExclama;
+
+  /// No description provided for @leccionBloqueada.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueada: primero complete «{anterior}».'**
+  String leccionBloqueada(Object anterior);
+
+  /// No description provided for @leccionBloqueadaSinNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Bloqueada: primero complete las lecciones anteriores.'**
+  String get leccionBloqueadaSinNombre;
+
+  /// No description provided for @leccionSeCompletaVideo.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al ver el video completo.'**
+  String get leccionSeCompletaVideo;
+
+  /// No description provided for @leccionSeCompletaLectura.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al leer el material hasta el final.'**
+  String get leccionSeCompletaLectura;
+
+  /// No description provided for @leccionSeCompletaEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al abrir el enlace.'**
+  String get leccionSeCompletaEnlace;
+
+  /// No description provided for @leccionSeCompletaQuiz.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al aprobar el quiz.'**
+  String get leccionSeCompletaQuiz;
+
+  /// No description provided for @leccionSeCompletaEncuesta.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al responder la encuesta.'**
+  String get leccionSeCompletaEncuesta;
+
+  /// No description provided for @leccionSeCompletaActividad.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa cuando su entrega sea calificada como aprobada.'**
+  String get leccionSeCompletaActividad;
+
+  /// No description provided for @leccionSeCompletaEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa al hacer su entrega.'**
+  String get leccionSeCompletaEntrega;
+
+  /// No description provided for @actividadEnRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregada · espera calificación'**
+  String get actividadEnRevision;
+
+  /// No description provided for @actividadNoAprobada.
+  ///
+  /// In es, this message translates to:
+  /// **'No aprobada · entregue de nuevo'**
+  String get actividadNoAprobada;
+
+  /// No description provided for @actividadSeCompletaAprobada.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección se completa cuando su entrega sea calificada como aprobada. Mientras tanto, la siguiente queda bloqueada.'**
+  String get actividadSeCompletaAprobada;
+
+  /// No description provided for @lecturaLlegueAlFinal.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegue hasta la última página para completar la lección.'**
+  String get lecturaLlegueAlFinal;
+
+  /// No description provided for @lecturaDescargueParaCompletar.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargue el archivo para completar la lección.'**
+  String get lecturaDescargueParaCompletar;
+
+  /// No description provided for @lecturaCompletada.
+  ///
+  /// In es, this message translates to:
+  /// **'Lectura completada.'**
+  String get lecturaCompletada;
+
+  /// No description provided for @entregaVaciaRuta.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba un comentario o adjunte un archivo para entregar.'**
+  String get entregaVaciaRuta;
+
+  /// No description provided for @videoSeCompletaAlVerlo.
+  ///
+  /// In es, this message translates to:
+  /// **'La lección se completa al ver el 90 % del video. Adelantarlo no cuenta.'**
+  String get videoSeCompletaAlVerlo;
 
   /// No description provided for @cursoNoPuedeResponder.
   ///

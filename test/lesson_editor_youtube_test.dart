@@ -114,7 +114,6 @@ void main() {
     final vista = tester.widget<YoutubeLessonPlayer>(find.byType(YoutubeLessonPlayer));
     expect(vista.videoId, _id);
     expect(vista.onProgress, isNull);
-    expect(vista.onWatched, isNull);
   });
 
   testWidgets('la vista previa se puede reproducir dentro del diálogo del editor',

@@ -3,6 +3,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   timestamp,
@@ -114,8 +115,13 @@ export const rutaProgressLessons = pgTable(
  *
  * Dos posiciones porque responden preguntas distintas: `position_sec` es
  * dónde retomar (puede retroceder si vuelve a ver un tramo) y `furthest_sec`
- * es hasta dónde llegó alguna vez (solo crece; es lo que se muestra como
- * «visto»).
+ * es hasta dónde llegó alguna vez (solo crece).
+ *
+ * Y lo que de verdad se VIO (migración 0020): `watched_segments` son los
+ * tramos reproducidos, ya unidos (`[[0, 95], [120, 300]]`), y `watched_sec`
+ * su suma. Adelantar hasta el final mueve `furthest_sec` pero no suma tramos:
+ * por eso la lección se completa con `watched_sec`, nunca con la posición
+ * (ver `services/avance-de-leccion.ts`).
  */
 export const lessonVideoProgress = pgTable(
   'lesson_video_progress',
@@ -130,6 +136,10 @@ export const lessonVideoProgress = pgTable(
     furthestSec: integer().notNull().default(0),
     /** La que reporta el reproductor. Nula hasta que el video arranca. */
     durationSec: integer(),
+    /** Tramos vistos `[desde, hasta]` en segundos, ordenados y sin solaparse. */
+    watchedSegments: jsonb().$type<[number, number][]>().notNull().default([]),
+    /** La suma de [watchedSegments]: los segundos distintos que vio. */
+    watchedSec: integer().notNull().default(0),
     ...timestamps,
   },
   (t) => [
@@ -140,5 +150,6 @@ export const lessonVideoProgress = pgTable(
       sql`${t.positionSec} >= 0 and ${t.furthestSec} >= ${t.positionSec}
           and (${t.durationSec} is null or ${t.durationSec} > 0)`,
     ),
+    check('lesson_video_progress_watched_valid', sql`${t.watchedSec} >= 0`),
   ],
 );

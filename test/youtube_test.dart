@@ -172,10 +172,12 @@ void main() {
         'positionSec': 125,
         'furthestSec': 190,
         'durationSec': 200,
+        'watchedSec': 150,
         'updatedAt': '2026-10-03T06:30:00.000Z',
       });
       expect(p.positionSec, 125);
-      expect(p.watchedRatio, closeTo(0.95, 0.001));
+      // «Visto» es lo reproducido de verdad, no hasta dónde se adelantó.
+      expect(p.watchedRatio, closeTo(0.75, 0.001));
       expect(p.resumeAt, const Duration(seconds: 125));
     });
 
@@ -239,17 +241,14 @@ void main() {
 
   group('VideoWatchTracker', () {
     late DateTime ahora;
-    late List<(int, int?)> guardados;
-    late int vistos;
+    late List<VideoSave> guardados;
     late VideoWatchTracker tracker;
 
     setUp(() {
       ahora = DateTime(2026, 10, 3, 10);
       guardados = [];
-      vistos = 0;
       tracker = VideoWatchTracker(
-        onSave: (p, d) => guardados.add((p, d)),
-        onWatched: () => vistos++,
+        onSave: guardados.add,
         now: () => ahora,
       );
     });
@@ -262,16 +261,37 @@ void main() {
       }
     }
 
-    test('guarda cada 15 segundos de reproducción, no cada evento', () {
-      reproducirHasta(0, 31);
-      expect(guardados, [(15, 212), (30, 212)]);
+    /// Un salto: el reproductor informa, un segundo después, otra posición.
+    void saltarA(int segundo) {
+      tracker.position(Duration(seconds: segundo),
+          duration: const Duration(milliseconds: 212061));
+      ahora = ahora.add(const Duration(seconds: 1));
+    }
+
+    VideoSave g(int posicion, int desde, int hasta, [int? duracion = 212]) =>
+        VideoSave(
+            positionSec: posicion,
+            durationSec: duracion,
+            watchedFromSec: desde,
+            watchedToSec: hasta);
+
+    int visto() => guardados.fold(
+        0, (total, x) => total + (x.watchedToSec - x.watchedFromSec));
+
+    test('al arrancar guarda el punto de partida, sin tramo', () {
+      reproducirHasta(0, 0);
+      expect(guardados, [g(0, 0, 0)]);
     });
 
-    test('abrir y cerrar enseguida guarda una sola vez, al cerrar', () {
+    test('guarda cada 15 segundos de reproducción, con el tramo visto', () {
+      reproducirHasta(0, 31);
+      expect(guardados, [g(0, 0, 0), g(15, 0, 15), g(30, 15, 30)]);
+    });
+
+    test('abrir y cerrar enseguida: el punto de partida y el cierre', () {
       reproducirHasta(0, 4);
-      expect(guardados, isEmpty);
       tracker.close();
-      expect(guardados, [(4, 212)]);
+      expect(guardados, [g(0, 0, 0), g(4, 0, 4)]);
     });
 
     test('cerrar sin haber reproducido no escribe nada', () {
@@ -284,50 +304,87 @@ void main() {
       tracker.paused();
       tracker.paused();
       tracker.close();
-      expect(guardados, [(7, 212)]);
+      expect(guardados, [g(0, 0, 0), g(7, 0, 7)]);
     });
 
-    test('pasar el 90% avisa UNA vez, aunque después termine', () {
-      reproducirHasta(0, 190);
-      expect(vistos, 0); // 190 / 212 = 89.6%
-      reproducirHasta(191, 195);
-      expect(vistos, 1);
-      tracker.ended();
-      expect(vistos, 1);
-      expect(tracker.watched, isTrue);
-    });
-
-    test('terminar cuenta como visto y guarda el final', () {
+    test('adelantar no suma: el tramo se cierra donde estaba', () {
       reproducirHasta(0, 10);
-      tracker.ended();
-      expect(vistos, 1);
-      expect(guardados.last, (212, 212));
+      saltarA(200);
+      reproducirHasta(201, 205);
+      tracker.close();
+      // Lo saltado (de 10 a 200) no está en ningún tramo.
+      expect(guardados, [g(0, 0, 0), g(10, 0, 10), g(205, 200, 205)]);
+      expect(visto(), 15);
     });
 
-    test('volver atrás después de verlo no avisa de nuevo', () {
-      reproducirHasta(0, 200);
-      reproducirHasta(0, 200);
-      expect(vistos, 1);
+    test('saltar al final y terminar no cuenta el video entero', () {
+      reproducirHasta(0, 5);
+      saltarA(212);
+      tracker.ended();
+      expect(visto(), lessThan(10));
+      expect(guardados.last.positionSec, 212);
+    });
+
+    test('verlo entero suma todo el video', () {
+      reproducirHasta(0, 212);
+      tracker.ended();
+      expect(visto(), 212);
+      expect(guardados.last, g(212, 210, 212));
+    });
+
+    test('volver atrás abre un tramo nuevo, y lo repetido se vuelve a mandar', () {
+      reproducirHasta(0, 40);
+      saltarA(10);
+      reproducirHasta(11, 20);
+      tracker.close();
+      // El servidor une los tramos: lo visto dos veces cuenta una.
+      expect(guardados.map((x) => (x.watchedFromSec, x.watchedToSec)),
+          [(0, 0), (0, 15), (15, 30), (30, 40), (10, 20)]);
+    });
+
+    test('a doble velocidad no es un salto', () {
+      for (var s = 0; s <= 30; s += 2) {
+        tracker.position(Duration(seconds: s),
+            duration: const Duration(seconds: 212));
+        ahora = ahora.add(const Duration(seconds: 1));
+      }
+      tracker.close();
+      expect(visto(), 30);
+    });
+
+    test('una pausa larga no deja pasar un salto como reproducción', () {
+      reproducirHasta(0, 10);
+      tracker.paused();
+      ahora = ahora.add(const Duration(minutes: 3));
+      saltarA(150);
+      tracker.close();
+      expect(visto(), 10);
+    });
+
+    test('terminar después de verlo guarda el final', () {
+      reproducirHasta(0, 210);
+      tracker.ended();
+      expect(guardados.last.positionSec, 212);
+      expect(guardados.last.watchedToSec, 212);
     });
 
     test('la duración se redondea: 212.061 s son 212', () {
       reproducirHasta(0, 0);
       tracker.close();
-      expect(guardados.single.$2, 212);
+      expect(guardados.single.durationSec, 212);
     });
 
-    test('un directo (duración 0) guarda posición, pero nunca "visto"', () {
+    test('un directo (duración 0) guarda posición sin duración', () {
       reproducirHasta(0, 600, duracion: 0);
       tracker.close();
-      expect(guardados.every((g) => g.$2 == null), isTrue);
-      expect(vistos, 0);
+      expect(guardados.every((x) => x.durationSec == null), isTrue);
     });
 
     test('una posición más allá del final se recorta', () {
       tracker.position(const Duration(seconds: 215),
           duration: const Duration(seconds: 212));
       tracker.close();
-      expect(guardados.single, (212, 212));
+      expect(guardados.single, g(212, 212, 212));
     });
   });
 }

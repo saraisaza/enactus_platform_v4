@@ -10,8 +10,14 @@ const bool visorPdfDisponible = false;
 class PdfView extends StatelessWidget {
   final String url;
   final Widget Function(String message) errorBuilder;
+  final VoidCallback? onReachedEnd;
 
-  const PdfView({super.key, required this.url, required this.errorBuilder});
+  const PdfView({
+    super.key,
+    required this.url,
+    required this.errorBuilder,
+    this.onReachedEnd,
+  });
 
   @override
   Widget build(BuildContext context) =>

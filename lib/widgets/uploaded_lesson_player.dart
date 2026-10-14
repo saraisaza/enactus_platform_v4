@@ -43,7 +43,6 @@ class UploadedLessonPlayer extends StatefulWidget {
     this.resumeAt,
     this.watchedRatio,
     this.onProgress,
-    this.onWatched,
     this.borderRadius = 12,
     this.loadTimeout = const Duration(seconds: 30),
     this.controllerFactory,
@@ -58,8 +57,7 @@ class UploadedLessonPlayer extends StatefulWidget {
   final Duration? durationHint;
   final Duration? resumeAt;
   final double? watchedRatio;
-  final void Function(int positionSec, int? durationSec)? onProgress;
-  final VoidCallback? onWatched;
+  final void Function(VideoSave save)? onProgress;
   final double borderRadius;
   final Duration loadTimeout;
   final VideoControllerFactory? controllerFactory;
@@ -87,8 +85,7 @@ class _UploadedLessonPlayerState extends State<UploadedLessonPlayer> {
   /// con el elemento desmontándose, y buscar un ancestro ahí lanza.
   DataProvider? _data;
 
-  bool get _sigueAvance =>
-      widget.onProgress != null || widget.onWatched != null;
+  bool get _sigueAvance => widget.onProgress != null;
 
   @override
   void initState() {
@@ -136,8 +133,7 @@ class _UploadedLessonPlayerState extends State<UploadedLessonPlayer> {
       }
       if (_sigueAvance) {
         _tracker = VideoWatchTracker(
-          onSave: (p, d) => widget.onProgress?.call(p, d),
-          onWatched: widget.onWatched,
+          onSave: (guardado) => widget.onProgress?.call(guardado),
         )..duration(duracion);
       }
       controller.addListener(_alCambiar);

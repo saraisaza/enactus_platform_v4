@@ -93,8 +93,8 @@ describe('Open Learning contra cada endpoint exclusivo de Enactus', () => {
     expect(otro.status).toBe(403);
   });
 
-  it('no puede marcar una lección de un curso al que no tiene acceso', async () => {
-    const res = await req(`/progress/lessons/${seedId('lia1')}/toggle`, olToken, {
+  it('no puede completar una lección de un curso al que no tiene acceso', async () => {
+    const res = await req(`/progress/lessons/${seedId('lia1')}/complete`, olToken, {
       method: 'POST',
     });
     expect(res.status).toBe(403);

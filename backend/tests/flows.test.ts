@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { resetRateLimits } from '../src/middleware/rate-limit';
 import { auth, json, login, makeTestApp } from './helpers/app';
+import { completarComoEstudiante } from './helpers/avance';
 import { seedId, seedTestDatabase } from './helpers/db';
 
 /**
@@ -75,6 +76,7 @@ describe('Flujo 1 — estudiante Enactus, de login a certificado', () => {
       `;
     }
 
+    // En orden, como se abren: fase por fase, módulo por módulo.
     const pendientes = await sql<{ id: string }[]>`
       select l.id from lessons l
         join ruta_modules rm on rm.id = l.ruta_module_id
@@ -83,20 +85,23 @@ describe('Flujo 1 — estudiante Enactus, de login a certificado', () => {
          and l.id not in (select rpl.lesson_id from ruta_progress_lessons rpl
                             join ruta_progress rp on rp.id = rpl.ruta_progress_id
                            where rp.student_id = ${sesion.userId})
+       order by p.order_index, rm.order_index, l.order_index
     `;
 
-    let ultimoImpacto: { rutaComplete: boolean; certificateAvailable: boolean } | undefined;
+    // Cada una con lo que pide: las de la Ruta son entregas, y entregarlas
+    // las completa (el Mentor revisa, no califica).
+    type Impacto = { rutaImpact: { rutaComplete: boolean; certificateAvailable: boolean }[] };
+    let ultimoImpacto: Impacto['rutaImpact'][number] | undefined;
     for (const l of pendientes) {
-      const res = await req(`/progress/lessons/${l.id}/toggle`, token, { method: 'POST' });
-      expect(res.status).toBe(200);
-      const impacto = await body<{
-        rutaImpact: { rutaComplete: boolean; certificateAvailable: boolean }[];
-      }>(res);
+      const res = await completarComoEstudiante(app, sql, token, sesion.userId, l.id);
+      expect([200, 201]).toContain(res.status);
+      const respuesta = await body<Impacto & { impact?: Impacto }>(res);
+      const impacto = respuesta.impact ?? respuesta;
       ultimoImpacto = impacto.rutaImpact.find((r) => r.rutaComplete) ?? ultimoImpacto;
     }
 
-    // 5. El progreso subió y la propia respuesta del toggle avisa que ya se
-    //    puede emitir el certificado — sin llamadas adicionales.
+    // 5. El progreso subió y la propia respuesta de la entrega avisa que ya
+    //    se puede emitir el certificado — sin llamadas adicionales.
     expect(ultimoImpacto?.rutaComplete).toBe(true);
     expect(ultimoImpacto?.certificateAvailable).toBe(true);
 
@@ -134,21 +139,23 @@ describe('Flujo 2 — Open Learning', () => {
     expect(page.data).toHaveLength(1);
     expect(page.data[0]?.isOpenLearning).toBe(true);
 
-    // Puede avanzar en SU curso.
+    // Puede avanzar en SU curso, empezando por la primera lección: un video,
+    // que se completa al verlo entero.
     const [leccion] = await sql<{ id: string }[]>`
       select l.id from lessons l
         join course_modules cm on cm.id = l.course_module_id
-       where cm.course_id = ${seedId('crs_ol_marketing')} limit 1
+       where cm.course_id = ${seedId('crs_ol_marketing')}
+       order by cm.order_index, l.order_index limit 1
     `;
-    const toggle = await req(`/progress/lessons/${leccion!.id}/toggle`, token, {
-      method: 'POST',
-    });
-    expect(toggle.status).toBe(200);
+    const completar = await completarComoEstudiante(
+      app, sql, token, sesion.userId, leccion!.id,
+    );
+    expect(completar.status).toBe(200);
     const impacto = await body<{
       completed: boolean;
       course: { ratio: number };
       rutaImpact: unknown[];
-    }>(toggle);
+    }>(completar);
     expect(impacto.completed).toBe(true);
     expect(impacto.course.ratio).toBeGreaterThan(0);
     // No hay Ruta de Impacto que recalcular.
@@ -255,6 +262,15 @@ describe('Flujo 4 — calificación con can_grade en true y en false', () => {
         lessonId: seedId('lia5'),
         taskName: 'Proyecto: IA para mi comunidad',
         comment: 'Adjunto la propuesta.',
+        // La actividad pide archivo, y ahora lo exige también el servidor.
+        files: [
+          {
+            s3Key: `submissions/${seedId('est1')}/propuesta.pdf`,
+            fileName: 'propuesta.pdf',
+            contentType: 'application/pdf',
+            sizeBytes: 2048,
+          },
+        ],
       }),
     });
     expect(res.status).toBe(201);

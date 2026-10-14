@@ -124,7 +124,7 @@ class DataProvider extends ChangeNotifier {
   /// retoma donde quedó sin pedir nada, y la lista muestra lo recién visto.
   final Map<String, VideoProgress> _myVideoProgress = {};
 
-  /// Lecciones con un "completar" ya en vuelo. Ver [toggleLessonIfPending].
+  /// Lecciones con un "completar" ya en vuelo. Ver [completeLesson].
   final Set<String> _completing = {};
 
   void _resetAll() {
@@ -853,6 +853,17 @@ class DataProvider extends ChangeNotifier {
     final key = _progressKey(courseId, studentId);
     final current =
         _courseProgress[key] ?? const AsyncValue<CourseProgress>.idle();
+    // El resumen que trae el listado de cursos no dice qué lecciones están
+    // completas ni cuál le toca: con él, la pantalla del curso dibujaría
+    // todo pendiente y sin candados. Se pide el detalle.
+    if (current case AsyncData(:final value) when !value.hasLessonDetail) {
+      _courseProgress[key] = AsyncValue.loading(previous: value);
+      scheduleMicrotask(() => _load<CourseProgress>(
+          (v) => _courseProgress[key] = v,
+          () => _fetchCourseProgress(courseId, studentId),
+          value));
+      return _courseProgress[key]!;
+    }
     _lazy(current, (v) => _courseProgress[key] = v,
         () => _fetchCourseProgress(courseId, studentId));
     return _courseProgress[key] ?? current;
@@ -877,8 +888,12 @@ class DataProvider extends ChangeNotifier {
       String courseId, String? studentId) async {
     final id = studentId ?? _requireUser();
     final json = await api.get('/students/$id/course-progress/$courseId');
-    final progress =
-        CourseProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    // Es el detalle aunque no traiga ninguna lección completa: sin esto, un
+    // cuerpo sin la lista volvería a pedirse en cada redibujo.
+    final progress = CourseProgress.fromJson({
+      'completedLessonIds': const <String>[],
+      ...Map<String, dynamic>.from(json as Map),
+    });
     // Solo el propio: el de otra persona no es desde dónde retoma quien mira.
     if (id == _currentUserId) {
       progress.videoProgress.forEach(_rememberVideoProgress);
@@ -892,32 +907,69 @@ class DataProvider extends ChangeNotifier {
     final local = _myVideoProgress[fromServer.lessonId];
     if (local == null || fromServer.furthestSec >= local.furthestSec) {
       _myVideoProgress[fromServer.lessonId] = fromServer;
+    } else if (fromServer.watchedSec > local.watchedSec) {
+      // La posición local es más nueva, pero lo visto lo cuenta el servidor.
+      _myVideoProgress[fromServer.lessonId] = VideoProgress(
+        lessonId: local.lessonId,
+        positionSec: local.positionSec,
+        furthestSec: local.furthestSec,
+        durationSec: local.durationSec ?? fromServer.durationSec,
+        watchedSec: fromServer.watchedSec,
+      );
     }
   }
 
-  /// Marca o desmarca una lección.
+  /// Completa una lección, si ya le toca y cumplió lo que pide.
   ///
-  /// La respuesta trae el recálculo de curso, módulo, fase y Ruta, así que se
-  /// actualiza todo el estado afectado sin pedir nada más. Devuelve el impacto
-  /// para que la pantalla pueda, por ejemplo, celebrar que se completó la Ruta.
-  Future<ToggleImpact> toggleLesson(String lessonId, String courseId) async {
-    final json = await api.post('/progress/lessons/$lessonId/toggle');
-    final impact =
-        ToggleImpact.fromJson(Map<String, dynamic>.from(json as Map));
+  /// Ya no existe «marcar» ni «desmarcar»: lo decide el servidor
+  /// (`POST /progress/lessons/:id/complete`). La pantalla lo pide cuando la
+  /// persona terminó de recorrer una lectura o abrió un enlace; el video, el
+  /// quiz, la encuesta y las entregas se completan solos en el servidor, con
+  /// su propia prueba. Si todavía no le toca, o le falta algo, lanza el 409
+  /// con el motivo en palabras de la persona.
+  ///
+  /// Devuelve el impacto si la completó ahora, o `null` si ya estaba completa
+  /// o hay otro pedido en vuelo para la misma lección: dos avisos seguidos
+  /// —la última página y el cierre del visor— no deben pedir dos veces.
+  Future<LessonImpact?> completeLesson(String lessonId,
+      {String? courseId}) async {
+    if (_isMyLessonComplete(lessonId, courseId) ||
+        !_completing.add(lessonId)) {
+      return null;
+    }
+    try {
+      final json = await api.post('/progress/lessons/$lessonId/complete');
+      final impact =
+          LessonImpact.fromJson(Map<String, dynamic>.from(json as Map));
+      _applyImpact(impact, courseId: courseId);
+      return impact;
+    } finally {
+      _completing.remove(lessonId);
+    }
+  }
 
-    // Progreso del curso: viene en la misma respuesta.
+  bool _isMyLessonComplete(String lessonId, String? courseId) {
+    if (courseId != null) {
+      return _courseProgress[_progressKey(courseId, null)]
+              ?.valueOrNull
+              ?.isLessonComplete(lessonId) ??
+          false;
+    }
+    return _rutaProgress.valueOrNull?.laboratories.any((lab) => lab.phases.any(
+            (phase) => phase.modules.any((module) => module.ownLessons
+                .any((l) => l.id == lessonId && l.isComplete)))) ??
+        false;
+  }
+
+  /// Lo que cambió al completar una lección: el progreso del curso viene en
+  /// la misma respuesta (con la lección que se abre ahora); la Ruta se vuelve
+  /// a pedir entera, que es una petición y deja fases y desbloqueos exactos.
+  void _applyImpact(LessonImpact impact, {String? courseId}) {
     final course = impact.course;
     if (course != null) {
-      // Marcar una lección solo puede hacerlo la propia persona, así que el
-      // recálculo se guarda bajo su clave.
-      final key = _progressKey(courseId, null);
+      // Completar solo lo hace la propia persona: va bajo su clave.
+      final key = _progressKey(courseId ?? course.courseId, null);
       final previous = _courseProgress[key]?.valueOrNull;
-      final completed = [...?previous?.completedLessonIds];
-      if (impact.completed) {
-        if (!completed.contains(lessonId)) completed.add(lessonId);
-      } else {
-        completed.remove(lessonId);
-      }
       _courseProgress[key] = AsyncValue.data(CourseProgress(
         courseId: course.courseId,
         courseName: previous?.courseName ?? '',
@@ -925,80 +977,47 @@ class DataProvider extends ChangeNotifier {
         completedLessons: course.completedLessons,
         ratio: course.ratio,
         isComplete: course.isComplete,
-        completedLessonIds: completed,
+        completedLessonIds: {
+          ...?previous?.completedLessonIds,
+          impact.lessonId,
+        }.toList(),
         videoProgress: previous?.videoProgress ?? const [],
+        nextLessonId: course.nextLessonId,
+        knowsLessonOrder: course.knowsLessonOrder,
+        hasLessonDetail: previous?.hasLessonDetail ?? false,
       ));
+      if (course.isComplete) unawaited(reloadCertificates());
     }
-
-    // La Ruta cambió hacia arriba: se vuelve a pedir el árbol completo. Es una
-    // petición, no cinco, y garantiza que fases y desbloqueos queden exactos.
-    if (impact.rutaImpact.isNotEmpty) {
+    if (impact.rutaImpact.isNotEmpty || course == null) {
       unawaited(reloadRutaProgress());
     }
-
     notifyListeners();
-    return impact;
-  }
-
-  /// Marca una lección como completa **solo si todavía no lo estaba**.
-  ///
-  /// [toggleLesson] alterna: aprobar un quiz dos veces lo desmarcaría. Acá el
-  /// acto es "esto quedó hecho", no "cambiá el estado".
-  ///
-  /// Dos pedidos seguidos —el video que cruza el 90% y termina un segundo
-  /// después— verían los dos la lección pendiente, porque la respuesta del
-  /// primero todavía no llegó: el segundo toggle la DESMARCARÍA. Mientras hay
-  /// uno en vuelo para esa lección, los siguientes no hacen nada.
-  Future<void> toggleLessonIfPending(String lessonId, String courseId) async {
-    final done = _courseProgress[_progressKey(courseId, null)]
-            ?.valueOrNull
-            ?.isLessonComplete(lessonId) ??
-        false;
-    if (done || !_completing.add(lessonId)) return;
-    try {
-      await toggleLesson(lessonId, courseId);
-    } finally {
-      _completing.remove(lessonId);
-    }
-  }
-
-  /// Marca una lectura o entrega PROPIA de un módulo de la Ruta.
-  ///
-  /// No pertenece a ningún curso, así que no hay progreso de curso que
-  /// actualizar: la respuesta trae el recálculo de módulo, fase y Ruta, y con
-  /// eso se vuelve a pedir el árbol completo. `IfPending` y no un toggle:
-  /// volver a abrir una lectura no debería desmarcarla.
-  Future<void> toggleRutaLessonIfPending(String lessonId) async {
-    final alreadyDone = _rutaProgress.valueOrNull?.laboratories.any((lab) =>
-            lab.phases.any((phase) => phase.modules.any((module) =>
-                module.ownLessons.any((l) => l.id == lessonId && l.isComplete)))) ??
-        false;
-    if (alreadyDone || !_completing.add(lessonId)) return;
-
-    try {
-      await api.post('/progress/lessons/$lessonId/toggle');
-      await reloadRutaProgress();
-    } finally {
-      _completing.remove(lessonId);
-    }
   }
 
   /// Hasta dónde vio el video quien tiene la sesión, o `null` si nunca lo
   /// abrió (o el dato todavía no llegó).
   VideoProgress? myVideoProgress(String lessonId) => _myVideoProgress[lessonId];
 
-  /// Guarda hasta dónde va el video. Lo llama el reproductor cada pocos
-  /// segundos, al pausar, al terminar y al cerrar.
+  /// Guarda hasta dónde va el video y el tramo que se reprodujo desde el
+  /// guardado anterior ([watchedFromSec] → [watchedToSec]). Lo llama el
+  /// reproductor al arrancar, cada pocos segundos, al pausar, al saltar, al
+  /// terminar y al cerrar.
   ///
-  /// **No completa la lección** —eso es [toggleLessonIfPending]— y **nunca
-  /// lanza**: un guardado que falla no puede interrumpir el video que la
-  /// persona está mirando. La copia local se actualiza igual, así que cerrar
-  /// y volver a abrir retoma bien en esta sesión, y el próximo guardado que
-  /// sí llegue lleva la posición al día.
+  /// La lección la completa el SERVIDOR cuando lo visto llega al 90%: la
+  /// respuesta trae entonces `completion`, y acá se aplica como cualquier
+  /// otro completar ([courseId] dice de qué curso; sin él, es de la Ruta).
+  ///
+  /// **Nunca lanza**: un guardado que falla no puede interrumpir el video que
+  /// la persona está mirando. La copia local se actualiza igual, así que
+  /// cerrar y volver a abrir retoma bien en esta sesión, y el próximo
+  /// guardado que sí llegue lleva la posición al día.
   Future<void> saveVideoProgress(
     String lessonId, {
     required int positionSec,
     int? durationSec,
+    int? watchedFromSec,
+    int? watchedToSec,
+    String? courseId,
   }) async {
     final previous = _myVideoProgress[lessonId] ??
         VideoProgress(lessonId: lessonId, durationSec: durationSec);
@@ -1013,9 +1032,17 @@ class DataProvider extends ChangeNotifier {
       final json = await api.put('/progress/lessons/$lessonId/video', body: {
         'positionSec': positionSec,
         'durationSec': ?durationSec,
+        'watchedFromSec': ?watchedFromSec,
+        'watchedToSec': ?watchedToSec,
       });
-      _rememberVideoProgress(
-          VideoProgress.fromJson(Map<String, dynamic>.from(json as Map)));
+      final respuesta = Map<String, dynamic>.from(json as Map);
+      _rememberVideoProgress(VideoProgress.fromJson(respuesta));
+      final completion = respuesta['completion'];
+      if (completion is Map) {
+        _applyImpact(
+            LessonImpact.fromJson(Map<String, dynamic>.from(completion)),
+            courseId: courseId);
+      }
     } on ApiException catch (e) {
       debugPrint('No se pudo guardar el avance del video $lessonId: '
           '${e.message}');
@@ -1034,7 +1061,12 @@ class DataProvider extends ChangeNotifier {
   ) async {
     final json = await api.post('/lessons/$lessonId/quiz-attempt',
         body: {'answers': answers});
-    return QuizResult.fromJson(Map<String, dynamic>.from(json as Map));
+    final result = QuizResult.fromJson(Map<String, dynamic>.from(json as Map));
+    // Aprobar completa la lección en el servidor: la respuesta trae cómo
+    // quedó el curso, y con eso se abre la lección siguiente.
+    final impact = result.impact;
+    if (impact != null) _applyImpact(impact);
+    return result;
   }
 
   /// Lo que la persona ya respondió en una encuesta, o `null` si todavía no.
@@ -1914,8 +1946,15 @@ class DataProvider extends ChangeNotifier {
       'comment': comment,
       'files': files,
     });
+    final respuesta = Map<String, dynamic>.from(json as Map);
+    // En la Ruta, entregar completa la lección: la respuesta trae cómo quedó.
+    // En un curso no: la completa la calificación aprobada.
+    final impact = respuesta['impact'];
+    if (impact is Map) {
+      _applyImpact(LessonImpact.fromJson(Map<String, dynamic>.from(impact)));
+    }
     await reloadSubmissions();
-    return Submission.fromJson(Map<String, dynamic>.from(json as Map));
+    return Submission.fromJson(respuesta);
   }
 
   Future<Submission> gradeSubmission({

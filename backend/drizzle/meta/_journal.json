@@ -141,6 +141,13 @@
       "when": 1791948932731,
       "tag": "0019_encuestas_de_verdad",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792003045029,
+      "tag": "0020_avance_en_orden",
+      "breakpoints": true
     }
   ]
 }

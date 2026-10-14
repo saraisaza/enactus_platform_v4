@@ -62,18 +62,6 @@ FakeApi _api({Map<String, Object?>? progreso, String? portada = _portada}) =>
         'durationSec': 212,
         'updatedAt': '2026-10-03T10:00:00.000Z',
       },
-      '/progress/lessons/$_leccion/toggle': {
-        'lessonId': _leccion,
-        'completed': true,
-        'course': {
-          'courseId': _curso,
-          'totalLessons': 1,
-          'completedLessons': 1,
-          'ratio': 1,
-          'isComplete': true,
-        },
-        'rutaImpact': <Object>[],
-      },
     });
 
 Future<DataProvider> _abrir(
@@ -180,12 +168,14 @@ void main() {
     await tester.tap(find.byTooltip('Pausar (K)'));
     await _settle(tester);
 
-    final i = fake.requested.indexOf('PUT /progress/lessons/$_leccion/video');
+    final i = fake.requested.lastIndexOf('PUT /progress/lessons/$_leccion/video');
     expect(i, isNot(-1));
-    expect(fake.cuerpos[i], {'positionSec': 47, 'durationSec': 212});
+    expect(fake.cuerpos[i]['positionSec'], 47);
+    expect(fake.cuerpos[i]['durationSec'], 212);
   });
 
-  testWidgets('pasar el 90% completa la lección una sola vez', (tester) async {
+  testWidgets('saltar hasta el 90% no pide completar: lo decide el servidor',
+      (tester) async {
     final fake = _api();
     await _abrir(tester, fake);
     final id = await _reproducir(tester, video);
@@ -194,11 +184,21 @@ void main() {
     await tester.pump(const Duration(milliseconds: 150));
     video.posicion(id, const Duration(seconds: 200));
     await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.byTooltip('Pausar (K)'));
     await _settle(tester);
 
     expect(
-        fake.requested.where((r) => r == 'POST /progress/lessons/$_leccion/toggle').length,
-        1);
+        fake.requested.where((r) =>
+            r.endsWith('/complete') || r.endsWith('/toggle')),
+        isEmpty);
+    // El salto hasta el 192 no viaja como visto.
+    final vistos = [
+      for (var i = 0; i < fake.requested.length; i++)
+        if (fake.requested[i] == 'PUT /progress/lessons/$_leccion/video')
+          (fake.cuerpos[i]['watchedToSec'] as int) -
+              (fake.cuerpos[i]['watchedFromSec'] as int),
+    ];
+    expect(vistos.fold<int>(0, (a, b) => a + b), lessThan(10));
   });
 
   testWidgets('el teclado: espacio pausa, → adelanta 5 s, M silencia', (tester) async {

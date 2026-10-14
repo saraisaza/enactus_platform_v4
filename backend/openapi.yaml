@@ -1730,6 +1730,11 @@ paths:
         Solo lecciones de tipo `quiz`: una encuesta no tiene respuesta correcta
         y calificarla dejaría un intento reprobado a quien solo dio su opinión.
         Se responde con `POST /lessons/{id}/survey-response`.
+
+        Se responde en orden, como toda lección: si falta una anterior, **409**
+        (un quiz ya aprobado sí se puede repetir). **Aprobar completa la
+        lección** en el servidor: la respuesta trae `lessonCompleted` e
+        `impact`, el progreso recalculado. Reprobar no la toca.
       requestBody:
         required: true
         content:
@@ -1759,10 +1764,14 @@ paths:
                   correctness:
                     type: object
                     additionalProperties: { type: boolean }
+                  lessonCompleted: { type: boolean }
+                  impact:
+                    nullable: true
+                    allOf: [{ $ref: '#/components/schemas/LessonImpact' }]
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { description: Solo un estudiante resuelve un quiz }
         '404': { description: La lección no está entre sus cursos }
-        '409': { description: La lección no es un quiz, o no tiene preguntas configuradas }
+        '409': { description: La lección no es un quiz, no tiene preguntas, o todavía no le toca }
 
   /lessons/{id}/survey-response:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -1804,7 +1813,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { description: Solo un estudiante responde una encuesta }
         '404': { description: La lección no está entre sus cursos }
-        '409': { description: La lección no es una encuesta, o no tiene preguntas }
+        '409': { description: La lección no es una encuesta, no tiene preguntas, o todavía no le toca }
     get:
       tags: [lessons]
       summary: La respuesta propia a una encuesta
@@ -1999,48 +2008,86 @@ paths:
         '409': { description: La key no salió del endpoint de subida de recursos }
         '413': { description: Supera los 25 MB }
 
-  /progress/lessons/{lessonId}/toggle:
+  /progress/lessons/{lessonId}/complete:
     parameters:
       - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }
     post:
       tags: [progress]
-      summary: Alternar una lección
+      summary: Completar una lección, si ya le toca y cumplió lo que pide
       description: |
-        Solo el propio estudiante. **No existe** una versión "marcar completa a
-        otro": sería una forma de fabricar progreso. La única vía indirecta
-        legítima es calificar una actividad, que completa su lección.
+        Solo el propio estudiante. Dos reglas, que hace cumplir el servidor
+        (`services/avance-de-leccion.ts`):
+
+        1. **En orden.** Todas las lecciones anteriores del curso (o del
+           módulo de la Ruta, con el módulo desbloqueado) tienen que estar
+           completas. Si no, **409** con `details.pendiente` = la primera que
+           falta.
+        2. **Con su prueba.** Video de YouTube o subido: el 90% visto en
+           tramos reproducidos (adelantar no suma). Quiz: un intento
+           aprobado. Encuesta: respondida. Actividad de curso: una entrega
+           calificada como aprobada; entrega de la Ruta: entregada. PDF,
+           recurso, enlace o video de Vimeo: la app lo pide al recorrerlo.
+           Si falta, **409** con el motivo.
+
+        No existe «desmarcar» ni «completar a otro». Si ya estaba completa,
+        responde igual (200) sin cambiar nada.
 
         La respuesta trae el progreso recalculado de curso, módulo, fase y
         Ruta: **el cliente no necesita ninguna llamada adicional**.
       responses:
         '200':
-          description: Progreso recalculado
+          description: Completa; progreso recalculado
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ToggleImpact' }
+              schema: { $ref: '#/components/schemas/LessonImpact' }
         '403':
           description: No es estudiante, o no tiene acceso a ese curso/laboratorio
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Todavía no le toca, o le falta lo que la lección pide }
+
+  /progress/lessons/{lessonId}/toggle:
+    parameters:
+      - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [progress]
+      deprecated: true
+      summary: Nombre viejo de `complete`; ya no alterna
+      description: |
+        Antes alternaba la lección sin pedir nada más que acceso, y por eso
+        se podía marcar a mano. Ahora hace exactamente lo mismo que
+        `POST /progress/lessons/{lessonId}/complete`. Queda para la app que
+        alguien tenga abierta durante un despliegue.
+      responses:
+        '200':
+          description: Completa; progreso recalculado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LessonImpact' }
+        '403':
+          description: No es estudiante, o no tiene acceso a ese curso/laboratorio
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Todavía no le toca, o le falta lo que la lección pide }
 
   /progress/lessons/{lessonId}/video:
     parameters:
       - { in: path, name: lessonId, required: true, schema: { type: string, format: uuid } }
     put:
       tags: [progress]
-      summary: Guardar hasta dónde vio el video de una lección
+      summary: Guardar hasta dónde vio el video, y el tramo que reprodujo
       description: |
-        Solo el propio estudiante, con las mismas reglas de acceso que el
-        toggle. Idempotente: el reproductor la manda cada pocos segundos, al
-        pausar y al cerrar.
+        Solo el propio estudiante, con las mismas reglas de acceso y de orden
+        que completar. Idempotente: el reproductor la manda al arrancar, cada
+        15 segundos, al pausar, al saltar y al cerrar.
 
         `positionSec` es dónde retomar; `furthestSec` (en la respuesta) es lo
-        más lejos que llegó alguna vez y solo crece. Una posición mayor que la
-        duración se recorta a la duración.
+        más lejos que llegó alguna vez. `watchedFromSec` → `watchedToSec` es
+        el tramo que se reprodujo desde el guardado anterior: se suma a
+        `watchedSec`, recortado al tiempo real que pasó (a 2× como máximo).
+        Un salto no es un tramo, así que adelantar no suma.
 
-        **No completa la lección.** Completar sigue siendo
-        `POST /progress/lessons/{lessonId}/toggle`, que el cliente pide al
-        llegar al final: si esto completara solo, quien desmarcó la lección
-        para repasarla la vería marcarse de nuevo en el primer guardado.
+        **Completa la lección** cuando `watchedSec` llega al 90% de la
+        duración: la respuesta trae entonces `completion` con el progreso
+        recalculado (si no, `null`).
       requestBody:
         required: true
         content:
@@ -2051,17 +2098,26 @@ paths:
               properties:
                 positionSec: { type: integer, minimum: 0, maximum: 86400 }
                 durationSec: { type: integer, minimum: 1, maximum: 86400 }
+                watchedFromSec: { type: integer, minimum: 0, maximum: 86400 }
+                watchedToSec: { type: integer, minimum: 0, maximum: 86400 }
       responses:
         '200':
           description: Posición guardada
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/VideoProgress' }
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/VideoProgress' }
+                  - type: object
+                    properties:
+                      completion:
+                        nullable: true
+                        allOf: [{ $ref: '#/components/schemas/LessonImpact' }]
         '400': { description: Posición o duración inválidas }
         '403':
           description: No es estudiante, o no tiene acceso a ese curso/laboratorio
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { description: La lección no es de video }
+        '409': { description: La lección no es de video, o todavía no le toca }
 
   /students/{id}/ruta-progress:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -2095,6 +2151,10 @@ paths:
         Trae también `videoProgress`: hasta dónde vio el estudiante cada video
         del curso (una entrada por lección que abrió), con la misma forma que
         devuelve `PUT /progress/lessons/{lessonId}/video`.
+
+        `nextLessonId` es la primera lección sin completar en el orden del
+        curso (`null` si completó todas). Las lecciones se hacen en orden:
+        una está abierta si ya se completó o si es esa.
       responses:
         '200':
           description: OK
@@ -2112,6 +2172,7 @@ paths:
                   completedLessonIds:
                     type: array
                     items: { type: string, format: uuid }
+                  nextLessonId: { type: string, format: uuid, nullable: true }
                   videoProgress:
                     type: array
                     items: { $ref: '#/components/schemas/VideoProgress' }
@@ -2627,9 +2688,20 @@ paths:
     post:
       tags: [submissions]
       summary: Crear una entrega (solo el propio estudiante)
+      description: |
+        Con `lessonId`, la lección tiene que ser una actividad de ese curso o
+        módulo, tocarle ya (las anteriores completas) y la entrega traer lo
+        que la actividad pide: texto, archivo, cuántos. Nunca vacía.
+
+        En la Ruta, entregar **completa la lección** (el Mentor revisa pero
+        no califica): la respuesta trae `impact` con el progreso recalculado.
+        En un curso, la lección se completa cuando la entrega se califica
+        como aprobada (`POST /submissions/{id}/grade`).
       responses:
         '201': { description: Creada }
+        '400': { description: Entrega vacía, o le falta lo que la actividad pide }
         '403': { description: Sin acceso a ese curso o laboratorio }
+        '409': { description: La lección no es una actividad de ahí, o todavía no le toca }
 
   /submissions/{id}/grade:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -2644,8 +2716,10 @@ paths:
         La escala se guarda junto a la nota: hoy conviven cuatro escalas en el
         mismo campo y el número por sí solo no significa nada.
 
-        Calificar una actividad **completa su lección** (marca, nunca alterna).
-        Queda en `audit_log`.
+        Calificarla **aprobada** completa la lección de la actividad (60/100,
+        3/5, «aprobado»; en «solo revisión», revisarla). Una nota que no
+        aprueba no la completa —el estudiante vuelve a entregar— y nunca la
+        des-completa. Queda en `audit_log`.
       requestBody:
         required: true
         content:
@@ -3735,9 +3809,12 @@ components:
         positionSec: { type: integer, description: Dónde retomar }
         furthestSec: { type: integer, description: Lo más lejos que llegó; solo crece }
         durationSec: { type: integer, nullable: true }
+        watchedSec:
+          type: integer
+          description: Los segundos distintos que vio de verdad; con el 90% se completa
         updatedAt: { type: string, format: date-time }
 
-    ToggleImpact:
+    LessonImpact:
       type: object
       properties:
         lessonId: { type: string, format: uuid }
@@ -3751,6 +3828,11 @@ components:
             completedLessons: { type: integer }
             ratio: { type: number, format: float }
             isComplete: { type: boolean }
+            nextLessonId:
+              type: string
+              format: uuid
+              nullable: true
+              description: La lección que se abre ahora; `null` si completó todas
         rutaImpact:
           type: array
           description: Un elemento por laboratorio donde el curso esté en la Ruta.

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { resetRateLimits } from '../src/middleware/rate-limit';
 import { auth, json, login, makeTestApp } from './helpers/app';
+import { completarComoEstudiante } from './helpers/avance';
 import { seedId, seedTestDatabase } from './helpers/db';
 
 /**
@@ -11,7 +12,7 @@ import { seedId, seedTestDatabase } from './helpers/db';
  * Estos son los tests más importantes de la fase. No prueban que un endpoint
  * responda 200: prueban que la REGLA se cumple — que un módulo con tres cursos
  * no se completa con dos, que el certificado se rechaza con dos de tres fases,
- * y que destildar una lección recalcula hacia arriba.
+ * y que completar una lección recalcula hacia arriba (y que ya no se destilda).
  */
 
 let app: ReturnType<typeof makeTestApp>['app'];
@@ -120,12 +121,12 @@ describe('GET /students/:id/ruta-progress', () => {
   });
 });
 
-describe('POST /progress/lessons/:id/toggle', () => {
+describe('POST /progress/lessons/:id/complete', () => {
   it('un estudiante no puede tocar el progreso de otro (no hay forma de pedirlo)', async () => {
     // El endpoint ni siquiera acepta un studentId: siempre opera sobre quien
     // tiene la sesión. Se comprueba que tocar una lección de un curso ajeno
     // se rechaza, que es la vía por la que se podría intentar.
-    const res = await req(`/progress/lessons/${seedId('lag1')}/toggle`, estToken, {
+    const res = await req(`/progress/lessons/${seedId('lag1')}/complete`, estToken, {
       method: 'POST',
     });
     expect(res.status).toBe(403);
@@ -133,57 +134,33 @@ describe('POST /progress/lessons/:id/toggle', () => {
     expect(b.error.message).toContain('acceso');
   });
 
-  it('un LXD no puede marcar lecciones: no es estudiante', async () => {
-    const res = await req(`/progress/lessons/${seedId('lia1')}/toggle`, lxdToken, {
+  it('un LXD no puede completar lecciones: no es estudiante', async () => {
+    const res = await req(`/progress/lessons/${seedId('lia1')}/complete`, lxdToken, {
       method: 'POST',
     });
     expect(res.status).toBe(403);
   });
 
-  it('destildar una lección completa recalcula hacia arriba', async () => {
-    // `est1` tiene el curso al 100% y el módulo 1 completo.
-    const antes = await req(
-      `/students/${seedId('est1')}/course-progress/${seedId('crs_ia_1')}`,
-      estToken,
-    );
-    expect((await body<{ isComplete: boolean }>(antes)).isComplete).toBe(true);
-
-    const res = await req(`/progress/lessons/${seedId('lia1')}/toggle`, estToken, {
-      method: 'POST',
-    });
-    expect(res.status).toBe(200);
-    const impact = await body<{
-      completed: boolean;
-      course: { ratio: number; isComplete: boolean; completedLessons: number };
-      rutaImpact: {
-        moduleComplete: boolean;
-        phaseComplete: boolean;
-        rutaComplete: boolean;
-        phaseModulesDone: number;
-      }[];
-    }>(res);
-
-    expect(impact.completed).toBe(false);
-    expect(impact.course.isComplete).toBe(false);
-    expect(impact.course.completedLessons).toBe(5);
-    // Y en una sola respuesta viene el efecto en la Ruta.
-    expect(impact.rutaImpact).toHaveLength(1);
-    expect(impact.rutaImpact[0]?.moduleComplete).toBe(false);
-    expect(impact.rutaImpact[0]?.phaseModulesDone).toBe(0);
-    expect(impact.rutaImpact[0]?.phaseComplete).toBe(false);
-
-    // Se vuelve a marcar y todo regresa.
-    const vuelta = await req(`/progress/lessons/${seedId('lia1')}/toggle`, estToken, {
-      method: 'POST',
-    });
-    const back = await body<{
-      completed: boolean;
-      course: { isComplete: boolean };
-      rutaImpact: { moduleComplete: boolean }[];
-    }>(vuelta);
-    expect(back.completed).toBe(true);
-    expect(back.course.isComplete).toBe(true);
-    expect(back.rutaImpact[0]?.moduleComplete).toBe(true);
+  it('ya no se puede destildar: tocar una lección completa la deja completa', async () => {
+    // `est1` tiene el curso al 100% y el módulo 1 completo. Antes, el toggle
+    // la desmarcaba; ahora ni el nombre viejo des-completa nada.
+    for (const ruta of ['complete', 'toggle']) {
+      const res = await req(`/progress/lessons/${seedId('lia1')}/${ruta}`, estToken, {
+        method: 'POST',
+      });
+      expect(res.status).toBe(200);
+      const impact = await body<{
+        completed: boolean;
+        course: { isComplete: boolean; completedLessons: number };
+        rutaImpact: { moduleComplete: boolean }[];
+      }>(res);
+      expect(impact.completed).toBe(true);
+      expect(impact.course.isComplete).toBe(true);
+      expect(impact.course.completedLessons).toBe(6);
+      // Y en una sola respuesta viene el estado de la Ruta.
+      expect(impact.rutaImpact).toHaveLength(1);
+      expect(impact.rutaImpact[0]?.moduleComplete).toBe(true);
+    }
   });
 });
 
@@ -243,15 +220,16 @@ describe('un módulo con 3 cursos exige los 3', () => {
       lecciones.push(row!.id);
     }
 
-    // Segundo curso completo → módulo todavía incompleto.
-    const dos = await req(`/progress/lessons/${lecciones[0]!}/toggle`, estToken, {
+    // Segundo curso completo → módulo todavía incompleto. Son lecturas: las
+    // completa la app al recorrerlas, y el servidor exige el orden.
+    const dos = await req(`/progress/lessons/${lecciones[0]!}/complete`, estToken, {
       method: 'POST',
     });
     const impactoDos = await body<{ rutaImpact: { moduleComplete: boolean }[] }>(dos);
     expect(impactoDos.rutaImpact[0]?.moduleComplete).toBe(false);
 
     // Tercero → ahora sí.
-    const tres = await req(`/progress/lessons/${lecciones[1]!}/toggle`, estToken, {
+    const tres = await req(`/progress/lessons/${lecciones[1]!}/complete`, estToken, {
       method: 'POST',
     });
     const impactoTres = await body<{
@@ -307,8 +285,9 @@ describe('POST /certificates/ruta', () => {
   });
 
   it('con las 3 fases completas sí se emite', async () => {
-    // Se completa todo lo que falta de lab_ia para est1: las lecturas propias
-    // de los módulos pendientes de las 3 fases.
+    // Se completa todo lo que falta de lab_ia para est1, en orden y con lo
+    // que pide cada cosa: las lecturas y entregas propias de los módulos
+    // pendientes de las 3 fases.
     const pendientes = await sql<{ id: string }[]>`
       select l.id
         from lessons l
@@ -319,13 +298,15 @@ describe('POST /certificates/ruta', () => {
            select rpl.lesson_id from ruta_progress_lessons rpl
              join ruta_progress rp on rp.id = rpl.ruta_progress_id
             where rp.student_id = ${seedId('est1')})
+       order by p.order_index, rm.order_index, l.order_index
     `;
     for (const l of pendientes) {
-      await req(`/progress/lessons/${l.id}/toggle`, estToken, { method: 'POST' });
+      const res = await completarComoEstudiante(app, sql, estToken, seedId('est1'), l.id);
+      expect([200, 201]).toContain(res.status);
     }
 
     // Las fases 2 y 3 del seed no tienen módulos, así que nunca se completan:
-    // se les agrega uno con su lectura, como haría el Admin en el editor.
+    // se les agrega uno con su entrega, como haría el Admin en el editor.
     for (const fase of ['lab_ia_fase2', 'lab_ia_fase3']) {
       const [mod] = await sql<{ id: string }[]>`
         insert into ruta_modules (phase_id, order_index, title, is_mentorship_module)
@@ -335,7 +316,8 @@ describe('POST /certificates/ruta', () => {
         insert into lessons (ruta_module_id, order_index, title, type)
         values (${mod!.id}, 1, 'Entrega de la fase', 'activity') returning id
       `;
-      await req(`/progress/lessons/${lec!.id}/toggle`, estToken, { method: 'POST' });
+      const res = await completarComoEstudiante(app, sql, estToken, seedId('est1'), lec!.id);
+      expect(res.status).toBe(201);
     }
 
     const elegible = await req(

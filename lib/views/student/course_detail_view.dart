@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -99,6 +101,18 @@ class _CourseBody extends StatelessWidget {
     final viewer = context.watch<AuthProvider>().currentUser;
     final puedeRepasar =
         !readOnly && viewer != null && Roles.isStudentLike(viewer.role);
+
+    // Las lecciones se hacen en orden: la que le toca y las ya hechas están
+    // abiertas; las demás, con candado y el nombre de la que falta.
+    final siguiente = progress.nextLessonId;
+    final tituloSiguiente = siguiente == null
+        ? null
+        : course.modules
+            .expand((m) => m.lessons)
+            .where((l) => l.id == siguiente)
+            .firstOrNull
+            ?.title;
+    final entregas = data.submissions.valueOrNull ?? const <Submission>[];
 
     return CustomScrollView(
       slivers: [
@@ -257,6 +271,16 @@ class _CourseBody extends StatelessWidget {
                           lesson: lesson,
                           course: course,
                           done: progress.isLessonComplete(lesson.id),
+                          available: progress.isLessonAvailable(lesson.id),
+                          lockedBehind: tituloSiguiente,
+                          // De quien tiene la sesión: en solo lectura, las
+                          // entregas cargadas no son las de esa persona.
+                          lastSubmission: readOnly ||
+                                  lesson.type != LessonType.activity
+                              ? null
+                              : entregas
+                                  .where((e) => e.lessonId == lesson.id)
+                                  .firstOrNull,
                           readOnly: readOnly,
                           desplegar: desplegar,
                           // El propio: lo que el reproductor acaba de guardar,
@@ -339,6 +363,15 @@ class _LessonTile extends StatelessWidget {
   final Lesson lesson;
   final Course course;
   final bool done;
+
+  /// Si ya le toca: la completó (y la repasa) o es la siguiente.
+  final bool available;
+
+  /// La lección que hay que completar antes, para decirlo en el candado.
+  final String? lockedBehind;
+
+  /// La última entrega de esta actividad, si es una actividad.
+  final Submission? lastSubmission;
   final bool readOnly;
 
   /// Hasta dónde vio el video; `null` si no es de video o nunca lo abrió.
@@ -351,10 +384,22 @@ class _LessonTile extends StatelessWidget {
     required this.lesson,
     required this.course,
     required this.done,
+    required this.available,
     required this.readOnly,
+    this.lockedBehind,
+    this.lastSubmission,
     this.video,
     this.desplegar,
   });
+
+  bool get _locked => !done && !available;
+
+  String get _lockedMessage {
+    final anterior = lockedBehind;
+    return anterior == null
+        ? tr.leccionBloqueadaSinNombre
+        : tr.leccionBloqueada(anterior);
+  }
 
   /// "Video · 12 min · Visto 40%", o "· Seguir desde 3:12" si quedó a medias.
   String get _subtitle {
@@ -371,84 +416,123 @@ class _LessonTile extends StatelessWidget {
     } else if (visto != null && visto > 0) {
       partes.add(tr.videoVisto((visto * 100).round()));
     }
+    // Una actividad entregada y sin aprobar es la razón de que lo siguiente
+    // siga cerrado: se dice, para que nadie crea que es un error.
+    final entrega = lastSubmission;
+    if (!done && entrega != null) {
+      partes.add(entrega.isGraded &&
+              !GradingMode.isPassing(entrega.grade, entrega.gradingMode)
+          ? tr.actividadNoAprobada
+          : tr.actividadEnRevision);
+    }
     return partes.join(' · ');
   }
+
+  /// Cómo se completa esta lección: lo que dice el indicador mientras está
+  /// pendiente. Ya no hay un círculo para marcar a mano.
+  String get _howToComplete => switch (lesson.type) {
+        LessonType.video => tr.leccionSeCompletaVideo,
+        LessonType.pdf || LessonType.resource => tr.leccionSeCompletaLectura,
+        LessonType.link => tr.leccionSeCompletaEnlace,
+        LessonType.quiz => tr.leccionSeCompletaQuiz,
+        LessonType.survey => tr.leccionSeCompletaEncuesta,
+        LessonType.activity => tr.leccionSeCompletaActividad,
+      };
 
   @override
   Widget build(BuildContext context) {
     final visto = video?.watchedRatio;
+    final locked = _locked;
+    final (icono, color, aviso) = done
+        ? (Icons.check_circle, AppColors.statusGood, tr.leccionCompletada)
+        : locked
+            ? (Icons.lock_outline, AppColors.textMuted, _lockedMessage)
+            : (Icons.radio_button_unchecked, AppColors.textMuted,
+                _howToComplete);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: HoverCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        onTap: () => _open(context),
-        child: Row(
-          children: [
-            Icon(lessonTypeIcon(lesson.type), color: AppColors.gold, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(lesson.title,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                  Text(_subtitle,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
-                  // Lo visto, como la barrita roja de YouTube bajo la
-                  // miniatura: se entiende sin leer el porcentaje.
-                  if (!done && visto != null && visto > 0 && visto < 1)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6, right: 24),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: LinearProgressIndicator(
-                          value: visto,
-                          minHeight: 3,
-                          backgroundColor: AppColors.surfaceAlt,
-                          valueColor:
-                              AlwaysStoppedAnimation(AppColors.gold),
+      child: Opacity(
+        opacity: locked ? 0.55 : 1,
+        child: HoverCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          // El candado es del estudiante: quien mira su curso desde el equipo
+          // no avanza nada, y puede abrir el material para revisarlo.
+          onTap: () => locked && !readOnly
+              ? showAppSnack(context, _lockedMessage)
+              : _open(context),
+          child: Row(
+            children: [
+              Icon(lessonTypeIcon(lesson.type),
+                  color: locked ? AppColors.textMuted : AppColors.gold,
+                  size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(lesson.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(_subtitle,
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 12)),
+                    // Lo visto, como la barrita roja de YouTube bajo la
+                    // miniatura: se entiende sin leer el porcentaje.
+                    if (!done && visto != null && visto > 0 && visto < 1)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, right: 24),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: visto,
+                            minHeight: 3,
+                            backgroundColor: AppColors.surfaceAlt,
+                            valueColor:
+                                AlwaysStoppedAnimation(AppColors.gold),
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-            ?desplegar,
-            Tooltip(
-              message: readOnly
-                  ? (done ? tr.leccionCompletada : tr.calificacionPendiente)
-                  : (done
-                      ? tr.leccionMarcarPendiente
-                      : tr.leccionMarcarCompletada),
-              child: IconButton(
-                icon: Icon(
-                  done ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: done ? AppColors.statusGood : AppColors.textMuted,
+                  ],
                 ),
-                // En solo lectura no se completa en nombre de otra persona.
-                onPressed: readOnly ? null : () => _toggle(context),
               ),
-            ),
-          ],
+              ?desplegar,
+              // Solo un indicador: completar no se hace tocándolo, sino
+              // haciendo la lección (lo decide el servidor). El aviso del
+              // Tooltip es también lo que lee un lector de pantalla.
+              Tooltip(
+                message: aviso,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(icono, color: color, key: ValueKey(icono)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Marcar la lección. La respuesta trae el recálculo de curso, módulo, fase
-  /// y Ruta, así que si con esto quedó una Ruta lista para certificar, se
-  /// puede celebrar sin preguntar nada más.
-  Future<void> _toggle(BuildContext context) async {
+  /// Si es el propio estudiante: solo así lo que hace en la lección cuenta
+  /// como su avance.
+  bool _sigue(BuildContext context) {
+    final viewer = context.read<AuthProvider>().currentUser;
+    return !readOnly && viewer != null && Roles.isStudentLike(viewer.role);
+  }
+
+  /// Completa una lectura, un enlace o un video sin seguimiento después de
+  /// recorrerlo. Si con eso quedó una Ruta lista para certificar, se celebra.
+  Future<void> _completar(BuildContext context) async {
+    if (done || !_sigue(context)) return;
     final data = context.read<DataProvider>();
     try {
-      final impact = await data.toggleLesson(lesson.id, course.id);
-      if (!context.mounted) return;
-      if (impact.newlyCertifiable != null) {
-        showSuccessCheck(context, tr.rutaCompletada);
-      } else if (impact.completed) {
-        showSuccessCheck(context, tr.leccionCompletadaExclama);
-      }
+      final impact = await data.completeLesson(lesson.id, courseId: course.id);
+      if (impact == null || !context.mounted) return;
+      showSuccessCheck(
+          context,
+          impact.newlyCertifiable != null
+              ? tr.rutaCompletada
+              : tr.leccionCompletadaExclama);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
     }
@@ -469,16 +553,7 @@ class _LessonTile extends StatelessWidget {
 
     switch (lesson.type) {
       case LessonType.video:
-        // El avance se guarda solo para el propio estudiante: el equipo puede
-        // abrir el curso de alguien, pero mirar el video no es avance suyo.
-        final viewer = context.read<AuthProvider>().currentUser;
-        VideoPlayerDialog.show(
-          context,
-          lesson,
-          courseId: course.id,
-          trackProgress:
-              !readOnly && viewer != null && Roles.isStudentLike(viewer.role),
-        );
+        _openVideo(context);
       case LessonType.pdf:
       case LessonType.resource:
         _openResource(context);
@@ -499,7 +574,26 @@ class _LessonTile extends StatelessWidget {
     }
   }
 
-  /// Abre el PDF o recurso pidiendo su URL firmada.
+  /// El video de YouTube o subido se completa en el servidor con lo que se
+  /// ve (el 90%, sin adelantar). Uno de Vimeo, o una lección sin video, no
+  /// informa qué se vio: se completa al verlo y cerrarlo.
+  Future<void> _openVideo(BuildContext context) async {
+    // El avance se guarda solo para el propio estudiante: el equipo puede
+    // abrir el curso de alguien, pero mirar el video no es avance suyo.
+    final sigue = _sigue(context);
+    await VideoPlayerDialog.show(
+      context,
+      lesson,
+      courseId: course.id,
+      trackProgress: sigue,
+    );
+    final conSeguimiento =
+        lesson.youtubeVideoId != null || lesson.isUploadedVideo;
+    if (sigue && !conSeguimiento && context.mounted) await _completar(context);
+  }
+
+  /// Abre el PDF o recurso pidiendo su URL firmada. La lección se completa
+  /// al recorrerlo: un PDF, al llegar a la última página.
   ///
   /// La firma la emite el servidor tras comprobar que esta persona puede leer
   /// esa key: un archivo de un curso ajeno responde 404 y acá se dice, en vez
@@ -508,6 +602,9 @@ class _LessonTile extends StatelessWidget {
     final key = lesson.resourceS3Key;
     if (key == null || key.isEmpty) {
       showAppSnack(context, tr.leccionSinMaterial);
+      // Sin material no hay nada que recorrer: la lección no puede dejar el
+      // curso trabado por un error de quien lo armó.
+      await _completar(context);
       return;
     }
     final data = context.read<DataProvider>();
@@ -515,24 +612,34 @@ class _LessonTile extends StatelessWidget {
       final url = await data.resolveFileUrl(key);
       if (!context.mounted) return;
       await FileViewer.show(context,
-          url: url, fileName: lesson.resourceFileName, s3Key: key);
+          url: url,
+          fileName: lesson.resourceFileName,
+          s3Key: key,
+          onReadToEnd: done || !_sigue(context)
+              ? null
+              : () => unawaited(_completar(context)));
     } on ApiException catch (e) {
       if (context.mounted) showAppSnack(context, e.message);
     }
   }
 
+  /// Un enlace se completa al abrirlo: lo que hay del otro lado no se ve.
   Future<void> _openExternal(BuildContext context, String? url) async {
     final uri = url == null ? null : Uri.tryParse(url);
     if (uri == null) {
       showAppSnack(context, tr.leccionSinEnlace);
+      await _completar(context);
       return;
     }
     // En la app: PDF en el visor propio y el resto en el navegador
     // integrado, sin salir de la lección (ver `abrirRecurso`).
     final ok = await abrirRecurso(context, uri.toString(), titulo: lesson.title);
-    if (!ok && context.mounted) {
+    if (!context.mounted) return;
+    if (!ok) {
       showAppSnack(context, tr.leccionEnlaceNoAbre);
+      return;
     }
+    await _completar(context);
   }
 }
 
@@ -582,20 +689,13 @@ class _QuizDialogState extends State<_QuizDialog> {
       _error = null;
     });
     try {
+      // Aprobar completa la lección en el servidor —la nota es suya, y el
+      // completar también—; el provider aplica lo que cambió.
       final result = await context
           .read<DataProvider>()
           .submitQuiz(widget.lesson.id, _answers);
       if (!mounted) return;
       setState(() => _result = result);
-
-      // Aprobar el quiz marca la lección: es el mismo acto para quien lo
-      // resuelve. Se hace acá y no en el servidor porque completar una
-      // lección es reversible y de la persona, no del quiz.
-      if (result.passed) {
-        await context
-            .read<DataProvider>()
-            .toggleLessonIfPending(widget.lesson.id, widget.course.id);
-      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e);
     } finally {
@@ -1101,6 +1201,10 @@ class _ActivityDialog extends StatelessWidget {
                     style: const TextStyle(fontSize: 14, height: 1.5)),
                 const SizedBox(height: 12),
               ],
+              Text(tr.actividadSeCompletaAprobada,
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 12.5, height: 1.4)),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 6,
@@ -1256,6 +1360,11 @@ class _SubmitDialogState extends State<_SubmitDialog> {
     if (widget.config.requiresFile && _files.isEmpty) {
       setState(() => _error = ValidationError(
           tr.actividadRequiereArchivo));
+      return;
+    }
+    // Una entrega vacía no es una entrega (y el servidor la rechaza).
+    if (_comment.text.trim().isEmpty && _files.isEmpty) {
+      setState(() => _error = ValidationError(tr.entregaVaciaRuta));
       return;
     }
 

@@ -69,7 +69,18 @@ FakeApi _api({Map<String, Object?>? progreso}) => FakeApi(routes: {
         'durationSec': 212,
         'updatedAt': '2026-10-03T10:00:00.000Z',
       },
-      '/progress/lessons/$_leccion/toggle': {
+    });
+
+/// Lo que responde el servidor al guardado que llega al 90% de lo visto: la
+/// lección quedó completa, con el progreso recalculado.
+Map<String, Object?> get _guardadoQueCompleta => {
+      'lessonId': _leccion,
+      'positionSec': 200,
+      'furthestSec': 200,
+      'durationSec': 212,
+      'watchedSec': 195,
+      'updatedAt': '2026-10-03T10:00:00.000Z',
+      'completion': {
         'lessonId': _leccion,
         'completed': true,
         'course': {
@@ -78,10 +89,11 @@ FakeApi _api({Map<String, Object?>? progreso}) => FakeApi(routes: {
           'completedLessons': 1,
           'ratio': 1,
           'isComplete': true,
+          'nextLessonId': null,
         },
         'rutaImpact': <Object>[],
       },
-    });
+    };
 
 /// Monta una pantalla con un botón que abre el diálogo, como lo abre la
 /// lista de lecciones. Devuelve el provider para mirar su estado.
@@ -187,13 +199,20 @@ void main() {
         tester,
         _api(
           progreso: _progreso(videos: [
-            {'lessonId': _leccion, 'positionSec': 125, 'furthestSec': 150, 'durationSec': 212},
+            {
+              'lessonId': _leccion,
+              'positionSec': 125,
+              'furthestSec': 190,
+              'durationSec': 212,
+              'watchedSec': 150,
+            },
           ]),
         ),
       );
       await _settle(tester);
 
       expect(find.text('Seguir desde 2:05'), findsOneWidget);
+      // Lo visto de verdad (150 s), no hasta dónde se adelantó (190 s).
       expect(find.text('Visto 71%'), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('Seguir viendo «Charla de apertura» desde 2:05')),
           findsOneWidget);
@@ -274,15 +293,28 @@ void main() {
       page.state(1); // reproduciendo: el paquete pide la duración
       await _settle(tester);
       page.position(30.4);
+      await _settle(tester);
+      page.position(31);
+      await _settle(tester);
+      page.position(32);
+      await _settle(tester);
       page.state(2); // pausa
       await _settle(tester);
 
-      final i = fake.requested.indexOf('PUT /progress/lessons/$_leccion/video');
-      expect(i, isNot(-1));
-      expect(fake.cuerpos[i], {'positionSec': 30, 'durationSec': 212});
+      final puts = [
+        for (var i = 0; i < fake.requested.length; i++)
+          if (fake.requested[i] == 'PUT /progress/lessons/$_leccion/video')
+            fake.cuerpos[i],
+      ];
+      // El punto de partida, y al pausar, la posición con el tramo visto.
+      expect(puts, [
+        {'positionSec': 30, 'durationSec': 212, 'watchedFromSec': 30, 'watchedToSec': 30},
+        {'positionSec': 32, 'durationSec': 212, 'watchedFromSec': 30, 'watchedToSec': 32},
+      ]);
     });
 
-    testWidgets('pasar el 90% completa la lección una sola vez', (tester) async {
+    testWidgets('la lección la completa el servidor, nunca el reproductor',
+        (tester) async {
       final fake = _api();
       await _abrir(tester, fake);
       final page = await _reproducir(tester, web);
@@ -292,34 +324,47 @@ void main() {
       page.position(150);
       await _settle(tester);
       expect(find.text('Lección completada'), findsNothing);
+      expect(find.textContaining('Adelantarlo no cuenta'), findsOneWidget);
 
-      page.position(191); // 191 / 212 = 90.1%
+      // El guardado que llega al 90% de lo visto vuelve con `completion`.
+      fake.routes['/progress/lessons/$_leccion/video'] = _guardadoQueCompleta;
+      page.position(151);
       await _settle(tester);
-      page.position(200);
-      page.state(0); // y además termina
+      page.state(2);
       await _settle(tester);
 
-      expect(
-        fake.requested.where((r) => r == 'POST /progress/lessons/$_leccion/toggle'),
-        hasLength(1),
-        reason: 'un segundo toggle la DESMARCARÍA',
-      );
       expect(find.text('Lección completada'), findsOneWidget);
+      expect(find.textContaining('Adelantarlo no cuenta'), findsNothing);
+      // Ni «completar» ni el viejo «toggle»: el reproductor solo guarda.
+      expect(
+          fake.requested.where((r) =>
+              r.endsWith('/complete') || r.endsWith('/toggle')),
+          isEmpty);
     });
 
-    testWidgets('si ya estaba completa no la toca', (tester) async {
-      final fake = _api(progreso: _progreso(completas: [_leccion]));
+    testWidgets('saltar al final no completa nada desde la app', (tester) async {
+      final fake = _api();
       await _abrir(tester, fake);
-      await _settle(tester);
       final page = await _reproducir(tester, web);
 
       page.state(1);
       await _settle(tester);
-      page.position(205);
+      page.position(5);
+      await _settle(tester);
+      page.position(205); // un salto
+      await _settle(tester);
       page.state(0);
       await _settle(tester);
 
-      expect(fake.requested.where((r) => r.endsWith('/toggle')), isEmpty);
+      expect(fake.requested.where((r) => r.startsWith('POST')), isEmpty);
+      final tramos = [
+        for (var i = 0; i < fake.requested.length; i++)
+          if (fake.requested[i] == 'PUT /progress/lessons/$_leccion/video')
+            (fake.cuerpos[i]['watchedToSec'] as int) -
+                (fake.cuerpos[i]['watchedFromSec'] as int),
+      ];
+      // Lo saltado no viaja como visto.
+      expect(tramos.fold<int>(0, (a, b) => a + b), lessThan(10));
     });
 
     testWidgets('cerrar el diálogo guarda lo último que vio', (tester) async {
@@ -329,9 +374,12 @@ void main() {
 
       page.state(1);
       await _settle(tester);
-      page.position(47);
-      await _settle(tester);
-      expect(fake.requested.where((r) => r.startsWith('PUT')), isEmpty);
+      for (final segundo in [45, 46, 47]) {
+        page.position(segundo.toDouble());
+        await _settle(tester);
+      }
+      // Solo el punto de partida, todavía.
+      expect(fake.requested.where((r) => r.startsWith('PUT')), hasLength(1));
 
       await tester.tap(find.byTooltip('Cerrar'));
       // La transición de salida del diálogo, y recién después el `dispose`
@@ -345,7 +393,8 @@ void main() {
             fake.cuerpos[i],
       ];
       expect(puts, [
-        {'positionSec': 47, 'durationSec': 212},
+        {'positionSec': 45, 'durationSec': 212, 'watchedFromSec': 45, 'watchedToSec': 45},
+        {'positionSec': 47, 'durationSec': 212, 'watchedFromSec': 45, 'watchedToSec': 47},
       ]);
       // La lista de lecciones lo ve sin pedir nada al servidor.
       expect(data.myVideoProgress(_leccion)?.positionSec, 47);

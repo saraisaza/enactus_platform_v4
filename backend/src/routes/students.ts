@@ -17,6 +17,7 @@ import {
   courseProgressFor,
   rutaProgressFor,
 } from '../services/progress';
+import { siguienteLeccionDelCurso } from '../services/avance-de-leccion';
 import { videoProgressForCourse } from '../services/video-progress';
 import { supervisorAlcanza } from '../services/alcance-supervisor';
 
@@ -132,8 +133,14 @@ studentRoutes.get('/:id/ruta-progress', requireEnactus, async (c) => {
 });
 
 /**
- * Progreso de un estudiante en UN curso, con las lecciones ya completadas y
- * hasta dónde vio cada video.
+ * Progreso de un estudiante en UN curso, con las lecciones ya completadas,
+ * cuál le toca ahora y hasta dónde vio cada video.
+ *
+ * `nextLessonId` es la primera lección sin completar, en el orden del curso
+ * (`null` si las completó todas): las lecciones se hacen en orden, así que
+ * una lección está abierta si ya la completó o si es esa. La pantalla dibuja
+ * los candados con esto; el servidor hace cumplir lo mismo al completar
+ * (`services/avance-de-leccion.ts`).
  *
  * `videoProgress` viaja acá y no en un endpoint aparte porque la pantalla del
  * curso lo necesita junto con lo demás —para mostrar «visto 40%» en la lista
@@ -155,6 +162,7 @@ studentRoutes.get('/:id/course-progress/:courseId', async (c) => {
     ...progress,
     studentId: target.id,
     completedLessonIds: await completedLessonIds(db, target.id, courseId),
+    nextLessonId: await siguienteLeccionDelCurso(db, target.id, courseId),
     videoProgress: await videoProgressForCourse(db, target.id, courseId),
   });
 });

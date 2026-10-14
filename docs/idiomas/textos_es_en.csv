@@ -551,10 +551,25 @@ cursoSinContenido,Este curso todavía no tiene contenido publicado.,This course 
 cursoMisEntregas,Mis entregas,My submissions,views/student/course_detail_view.dart
 leccionVideoYoutube,Video de YouTube,YouTube video,views/student/course_detail_view.dart
 leccionCompletada,Completada,Completed,views/student/course_detail_view.dart
-leccionMarcarPendiente,Marcar como pendiente,Mark as pending,views/student/course_detail_view.dart
-leccionMarcarCompletada,Marcar como completada,Mark as completed,views/student/course_detail_view.dart
 rutaCompletada,¡Completó la Ruta de Impacto! 🎉,You completed the Impact Path! 🎉,views/student/course_detail_view.dart
 leccionCompletadaExclama,¡Lección completada!,Lesson completed!,views/student/course_detail_view.dart
+leccionBloqueada,Bloqueada: primero complete «{anterior}».,Locked: first complete “{anterior}”.,views/student/course_detail_view.dart
+leccionBloqueadaSinNombre,Bloqueada: primero complete las lecciones anteriores.,Locked: first complete the previous lessons.,views/student/course_detail_view.dart
+leccionSeCompletaVideo,Se completa al ver el video completo.,Completed by watching the whole video.,views/student/course_detail_view.dart
+leccionSeCompletaLectura,Se completa al leer el material hasta el final.,Completed by reading the material to the end.,views/student/course_detail_view.dart
+leccionSeCompletaEnlace,Se completa al abrir el enlace.,Completed by opening the link.,views/student/course_detail_view.dart
+leccionSeCompletaQuiz,Se completa al aprobar el quiz.,Completed by passing the quiz.,views/student/course_detail_view.dart
+leccionSeCompletaEncuesta,Se completa al responder la encuesta.,Completed by answering the survey.,views/student/course_detail_view.dart
+leccionSeCompletaActividad,Se completa cuando su entrega sea calificada como aprobada.,Completed when your submission is graded as passing.,views/student/course_detail_view.dart
+leccionSeCompletaEntrega,Se completa al hacer su entrega.,Completed by submitting your work.,views/student/ruta_impacto_view.dart
+actividadEnRevision,Entregada · espera calificación,Submitted · awaiting grade,views/student/course_detail_view.dart
+actividadNoAprobada,No aprobada · entregue de nuevo,Not passed · submit again,views/student/course_detail_view.dart
+actividadSeCompletaAprobada,"Esta lección se completa cuando su entrega sea calificada como aprobada. Mientras tanto, la siguiente queda bloqueada.","This lesson is completed when your submission is graded as passing. Until then, the next one stays locked.",views/student/course_detail_view.dart
+lecturaLlegueAlFinal,Llegue hasta la última página para completar la lección.,Scroll to the last page to complete the lesson.,widgets/aviso_de_lectura.dart
+lecturaDescargueParaCompletar,Descargue el archivo para completar la lección.,Download the file to complete the lesson.,widgets/aviso_de_lectura.dart
+lecturaCompletada,Lectura completada.,Reading completed.,widgets/aviso_de_lectura.dart
+entregaVaciaRuta,Escriba un comentario o adjunte un archivo para entregar.,Write a comment or attach a file to submit.,views/student/ruta_impacto_view.dart
+videoSeCompletaAlVerlo,La lección se completa al ver el 90 % del video. Adelantarlo no cuenta.,The lesson is completed after watching 90% of the video. Skipping ahead does not count.,widgets/video_player_dialog.dart
 cursoNoPuedeResponder,Está viendo el progreso de otro estudiante — no puede responder en su nombre.,You are viewing another student's progress — you cannot answer on their behalf.,views/student/course_detail_view.dart
 leccionSinMaterial,Esta lección todavía no tiene material cargado.,This lesson does not have any material uploaded yet.,views/student/course_detail_view.dart
 leccionSinEnlace,Esta lección no tiene un enlace válido.,This lesson does not have a valid link.,views/student/course_detail_view.dart

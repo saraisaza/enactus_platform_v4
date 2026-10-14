@@ -1940,16 +1940,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leccionCompletada => 'Completed';
 
   @override
-  String get leccionMarcarPendiente => 'Mark as pending';
-
-  @override
-  String get leccionMarcarCompletada => 'Mark as completed';
-
-  @override
   String get rutaCompletada => 'You completed the Impact Path! 🎉';
 
   @override
   String get leccionCompletadaExclama => 'Lesson completed!';
+
+  @override
+  String leccionBloqueada(Object anterior) {
+    return 'Locked: first complete “$anterior”.';
+  }
+
+  @override
+  String get leccionBloqueadaSinNombre =>
+      'Locked: first complete the previous lessons.';
+
+  @override
+  String get leccionSeCompletaVideo => 'Completed by watching the whole video.';
+
+  @override
+  String get leccionSeCompletaLectura =>
+      'Completed by reading the material to the end.';
+
+  @override
+  String get leccionSeCompletaEnlace => 'Completed by opening the link.';
+
+  @override
+  String get leccionSeCompletaQuiz => 'Completed by passing the quiz.';
+
+  @override
+  String get leccionSeCompletaEncuesta => 'Completed by answering the survey.';
+
+  @override
+  String get leccionSeCompletaActividad =>
+      'Completed when your submission is graded as passing.';
+
+  @override
+  String get leccionSeCompletaEntrega => 'Completed by submitting your work.';
+
+  @override
+  String get actividadEnRevision => 'Submitted · awaiting grade';
+
+  @override
+  String get actividadNoAprobada => 'Not passed · submit again';
+
+  @override
+  String get actividadSeCompletaAprobada =>
+      'This lesson is completed when your submission is graded as passing. Until then, the next one stays locked.';
+
+  @override
+  String get lecturaLlegueAlFinal =>
+      'Scroll to the last page to complete the lesson.';
+
+  @override
+  String get lecturaDescargueParaCompletar =>
+      'Download the file to complete the lesson.';
+
+  @override
+  String get lecturaCompletada => 'Reading completed.';
+
+  @override
+  String get entregaVaciaRuta => 'Write a comment or attach a file to submit.';
+
+  @override
+  String get videoSeCompletaAlVerlo =>
+      'The lesson is completed after watching 90% of the video. Skipping ahead does not count.';
 
   @override
   String get cursoNoPuedeResponder =>

@@ -41,8 +41,15 @@ export interface OwnLessonProgress {
     positionSec: number;
     furthestSec: number;
     durationSec: number | null;
+    watchedSec: number;
   } | null;
   isComplete: boolean;
+  /**
+   * Si ya le toca: el módulo está desbloqueado y todas las lecciones propias
+   * anteriores están completas (o esta ya lo está, y se repasa). La misma
+   * regla que hace cumplir `services/avance-de-leccion.ts`.
+   */
+  isUnlocked: boolean;
 }
 
 export interface ModuleProgress {
@@ -221,6 +228,7 @@ export async function rutaProgressFor(
     video_position_sec: number | null;
     video_furthest_sec: number | null;
     video_duration_sec: number | null;
+    video_watched_sec: number | null;
     is_complete: boolean;
   }>(sql`
     select l.ruta_module_id as module_id, l.id, l.title, l.type, l.description,
@@ -230,6 +238,7 @@ export async function rutaProgressFor(
            vp.position_sec as video_position_sec,
            vp.furthest_sec as video_furthest_sec,
            vp.duration_sec as video_duration_sec,
+           vp.watched_sec as video_watched_sec,
            (rpl.lesson_id is not null) as is_complete
       from lessons l
       join ruta_modules rm on rm.id = l.ruta_module_id
@@ -244,7 +253,7 @@ export async function rutaProgressFor(
       left join lesson_video_progress vp
              on vp.student_id = ${studentId} and vp.lesson_id = l.id
      where l.ruta_module_id is not null
-     order by l.order_index
+     order by l.order_index, l.id
   `);
 
   const moduleCourses = await db.execute<{
@@ -301,51 +310,59 @@ export async function rutaProgressFor(
           text: o.text,
           isComplete: o.is_complete,
         })),
-        modules: mods.map((m, index) => ({
-          moduleId: m.module_id,
-          title: m.title,
-          orderIndex: m.order_index,
-          isMentorshipModule: m.is_mentorship_module,
-          ownLessonsTotal: m.own_lessons_total,
-          ownLessonsDone: m.own_lessons_done,
-          coursesTotal: m.courses_total,
-          coursesDone: m.courses_done,
-          isComplete: m.is_complete,
+        modules: mods.map((m, index) => {
           // El primer módulo de una fase desbloqueada siempre está abierto;
           // los siguientes exigen el anterior completo (`isModuleUnlocked`).
-          isUnlocked: p.is_unlocked && (index === 0 || (mods[index - 1]?.is_complete ?? false)),
-          courses: (coursesByModule.get(m.module_id) ?? []).map((c) => ({
-            courseId: c.course_id,
-            courseName: c.course_name,
-            totalLessons: c.total_lessons,
-            completedLessons: c.completed_lessons,
-            ratio: Number(c.ratio),
-            isComplete: c.is_complete,
-          })),
-          ownLessons: (ownByModule.get(m.module_id) ?? []).map((l) => ({
-            id: l.id,
-            title: l.title,
-            type: l.type,
-            description: l.description,
-            orderIndex: l.order_index,
-            resourceS3Key: l.resource_s3_key,
-            resourceFileName: l.resource_file_name,
-            externalUrl: l.external_url,
-            videoType: l.video_type,
-            videoUrl: l.video_url,
-            videoS3Key: l.video_s3_key,
-            videoYoutubeId: l.video_youtube_id,
-            videoProgress:
-              l.video_position_sec === null
-                ? null
-                : {
-                    positionSec: l.video_position_sec,
-                    furthestSec: l.video_furthest_sec ?? l.video_position_sec,
-                    durationSec: l.video_duration_sec,
-                  },
-            isComplete: l.is_complete,
-          })),
-        })),
+          const moduloAbierto =
+            p.is_unlocked && (index === 0 || (mods[index - 1]?.is_complete ?? false));
+          return {
+            moduleId: m.module_id,
+            title: m.title,
+            orderIndex: m.order_index,
+            isMentorshipModule: m.is_mentorship_module,
+            ownLessonsTotal: m.own_lessons_total,
+            ownLessonsDone: m.own_lessons_done,
+            coursesTotal: m.courses_total,
+            coursesDone: m.courses_done,
+            isComplete: m.is_complete,
+            isUnlocked: moduloAbierto,
+            courses: (coursesByModule.get(m.module_id) ?? []).map((c) => ({
+              courseId: c.course_id,
+              courseName: c.course_name,
+              totalLessons: c.total_lessons,
+              completedLessons: c.completed_lessons,
+              ratio: Number(c.ratio),
+              isComplete: c.is_complete,
+            })),
+            ownLessons: (ownByModule.get(m.module_id) ?? []).map((l, i, propias) => ({
+              id: l.id,
+              title: l.title,
+              type: l.type,
+              description: l.description,
+              orderIndex: l.order_index,
+              resourceS3Key: l.resource_s3_key,
+              resourceFileName: l.resource_file_name,
+              externalUrl: l.external_url,
+              videoType: l.video_type,
+              videoUrl: l.video_url,
+              videoS3Key: l.video_s3_key,
+              videoYoutubeId: l.video_youtube_id,
+              videoProgress:
+                l.video_position_sec === null
+                  ? null
+                  : {
+                      positionSec: l.video_position_sec,
+                      furthestSec: l.video_furthest_sec ?? l.video_position_sec,
+                      durationSec: l.video_duration_sec,
+                      watchedSec: l.video_watched_sec ?? 0,
+                    },
+              isComplete: l.is_complete,
+              isUnlocked:
+                moduloAbierto &&
+                (l.is_complete || propias.slice(0, i).every((anterior) => anterior.is_complete)),
+            })),
+          };
+        }),
       };
     }),
   }));

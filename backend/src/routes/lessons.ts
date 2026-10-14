@@ -36,6 +36,14 @@ import {
 } from '../lib/s3';
 import { parcial } from '../lib/parcial';
 import { authorizeLessonVideo } from '../services/file-access';
+import {
+  cargarLeccion,
+  estaCompleta,
+  exigirDisponibleSiPendiente,
+  impactoDeLeccion,
+  lugarDeLeccion,
+  registrarCompleta,
+} from '../services/avance-de-leccion';
 import { marcarLeccionCompleta } from '../services/leccion-completa';
 import { drainStorageDeletes } from '../services/storage-cleanup';
 import {
@@ -1203,6 +1211,12 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
     );
   }
 
+  // El quiz del módulo 3 no se responde sin haber hecho el 1 y el 2. Uno ya
+  // aprobado sí se puede volver a intentar: es repaso.
+  const leccion = await cargarLeccion(db, lessonId);
+  const lugar = await lugarDeLeccion(db, user.id, leccion);
+  await exigirDisponibleSiPendiente(db, user.id, leccion, lugar);
+
   const questions = await db
     .select()
     .from(quizQuestions)
@@ -1238,6 +1252,17 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
     })
     .returning();
 
+  // Aprobar completa la lección, acá y no en el cliente: la nota es del
+  // servidor, así que el completar también. Reprobar no la toca —ni la
+  // completa ni la des-completa si ya estaba—: se vuelve a intentar.
+  let impact = null;
+  if (passed) {
+    if (!(await estaCompleta(db, user.id, leccion, lugar))) {
+      await registrarCompleta(db, user.id, leccion, lugar);
+    }
+    impact = await impactoDeLeccion(db, user.id, leccion);
+  }
+
   return c.json({
     attemptId: attempt!.id,
     score,
@@ -1245,6 +1270,8 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
     correctCount: correct,
     totalQuestions: questions.length,
     correctness,
+    lessonCompleted: passed,
+    impact,
   });
 });
 
@@ -1395,6 +1422,11 @@ lessonRoutes.post('/:id/survey-response', async (c) => {
   const lessonId = c.req.param('id');
   const body = respuestaDeEncuestaBody.parse(await c.req.json());
   const { courseId } = await encuestaQueCursa(db, user, lessonId);
+
+  // Como cualquier lección: se responde cuando le toca. Cambiar una respuesta
+  // ya enviada sí se puede.
+  const leccion = await cargarLeccion(db, lessonId);
+  await exigirDisponibleSiPendiente(db, user.id, leccion, { kind: 'curso', courseId });
 
   const preguntas = await db.execute<{ id: string; kind: string; opciones: number }>(sql`
     select q.id, q.kind::text as kind,

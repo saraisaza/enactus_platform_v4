@@ -10,12 +10,12 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
-import '../services/api_errors.dart';
 import '../services/video_source_io.dart'
     if (dart.library.js_interop) '../services/video_source_web.dart';
 import '../utils/app_theme.dart';
 import '../utils/orientacion.dart';
 import '../utils/responsive.dart';
+import '../utils/video_watch_tracker.dart';
 import '../utils/youtube.dart';
 import 'uploaded_lesson_player.dart';
 import 'youtube_lesson_player.dart';
@@ -57,8 +57,9 @@ import 'youtube_lesson_player.dart';
 class VideoPlayerDialog extends StatelessWidget {
   final Lesson lesson;
 
-  /// El curso de la lección, para completarla cuando se terminó de ver.
-  /// `null` en una lectura propia de un módulo de la Ruta.
+  /// El curso de la lección: el servidor la completa al ver el 90%, y la
+  /// respuesta actualiza el avance de ese curso. `null` en una lectura propia
+  /// de un módulo de la Ruta.
   final String? courseId;
 
   /// Si se guarda el avance de quien mira. Solo para el propio estudiante: el
@@ -325,30 +326,23 @@ class _YoutubeBody extends StatelessWidget {
       borderRadius: borderRadius,
       onProgress: data == null
           ? null
-          : (position, duration) => data.saveVideoProgress(lesson.id,
-              positionSec: position, durationSec: duration),
-      onWatched: data == null ? null : () => _complete(data),
+          : (guardado) => _guardar(data, lesson.id, courseId, guardado),
     );
   }
-
-  Future<void> _complete(DataProvider data) =>
-      _completeLesson(data, lesson.id, courseId);
 }
 
-/// Ver el video es completarlo, igual que aprobar un quiz completa el suyo.
-/// `IfPending`: si ya estaba completa no se toca — un toggle la desmarcaría.
-Future<void> _completeLesson(
-    DataProvider data, String lessonId, String? courseId) async {
-  try {
-    if (courseId != null) {
-      await data.toggleLessonIfPending(lessonId, courseId);
-    } else {
-      await data.toggleRutaLessonIfPending(lessonId);
-    }
-  } on ApiException catch (e) {
-    // El video sigue: quien mira puede marcarla a mano desde la lista.
-    debugPrint('No se pudo completar $lessonId: ${e.message}');
-  }
+/// Guarda el avance y el tramo visto. Ver el 90% es completar la lección, y
+/// eso lo decide el servidor con estos tramos: acá no se marca nada.
+void _guardar(
+    DataProvider data, String lessonId, String? courseId, VideoSave guardado) {
+  unawaited(data.saveVideoProgress(
+    lessonId,
+    positionSec: guardado.positionSec,
+    durationSec: guardado.durationSec,
+    watchedFromSec: guardado.watchedFromSec,
+    watchedToSec: guardado.watchedToSec,
+    courseId: courseId,
+  ));
 }
 
 /// El video subido, con el mismo avance que el de YouTube.
@@ -380,10 +374,7 @@ class _UploadedBody extends StatelessWidget {
       borderRadius: borderRadius,
       onProgress: data == null
           ? null
-          : (position, duration) => data.saveVideoProgress(lesson.id,
-              positionSec: position, durationSec: duration),
-      onWatched:
-          data == null ? null : () => _completeLesson(data, lesson.id, courseId),
+          : (guardado) => _guardar(data, lesson.id, courseId, guardado),
     );
   }
 }
@@ -411,9 +402,17 @@ class _Footer extends StatelessWidget {
     final watched = data?.myVideoProgress(lesson.id)?.watchedRatio;
     final course = courseId;
     final complete = data != null &&
-        course != null &&
-        (data.courseProgress(course).valueOrNull?.isLessonComplete(lesson.id) ??
-            false);
+        (course != null
+            ? (data
+                    .courseProgress(course)
+                    .valueOrNull
+                    ?.isLessonComplete(lesson.id) ??
+                false)
+            : (data.rutaProgress.valueOrNull?.laboratories.any((lab) =>
+                    lab.phases.any((phase) => phase.modules.any((module) =>
+                        module.ownLessons.any(
+                            (l) => l.id == lesson.id && l.isComplete)))) ??
+                false));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,6 +473,12 @@ class _Footer extends StatelessWidget {
               ),
             ],
           ),
+        // Cómo se completa, mientras no lo esté: que nadie busque un botón.
+        if (data != null && !complete) ...[
+          const SizedBox(height: 6),
+          Text(tr.videoSeCompletaAlVerlo,
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+        ],
       ],
     );
   }

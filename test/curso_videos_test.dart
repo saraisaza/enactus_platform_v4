@@ -97,8 +97,9 @@ void main() {
           'ratio': 0.3333,
           'completedLessonIds': ['ly2'],
           'videoProgress': [
-            {'lessonId': 'ly1', 'positionSec': 125, 'furthestSec': 150, 'durationSec': 212},
-            {'lessonId': 'ly2', 'positionSec': 212, 'furthestSec': 212, 'durationSec': 212},
+            // Adelantó hasta el 190, pero vio de verdad 150 s.
+            {'lessonId': 'ly1', 'positionSec': 125, 'furthestSec': 190, 'durationSec': 212, 'watchedSec': 150},
+            {'lessonId': 'ly2', 'positionSec': 212, 'furthestSec': 212, 'durationSec': 212, 'watchedSec': 212},
           ],
         },
         '/submissions': _page([]),

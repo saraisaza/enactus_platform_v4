@@ -80,6 +80,11 @@
  "POST /forum-posts/reports/:id/resolve": {
   "action": "remove"
  },
+ "POST /lessons/:id/quiz-attempt": {
+  "answers": {
+   "p1": 0
+  }
+ },
  "POST /lessons/:id/survey-response": {
   "answers": {
    "dddddddd-0000-4000-8000-000000000011": 4,
@@ -239,7 +244,9 @@
  },
  "PUT /progress/lessons/:id/video": {
   "positionSec": 30,
-  "durationSec": 212
+  "durationSec": 212,
+  "watchedFromSec": 30,
+  "watchedToSec": 30
  },
  "PUT /users/:id/courses": {
   "ids": [

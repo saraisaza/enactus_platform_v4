@@ -11,8 +11,8 @@ import { seedTestDatabase } from './helpers/db';
  * Certificados de curso (etapa 6, parte 1).
  *
  * Al completar todas las lecciones de un curso que entrega certificado, la
- * persona lo recibe sola —sea porque marcó la última lección o porque le
- * calificaron la última actividad—, una sola vez. Y cualquiera puede verificar
+ * persona lo recibe sola —sea porque completó la última lección o porque le
+ * calificaron aprobada la última actividad—, una sola vez. Y cualquiera puede verificar
  * un certificado con el enlace de su QR, sin iniciar sesión.
  */
 
@@ -85,10 +85,10 @@ describe('al terminar el curso', () => {
     const { curso, lecciones, persona, token } = await cursoConLecciones(
       'Tableros', ['resource', 'resource'], { certifiedHours: 12 },
     );
-    await pedir(`/progress/lessons/${lecciones[0]}/toggle`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[0]}/complete`, 'POST', token);
     expect(await certificadosDe(persona.id, curso.id)).toHaveLength(0);
 
-    await pedir(`/progress/lessons/${lecciones[1]}/toggle`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[1]}/complete`, 'POST', token);
     const [cert] = await certificadosDe(persona.id, curso.id);
     expect(cert, 'tiene que haberse emitido').toBeDefined();
     expect(cert!.code).toMatch(/^CUR-\d{4}-[0-9A-F]{8}$/);
@@ -109,9 +109,9 @@ describe('al terminar el curso', () => {
        order by created_at desc limit 1`;
     expect(aviso).toEqual({ kind: 'certificado_curso', params: { curso: 'Tableros' } });
 
-    // Desmarcar y volver a marcar no emite otro.
-    await pedir(`/progress/lessons/${lecciones[1]}/toggle`, 'POST', token);
-    await pedir(`/progress/lessons/${lecciones[1]}/toggle`, 'POST', token);
+    // Volver a completarla (repasar la lectura) no emite otro.
+    await pedir(`/progress/lessons/${lecciones[1]}/complete`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[1]}/complete`, 'POST', token);
     expect(await certificadosDe(persona.id, curso.id)).toHaveLength(1);
   });
 
@@ -121,6 +121,7 @@ describe('al terminar el curso', () => {
     );
     const entrega = await crear('/submissions', {
       courseId: curso.id, lessonId: lecciones[0], taskName: 'Informe',
+      comment: 'Adjunto el informe.',
     }, token);
     expect(await certificadosDe(persona.id, curso.id)).toHaveLength(0);
 
@@ -135,7 +136,7 @@ describe('al terminar el curso', () => {
     const { curso, lecciones, persona, token } = await cursoConLecciones(
       'Inducción', ['resource'], { generatesCertificate: false },
     );
-    await pedir(`/progress/lessons/${lecciones[0]}/toggle`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[0]}/complete`, 'POST', token);
     expect(await certificadosDe(persona.id, curso.id)).toHaveLength(0);
   });
 
@@ -152,9 +153,8 @@ describe('al terminar el curso', () => {
     const [leccion] = await sql<{ id: string }[]>`
       select l.id from lessons l join course_modules m on m.id = l.course_module_id
        where m.course_id = ${curso!.id} limit 1`;
-    // Desmarcar y volver a marcar: el curso vuelve a quedar completo.
-    await pedir(`/progress/lessons/${leccion!.id}/toggle`, 'POST', est1);
-    await pedir(`/progress/lessons/${leccion!.id}/toggle`, 'POST', est1);
+    // Volver a completar una lección del curso, ya completo, no lo emite.
+    await pedir(`/progress/lessons/${leccion!.id}/complete`, 'POST', est1);
     expect(await certificadosDe(est!.id, curso!.id)).toHaveLength(0);
   });
 
@@ -172,7 +172,7 @@ describe('al terminar el curso', () => {
     // Lo que hace la migración 0016 con quien terminó antes de que existiera:
     // se borra el emitido y se corre el mismo INSERT de la migración.
     const { curso, lecciones, persona, token } = await cursoConLecciones('Antes', ['resource']);
-    await pedir(`/progress/lessons/${lecciones[0]}/toggle`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[0]}/complete`, 'POST', token);
     await sql`delete from certificates where course_id = ${curso.id}`;
 
     const migracion = readFileSync('drizzle/0016_certificados_de_curso.sql', 'utf8');
@@ -190,7 +190,7 @@ describe('verificar un certificado', () => {
     const { curso, lecciones, persona, token } = await cursoConLecciones(
       'Puesta a tierra', ['resource'], { certifiedHours: 8 },
     );
-    await pedir(`/progress/lessons/${lecciones[0]}/toggle`, 'POST', token);
+    await pedir(`/progress/lessons/${lecciones[0]}/complete`, 'POST', token);
     const [cert] = await certificadosDe(persona.id, curso.id);
 
     const res = await pedir(`/certificate-verification/${cert!.id}`, 'GET');

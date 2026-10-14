@@ -232,4 +232,8 @@ export const MENSAJES_EN: ReadonlyArray<readonly [string, string]> = [
   ["El archivo no llegó al almacenamiento. Súbalo de nuevo.", "The file did not reach storage. Upload it again."],
   ["Ese cliente no tiene molde de certificado.", "That client has no certificate template."],
   ["El archivo pesa {0} MB y el máximo es {1} MB.", "The file is {0} MB and the maximum is {1} MB."],
+  ["Solo un estudiante responde una encuesta.", "Only a student answers a survey."],
+  ["Esta lección no es una encuesta.", "This lesson is not a survey."],
+  ["Esta encuesta no tiene preguntas configuradas.", "This survey has no questions set up."],
+  ["Responda todas las preguntas antes de enviar; el comentario es opcional.", "Answer all the questions before sending; the comment is optional."],
 ];

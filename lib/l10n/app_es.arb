@@ -1012,12 +1012,6 @@
   "quizCompleteFrase": "Complete la frase…",
   "quizSuRespuesta": "Su respuesta…",
   "quizUseFlechas": "Use las flechas para ordenar:",
-  "encuestaNombreTarea": "Encuesta: {leccion}",
-  "@encuestaNombreTarea": {
-    "placeholders": {
-      "leccion": {}
-    }
-  },
   "encuestaGracias": "¡Gracias por responder!",
   "comunEnviar": "Enviar",
   "encuestaOpinion": "Su opinión nos ayuda a mejorar 💛",
@@ -1932,7 +1926,7 @@
       "archivo": {}
     }
   },
-  "leccionPreguntasEncuesta": "Preguntas de la encuesta (sin calificación)",
+  "leccionPreguntasEncuesta": "Preguntas de la encuesta (ninguna tiene respuesta correcta)",
   "leccionPreguntasQuiz": "Preguntas (las califica el servidor)",
   "leccionPregunta": "Pregunta",
   "leccionSinPreguntas": "Sin preguntas todavía. Una lección de quiz sin preguntas se guarda, pero quien la abra recibe un aviso en vez de una nota.",
@@ -3024,5 +3018,48 @@
   "moldeCampoHoras": "Horas",
   "moldeCampoCodigo": "Código",
   "moldeCampoQr": "Código QR",
-  "moldeCampoFirma": "Firma"
+  "moldeCampoFirma": "Firma",
+  "encuestaTipoElegir": "Elegir una opción",
+  "encuestaTipoCalificar": "Calificar de 1 a 5",
+  "encuestaTipoComentario": "Comentario libre",
+  "encuestaOpcionesAyuda": "Quien responde elige una. Ninguna es la correcta.",
+  "encuestaCalificarAyuda": "Quien responde elige un número del 1 al 5. Si quiere, diga qué significan los extremos.",
+  "encuestaComentarioAyuda": "Quien responde escribe con sus palabras. Es opcional.",
+  "encuestaEtiqueta1": "Qué significa el 1 (opcional)",
+  "encuestaEtiqueta5": "Qué significa el 5 (opcional)",
+  "encuestaEtiqueta1Ejemplo": "Ej.: Nada útil",
+  "encuestaEtiqueta5Ejemplo": "Ej.: Muy útil",
+  "encuestaComentarioOpcional": "Su comentario (opcional)",
+  "encuestaFaltanRespuestas": "Para enviar, responda todas las preguntas; el comentario es opcional.",
+  "encuestaEscribaComentario": "Escriba al menos un comentario para enviar.",
+  "encuestaYaRespondio": "Ya respondió esta encuesta. Puede cambiar sus respuestas y enviarla de nuevo.",
+  "encuestaSinPreguntas": "Esta encuesta todavía no tiene preguntas.",
+  "encuestaCalificacion": "{numero} de 5",
+  "@encuestaCalificacion": {
+    "placeholders": {
+      "numero": {}
+    }
+  },
+  "encuestaVerResultados": "Ver resultados",
+  "encuestaResultadosDe": "Resultados: {leccion}",
+  "@encuestaResultadosDe": {
+    "placeholders": {
+      "leccion": {}
+    }
+  },
+  "encuestaRespondieron": "Personas que respondieron: {cantidad}",
+  "@encuestaRespondieron": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "encuestaAnonima": "Los resultados son anónimos: no muestran quién respondió qué.",
+  "encuestaNadieRespondio": "Todavía nadie ha respondido esta encuesta.",
+  "encuestaPromedio": "Promedio: {valor} de 5",
+  "@encuestaPromedio": {
+    "placeholders": {
+      "valor": {}
+    }
+  },
+  "encuestaSinComentarios": "Sin comentarios todavía."
 }

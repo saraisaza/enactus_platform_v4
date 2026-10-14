@@ -5,10 +5,7 @@ import { z } from 'zod';
 import {
   auditLog,
   courses,
-  lessons,
   notifications,
-  progress,
-  progressLessons,
   submissionFiles,
   submissions,
 } from '../db/schema';
@@ -23,7 +20,7 @@ import {
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
 import { genteDeLaEmpresa, supervisorAlcanza } from '../services/alcance-supervisor';
-import { emitirCertificadoDeCurso } from '../services/certificates';
+import { marcarLeccionCompleta } from '../services/leccion-completa';
 import { delMismoCliente, mismoCliente } from '../services/frontera-de-cliente';
 
 export const submissionRoutes = new Hono<AppEnv>();
@@ -485,34 +482,6 @@ async function loadCourse(db: Db, courseId: string) {
 }
 
 /** Marca completa sin alternar: revisar nunca debe des-completar. */
-async function markLessonComplete(
-  db: Db,
-  studentId: string,
-  courseId: string,
-  lessonId: string,
-) {
-  const [belongs] = await db
-    .select({ id: lessons.id })
-    .from(lessons)
-    .where(eq(lessons.id, lessonId))
-    .limit(1);
-  if (!belongs) return;
-
-  const [row] = await db
-    .insert(progress)
-    .values({ studentId, courseId })
-    .onConflictDoUpdate({
-      target: [progress.studentId, progress.courseId],
-      set: { updatedAt: new Date() },
-    })
-    .returning({ id: progress.id });
-
-  await db
-    .insert(progressLessons)
-    .values({ progressId: row!.id, lessonId })
-    .onConflictDoNothing();
-  // Calificar la última actividad puede ser lo que completa el curso.
-  await emitirCertificadoDeCurso(db, studentId, courseId);
-}
+const markLessonComplete = marcarLeccionCompleta;
 
 export type { AuthUser };

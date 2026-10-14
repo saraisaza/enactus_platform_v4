@@ -377,7 +377,7 @@ describe('PUT /lessons/:id/quiz — tipo de lección y permisos', () => {
     const res = await put(`/lessons/${ENCUESTA}/quiz`, lxdToken, {
       questions: [
         { kind: 'short', question: '¿Qué fue lo que más te gustó del curso?' },
-        { kind: 'short', question: '¿Qué mejorarías?' },
+        { kind: 'short', question: '¿Qué mejoraría?' },
       ],
     });
     expect(res.status).toBe(200);

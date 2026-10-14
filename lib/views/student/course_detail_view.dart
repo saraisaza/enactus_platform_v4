@@ -789,7 +789,7 @@ class _QuizDialogState extends State<_QuizDialog> {
 }
 
 // ---------------------------------------------------------------------------
-// Encuesta (sin calificación)
+// Encuesta: elegir una opción, calificar de 1 a 5 y comentar. No se califica.
 // ---------------------------------------------------------------------------
 
 class _SurveyDialog extends StatefulWidget {
@@ -802,30 +802,90 @@ class _SurveyDialog extends StatefulWidget {
 }
 
 class _SurveyDialogState extends State<_SurveyDialog> {
-  final Map<String, String> _answers = {};
+  /// `{ preguntaId: índice de la opción | 1..5 | comentario }`.
+  final Map<String, Object> _answers = {};
+  bool _loading = true;
+  bool _yaRespondio = false;
+  bool _cambio = false;
   bool _sending = false;
   ApiException? _error;
+
+  /// Rearma los campos de comentario cuando llega lo que ya había escrito.
+  int _generacion = 0;
+
+  List<QuizQuestion> get _preguntas => widget.lesson.quiz;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargar();
+  }
+
+  /// Si ya la respondió, la encuesta se abre con sus respuestas: puede
+  /// cambiarlas y enviarla de nuevo, sin empezar de cero.
+  Future<void> _cargar() async {
+    try {
+      final previas =
+          await context.read<DataProvider>().mySurveyResponse(widget.lesson.id);
+      if (!mounted) return;
+      setState(() {
+        if (previas != null) {
+          _answers.addAll(previas);
+          _yaRespondio = true;
+          _generacion++;
+        }
+        _loading = false;
+      });
+    } on ApiException {
+      // Sin lo anterior igual se puede responder.
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _responder(String preguntaId, Object valor) => setState(() {
+        _answers[preguntaId] = valor;
+        _cambio = true;
+      });
+
+  /// Elegir y calificar son obligatorias; el comentario, no.
+  bool _respondida(QuizQuestion q) => switch (q.kind) {
+        'multiple' => switch (_answers[q.id]) {
+            final int i => i >= 0 && i < q.options.length,
+            _ => false,
+          },
+        'scale' => _answers[q.id] is int,
+        _ => true,
+      };
+
+  bool _esComentario(QuizQuestion q) => q.kind != 'multiple' && q.kind != 'scale';
+
+  /// Por qué todavía no se puede enviar, o `null` si ya se puede.
+  String? get _falta {
+    if (_preguntas.isEmpty) return tr.encuestaSinPreguntas;
+    if (!_preguntas.every(_respondida)) return tr.encuestaFaltanRespuestas;
+    // Una encuesta de solo comentarios, enviada en blanco, no dice nada.
+    if (_preguntas.every(_esComentario) &&
+        !_answers.values.any((v) => v is String && v.trim().isNotEmpty)) {
+      return tr.encuestaEscribaComentario;
+    }
+    return null;
+  }
 
   Future<void> _send() async {
     setState(() {
       _sending = true;
       _error = null;
     });
-    final data = context.read<DataProvider>();
-    final body = [
-      for (final question in widget.lesson.quiz)
-        '${question.question}: ${_answers[question.id] ?? '—'}',
-    ].join('\n');
-
     try {
-      await data.createSubmission(
-        courseId: widget.course.id,
-        lessonId: widget.lesson.id,
-        taskName: tr.encuestaNombreTarea(widget.lesson.title),
-        comment: body,
+      await context.read<DataProvider>().answerSurvey(
+        widget.lesson.id,
+        widget.course.id,
+        {
+          for (final q in _preguntas)
+            if (_answers[q.id] case final valor?)
+              if (valor is! String || valor.trim().isNotEmpty) q.id: valor,
+        },
       );
-      // Responder la encuesta la da por vista.
-      await data.toggleLessonIfPending(widget.lesson.id, widget.course.id);
       if (!mounted) return;
       Navigator.pop(context);
       showSuccessCheck(context, tr.encuestaGracias);
@@ -841,41 +901,168 @@ class _SurveyDialogState extends State<_SurveyDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final questions = widget.lesson.quiz;
+    final falta = _falta;
     return AdaptiveFormShell(
       title: widget.lesson.title,
-      maxWidth: 500,
+      maxWidth: 520,
       saving: _sending,
-      dirty: _answers.values.any((v) => v.trim().isNotEmpty),
+      dirty: _cambio,
       onCancel: () => Navigator.pop(context),
       saveLabel: tr.comunEnviar,
       savingLabel: tr.comunEnviando,
-      onSave: _send,
-      child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(tr.encuestaOpinion,
-                  style:
-                      TextStyle(color: AppColors.textMuted, fontSize: 13)),
-              const SizedBox(height: 12),
-              for (var i = 0; i < questions.length; i++) ...[
-                Text('${i + 1}. ${questions[i].question}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                TextField(
-                  enabled: !_sending,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                      hintText: tr.quizSuRespuesta, isDense: true),
-                  onChanged: (v) =>
-                      setState(() => _answers[questions[i].id] = v),
-                ),
-                const SizedBox(height: 12),
+      onSave: _loading || falta != null ? null : _send,
+      child: _loading
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: BrandLoader()),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tr.encuestaOpinion,
+                    style:
+                        TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                if (_yaRespondio) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.check_circle_outline,
+                          size: 16, color: AppColors.statusGood),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(tr.encuestaYaRespondio,
+                            style: const TextStyle(fontSize: 12.5)),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 14),
+                for (var i = 0; i < _preguntas.length; i++) ...[
+                  Text('${i + 1}. ${_preguntas[i].question}',
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  _pregunta(_preguntas[i]),
+                  const SizedBox(height: 16),
+                ],
+                if (falta != null)
+                  Text(falta,
+                      style:
+                          TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                if (_error != null) ...[
+                  const SizedBox(height: 12),
+                  ErrorBanner(_error!),
+                ],
               ],
-              if (_error != null) ErrorBanner(_error!),
-            ],
-          ),
+            ),
     );
+  }
+
+  Widget _pregunta(QuizQuestion q) {
+    switch (q.kind) {
+      case 'multiple':
+        return Column(
+          children: [
+            for (var o = 0; o < q.options.length; o++)
+              RadioListTile<int>(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(q.options[o], style: const TextStyle(fontSize: 13)),
+                value: o,
+                // ignore: deprecated_member_use
+                groupValue: _answers[q.id] as int?,
+                activeColor: AppColors.gold,
+                // ignore: deprecated_member_use
+                onChanged: _sending ? null : (v) => _responder(q.id, v!),
+              ),
+          ],
+        );
+      case 'scale':
+        final elegida = _answers[q.id];
+        final extremo1 = q.options.isNotEmpty ? q.options[0].trim() : '';
+        final extremo5 = q.options.length > 1 ? q.options[1].trim() : '';
+        final etiqueta =
+            TextStyle(fontSize: 11.5, color: AppColors.textMuted);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (var n = 1; n <= 5; n++)
+                  Semantics(
+                    button: true,
+                    selected: elegida == n,
+                    label: tr.encuestaCalificacion(n),
+                    excludeSemantics: true,
+                    child: InkWell(
+                      key: ValueKey('calificar-${q.id}-$n'),
+                      customBorder: const CircleBorder(),
+                      onTap: _sending ? null : () => _responder(q.id, n),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: elegida == n
+                              ? AppColors.relleno
+                              : AppColors.surfaceAlt,
+                          border: Border.all(
+                              color: elegida == n
+                                  ? AppColors.relleno
+                                  : AppColors.border),
+                        ),
+                        child: Text('$n',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: elegida == n
+                                    ? AppColors.ink
+                                    : AppColors.textPrimary)),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (extremo1.isNotEmpty || extremo5.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: SizedBox(
+                  // Las etiquetas quedan bajo el 1 y bajo el 5.
+                  width: 5 * 44 + 4 * 8,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                            extremo1.isEmpty ? '' : '1 = $extremo1',
+                            style: etiqueta),
+                      ),
+                      Expanded(
+                        child: Text(
+                            extremo5.isEmpty ? '' : '5 = $extremo5',
+                            textAlign: TextAlign.end,
+                            style: etiqueta),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      default:
+        return TextFormField(
+          key: ValueKey(('comentario', q.id, _generacion)),
+          initialValue: _answers[q.id] is String ? _answers[q.id] as String : '',
+          enabled: !_sending,
+          maxLines: 3,
+          minLines: 2,
+          decoration: InputDecoration(
+              hintText: tr.encuestaComentarioOpcional, isDense: true),
+          onChanged: (v) => _responder(q.id, v),
+        );
+    }
   }
 }
 

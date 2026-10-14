@@ -1729,7 +1729,7 @@ paths:
 
         Solo lecciones de tipo `quiz`: una encuesta no tiene respuesta correcta
         y calificarla dejaría un intento reprobado a quien solo dio su opinión.
-        El portal la manda por `POST /submissions`.
+        Se responde con `POST /lessons/{id}/survey-response`.
       requestBody:
         required: true
         content:
@@ -1763,6 +1763,104 @@ paths:
         '403': { description: Solo un estudiante resuelve un quiz }
         '404': { description: La lección no está entre sus cursos }
         '409': { description: La lección no es un quiz, o no tiene preguntas configuradas }
+
+  /lessons/{id}/survey-response:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    post:
+      tags: [lessons]
+      summary: Responder una encuesta
+      description: |
+        Una encuesta no se califica: la respuesta se guarda aparte, **una por
+        persona** (responder de nuevo la reemplaza), y completa la lección —
+        si era la última del curso, emite su certificado—. No es una entrega:
+        no aparece en la bandeja de calificar.
+
+        `multiple` se responde con el índice de la opción; `scale` con un
+        entero de 1 a 5; `short` con texto, y es **opcional**. Si falta una
+        respuesta obligatoria, 400 con `details.preguntas` (números desde 1).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  description: '`{ [questionId]: índice | 1..5 | comentario }`'
+                  additionalProperties:
+                    oneOf: [{ type: integer }, { type: string }]
+      responses:
+        '200':
+          description: La respuesta guardada, tal como quedó
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answers: { type: object }
+        '400': { description: Falta una respuesta, o está fuera de rango }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Solo un estudiante responde una encuesta }
+        '404': { description: La lección no está entre sus cursos }
+        '409': { description: La lección no es una encuesta, o no tiene preguntas }
+    get:
+      tags: [lessons]
+      summary: La respuesta propia a una encuesta
+      description: |
+        Para mostrarle a la persona lo que ya respondió. `answers: null` si
+        todavía no la respondió.
+      responses:
+        '200':
+          description: Su respuesta, o null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answers: { type: [object, 'null'] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Solo un estudiante responde una encuesta }
+        '404': { description: La lección no está entre sus cursos }
+        '409': { description: La lección no es una encuesta }
+
+  /lessons/{id}/survey-results:
+    parameters: [{ $ref: '#/components/parameters/id' }]
+    get:
+      tags: [courses]
+      summary: Resultados de una encuesta, anónimos
+      description: |
+        Para quien puede editar la lección. Por pregunta: `multiple` →
+        `counts` (cuántos eligieron cada opción); `scale` → `counts` del 1 al
+        5 y `average` (null sin respuestas); `short` → `comments`. **No dice
+        quién respondió qué**: una encuesta que se sabe anónima se responde con
+        más franqueza.
+      responses:
+        '200':
+          description: Resultados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responses: { type: integer, description: Cuántas personas respondieron }
+                  questions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        kind: { type: string, enum: [multiple, scale, short] }
+                        question: { type: string }
+                        options: { type: array, items: { type: string } }
+                        counts: { type: array, items: { type: integer } }
+                        average: { type: [number, 'null'] }
+                        comments: { type: array, items: { type: string } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: La lección no es una encuesta }
 
   /lessons/{id}/quiz:
     parameters: [{ $ref: '#/components/parameters/id' }]
@@ -3446,15 +3544,21 @@ components:
         id: { type: string, format: uuid, readOnly: true }
         kind:
           type: string
-          enum: [multiple, truefalse, short, fill, order]
+          enum: [multiple, truefalse, short, fill, order, scale]
+          description: |
+            En una **encuesta** solo valen `multiple` (elegir una opción),
+            `scale` (calificar de 1 a 5) y `short` (comentario libre), y
+            ninguna lleva clave. `scale` no va en un quiz.
         question: { type: string, minLength: 1 }
         options:
           type: array
           items: { type: string }
           description: |
-            `multiple`: las alternativas, sin ninguna vacía. `order`: los
-            elementos **en el orden correcto** — ahí las opciones son la clave.
-            En el resto de los tipos se ignoran.
+            `multiple`: las alternativas, sin ninguna vacía (en una encuesta,
+            al menos dos). `order`: los elementos **en el orden correcto** —
+            ahí las opciones son la clave. `scale`: a lo sumo dos, las
+            etiquetas del 1 y del 5 («Nada útil», «Muy útil»); vacías, no se
+            guardan. En el resto de los tipos se ignoran.
         answerIndex:
           type: integer
           nullable: true

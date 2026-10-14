@@ -18,6 +18,7 @@ import '../../widgets/common.dart';
 import '../../widgets/file_upload_field.dart';
 import 'glossary_editor.dart';
 import 'lesson_editor.dart';
+import 'resultados_encuesta.dart';
 
 /// Constructor de cursos: información general, categorización, contenido,
 /// certificado y restricciones.
@@ -1041,6 +1042,13 @@ class _BuilderSectionState extends State<_BuilderSection> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          if (lesson.type == LessonType.survey)
+            IconButton(
+              icon: const Icon(Icons.bar_chart_outlined, size: 16),
+              color: AppColors.textSecondary,
+              tooltip: tr.encuestaVerResultados,
+              onPressed: () => showSurveyResults(context, lesson),
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 16),
             color: AppColors.textSecondary,

@@ -1,4 +1,4 @@
-import { asc, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -11,6 +11,7 @@ import {
   quizAttempts,
   quizQuestionOptions,
   quizQuestions,
+  surveyResponses,
 } from '../db/schema';
 import { createVideoUrl } from '../lib/cloudfront';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors';
@@ -35,6 +36,7 @@ import {
 } from '../lib/s3';
 import { parcial } from '../lib/parcial';
 import { authorizeLessonVideo } from '../services/file-access';
+import { marcarLeccionCompleta } from '../services/leccion-completa';
 import { drainStorageDeletes } from '../services/storage-cleanup';
 import {
   CONTENT_ROLES,
@@ -790,7 +792,13 @@ lessonRoutes.post('/:id/resource', requireRole(...CONTENT_ROLES), async (c) => {
 // Autoría del quiz
 // ---------------------------------------------------------------------------
 
-const quizKindEnum = z.enum(['multiple', 'truefalse', 'short', 'fill', 'order']);
+const quizKindEnum = z.enum(['multiple', 'truefalse', 'short', 'fill', 'order', 'scale']);
+
+/**
+ * Los tipos de pregunta de una encuesta: elegir una opción (`multiple`, sin
+ * respuesta correcta), calificar de 1 a 5 (`scale`) y comentar (`short`).
+ */
+const TIPOS_DE_ENCUESTA = ['multiple', 'scale', 'short'] as const;
 
 /** Una pregunta tal como la manda el constructor de lecciones. */
 const quizQuestionInput = z.object({
@@ -915,6 +923,22 @@ function quizProblems(
       if (q.answerIndex !== null || (q.answerText ?? '') !== '') {
         add(at, 'Una encuesta no tiene respuesta correcta.');
       }
+      if (!(TIPOS_DE_ENCUESTA as readonly string[]).includes(q.kind)) {
+        add(at, 'En una encuesta, cada pregunta es de elegir una opción, de calificar de 1 a 5 o de comentario.');
+      } else if (q.kind === 'multiple') {
+        if (q.options.some((o) => o === '')) {
+          add(at, 'Hay opciones sin texto. Complételas o quítelas.');
+        } else if (q.options.length < 2) {
+          add(at, 'Necesita al menos dos opciones.');
+        }
+      } else if (q.kind === 'scale' && q.options.length > 2) {
+        add(at, 'Una pregunta de calificar lleva solo las etiquetas del 1 y del 5.');
+      }
+      continue;
+    }
+
+    if (q.kind === 'scale') {
+      add(at, 'Calificar de 1 a 5 es una pregunta de encuesta, no de quiz.');
       continue;
     }
 
@@ -959,7 +983,19 @@ function quizProblems(
 /** Normaliza lo que se guarda según el tipo: cada uno usa una sola de las claves. */
 function storableAnswer(q: QuizQuestionInput, isSurvey: boolean) {
   if (isSurvey) {
-    return { options: q.options, answerIndex: null, answerText: null };
+    switch (q.kind) {
+      case 'multiple':
+        return { options: q.options, answerIndex: null, answerText: null };
+      case 'scale':
+        // Las etiquetas del 1 y del 5, si tienen texto; si no, ninguna.
+        return {
+          options: q.options.some((o) => o !== '') ? q.options : [],
+          answerIndex: null,
+          answerText: null,
+        };
+      default:
+        return { options: [], answerIndex: null, answerText: null };
+    }
   }
   switch (q.kind) {
     case 'multiple':
@@ -1159,7 +1195,7 @@ lessonRoutes.post('/:id/quiz-attempt', async (c) => {
 
   // Una encuesta no tiene respuestas correctas: calificarla daría siempre 0 y
   // dejaría un intento reprobado en el historial de quien solo dio su opinión.
-  // El portal la manda por `POST /submissions`, no por acá.
+  // Se responde por `POST /lessons/:id/survey-response`.
   if (lesson.type !== 'quiz') {
     throw conflict(
       'Esta lección no es un quiz, así que no se califica.',
@@ -1312,6 +1348,177 @@ async function assertLessonVisible(
   if (!row) throw notFound('No se encontró la lección.');
   return row;
 }
+
+// ---------------------------------------------------------------------------
+// Encuestas
+// ---------------------------------------------------------------------------
+
+const respuestaDeEncuestaBody = z.object({
+  /** `{ [preguntaId]: índiceDeOpción | 1..5 | "comentario" }`. */
+  answers: z.record(z.string(), z.union([z.number().int(), z.string()])),
+});
+
+/** Una encuesta de un curso que la persona cursa; devuelve su curso. */
+async function encuestaQueCursa(
+  db: Db,
+  user: ReturnType<typeof currentUser>,
+  lessonId: string,
+): Promise<{ courseId: string }> {
+  const [fila] = await db.execute<{ type: string; courseId: string }>(sql`
+    select l.type, cm.course_id as "courseId"
+      from lessons l
+      join course_modules cm on cm.id = l.course_module_id
+      join student_course_access a
+        on a.course_id = cm.course_id and a.student_id = ${user.id}
+     where l.id = ${lessonId}
+     limit 1
+  `);
+  if (!fila) throw notFound('No se encontró la lección.');
+  if (fila.type !== 'survey') {
+    throw conflict('Esta lección no es una encuesta.', { type: fila.type });
+  }
+  return { courseId: fila.courseId };
+}
+
+/**
+ * Responde una encuesta. Las opciones se eligen por índice, la calificación
+ * va de 1 a 5 y el comentario es opcional. Una respuesta por persona: si
+ * vuelve a responder, se reemplaza. Responderla completa la lección (y, si era
+ * la última del curso, emite su certificado).
+ */
+lessonRoutes.post('/:id/survey-response', async (c) => {
+  const user = currentUser(c);
+  if (!isStudentLike(user.role)) {
+    throw forbidden('Solo un estudiante responde una encuesta.');
+  }
+  const db = c.get('db');
+  const lessonId = c.req.param('id');
+  const body = respuestaDeEncuestaBody.parse(await c.req.json());
+  const { courseId } = await encuestaQueCursa(db, user, lessonId);
+
+  const preguntas = await db.execute<{ id: string; kind: string; opciones: number }>(sql`
+    select q.id, q.kind::text as kind,
+           (select count(*)::int from quiz_question_options o
+             where o.quiz_question_id = q.id) as opciones
+      from quiz_questions q
+     where q.lesson_id = ${lessonId}
+     order by q.order_index
+  `);
+  if (preguntas.length === 0) {
+    throw conflict('Esta encuesta no tiene preguntas configuradas.');
+  }
+
+  const respuestas: Record<string, number | string> = {};
+  const faltan: number[] = [];
+  for (const [i, pregunta] of preguntas.entries()) {
+    const dada = body.answers[pregunta.id];
+    if (pregunta.kind !== 'multiple' && pregunta.kind !== 'scale') {
+      // El comentario es opcional. Una pregunta de otro tipo —de antes de que
+      // la encuesta los limitara— también se responde con texto libre.
+      const texto = typeof dada === 'string' ? dada.trim().slice(0, 2000) : '';
+      if (texto) respuestas[pregunta.id] = texto;
+      continue;
+    }
+    const valida =
+      typeof dada === 'number' &&
+      (pregunta.kind === 'scale'
+        ? dada >= 1 && dada <= 5
+        : dada >= 0 && dada < pregunta.opciones);
+    if (valida) respuestas[pregunta.id] = dada;
+    else faltan.push(i + 1);
+  }
+  if (faltan.length > 0) {
+    throw badRequest(
+      'Responda todas las preguntas antes de enviar; el comentario es opcional.',
+      { preguntas: faltan },
+    );
+  }
+
+  await db
+    .insert(surveyResponses)
+    .values({ lessonId, studentId: user.id, answers: respuestas })
+    .onConflictDoUpdate({
+      target: [surveyResponses.lessonId, surveyResponses.studentId],
+      set: { answers: respuestas, updatedAt: new Date() },
+    });
+  await marcarLeccionCompleta(db, user.id, courseId, lessonId);
+
+  return c.json({ answers: respuestas });
+});
+
+/** La respuesta propia a una encuesta, para mostrarla si ya respondió. */
+lessonRoutes.get('/:id/survey-response', async (c) => {
+  const user = currentUser(c);
+  if (!isStudentLike(user.role)) {
+    throw forbidden('Solo un estudiante responde una encuesta.');
+  }
+  const db = c.get('db');
+  const lessonId = c.req.param('id');
+  await encuestaQueCursa(db, user, lessonId);
+  const [fila] = await db
+    .select({ answers: surveyResponses.answers })
+    .from(surveyResponses)
+    .where(
+      and(eq(surveyResponses.lessonId, lessonId), eq(surveyResponses.studentId, user.id)),
+    )
+    .limit(1);
+  return c.json({ answers: fila?.answers ?? null });
+});
+
+/**
+ * Los resultados de una encuesta, ANÓNIMOS: cuántos eligieron cada opción,
+ * cómo se repartió la calificación y su promedio, y los comentarios —sin
+ * decir de quién es cada cosa: una encuesta que se sabe anónima se responde
+ * con más franqueza—. Los ve quien puede editar la lección.
+ */
+lessonRoutes.get('/:id/survey-results', requireRole(...CONTENT_ROLES), async (c) => {
+  const user = currentUser(c);
+  const db = c.get('db');
+  const lesson = await loadEditableLesson(db, c.req.param('id'), user);
+  if (lesson.type !== 'survey') {
+    throw conflict('Esta lección no es una encuesta.', { type: lesson.type });
+  }
+
+  const preguntas = [...(await loadAuthoringQuiz(db, lesson.id))] as {
+    id: string;
+    kind: string;
+    question: string;
+    options: string[];
+  }[];
+  const respuestas = await db
+    .select({ answers: surveyResponses.answers })
+    .from(surveyResponses)
+    .where(eq(surveyResponses.lessonId, lesson.id))
+    .orderBy(desc(surveyResponses.updatedAt));
+
+  const questions = preguntas.map((p) => {
+    const valores = respuestas
+      .map((r) => (r.answers as Record<string, unknown>)[p.id])
+      .filter((v) => v !== undefined);
+    const base = { id: p.id, kind: p.kind, question: p.question, options: p.options };
+    if (p.kind !== 'multiple' && p.kind !== 'scale') {
+      return {
+        ...base,
+        kind: 'short',
+        comments: valores.filter((v): v is string => typeof v === 'string'),
+      };
+    }
+    if (p.kind === 'scale') {
+      const notas = valores.filter((v): v is number => typeof v === 'number');
+      return {
+        ...base,
+        counts: [1, 2, 3, 4, 5].map((n) => notas.filter((v) => v === n).length),
+        average: notas.length === 0 ? null : notas.reduce((a, b) => a + b, 0) / notas.length,
+      };
+    }
+    return {
+      ...base,
+      counts: p.options.map((_, i) => valores.filter((v) => v === i).length),
+    };
+  });
+
+  return c.json({ responses: respuestas.length, questions });
+});
 
 // ---------------------------------------------------------------------------
 // Helpers

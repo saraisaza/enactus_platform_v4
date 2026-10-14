@@ -229,12 +229,33 @@ void main() {
     expect(survey!.quiz, isNotEmpty);
 
     // Una encuesta no tiene respuesta correcta: calificarla daría 0 y dejaría
-    // un intento reprobado a quien solo dio su opinión. El portal la manda
-    // como entrega, no como intento.
+    // un intento reprobado a quien solo dio su opinión. Se responde aparte.
     await expectLater(
       s.data.submitQuiz(survey.id, {for (final q in survey.quiz) q.id: ''}),
       throwsA(isA<ConflictError>()),
     );
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  test('una encuesta se responde eligiendo y calificando, y queda guardada',
+      () async {
+    if (!up) return;
+    final s = await signIn(_enactus);
+    final survey = (await firstLessonOfType(s, LessonType.survey))!;
+    // El curso de la encuesta: responderla completa SU avance.
+    String? courseId;
+    for (final c in await load<List<Course>>(() => s.data.courses)) {
+      final detail = await load<Course>(() => s.data.courseById(c.id));
+      if (detail.modules.any((m) => m.lessons.any((l) => l.id == survey.id))) {
+        courseId = c.id;
+      }
+    }
+
+    final respuestas = <String, Object>{
+      for (final q in survey.quiz)
+        if (q.kind == 'scale') q.id: 4 else if (q.kind == 'multiple') q.id: 0,
+    };
+    await s.data.answerSurvey(survey.id, courseId!, respuestas);
+    expect(await s.data.mySurveyResponse(survey.id), respuestas);
   }, timeout: const Timeout(Duration(seconds: 60)));
 
   test('marcar una lección recalcula curso, módulo y fase de una sola vez',

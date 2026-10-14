@@ -51,6 +51,13 @@ List<(String, String)> get quizKinds => [
       ('fill', tr.quizTipoCompletar),
     ];
 
+/// Las preguntas de una encuesta: ninguna tiene respuesta correcta.
+List<(String, String)> get surveyKinds => [
+      ('multiple', tr.encuestaTipoElegir),
+      ('scale', tr.encuestaTipoCalificar),
+      ('short', tr.encuestaTipoComentario),
+    ];
+
 /// Abre el constructor de lecciones.
 ///
 /// Devuelve `true` si se guardó algo. Antes devolvía la `Lesson` construida en
@@ -249,6 +256,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
       final questions = await context.read<DataProvider>().lessonQuiz(lessonId);
       if (mounted) {
         setState(() {
+          // Calificar sin etiquetas vuelve sin opciones: se le dan los dos
+          // campos vacíos para poder escribirlas.
+          for (final q in questions) {
+            if (q.kind == 'scale') q.options = _etiquetas(q.options);
+          }
           _questions = questions;
           _loadingQuiz = false;
           _firmaInicial = _firma();
@@ -668,10 +680,45 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   /// Cambiar el tipo de una lección ya guardada no borra lo que tenía del tipo
   /// anterior hasta que se guarda: el servidor solo escribe lo que corresponde
   /// al tipo nuevo.
+  ///
+  /// Las preguntas sí se acomodan al pasar de quiz a encuesta o al revés: una
+  /// encuesta no tiene respuesta correcta ni preguntas de verdadero/falso,
+  /// ordenar o completar, y un quiz no tiene preguntas de calificar.
   void _changeType(LessonType t) => setState(() {
+        final eraEncuesta = _isSurvey;
         _type = t;
         _problems = const {};
+        if (_isSurvey == eraEncuesta) return;
+        for (final q in _questions) {
+          q.answerIndex = null;
+          q.answerText = null;
+          final valido = (_isSurvey ? surveyKinds : quizKinds)
+              .any((k) => k.$1 == q.kind);
+          if (!valido) _cambiarTipo(q, 'multiple');
+        }
       });
+
+  /// Cambia el tipo de una pregunta. Las opciones de calificar son las
+  /// etiquetas del 1 y del 5, no alternativas: no se heredan de un tipo a
+  /// otro.
+  void _cambiarTipo(QuizQuestionDraft q, String kind) {
+    final deCalificar = q.kind == 'scale' || kind == 'scale';
+    q.kind = kind;
+    // La clave del tipo anterior no sirve para el nuevo: dejarla mandaría un
+    // índice donde va texto.
+    q.answerIndex = null;
+    q.answerText = null;
+    if (kind == 'scale') {
+      q.options = ['', ''];
+    } else if (deCalificar) {
+      q.options = _isSurvey && kind == 'multiple' ? ['', ''] : [];
+    }
+    _generacion[q] = (_generacion[q] ?? 0) + 1;
+  }
+
+  /// Las dos etiquetas de una pregunta de calificar, aunque falte alguna.
+  static List<String> _etiquetas(List<String> options) =>
+      [for (var i = 0; i < 2; i++) i < options.length ? options[i] : ''];
 
   List<Widget> _typeFields() {
     switch (_type) {
@@ -809,9 +856,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               label: Text(tr.leccionPregunta),
               onPressed: _saving
                   ? null
-                  : () => setState(() => _questions.add(QuizQuestionDraft(
-                        kind: _isSurvey ? 'short' : 'multiple',
-                      ))),
+                  : () => setState(() => _questions.add(_isSurvey
+                      // Una encuesta empieza por lo más común: elegir entre
+                      // dos o más opciones.
+                      ? QuizQuestionDraft(kind: 'multiple', options: ['', ''])
+                      : QuizQuestionDraft(kind: 'multiple'))),
             ),
           ],
         ),
@@ -852,27 +901,24 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                       fontWeight: FontWeight.w700,
                       fontSize: 13)),
               const Spacer(),
-              if (!_isSurvey)
-                DropdownButton<String>(
-                  value: q.kind,
-                  isDense: true,
-                  dropdownColor: AppColors.surfaceAlt,
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.textPrimary),
-                  items: [
-                    for (final (kind, label) in quizKinds)
-                      DropdownMenuItem(value: kind, child: Text(label)),
-                  ],
-                  onChanged: _saving
-                      ? null
-                      : (v) => setState(() {
-                            q.kind = v!;
-                            // La clave del tipo anterior no sirve para el
-                            // nuevo: dejarla mandaría un índice donde va texto.
-                            q.answerIndex = null;
-                            q.answerText = null;
-                          }),
-                ),
+              DropdownButton<String>(
+                key: ValueKey('tipo-de-pregunta-$i'),
+                value: q.kind,
+                isDense: true,
+                dropdownColor: AppColors.surfaceAlt,
+                // Con la letra del tema: un TextStyle suelto caía en la del
+                // sistema, distinta del resto del formulario.
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12, color: AppColors.textPrimary),
+                items: [
+                  for (final (kind, label)
+                      in _isSurvey ? surveyKinds : quizKinds)
+                    DropdownMenuItem(value: kind, child: Text(label)),
+                ],
+                onChanged: _saving
+                    ? null
+                    : (v) => setState(() => _cambiarTipo(q, v!)),
+              ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 16),
                 color: AppColors.statusCritical,
@@ -913,7 +959,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
   }
 
   List<Widget> _kindFields(QuizQuestionDraft q) {
-    if (_isSurvey) return const []; // encuesta: solo texto libre
+    if (_isSurvey) return _surveyFields(q);
     switch (q.kind) {
       case 'multiple':
         return [
@@ -1036,6 +1082,104 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         ];
       default:
         return const [];
+    }
+  }
+
+  /// Una pregunta de encuesta: opciones sin correcta, las etiquetas del 1 y
+  /// del 5, o nada que configurar (el comentario).
+  List<Widget> _surveyFields(QuizQuestionDraft q) {
+    Widget ayuda(String texto) => Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(texto,
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+        );
+    switch (q.kind) {
+      case 'multiple':
+        return [
+          ayuda(tr.encuestaOpcionesAyuda),
+          for (var o = 0; o < q.options.length; o++)
+            Row(
+              key: ValueKey((q, o, _generacion[q] ?? 0)),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: Icon(Icons.radio_button_unchecked,
+                      size: 16, color: AppColors.textMuted),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    initialValue: q.options[o],
+                    enabled: !_saving,
+                    decoration: InputDecoration(
+                        labelText: tr.leccionOpcionNumero(o + 1),
+                        isDense: true),
+                    onChanged: (v) => q.options[o] = v,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 14),
+                  tooltip: tr.leccionQuitarOpcion,
+                  onPressed: _saving ? null : () => _removeOption(q, o),
+                ),
+              ],
+            ),
+          TextButton.icon(
+            icon: const Icon(Icons.add, size: 14),
+            label: Text(tr.leccionOpcion, style: TextStyle(fontSize: 12)),
+            onPressed: _saving ? null : () => setState(() => q.options.add('')),
+          ),
+        ];
+      case 'scale':
+        if (q.options.length != 2) q.options = _etiquetas(q.options);
+        Widget etiqueta(int i, String label, String ejemplo) => TextFormField(
+              key: ValueKey((q, i, _generacion[q] ?? 0)),
+              initialValue: q.options[i],
+              enabled: !_saving,
+              decoration: InputDecoration(
+                  labelText: label, hintText: ejemplo, isDense: true),
+              onChanged: (v) => q.options[i] = v,
+            );
+        return [
+          ayuda(tr.encuestaCalificarAyuda),
+          // Así lo va a ver quien responde.
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                for (var n = 1; n <= 5; n++)
+                  Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(right: 6),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Text('$n',
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
+                  ),
+              ],
+            ),
+          ),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              SizedBox(
+                  width: 220,
+                  child: etiqueta(0, tr.encuestaEtiqueta1,
+                      tr.encuestaEtiqueta1Ejemplo)),
+              SizedBox(
+                  width: 220,
+                  child: etiqueta(1, tr.encuestaEtiqueta5,
+                      tr.encuestaEtiqueta5Ejemplo)),
+            ],
+          ),
+        ];
+      default:
+        return [ayuda(tr.encuestaComentarioAyuda)];
     }
   }
 

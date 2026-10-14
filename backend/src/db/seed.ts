@@ -832,19 +832,28 @@ async function seedCourses(db: Db) {
       kind: 'order',
       question: 'Ordena las etapas de un proyecto de IA:',
     },
+    // La encuesta: elegir una opción, calificar de 1 a 5 y comentar. Sin
+    // respuesta correcta en ninguna.
     {
       id: seedId('q_lia6_1'),
       lessonId: seedId('lia6'),
       orderIndex: 0,
-      kind: 'short',
-      question: '¿Qué fue lo que más le gustó del curso?',
+      kind: 'scale',
+      question: '¿Qué tan útil le pareció el curso?',
     },
     {
       id: seedId('q_lia6_2'),
       lessonId: seedId('lia6'),
       orderIndex: 1,
+      kind: 'multiple',
+      question: '¿Qué formato prefiere para las próximas lecciones?',
+    },
+    {
+      id: seedId('q_lia6_3'),
+      lessonId: seedId('lia6'),
+      orderIndex: 2,
       kind: 'short',
-      question: '¿Qué mejorarías?',
+      question: '¿Qué mejoraría del curso?',
     },
   ]);
 
@@ -857,6 +866,12 @@ async function seedCourses(db: Db) {
     { quizQuestionId: seedId('q_lia4_4'), orderIndex: 1, text: 'Entrenar el modelo' },
     { quizQuestionId: seedId('q_lia4_4'), orderIndex: 2, text: 'Evaluar resultados' },
     { quizQuestionId: seedId('q_lia4_4'), orderIndex: 3, text: 'Desplegar la solución' },
+    // En una pregunta de calificar, las opciones son las etiquetas del 1 y del 5.
+    { quizQuestionId: seedId('q_lia6_1'), orderIndex: 0, text: 'Nada útil' },
+    { quizQuestionId: seedId('q_lia6_1'), orderIndex: 1, text: 'Muy útil' },
+    { quizQuestionId: seedId('q_lia6_2'), orderIndex: 0, text: 'Video' },
+    { quizQuestionId: seedId('q_lia6_2'), orderIndex: 1, text: 'Lectura' },
+    { quizQuestionId: seedId('q_lia6_2'), orderIndex: 2, text: 'Actividad práctica' },
   ]);
 
   await db.insert(s.lessonActivities).values({

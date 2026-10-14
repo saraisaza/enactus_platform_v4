@@ -104,6 +104,9 @@ export const quizKind = pgEnum('quiz_kind', [
   'short',
   'fill',
   'order',
+  // Solo en encuestas: calificar de 1 a 5. Sus «opciones» son las dos
+  // etiquetas de los extremos (opcionales).
+  'scale',
 ]);
 
 /**

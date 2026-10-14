@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../l10n/textos.dart';
 import '../models/authoring.dart';
 import '../models/client.dart';
+import '../models/encuesta.dart';
 import '../models/glossary.dart';
 import '../models/molde_certificado.dart';
 import '../models/models.dart';
@@ -1034,6 +1035,36 @@ class DataProvider extends ChangeNotifier {
     final json = await api.post('/lessons/$lessonId/quiz-attempt',
         body: {'answers': answers});
     return QuizResult.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Lo que la persona ya respondió en una encuesta, o `null` si todavía no.
+  Future<Map<String, Object>?> mySurveyResponse(String lessonId) async {
+    final json = await api.get('/lessons/$lessonId/survey-response');
+    final answers = (json as Map)['answers'];
+    return answers == null ? null : Map<String, Object>.from(answers as Map);
+  }
+
+  /// Responde una encuesta.
+  ///
+  /// No es una entrega: nadie la califica. El servidor la guarda, completa la
+  /// lección y, si era la última del curso, emite el certificado; acá se
+  /// vuelve a pedir lo que eso cambia.
+  Future<void> answerSurvey(
+    String lessonId,
+    String courseId,
+    Map<String, Object> answers,
+  ) async {
+    await api.post('/lessons/$lessonId/survey-response',
+        body: {'answers': answers});
+    await reloadCourseProgress(courseId);
+    unawaited(reloadCertificates());
+  }
+
+  /// Los resultados de una encuesta, anónimos, para quien la diseñó.
+  Future<ResultadosDeEncuesta> surveyResults(String lessonId) async {
+    final json = await api.get('/lessons/$lessonId/survey-results');
+    return ResultadosDeEncuesta.fromJson(
+        Map<String, dynamic>.from(json as Map));
   }
 
   // -------------------------------------------------------------------------

@@ -3488,12 +3488,6 @@ abstract class AppLocalizations {
   /// **'Use las flechas para ordenar:'**
   String get quizUseFlechas;
 
-  /// No description provided for @encuestaNombreTarea.
-  ///
-  /// In es, this message translates to:
-  /// **'Encuesta: {leccion}'**
-  String encuestaNombreTarea(Object leccion);
-
   /// No description provided for @encuestaGracias.
   ///
   /// In es, this message translates to:
@@ -6317,7 +6311,7 @@ abstract class AppLocalizations {
   /// No description provided for @leccionPreguntasEncuesta.
   ///
   /// In es, this message translates to:
-  /// **'Preguntas de la encuesta (sin calificación)'**
+  /// **'Preguntas de la encuesta (ninguna tiene respuesta correcta)'**
   String get leccionPreguntasEncuesta;
 
   /// No description provided for @leccionPreguntasQuiz.
@@ -9787,6 +9781,144 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Firma'**
   String get moldeCampoFirma;
+
+  /// No description provided for @encuestaTipoElegir.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir una opción'**
+  String get encuestaTipoElegir;
+
+  /// No description provided for @encuestaTipoCalificar.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar de 1 a 5'**
+  String get encuestaTipoCalificar;
+
+  /// No description provided for @encuestaTipoComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Comentario libre'**
+  String get encuestaTipoComentario;
+
+  /// No description provided for @encuestaOpcionesAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien responde elige una. Ninguna es la correcta.'**
+  String get encuestaOpcionesAyuda;
+
+  /// No description provided for @encuestaCalificarAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien responde elige un número del 1 al 5. Si quiere, diga qué significan los extremos.'**
+  String get encuestaCalificarAyuda;
+
+  /// No description provided for @encuestaComentarioAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien responde escribe con sus palabras. Es opcional.'**
+  String get encuestaComentarioAyuda;
+
+  /// No description provided for @encuestaEtiqueta1.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué significa el 1 (opcional)'**
+  String get encuestaEtiqueta1;
+
+  /// No description provided for @encuestaEtiqueta5.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué significa el 5 (opcional)'**
+  String get encuestaEtiqueta5;
+
+  /// No description provided for @encuestaEtiqueta1Ejemplo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej.: Nada útil'**
+  String get encuestaEtiqueta1Ejemplo;
+
+  /// No description provided for @encuestaEtiqueta5Ejemplo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej.: Muy útil'**
+  String get encuestaEtiqueta5Ejemplo;
+
+  /// No description provided for @encuestaComentarioOpcional.
+  ///
+  /// In es, this message translates to:
+  /// **'Su comentario (opcional)'**
+  String get encuestaComentarioOpcional;
+
+  /// No description provided for @encuestaFaltanRespuestas.
+  ///
+  /// In es, this message translates to:
+  /// **'Para enviar, responda todas las preguntas; el comentario es opcional.'**
+  String get encuestaFaltanRespuestas;
+
+  /// No description provided for @encuestaEscribaComentario.
+  ///
+  /// In es, this message translates to:
+  /// **'Escriba al menos un comentario para enviar.'**
+  String get encuestaEscribaComentario;
+
+  /// No description provided for @encuestaYaRespondio.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya respondió esta encuesta. Puede cambiar sus respuestas y enviarla de nuevo.'**
+  String get encuestaYaRespondio;
+
+  /// No description provided for @encuestaSinPreguntas.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta encuesta todavía no tiene preguntas.'**
+  String get encuestaSinPreguntas;
+
+  /// No description provided for @encuestaCalificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'{numero} de 5'**
+  String encuestaCalificacion(Object numero);
+
+  /// No description provided for @encuestaVerResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver resultados'**
+  String get encuestaVerResultados;
+
+  /// No description provided for @encuestaResultadosDe.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultados: {leccion}'**
+  String encuestaResultadosDe(Object leccion);
+
+  /// No description provided for @encuestaRespondieron.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas que respondieron: {cantidad}'**
+  String encuestaRespondieron(Object cantidad);
+
+  /// No description provided for @encuestaAnonima.
+  ///
+  /// In es, this message translates to:
+  /// **'Los resultados son anónimos: no muestran quién respondió qué.'**
+  String get encuestaAnonima;
+
+  /// No description provided for @encuestaNadieRespondio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía nadie ha respondido esta encuesta.'**
+  String get encuestaNadieRespondio;
+
+  /// No description provided for @encuestaPromedio.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio: {valor} de 5'**
+  String encuestaPromedio(Object valor);
+
+  /// No description provided for @encuestaSinComentarios.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin comentarios todavía.'**
+  String get encuestaSinComentarios;
 }
 
 class _AppLocalizationsDelegate

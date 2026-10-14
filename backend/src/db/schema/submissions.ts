@@ -147,8 +147,39 @@ export const quizAttempts = pgTable(
 );
 
 /**
- * Certificado por completar la Ruta de Impacto COMPLETA de un laboratorio.
- * Ya no existe certificado por curso individual.
+ * La respuesta de una persona a una encuesta.
+ *
+ * Una encuesta no tiene respuestas correctas ni se califica: pide opiniones
+ * (elegir una opción, calificar de 1 a 5, comentar). Antes las respuestas se
+ * mandaban como una ENTREGA, y aparecían en la cola de calificación del LXD
+ * como un bloque de texto que no se podía sumar. Acá quedan por pregunta, para
+ * que el equipo vea resultados: cuántos eligieron cada opción, el promedio.
+ *
+ * Una por persona y encuesta; si vuelve a responder, se reemplaza.
+ * `answers`: `{ [preguntaId]: índiceDeOpción | 1..5 | "comentario" }`.
+ */
+export const surveyResponses = pgTable(
+  'survey_responses',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    lessonId: uuid()
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    studentId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    answers: jsonb().notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex('survey_responses_lesson_student_unique').on(t.lessonId, t.studentId),
+    index('survey_responses_lesson_id_idx').on(t.lessonId),
+  ],
+);
+
+/**
+ * Certificado por completar la Ruta de Impacto COMPLETA de un laboratorio, o
+ * un curso fuera de los laboratorios (desde la migración 0016).
  *
  * Los campos `*Snapshot` congelan el estado al momento de emitir: un
  * certificado dice "completó esto A FECHA DE", no "cumple los requisitos

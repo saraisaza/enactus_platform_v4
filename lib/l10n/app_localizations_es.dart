@@ -1987,11 +1987,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get quizUseFlechas => 'Use las flechas para ordenar:';
 
   @override
-  String encuestaNombreTarea(Object leccion) {
-    return 'Encuesta: $leccion';
-  }
-
-  @override
   String get encuestaGracias => '¡Gracias por responder!';
 
   @override
@@ -3709,7 +3704,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get leccionPreguntasEncuesta =>
-      'Preguntas de la encuesta (sin calificación)';
+      'Preguntas de la encuesta (ninguna tiene respuesta correcta)';
 
   @override
   String get leccionPreguntasQuiz => 'Preguntas (las califica el servidor)';
@@ -5800,4 +5795,90 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moldeCampoFirma => 'Firma';
+
+  @override
+  String get encuestaTipoElegir => 'Elegir una opción';
+
+  @override
+  String get encuestaTipoCalificar => 'Calificar de 1 a 5';
+
+  @override
+  String get encuestaTipoComentario => 'Comentario libre';
+
+  @override
+  String get encuestaOpcionesAyuda =>
+      'Quien responde elige una. Ninguna es la correcta.';
+
+  @override
+  String get encuestaCalificarAyuda =>
+      'Quien responde elige un número del 1 al 5. Si quiere, diga qué significan los extremos.';
+
+  @override
+  String get encuestaComentarioAyuda =>
+      'Quien responde escribe con sus palabras. Es opcional.';
+
+  @override
+  String get encuestaEtiqueta1 => 'Qué significa el 1 (opcional)';
+
+  @override
+  String get encuestaEtiqueta5 => 'Qué significa el 5 (opcional)';
+
+  @override
+  String get encuestaEtiqueta1Ejemplo => 'Ej.: Nada útil';
+
+  @override
+  String get encuestaEtiqueta5Ejemplo => 'Ej.: Muy útil';
+
+  @override
+  String get encuestaComentarioOpcional => 'Su comentario (opcional)';
+
+  @override
+  String get encuestaFaltanRespuestas =>
+      'Para enviar, responda todas las preguntas; el comentario es opcional.';
+
+  @override
+  String get encuestaEscribaComentario =>
+      'Escriba al menos un comentario para enviar.';
+
+  @override
+  String get encuestaYaRespondio =>
+      'Ya respondió esta encuesta. Puede cambiar sus respuestas y enviarla de nuevo.';
+
+  @override
+  String get encuestaSinPreguntas =>
+      'Esta encuesta todavía no tiene preguntas.';
+
+  @override
+  String encuestaCalificacion(Object numero) {
+    return '$numero de 5';
+  }
+
+  @override
+  String get encuestaVerResultados => 'Ver resultados';
+
+  @override
+  String encuestaResultadosDe(Object leccion) {
+    return 'Resultados: $leccion';
+  }
+
+  @override
+  String encuestaRespondieron(Object cantidad) {
+    return 'Personas que respondieron: $cantidad';
+  }
+
+  @override
+  String get encuestaAnonima =>
+      'Los resultados son anónimos: no muestran quién respondió qué.';
+
+  @override
+  String get encuestaNadieRespondio =>
+      'Todavía nadie ha respondido esta encuesta.';
+
+  @override
+  String encuestaPromedio(Object valor) {
+    return 'Promedio: $valor de 5';
+  }
+
+  @override
+  String get encuestaSinComentarios => 'Sin comentarios todavía.';
 }

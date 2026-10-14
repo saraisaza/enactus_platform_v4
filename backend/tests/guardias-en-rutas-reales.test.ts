@@ -98,6 +98,9 @@ const ESTUDIANTE_PUEDE = [
   /^(POST|PATCH|PUT|DELETE) \/(progress|submissions|notifications)/,
   /^(POST|PATCH|PUT|DELETE) \/forum-posts(?!\/reports)/,
   /^POST \/lessons\/[^/]+\/(quiz-attempt|survey|activity-submission)/,
+  // Su propia respuesta a una encuesta: el handler la busca por su persona y
+  // exige que la lección sea de un curso que cursa.
+  /^GET \/lessons\/[^/]+\/survey-response$/,
   // El modo repaso del glosario: guarda SU «ya lo sé» / «repasar», y el
   // handler exige que el término sea de un curso que ve. Solo `/review`:
   // crear, editar, reordenar y borrar términos sigue siendo de CONTENT_ROLES.

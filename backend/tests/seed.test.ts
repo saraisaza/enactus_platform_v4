@@ -178,7 +178,7 @@ describe('estructura sembrada', () => {
       select count(*)::text as count from quiz_questions
        where lesson_id = ${seedId('lia6')}
     `;
-    expect(Number(encuesta?.count)).toBe(2);
+    expect(Number(encuesta?.count)).toBe(3);
   });
 
   it('las lecciones de video traen su origen y son de tipo uploaded', async () => {

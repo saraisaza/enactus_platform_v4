@@ -80,6 +80,13 @@
  "POST /forum-posts/reports/:id/resolve": {
   "action": "remove"
  },
+ "POST /lessons/:id/survey-response": {
+  "answers": {
+   "dddddddd-0000-4000-8000-000000000011": 4,
+   "dddddddd-0000-4000-8000-000000000012": 1,
+   "dddddddd-0000-4000-8000-000000000013": "Más ejemplos"
+  }
+ },
  "POST /lessons/:id/video-external": {
   "url": "https://vimeo.com/76979871"
  },
@@ -208,6 +215,20 @@
  "PUT /laboratories/:id/students": {
   "ids": [
    "bbbbbbbb-0000-4000-8000-000000000003"
+  ]
+ },
+ "PUT /lessons/:id/quiz": {
+  "questions": [
+   {
+    "kind": "scale",
+    "question": "¿Qué tan útil le pareció?",
+    "options": [
+     "Nada útil",
+     "Muy útil"
+    ],
+    "answerIndex": null,
+    "answerText": null
+   }
   ]
  },
  "PUT /modules/:id/glossary-terms/order": {

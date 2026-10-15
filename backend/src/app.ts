@@ -12,6 +12,7 @@ import { authRoutes } from './routes/auth';
 import { adminRoutes } from './routes/admin';
 import { certificateRoutes } from './routes/certificates';
 import { verificacionRoutes } from './routes/verificacion';
+import { contactoRoutes } from './routes/contacto';
 import {
   calendarRoutes,
   commResourceRoutes,
@@ -184,6 +185,8 @@ export function createApp(database: Database = defaultDb) {
   app.route('/auth', authRoutes);
   // Público: la portada se ve sin sesión.
   app.route('/site-content', siteRoutes);
+  // Público: el formulario «Hablemos» de la portada.
+  app.route('/contact', contactoRoutes);
   app.route('/users', userRoutes);
   // Segundo router en la misma base: asignar laboratorios o cursos a un
   // estudiante es solo de Admin, mientras que listar personas lo hacen los

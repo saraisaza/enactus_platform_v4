@@ -198,13 +198,10 @@ class _FormState extends State<_Form> {
             ErrorBanner(_error!),
             const SizedBox(height: 14),
           ],
-          _campo(_title, tr.contenidoTituloHero),
-          const SizedBox(height: 14),
-          _campo(_subtitle, tr.contenidoSubtituloHero, maxLines: 2),
-          const SizedBox(height: 14),
+          // El título, el subtítulo y «Sobre nosotros» ya no se ven: la
+          // portada habla de eduXaction con su propio texto, en los dos
+          // idiomas. Se guardan como estaban; acá queda lo que sí se ve.
           _campo(_banner, tr.contenidoBanner),
-          const SizedBox(height: 14),
-          _campo(_about, tr.contenidoSobreNosotros, maxLines: 3),
           const SizedBox(height: 20),
           Text(tr.contenidoEnIngles,
               style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -213,13 +210,7 @@ class _FormState extends State<_Form> {
               style: const TextStyle(
                   fontSize: 12.5, color: AppColors.textMuted)),
           const SizedBox(height: 10),
-          _campo(_titleEn, tr.contenidoTituloHeroEn),
-          const SizedBox(height: 14),
-          _campo(_subtitleEn, tr.contenidoSubtituloHeroEn, maxLines: 2),
-          const SizedBox(height: 14),
           _campo(_bannerEn, tr.contenidoBannerEn),
-          const SizedBox(height: 14),
-          _campo(_aboutEn, tr.contenidoSobreNosotrosEn, maxLines: 3),
           const SizedBox(height: 20),
           TextField(
             controller: _meetingLink,

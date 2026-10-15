@@ -1,42 +1,46 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-/// Envía los mensajes del formulario "Contáctenos" del landing (botón
-/// "Quiero unirme").
+import 'api_service.dart';
+
+/// Envía el formulario «Hablemos» de la portada (`POST /contact`).
 ///
-/// Todavía no hay una API de correo conectada. Para activarla:
-/// 1. Pon la URL de su API (Cloud Function, Resend, SendGrid, Formspree,
-///    un backend propio, etc.) en [_apiEndpoint].
-/// 2. Si esa API necesita autenticación, agrega el header en el
-///    `http.post` de abajo (p. ej. `'Authorization': 'Bearer ...'`).
+/// Antes no había adónde mandarlo: el formulario decía «¡Mensaje enviado!»
+/// y el mensaje solo quedaba en la consola del navegador. Ahora el servidor
+/// se lo hace llegar a cada administrador como aviso.
 ///
-/// Mientras [_apiEndpoint] esté vacío, el mensaje solo se imprime en la
-/// consola (modo demo) para no romper el formulario.
+/// Es un pedido sin sesión, así que no pasa por [ApiService] (que agrega el
+/// token y renueva la sesión): solo usa su dirección.
 class ContactService {
-  static const String _apiEndpoint = ''; // TODO: URL de la API de email
+  /// El cliente HTTP; las pruebas ponen uno falso.
+  static http.Client Function() cliente = http.Client.new;
 
   static Future<bool> sendMessage({
     required String name,
     required String email,
     required String message,
+    String company = '',
   }) async {
-    if (_apiEndpoint.isEmpty) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      debugPrint('[Contacto demo] $name <$email>: $message');
-      return true;
-    }
-
+    final c = cliente();
     try {
-      final res = await http.post(
-        Uri.parse(_apiEndpoint),
+      final res = await c.post(
+        Uri.parse('${ApiService.baseUrl}/contact'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'name': name, 'email': email, 'message': message}),
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'company': company,
+          'message': message,
+          // La trampa para robots va siempre vacía: la página no la muestra.
+          'website': '',
+        }),
       );
       return res.statusCode >= 200 && res.statusCode < 300;
     } catch (_) {
       return false;
+    } finally {
+      c.close();
     }
   }
 }

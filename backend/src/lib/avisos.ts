@@ -21,6 +21,11 @@ export const TIPOS_DE_AVISO = [
   'mentor_comento',
   /** Un aliado pide estudiantes patrocinados. `params.remitente`, `params.correo`. */
   'solicitud_patrocinados',
+  /**
+   * Alguien escribió desde la portada (lo genera el servidor).
+   * `params.nombre`, `params.correo`, `params.empresa`, `params.mensaje`.
+   */
+  'contacto',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];

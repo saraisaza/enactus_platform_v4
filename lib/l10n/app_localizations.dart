@@ -1199,7 +1199,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactoEnviado.
   ///
   /// In es, this message translates to:
-  /// **'¡Mensaje enviado! Nos pondremos en contacto pronto.'**
+  /// **'¡Gracias! Le escribiremos pronto.'**
   String get contactoEnviado;
 
   /// No description provided for @contactoError.
@@ -1211,13 +1211,13 @@ abstract class AppLocalizations {
   /// No description provided for @contactoTitulo.
   ///
   /// In es, this message translates to:
-  /// **'Contáctenos'**
+  /// **'Hablemos'**
   String get contactoTitulo;
 
   /// No description provided for @contactoTexto.
   ///
   /// In es, this message translates to:
-  /// **'Cuéntenos quién es y qué le gustaría hacer con nosotros.'**
+  /// **'Cuéntenos de su empresa u organización y le escribimos para mostrarle eduXaction.'**
   String get contactoTexto;
 
   /// No description provided for @comunNombre.
@@ -1247,7 +1247,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactoMensajePista.
   ///
   /// In es, this message translates to:
-  /// **'¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)'**
+  /// **'¿Qué quiere lograr con la formación de su equipo?'**
   String get contactoMensajePista;
 
   /// No description provided for @comunCancelar.
@@ -8177,7 +8177,7 @@ abstract class AppLocalizations {
   /// No description provided for @contenidoSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Hero, banner y textos visibles para el público'**
+  /// **'El anuncio, las cifras de Enactus y su galería, como se ven en la portada'**
   String get contenidoSubtitulo;
 
   /// No description provided for @contenidoTituloVacio.
@@ -8237,13 +8237,13 @@ abstract class AppLocalizations {
   /// No description provided for @contenidoCifras.
   ///
   /// In es, this message translates to:
-  /// **'Cifras del hero'**
+  /// **'Cifras de Enactus'**
   String get contenidoCifras;
 
   /// No description provided for @contenidoCifrasAyuda.
   ///
   /// In es, this message translates to:
-  /// **'Los cuatro números bajo el título. Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base — ese vive en el panel.'**
+  /// **'Los cuatro números de Enactus en «Nuestros clientes». Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base, que vive en el panel.'**
   String get contenidoCifrasAyuda;
 
   /// No description provided for @contenidoGuardarCambios.
@@ -8261,7 +8261,7 @@ abstract class AppLocalizations {
   /// No description provided for @contenidoGaleriaAyuda.
   ///
   /// In es, this message translates to:
-  /// **'Se muestran en la página principal, entre los laboratorios y el cierre. Quitar una la saca de la portada de inmediato.'**
+  /// **'Se muestran en la portada, con Enactus en «Nuestros clientes». Quitar una la saca de la portada de inmediato.'**
   String get contenidoGaleriaAyuda;
 
   /// No description provided for @contenidoGaleriaVacia.
@@ -10621,6 +10621,360 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Capacitaciones'**
   String get supervisorTabCapacitaciones;
+
+  /// No description provided for @portadaEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Plataforma de formación para empresas'**
+  String get portadaEyebrow;
+
+  /// No description provided for @portadaTitulo1.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones que'**
+  String get portadaTitulo1;
+
+  /// No description provided for @portadaTitulo2.
+  ///
+  /// In es, this message translates to:
+  /// **'su gente sí termina'**
+  String get portadaTitulo2;
+
+  /// No description provided for @portadaSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'eduXaction integra a quienes diseñan, enseñan, acompañan y aprenden. Cree capacitaciones en minutos, asígnelas a sus equipos y vea quién avanza, quién aprueba y quién se certifica, desde el computador o el teléfono.'**
+  String get portadaSubtitulo;
+
+  /// No description provided for @portadaAgendarDemo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar una demo'**
+  String get portadaAgendarDemo;
+
+  /// No description provided for @portadaVentajaMarca.
+  ///
+  /// In es, this message translates to:
+  /// **'Con la marca de su empresa'**
+  String get portadaVentajaMarca;
+
+  /// No description provided for @portadaVentajaDispositivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Computador y teléfono'**
+  String get portadaVentajaDispositivos;
+
+  /// No description provided for @portadaVentajaIdiomas.
+  ///
+  /// In es, this message translates to:
+  /// **'Español e inglés'**
+  String get portadaVentajaIdiomas;
+
+  /// No description provided for @portadaMockEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitación'**
+  String get portadaMockEtiqueta;
+
+  /// No description provided for @portadaMockTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Inducción al servicio al cliente'**
+  String get portadaMockTitulo;
+
+  /// No description provided for @portadaMockLeccion1.
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenida'**
+  String get portadaMockLeccion1;
+
+  /// No description provided for @portadaMockLeccion2.
+  ///
+  /// In es, this message translates to:
+  /// **'Protocolo de atención'**
+  String get portadaMockLeccion2;
+
+  /// No description provided for @portadaMockLeccion3.
+  ///
+  /// In es, this message translates to:
+  /// **'Quiz de servicio'**
+  String get portadaMockLeccion3;
+
+  /// No description provided for @portadaMockLeccion4.
+  ///
+  /// In es, this message translates to:
+  /// **'Caso práctico'**
+  String get portadaMockLeccion4;
+
+  /// No description provided for @portadaMockAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'de avance'**
+  String get portadaMockAvance;
+
+  /// No description provided for @portadaMockAprobada.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega aprobada'**
+  String get portadaMockAprobada;
+
+  /// No description provided for @portadaMockCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificado emitido'**
+  String get portadaMockCertificado;
+
+  /// No description provided for @portadaMockQr.
+  ///
+  /// In es, this message translates to:
+  /// **'Con QR verificable'**
+  String get portadaMockQr;
+
+  /// No description provided for @portadaRolesEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Una integradora de experiencias'**
+  String get portadaRolesEyebrow;
+
+  /// No description provided for @portadaRolesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada rol de la formación, conectado'**
+  String get portadaRolesTitulo;
+
+  /// No description provided for @portadaRolesTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'La formación de una empresa no la hace una sola persona. eduXaction reúne a todos los que la hacen posible, cada uno con su propio portal.'**
+  String get portadaRolesTexto;
+
+  /// No description provided for @portadaRolDisenoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien diseña'**
+  String get portadaRolDisenoTitulo;
+
+  /// No description provided for @portadaRolDisenoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Arma capacitaciones con video, lecturas, quizzes, encuestas y actividades, sin depender de nadie más.'**
+  String get portadaRolDisenoTexto;
+
+  /// No description provided for @portadaRolAcompanaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien acompaña'**
+  String get portadaRolAcompanaTitulo;
+
+  /// No description provided for @portadaRolAcompanaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa y aprueba entregas, ve cómo va cada persona y apoya a quien se queda atrás.'**
+  String get portadaRolAcompanaTexto;
+
+  /// No description provided for @portadaRolAprendeTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien aprende'**
+  String get portadaRolAprendeTitulo;
+
+  /// No description provided for @portadaRolAprendeTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Avanza a su ritmo y en orden; lo que hace en el computador sigue en el teléfono.'**
+  String get portadaRolAprendeTexto;
+
+  /// No description provided for @portadaRolDecideTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien decide'**
+  String get portadaRolDecideTitulo;
+
+  /// No description provided for @portadaRolDecideTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ve quién terminó, quién se certificó y cuántas horas de formación suma su gente.'**
+  String get portadaRolDecideTexto;
+
+  /// No description provided for @portadaComoEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo funciona'**
+  String get portadaComoEyebrow;
+
+  /// No description provided for @portadaComoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'De la idea al certificado'**
+  String get portadaComoTitulo;
+
+  /// No description provided for @portadaPaso1Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Diseñe'**
+  String get portadaPaso1Titulo;
+
+  /// No description provided for @portadaPaso1Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Arme la capacitación con el constructor: módulos, lecciones y la forma de evaluar cada una.'**
+  String get portadaPaso1Texto;
+
+  /// No description provided for @portadaPaso2Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Asigne'**
+  String get portadaPaso2Titulo;
+
+  /// No description provided for @portadaPaso2Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Asígnela a sus equipos. Cada persona la encuentra en su portal, con la marca de su empresa.'**
+  String get portadaPaso2Texto;
+
+  /// No description provided for @portadaPaso3Titulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mida y certifique'**
+  String get portadaPaso3Titulo;
+
+  /// No description provided for @portadaPaso3Texto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada lección se completa con su prueba. Al terminar, el certificado sale solo, con un QR que cualquiera puede verificar.'**
+  String get portadaPaso3Texto;
+
+  /// No description provided for @portadaFuncionesEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que trae'**
+  String get portadaFuncionesEyebrow;
+
+  /// No description provided for @portadaFuncionesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Pensada para que se aprenda de verdad'**
+  String get portadaFuncionesTitulo;
+
+  /// No description provided for @portadaFuncionAvanceTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance real, no clics'**
+  String get portadaFuncionAvanceTitulo;
+
+  /// No description provided for @portadaFuncionAvanceTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Los videos cuentan lo que se vio, las lecciones van en orden y los quizzes los califica el servidor.'**
+  String get portadaFuncionAvanceTexto;
+
+  /// No description provided for @portadaFuncionAprobacionesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobaciones'**
+  String get portadaFuncionAprobacionesTitulo;
+
+  /// No description provided for @portadaFuncionAprobacionesTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Los supervisores revisan cada entrega, la aprueban con su rúbrica y dejan su comentario.'**
+  String get portadaFuncionAprobacionesTexto;
+
+  /// No description provided for @portadaFuncionCertificadosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificados verificables'**
+  String get portadaFuncionCertificadosTitulo;
+
+  /// No description provided for @portadaFuncionCertificadosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Con el diseño de su empresa y un código QR que confirma que son auténticos.'**
+  String get portadaFuncionCertificadosTexto;
+
+  /// No description provided for @portadaFuncionMarcaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Su marca, su portal'**
+  String get portadaFuncionMarcaTitulo;
+
+  /// No description provided for @portadaFuncionMarcaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Su logo y sus colores en toda la plataforma, para que su gente la sienta propia.'**
+  String get portadaFuncionMarcaTexto;
+
+  /// No description provided for @portadaFuncionEncuestasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Encuestas anónimas'**
+  String get portadaFuncionEncuestasTitulo;
+
+  /// No description provided for @portadaFuncionEncuestasTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Conozca qué opina su equipo de cada capacitación, con promedios y comentarios.'**
+  String get portadaFuncionEncuestasTexto;
+
+  /// No description provided for @portadaFuncionDispositivosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'En cualquier dispositivo'**
+  String get portadaFuncionDispositivosTitulo;
+
+  /// No description provided for @portadaFuncionDispositivosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'En el computador y en el teléfono, en español y en inglés, con el avance siempre sincronizado.'**
+  String get portadaFuncionDispositivosTexto;
+
+  /// No description provided for @portadaClientesEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuestros clientes'**
+  String get portadaClientesEyebrow;
+
+  /// No description provided for @portadaClientesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Organizaciones que ya aprenden con eduXaction'**
+  String get portadaClientesTitulo;
+
+  /// No description provided for @portadaEnactusTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'La red de emprendimiento social universitario de Colombia gestiona en eduXaction sus laboratorios, su Ruta de Impacto y la preparación de sus equipos para la National Expo.'**
+  String get portadaEnactusTexto;
+
+  /// No description provided for @portadaCierreTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Lista su empresa para aprender distinto?'**
+  String get portadaCierreTitulo;
+
+  /// No description provided for @portadaCierreTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuéntenos qué necesita su equipo y le mostramos cómo se vería en eduXaction.'**
+  String get portadaCierreTexto;
+
+  /// No description provided for @contactoEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa u organización (opcional)'**
+  String get contactoEmpresa;
+
+  /// No description provided for @avisoContactoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo contacto desde la portada'**
+  String get avisoContactoTitulo;
+
+  /// No description provided for @avisoContactoCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'{quien} <{correo}> escribió:\n\n{mensaje}'**
+  String avisoContactoCuerpo(Object quien, Object correo, Object mensaje);
 }
 
 class _AppLocalizationsDelegate

@@ -5,8 +5,8 @@ import '../services/contact_service.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
 
-/// Formulario "Contáctenos" del botón "Quiero unirme" en el landing.
-/// El envío real lo resuelve [ContactService.sendMessage].
+/// Formulario «Hablemos» de la portada («Agendar una demo»). Le llega a cada
+/// administrador como aviso: ver [ContactService.sendMessage].
 Future<void> showContactDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
@@ -25,6 +25,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
+  final _company = TextEditingController();
   final _message = TextEditingController();
   bool _sending = false;
 
@@ -32,6 +33,7 @@ class _ContactDialogState extends State<_ContactDialog> {
   void dispose() {
     _name.dispose();
     _email.dispose();
+    _company.dispose();
     _message.dispose();
     super.dispose();
   }
@@ -42,6 +44,7 @@ class _ContactDialogState extends State<_ContactDialog> {
     final ok = await ContactService.sendMessage(
       name: _name.text.trim(),
       email: _email.text.trim(),
+      company: _company.text.trim(),
       message: _message.text.trim(),
     );
     if (!mounted) return;
@@ -95,6 +98,11 @@ class _ContactDialogState extends State<_ContactDialog> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _company,
+                decoration: InputDecoration(labelText: tr.contactoEmpresa),
               ),
               const SizedBox(height: 14),
               TextFormField(

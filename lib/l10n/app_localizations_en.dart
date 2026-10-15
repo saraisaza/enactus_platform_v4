@@ -618,18 +618,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificacionesVacio => 'No notifications';
 
   @override
-  String get contactoEnviado => 'Message sent! We will be in touch soon.';
+  String get contactoEnviado => 'Thank you! We will be in touch soon.';
 
   @override
   String get contactoError =>
       'We could not send your message. Please try again in a moment.';
 
   @override
-  String get contactoTitulo => 'Contact us';
+  String get contactoTitulo => 'Let\'s talk';
 
   @override
   String get contactoTexto =>
-      'Tell us who you are and what you would like to do with us.';
+      'Tell us about your company or organization and we will get in touch to show you eduXaction.';
 
   @override
   String get comunNombre => 'Name';
@@ -645,7 +645,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactoMensajePista =>
-      'How would you like to get involved? (student, mentor, company, donor...)';
+      'What do you want to achieve with your team\'s training?';
 
   @override
   String get comunCancelar => 'Cancel';
@@ -4866,7 +4866,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contenidoSubtitulo =>
-      'Hero, banner and texts visible to the public';
+      'The announcement, Enactus\'s figures and its gallery, as shown on the home page';
 
   @override
   String get contenidoTituloVacio => 'The hero title cannot be empty.';
@@ -4897,11 +4897,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'A single generic link: there is no integration with a meeting provider yet.';
 
   @override
-  String get contenidoCifras => 'Hero figures';
+  String get contenidoCifras => 'Enactus figures';
 
   @override
   String get contenidoCifrasAyuda =>
-      'The four numbers under the title. They are written by hand on purpose: they are the figure the team wants to communicate, not the database count — that one lives in the dashboard.';
+      'Enactus\'s four numbers under “Our clients”. They are written by hand on purpose: they are the figure the team wants to communicate, not the database count, which lives in the dashboard.';
 
   @override
   String get contenidoGuardarCambios => 'Save changes';
@@ -4911,7 +4911,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contenidoGaleriaAyuda =>
-      'They are shown on the home page, between the laboratories and the closing section. Removing one takes it off the home page immediately.';
+      'They are shown on the home page, with Enactus under “Our clients”. Removing one takes it off the home page immediately.';
 
   @override
   String get contenidoGaleriaVacia => 'There are no images in the gallery yet.';
@@ -6324,4 +6324,201 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supervisorTabCapacitaciones => 'Trainings';
+
+  @override
+  String get portadaEyebrow => 'Learning platform for companies';
+
+  @override
+  String get portadaTitulo1 => 'Training your people';
+
+  @override
+  String get portadaTitulo2 => 'will actually finish';
+
+  @override
+  String get portadaSubtitulo =>
+      'eduXaction brings together the people who design, teach, support and learn. Build trainings in minutes, assign them to your teams and see who is progressing, who passes and who earns a certificate, on desktop or mobile.';
+
+  @override
+  String get portadaAgendarDemo => 'Book a demo';
+
+  @override
+  String get portadaVentajaMarca => 'With your company\'s brand';
+
+  @override
+  String get portadaVentajaDispositivos => 'Desktop and mobile';
+
+  @override
+  String get portadaVentajaIdiomas => 'Spanish and English';
+
+  @override
+  String get portadaMockEtiqueta => 'Training';
+
+  @override
+  String get portadaMockTitulo => 'Customer service onboarding';
+
+  @override
+  String get portadaMockLeccion1 => 'Welcome';
+
+  @override
+  String get portadaMockLeccion2 => 'Service protocol';
+
+  @override
+  String get portadaMockLeccion3 => 'Service quiz';
+
+  @override
+  String get portadaMockLeccion4 => 'Hands-on case';
+
+  @override
+  String get portadaMockAvance => 'complete';
+
+  @override
+  String get portadaMockAprobada => 'Submission approved';
+
+  @override
+  String get portadaMockCertificado => 'Certificate issued';
+
+  @override
+  String get portadaMockQr => 'With a verifiable QR code';
+
+  @override
+  String get portadaRolesEyebrow => 'One place for every learning experience';
+
+  @override
+  String get portadaRolesTitulo => 'Every learning role, connected';
+
+  @override
+  String get portadaRolesTexto =>
+      'Workplace learning is never a one-person job. eduXaction brings together everyone who makes it happen, each with their own portal.';
+
+  @override
+  String get portadaRolDisenoTitulo => 'Learning designers';
+
+  @override
+  String get portadaRolDisenoTexto =>
+      'Build trainings with video, readings, quizzes, surveys and activities, without depending on anyone else.';
+
+  @override
+  String get portadaRolAcompanaTitulo => 'Managers and instructors';
+
+  @override
+  String get portadaRolAcompanaTexto =>
+      'Review and approve submissions, see how each person is doing and support whoever falls behind.';
+
+  @override
+  String get portadaRolAprendeTitulo => 'Learners';
+
+  @override
+  String get portadaRolAprendeTexto =>
+      'Move at their own pace and in order; what they do on desktop continues on mobile.';
+
+  @override
+  String get portadaRolDecideTitulo => 'Leaders and HR';
+
+  @override
+  String get portadaRolDecideTexto =>
+      'See who finished, who earned a certificate and how many training hours your people add up.';
+
+  @override
+  String get portadaComoEyebrow => 'How it works';
+
+  @override
+  String get portadaComoTitulo => 'From idea to certificate';
+
+  @override
+  String get portadaPaso1Titulo => 'Design';
+
+  @override
+  String get portadaPaso1Texto =>
+      'Build the training with the builder: modules, lessons and how each one is assessed.';
+
+  @override
+  String get portadaPaso2Titulo => 'Assign';
+
+  @override
+  String get portadaPaso2Texto =>
+      'Assign it to your teams. Each person finds it in their portal, with your company\'s brand.';
+
+  @override
+  String get portadaPaso3Titulo => 'Measure and certify';
+
+  @override
+  String get portadaPaso3Texto =>
+      'Each lesson is completed with proof. At the end, the certificate is issued automatically, with a QR code anyone can verify.';
+
+  @override
+  String get portadaFuncionesEyebrow => 'What\'s included';
+
+  @override
+  String get portadaFuncionesTitulo => 'Built for real learning';
+
+  @override
+  String get portadaFuncionAvanceTitulo => 'Real progress, not clicks';
+
+  @override
+  String get portadaFuncionAvanceTexto =>
+      'Videos count what was actually watched, lessons go in order and quizzes are graded by the server.';
+
+  @override
+  String get portadaFuncionAprobacionesTitulo => 'Approvals';
+
+  @override
+  String get portadaFuncionAprobacionesTexto =>
+      'Managers review every submission, approve it with its rubric and leave their feedback.';
+
+  @override
+  String get portadaFuncionCertificadosTitulo => 'Verifiable certificates';
+
+  @override
+  String get portadaFuncionCertificadosTexto =>
+      'With your company\'s design and a QR code that confirms they are genuine.';
+
+  @override
+  String get portadaFuncionMarcaTitulo => 'Your brand, your portal';
+
+  @override
+  String get portadaFuncionMarcaTexto =>
+      'Your logo and colors across the platform, so your people feel it is their own.';
+
+  @override
+  String get portadaFuncionEncuestasTitulo => 'Anonymous surveys';
+
+  @override
+  String get portadaFuncionEncuestasTexto =>
+      'Find out what your team thinks of each training, with averages and comments.';
+
+  @override
+  String get portadaFuncionDispositivosTitulo => 'On any device';
+
+  @override
+  String get portadaFuncionDispositivosTexto =>
+      'On desktop and mobile, in Spanish and English, with progress always in sync.';
+
+  @override
+  String get portadaClientesEyebrow => 'Our clients';
+
+  @override
+  String get portadaClientesTitulo =>
+      'Organizations already learning with eduXaction';
+
+  @override
+  String get portadaEnactusTexto =>
+      'Colombia\'s university social entrepreneurship network runs its laboratories, its Impact Path and its teams\' preparation for the National Expo on eduXaction.';
+
+  @override
+  String get portadaCierreTitulo => 'Ready to change how your company learns?';
+
+  @override
+  String get portadaCierreTexto =>
+      'Tell us what your team needs and we will show you how it would look in eduXaction.';
+
+  @override
+  String get contactoEmpresa => 'Company or organization (optional)';
+
+  @override
+  String get avisoContactoTitulo => 'New contact from the homepage';
+
+  @override
+  String avisoContactoCuerpo(Object quien, Object correo, Object mensaje) {
+    return '$quien <$correo> wrote:\n\n$mensaje';
+  }
 }

@@ -2212,6 +2212,35 @@ paths:
         '200': { description: '`{ template }` o `{ template: null }`' }
         '404': { description: No existe, o no es suyo }
 
+  /contact:
+    post:
+      tags: [content]
+      security: []
+      summary: Escribir desde la portada («Hablemos»)
+      description: |
+        Sin sesión. El mensaje llega como aviso (`kind: contacto`) a cada
+        administrador, con nombre, correo, empresa y mensaje. Cinco mensajes
+        por IP cada diez minutos. `website` es una trampa para robots: la
+        página no lo muestra; si llega lleno, se responde 202 sin avisar a
+        nadie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, message]
+              properties:
+                name: { type: string, maxLength: 120 }
+                email: { type: string, format: email }
+                company: { type: string, maxLength: 160 }
+                message: { type: string, maxLength: 2000 }
+                website: { type: string, description: Trampa para robots; siempre vacío. }
+      responses:
+        '202': { description: Recibido }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
   /certificate-verification/{id}:
     get:
       tags: [certificates]

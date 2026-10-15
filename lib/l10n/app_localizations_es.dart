@@ -616,19 +616,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get notificacionesVacio => 'Sin notificaciones';
 
   @override
-  String get contactoEnviado =>
-      '¡Mensaje enviado! Nos pondremos en contacto pronto.';
+  String get contactoEnviado => '¡Gracias! Le escribiremos pronto.';
 
   @override
   String get contactoError =>
       'No pudimos enviar su mensaje. Intente de nuevo en un momento.';
 
   @override
-  String get contactoTitulo => 'Contáctenos';
+  String get contactoTitulo => 'Hablemos';
 
   @override
   String get contactoTexto =>
-      'Cuéntenos quién es y qué le gustaría hacer con nosotros.';
+      'Cuéntenos de su empresa u organización y le escribimos para mostrarle eduXaction.';
 
   @override
   String get comunNombre => 'Nombre';
@@ -644,7 +643,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get contactoMensajePista =>
-      '¿Cómo quiere sumarse? (estudiante, mentor, empresa, donante...)';
+      '¿Qué quiere lograr con la formación de su equipo?';
 
   @override
   String get comunCancelar => 'Cancelar';
@@ -4841,7 +4840,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get contenidoSubtitulo =>
-      'Hero, banner y textos visibles para el público';
+      'El anuncio, las cifras de Enactus y su galería, como se ven en la portada';
 
   @override
   String get contenidoTituloVacio =>
@@ -4874,11 +4873,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un solo enlace genérico: todavía no hay integración con un proveedor de reuniones.';
 
   @override
-  String get contenidoCifras => 'Cifras del hero';
+  String get contenidoCifras => 'Cifras de Enactus';
 
   @override
   String get contenidoCifrasAyuda =>
-      'Los cuatro números bajo el título. Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base — ese vive en el panel.';
+      'Los cuatro números de Enactus en «Nuestros clientes». Se escriben a mano a propósito: son la cifra que el equipo quiere comunicar, no el conteo de la base, que vive en el panel.';
 
   @override
   String get contenidoGuardarCambios => 'Guardar cambios';
@@ -4888,7 +4887,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get contenidoGaleriaAyuda =>
-      'Se muestran en la página principal, entre los laboratorios y el cierre. Quitar una la saca de la portada de inmediato.';
+      'Se muestran en la portada, con Enactus en «Nuestros clientes». Quitar una la saca de la portada de inmediato.';
 
   @override
   String get contenidoGaleriaVacia => 'Todavía no hay imágenes en la galería.';
@@ -6310,4 +6309,201 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get supervisorTabCapacitaciones => 'Capacitaciones';
+
+  @override
+  String get portadaEyebrow => 'Plataforma de formación para empresas';
+
+  @override
+  String get portadaTitulo1 => 'Capacitaciones que';
+
+  @override
+  String get portadaTitulo2 => 'su gente sí termina';
+
+  @override
+  String get portadaSubtitulo =>
+      'eduXaction integra a quienes diseñan, enseñan, acompañan y aprenden. Cree capacitaciones en minutos, asígnelas a sus equipos y vea quién avanza, quién aprueba y quién se certifica, desde el computador o el teléfono.';
+
+  @override
+  String get portadaAgendarDemo => 'Agendar una demo';
+
+  @override
+  String get portadaVentajaMarca => 'Con la marca de su empresa';
+
+  @override
+  String get portadaVentajaDispositivos => 'Computador y teléfono';
+
+  @override
+  String get portadaVentajaIdiomas => 'Español e inglés';
+
+  @override
+  String get portadaMockEtiqueta => 'Capacitación';
+
+  @override
+  String get portadaMockTitulo => 'Inducción al servicio al cliente';
+
+  @override
+  String get portadaMockLeccion1 => 'Bienvenida';
+
+  @override
+  String get portadaMockLeccion2 => 'Protocolo de atención';
+
+  @override
+  String get portadaMockLeccion3 => 'Quiz de servicio';
+
+  @override
+  String get portadaMockLeccion4 => 'Caso práctico';
+
+  @override
+  String get portadaMockAvance => 'de avance';
+
+  @override
+  String get portadaMockAprobada => 'Entrega aprobada';
+
+  @override
+  String get portadaMockCertificado => 'Certificado emitido';
+
+  @override
+  String get portadaMockQr => 'Con QR verificable';
+
+  @override
+  String get portadaRolesEyebrow => 'Una integradora de experiencias';
+
+  @override
+  String get portadaRolesTitulo => 'Cada rol de la formación, conectado';
+
+  @override
+  String get portadaRolesTexto =>
+      'La formación de una empresa no la hace una sola persona. eduXaction reúne a todos los que la hacen posible, cada uno con su propio portal.';
+
+  @override
+  String get portadaRolDisenoTitulo => 'Quien diseña';
+
+  @override
+  String get portadaRolDisenoTexto =>
+      'Arma capacitaciones con video, lecturas, quizzes, encuestas y actividades, sin depender de nadie más.';
+
+  @override
+  String get portadaRolAcompanaTitulo => 'Quien acompaña';
+
+  @override
+  String get portadaRolAcompanaTexto =>
+      'Revisa y aprueba entregas, ve cómo va cada persona y apoya a quien se queda atrás.';
+
+  @override
+  String get portadaRolAprendeTitulo => 'Quien aprende';
+
+  @override
+  String get portadaRolAprendeTexto =>
+      'Avanza a su ritmo y en orden; lo que hace en el computador sigue en el teléfono.';
+
+  @override
+  String get portadaRolDecideTitulo => 'Quien decide';
+
+  @override
+  String get portadaRolDecideTexto =>
+      'Ve quién terminó, quién se certificó y cuántas horas de formación suma su gente.';
+
+  @override
+  String get portadaComoEyebrow => 'Cómo funciona';
+
+  @override
+  String get portadaComoTitulo => 'De la idea al certificado';
+
+  @override
+  String get portadaPaso1Titulo => 'Diseñe';
+
+  @override
+  String get portadaPaso1Texto =>
+      'Arme la capacitación con el constructor: módulos, lecciones y la forma de evaluar cada una.';
+
+  @override
+  String get portadaPaso2Titulo => 'Asigne';
+
+  @override
+  String get portadaPaso2Texto =>
+      'Asígnela a sus equipos. Cada persona la encuentra en su portal, con la marca de su empresa.';
+
+  @override
+  String get portadaPaso3Titulo => 'Mida y certifique';
+
+  @override
+  String get portadaPaso3Texto =>
+      'Cada lección se completa con su prueba. Al terminar, el certificado sale solo, con un QR que cualquiera puede verificar.';
+
+  @override
+  String get portadaFuncionesEyebrow => 'Lo que trae';
+
+  @override
+  String get portadaFuncionesTitulo => 'Pensada para que se aprenda de verdad';
+
+  @override
+  String get portadaFuncionAvanceTitulo => 'Avance real, no clics';
+
+  @override
+  String get portadaFuncionAvanceTexto =>
+      'Los videos cuentan lo que se vio, las lecciones van en orden y los quizzes los califica el servidor.';
+
+  @override
+  String get portadaFuncionAprobacionesTitulo => 'Aprobaciones';
+
+  @override
+  String get portadaFuncionAprobacionesTexto =>
+      'Los supervisores revisan cada entrega, la aprueban con su rúbrica y dejan su comentario.';
+
+  @override
+  String get portadaFuncionCertificadosTitulo => 'Certificados verificables';
+
+  @override
+  String get portadaFuncionCertificadosTexto =>
+      'Con el diseño de su empresa y un código QR que confirma que son auténticos.';
+
+  @override
+  String get portadaFuncionMarcaTitulo => 'Su marca, su portal';
+
+  @override
+  String get portadaFuncionMarcaTexto =>
+      'Su logo y sus colores en toda la plataforma, para que su gente la sienta propia.';
+
+  @override
+  String get portadaFuncionEncuestasTitulo => 'Encuestas anónimas';
+
+  @override
+  String get portadaFuncionEncuestasTexto =>
+      'Conozca qué opina su equipo de cada capacitación, con promedios y comentarios.';
+
+  @override
+  String get portadaFuncionDispositivosTitulo => 'En cualquier dispositivo';
+
+  @override
+  String get portadaFuncionDispositivosTexto =>
+      'En el computador y en el teléfono, en español y en inglés, con el avance siempre sincronizado.';
+
+  @override
+  String get portadaClientesEyebrow => 'Nuestros clientes';
+
+  @override
+  String get portadaClientesTitulo =>
+      'Organizaciones que ya aprenden con eduXaction';
+
+  @override
+  String get portadaEnactusTexto =>
+      'La red de emprendimiento social universitario de Colombia gestiona en eduXaction sus laboratorios, su Ruta de Impacto y la preparación de sus equipos para la National Expo.';
+
+  @override
+  String get portadaCierreTitulo => '¿Lista su empresa para aprender distinto?';
+
+  @override
+  String get portadaCierreTexto =>
+      'Cuéntenos qué necesita su equipo y le mostramos cómo se vería en eduXaction.';
+
+  @override
+  String get contactoEmpresa => 'Empresa u organización (opcional)';
+
+  @override
+  String get avisoContactoTitulo => 'Nuevo contacto desde la portada';
+
+  @override
+  String avisoContactoCuerpo(Object quien, Object correo, Object mensaje) {
+    return '$quien <$correo> escribió:\n\n$mensaje';
+  }
 }

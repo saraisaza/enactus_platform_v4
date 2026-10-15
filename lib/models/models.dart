@@ -2074,6 +2074,7 @@ class AppNotification {
         'foro_reporte' => tr.avisoForoReporteTitulo,
         'certificado_nuevo' || 'certificado_curso' => tr.avisoCertificadoTitulo,
         'solicitud_patrocinados' => tr.mapaSolicitudTitulo,
+        'contacto' => tr.avisoContactoTitulo,
         _ => title,
       };
 
@@ -2087,6 +2088,12 @@ class AppNotification {
         'certificado_curso' => tr.avisoCertificadoCursoCuerpo(_p('curso')),
         'solicitud_patrocinados' =>
           '${tr.mapaSolicitudTexto}\n\n${tr.avisoFirma(_p('remitente'), _p('correo'))}',
+        'contacto' => tr.avisoContactoCuerpo(
+            _p('empresa').isEmpty
+                ? _p('nombre')
+                : '${_p('nombre')} (${_p('empresa')})',
+            _p('correo'),
+            _p('mensaje')),
         _ => body,
       };
 

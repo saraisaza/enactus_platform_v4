@@ -143,7 +143,8 @@ class _LxdStudentsState extends State<_LxdStudents> {
     return students
         .where((s) =>
             s.name.toLowerCase().contains(f) ||
-            s.university.toLowerCase().contains(f))
+            s.university.toLowerCase().contains(f) ||
+            s.career.toLowerCase().contains(f))
         .toList();
   }
 
@@ -176,12 +177,19 @@ class _LxdStudentsState extends State<_LxdStudents> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
+          // En una empresa no hay proyecto, etapa ni institución: va el
+          // cargo de cada empleado.
           columns: [
             DataColumn(label: Text(tr.comunEstudiante)),
-            DataColumn(label: Text(tr.busquedaTipoProyecto)),
-            DataColumn(label: Text(tr.comunEtapa)),
+            if (Idioma.instancia.deEmpresa)
+              DataColumn(label: Text(tr.perfilCarrera))
+            else ...[
+              DataColumn(label: Text(tr.busquedaTipoProyecto)),
+              DataColumn(label: Text(tr.comunEtapa)),
+            ],
             DataColumn(label: Text(tr.lxdNecesidad)),
-            DataColumn(label: Text(tr.comunInstitucion)),
+            if (!Idioma.instancia.deEmpresa)
+              DataColumn(label: Text(tr.comunInstitucion)),
             DataColumn(label: Text(tr.comunProgreso)),
           ],
           rows: [for (final s in students) _row(s)],
@@ -203,10 +211,15 @@ class _LxdStudentsState extends State<_LxdStudents> {
           child: Text(s.name,
               style: const TextStyle(fontWeight: FontWeight.w600)),
         )),
-        DataCell(Text(s.team?.projectName ?? '—')),
-        DataCell(Text(s.team?.stageLabel ?? '—')),
+        if (Idioma.instancia.deEmpresa)
+          DataCell(Text(s.career.isEmpty ? '—' : s.career))
+        else ...[
+          DataCell(Text(s.team?.projectName ?? '—')),
+          DataCell(Text(s.team?.stageLabel ?? '—')),
+        ],
         DataCell(Text(_need(progress))),
-        DataCell(Text(s.university.isEmpty ? '—' : s.university)),
+        if (!Idioma.instancia.deEmpresa)
+          DataCell(Text(s.university.isEmpty ? '—' : s.university)),
         DataCell(SizedBox(
             width: 120,
             child: ThinProgressBar(
@@ -225,13 +238,26 @@ String _need(double progress) => progress < 0.3
         ? tr.lxdSeguimientoRegular
         : tr.lxdAutonomo;
 
-String _summary(AppUser s) => [
-      s.name,
-      if (s.university.isNotEmpty) s.university,
-      tr.lxdResumenProyecto(s.team?.projectName ?? '—'),
-      tr.lxdResumenAvance(((s.overallProgress?.ratio ?? 0) * 100).round()),
-      if (s.sponsorName != null) tr.lxdResumenEmpresa(s.sponsorName!),
-    ].join('\n');
+String _summary(AppUser s) => Idioma.instancia.deEmpresa
+    // Un empleado: su cargo y su avance. Universidad, proyecto y empresa
+    // patrocinadora son de Enactus.
+    ? [
+        s.name,
+        if (s.career.isNotEmpty) s.career,
+        tr.lxdResumenAvance(((s.overallProgress?.ratio ?? 0) * 100).round()),
+      ].join('\n')
+    : [
+        s.name,
+        if (s.university.isNotEmpty) s.university,
+        tr.lxdResumenProyecto(s.team?.projectName ?? '—'),
+        tr.lxdResumenAvance(((s.overallProgress?.ratio ?? 0) * 100).round()),
+        if (s.sponsorName != null) tr.lxdResumenEmpresa(s.sponsorName!),
+      ].join('\n');
+
+String? _debajoDelNombre(AppUser s) {
+  final linea = Idioma.instancia.deEmpresa ? s.career : s.university;
+  return linea.isEmpty ? null : linea;
+}
 
 class _StudentCard extends StatelessWidget {
   final AppUser student;
@@ -246,8 +272,10 @@ class _StudentCard extends StatelessWidget {
         children: [
           Text(student.name,
               style: const TextStyle(fontWeight: FontWeight.w700)),
-          if (student.university.isNotEmpty)
-            Text(student.university,
+          // Debajo del nombre: el cargo en una empresa, la universidad en
+          // Enactus.
+          if (_debajoDelNombre(student) case final linea?)
+            Text(linea,
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(height: 8),
@@ -255,7 +283,7 @@ class _StudentCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 6,
             children: [
-              if (student.team != null) ...[
+              if (student.team != null && !Idioma.instancia.deEmpresa) ...[
                 StatusChip(
                     label: student.team!.projectName,
                     color: AppColors.slateLight,
@@ -749,7 +777,9 @@ class _CourseAdminCard extends StatelessWidget {
           ),
           // Un curso de eduXaction sin vincular no le llega a nadie aunque
           // esté publicado: la tarjeta lo avisa.
-          if (!course.isOpenLearning) ...[
+          // Vincular a un módulo de la Ruta es de Enactus: una capacitación de
+          // empresa no se vincula.
+          if (!course.isOpenLearning && !Idioma.instancia.deEmpresa) ...[
             const SizedBox(height: 8),
             Row(
               children: [
@@ -961,7 +991,9 @@ class _SubmissionRow extends StatelessWidget {
                   builder: (_) => _GradeDialog(submission: s),
                 ),
                 child: Text(!s.isGraded && s.feedback.isEmpty
-                    ? (s.gradingMode == GradingMode.review
+                    // En una empresa se revisa y se aprueba, no se califica.
+                    ? (s.gradingMode == GradingMode.review ||
+                            Idioma.instancia.deEmpresa
                         ? tr.foroRevisar
                         : tr.quizCalificar)
                     : tr.comunEditar),

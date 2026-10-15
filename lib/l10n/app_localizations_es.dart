@@ -5944,4 +5944,370 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get actividadVerEntrega => 'Ver entrega';
+
+  @override
+  String get empresaRolEstudiante => 'Empleado';
+
+  @override
+  String get empresaComunEstudiante => 'Empleado';
+
+  @override
+  String get empresaTabMisCursos => 'Mis capacitaciones';
+
+  @override
+  String get empresaTabCursosCorto => 'Formación';
+
+  @override
+  String get empresaTabCalificaciones => 'Aprobaciones';
+
+  @override
+  String get empresaTabCalificarCorto => 'Aprobaciones';
+
+  @override
+  String get empresaTabMisEstudiantes => 'Mis empleados';
+
+  @override
+  String get empresaTabEstudiantesCorto => 'Empleados';
+
+  @override
+  String get empresaBusquedaPista => 'Buscar empleados, capacitaciones…';
+
+  @override
+  String get empresaBusquedaTipoCurso => 'Capacitación';
+
+  @override
+  String empresaCursoDocente(Object docente) {
+    return 'Instructor: $docente';
+  }
+
+  @override
+  String get empresaCursosSubtitulo =>
+      'Las capacitaciones que le asignó su empresa.';
+
+  @override
+  String get empresaCursosBuscar => 'Buscar capacitación';
+
+  @override
+  String get empresaCursosCargando => 'Cargando sus capacitaciones…';
+
+  @override
+  String get empresaCursosNingunoCoincide =>
+      'Ninguna capacitación coincide con su búsqueda. Pruebe con otro término.';
+
+  @override
+  String get empresaCursosNoTrajo => 'No pudimos traer sus capacitaciones.';
+
+  @override
+  String get empresaCursosSinAsignados => 'Sin capacitaciones asignadas';
+
+  @override
+  String get empresaCursosSinAsignadosTexto =>
+      'Su empresa todavía no le ha asignado capacitaciones.';
+
+  @override
+  String get empresaCursosAsignados => 'Capacitaciones asignadas';
+
+  @override
+  String get empresaActividadSinEntregas =>
+      'Todavía no ha hecho ninguna entrega en esta capacitación.';
+
+  @override
+  String get empresaCursoSinContenido =>
+      'Esta capacitación todavía no tiene contenido publicado.';
+
+  @override
+  String get empresaCursoNoPuedeResponder =>
+      'Está viendo el progreso de otro empleado: no puede responder en su nombre.';
+
+  @override
+  String get empresaCursoSoloLectura =>
+      'Está viendo el progreso de otro empleado: modo de solo lectura.';
+
+  @override
+  String get empresaActividadEnRevision => 'Entregada · espera aprobación';
+
+  @override
+  String get empresaActividadSeCompletaAprobada =>
+      'Esta lección se completa cuando su entrega sea aprobada. Mientras tanto, la siguiente queda bloqueada.';
+
+  @override
+  String get empresaLeccionSeCompletaActividad =>
+      'Se completa cuando su entrega sea aprobada.';
+
+  @override
+  String get empresaCalificarEntregaCalificada => 'Entrega revisada';
+
+  @override
+  String empresaCalificarTitulo(Object tarea) {
+    return 'Revisar: $tarea';
+  }
+
+  @override
+  String get empresaCalificarEscala => 'Escala de evaluación';
+
+  @override
+  String get empresaLeccionCalificacion => 'Evaluación';
+
+  @override
+  String empresaDashboardCalificadoEl(Object fecha) {
+    return 'Revisado el $fecha';
+  }
+
+  @override
+  String get empresaDashboardSinCalificadas =>
+      'Aún no tiene entregas revisadas.';
+
+  @override
+  String empresaDashboardCursosActivos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad capacitaciones activas',
+      one: '1 capacitación activa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get empresaDashboardProgresoPorCurso => 'Progreso por capacitación';
+
+  @override
+  String get empresaDashboardSinCursos =>
+      'Aún no tiene capacitaciones asignadas. Cuando su empresa le asigne una, su progreso aparecerá aquí.';
+
+  @override
+  String get empresaDashboardTodoCompletado =>
+      'Ya completó todas sus capacitaciones asignadas.';
+
+  @override
+  String get empresaCertificadosMisSubtitulo =>
+      'Los certificados de las capacitaciones que completó.';
+
+  @override
+  String get empresaCertificadosVacio =>
+      'Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.';
+
+  @override
+  String get empresaCalendarioSubtitulo =>
+      'Las sesiones en vivo de sus capacitaciones.';
+
+  @override
+  String get empresaPerfilCursosActivos => 'Capacitaciones activas';
+
+  @override
+  String get empresaPerfilAsignaAdmin =>
+      'Su cédula y su empresa los asigna su administrador.';
+
+  @override
+  String get empresaSupervisorTabGente => 'Empleados de su empresa';
+
+  @override
+  String get empresaSupervisorTabGenteCorto => 'Empleados';
+
+  @override
+  String get empresaSupervisorGenteSubtitulo =>
+      'Cómo va cada empleado en sus capacitaciones. Toque uno para ver su perfil.';
+
+  @override
+  String get empresaSupervisorSinGente =>
+      'Todavía no hay empleados de su empresa en la plataforma.';
+
+  @override
+  String get empresaSupervisorSinCursos => 'Sin capacitaciones asignadas';
+
+  @override
+  String empresaSupervisorCursosTerminados(int terminados, int total) {
+    return '$terminados de $total capacitaciones terminadas';
+  }
+
+  @override
+  String get empresaSupervisorEntregasSubtitulo =>
+      'Las entregas de los empleados de su empresa, para revisar y aprobar.';
+
+  @override
+  String get empresaSupervisorCursosSubtitulo =>
+      'Las capacitaciones de los empleados de su empresa. Abra una para ver cómo va cada quien.';
+
+  @override
+  String get empresaSupervisorSinCursosAun =>
+      'Los empleados de su empresa todavía no tienen capacitaciones.';
+
+  @override
+  String get empresaSupervisorCertificadosSubtitulo =>
+      'Qué empleados de su empresa se certificaron.';
+
+  @override
+  String get empresaLxdCursosSubtitulo =>
+      'Las capacitaciones que usted creó para su empresa.';
+
+  @override
+  String get empresaLxdEstudiantesSubtitulo =>
+      'Empleados asignados a las capacitaciones que usted creó.';
+
+  @override
+  String get empresaLxdCalificacionesSubtitulo =>
+      'Entregas de los empleados en sus capacitaciones, para revisar y aprobar.';
+
+  @override
+  String get empresaLxdSinCursos =>
+      'Aún no ha creado ninguna capacitación. Cree la primera.';
+
+  @override
+  String get empresaLxdSinEstudiantes =>
+      'No hay empleados asignados a sus capacitaciones.';
+
+  @override
+  String get empresaLxdSinEntregas => 'No hay entregas por aprobar.';
+
+  @override
+  String get empresaLxdNuevoCurso => 'Nueva capacitación';
+
+  @override
+  String get empresaLxdNombreDelCurso => 'Nombre de la capacitación';
+
+  @override
+  String get empresaLxdNombreCurso => 'Póngale un nombre a la capacitación.';
+
+  @override
+  String empresaLxdCursoDeEmpresa(String empresa) {
+    return 'Será una capacitación exclusiva de $empresa: solo se podrá asignar a sus empleados.';
+  }
+
+  @override
+  String get empresaLxdCursoEliminado => 'Capacitación eliminada';
+
+  @override
+  String get empresaLxdEliminarCurso => 'Eliminar capacitación';
+
+  @override
+  String empresaLxdInscritos(Object cantidad) {
+    return '$cantidad asignados';
+  }
+
+  @override
+  String get empresaLxdPromedioCursos => 'Promedio de todas sus capacitaciones';
+
+  @override
+  String get empresaLxdPerfilSubtitulo =>
+      'Información visible para administradores y empleados';
+
+  @override
+  String get empresaLxdCalendarioSubtitulo =>
+      'Agende las sesiones en vivo de sus capacitaciones';
+
+  @override
+  String get empresaCalendarioSinCursosOL =>
+      'Todavía no tiene capacitaciones propias. Cree una en \"Mis capacitaciones\" antes de agendar una sesión.';
+
+  @override
+  String get empresaConstructorTitulo => 'Constructor de capacitación';
+
+  @override
+  String get empresaConstructorDelCurso => 'Constructor de la capacitación';
+
+  @override
+  String get empresaConstructorGuardado => 'Capacitación guardada';
+
+  @override
+  String get empresaConstructorNecesitaNombre =>
+      'La capacitación necesita un nombre.';
+
+  @override
+  String get empresaConstructorObjetivosCurso => 'Objetivos de la capacitación';
+
+  @override
+  String get empresaConstructorArchivarCurso => 'Archivar capacitación';
+
+  @override
+  String get empresaConstructorArchivarTexto =>
+      'Deja de asignarse a empleados nuevos, pero quienes ya tienen avance no se bloquean.';
+
+  @override
+  String get empresaConstructorExclusivoDeSuEmpresa =>
+      'Esta capacitación es exclusiva de su empresa: solo se asigna a sus empleados.';
+
+  @override
+  String get empresaConstructorMaximo =>
+      'Máximo de participantes (0 = sin límite)';
+
+  @override
+  String get empresaConstructorPrerrequisitosTexto =>
+      'Capacitaciones que el empleado debería completar antes (o ninguna).';
+
+  @override
+  String get empresaConstructorSinOtrosCursos =>
+      'No hay otras capacitaciones disponibles.';
+
+  @override
+  String get empresaConstructorEntregaCertificado =>
+      '¿Esta capacitación entrega certificado?';
+
+  @override
+  String get empresaConstructorCierreAntes =>
+      'La capacitación no puede cerrar antes de abrir.';
+
+  @override
+  String get empresaConstructorCategorizacion => 'Objetivos';
+
+  @override
+  String get empresaSeguimientoTitulo => 'Seguimiento de la capacitación';
+
+  @override
+  String get empresaSeguimientoAvanceCurso => 'Avance de la capacitación';
+
+  @override
+  String get empresaSeguimientoInscritos => 'Asignados';
+
+  @override
+  String get empresaSeguimientoSinEstudiantes =>
+      'Aún no hay empleados asignados a esta capacitación.\nSe asignan desde el portal del administrador.';
+
+  @override
+  String get empresaSeguimientoSoloDocentes =>
+      'Solo para quien dicta la capacitación. El empleado NO la ve.';
+
+  @override
+  String get empresaSubidaVistaPreviaAsi =>
+      'Vista previa: así lo verán los empleados:';
+
+  @override
+  String get empresaUsuarioCursosCreados => 'Capacitaciones creadas';
+
+  @override
+  String get empresaUsuarioSinCursos =>
+      'Aún no ha creado ninguna capacitación.';
+
+  @override
+  String empresaUsuarioEstudiantes(Object cantidad) {
+    return '$cantidad empleados';
+  }
+
+  @override
+  String get empresaPerfilCarrera => 'Cargo';
+
+  @override
+  String get perfilEmpresaEtiqueta => 'Empresa';
+
+  @override
+  String get empresaPortalEmpleado => 'Portal del empleado';
+
+  @override
+  String get empresaCalificacionPendiente => 'Por aprobar';
+
+  @override
+  String get empresaLxdFiltrarNombre => 'Filtrar por nombre o cargo';
+
+  @override
+  String get empresaConstructorRestricciones => 'Restricciones';
+
+  @override
+  String get empresaAvisoEntregaCalificadaTitulo => 'Entrega revisada';
+
+  @override
+  String empresaAvisoCertificadoCursoCuerpo(String curso) {
+    return 'Recibió el certificado por completar la capacitación $curso.';
+  }
+
+  @override
+  String get supervisorTabCapacitaciones => 'Capacitaciones';
 }

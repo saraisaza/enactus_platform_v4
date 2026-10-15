@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/redibujar.dart';
 import 'app_localizations.dart';
 import 'documento.dart';
+import 'vocabulario_empresa.dart';
 
 /// El idioma de la interfaz: cuál está activo, cuál se usa la primera vez y
 /// dónde se guarda lo que la persona eligió.
@@ -32,8 +33,25 @@ class Idioma extends ChangeNotifier {
   String _codigo = 'es';
   AppLocalizations _textos = lookupAppLocalizations(const Locale('es'));
 
+  /// Con las palabras de una empresa ([VocabularioDeEmpresa]): empleados,
+  /// capacitaciones, aprobaciones.
+  bool _deEmpresa = false;
+
   /// `es` o `en`.
   String get codigo => _codigo;
+
+  /// Si se están usando las palabras de una empresa.
+  bool get deEmpresa => _deEmpresa;
+
+  /// Pasa a las palabras de una empresa, o vuelve a las de siempre. Lo llama
+  /// la sesión al entrar y al salir, junto con la marca del cliente.
+  void usarVocabularioDeEmpresa(bool deEmpresa) {
+    if (deEmpresa == _deEmpresa) return;
+    _deEmpresa = deEmpresa;
+    _aplicar(_codigo);
+    notifyListeners();
+    _redibujarTodo();
+  }
 
   /// Los textos del idioma activo. Ver `tr` en `textos.dart`.
   AppLocalizations get textos => _textos;
@@ -87,7 +105,8 @@ class Idioma extends ChangeNotifier {
   /// Vuelve al español sin guardar nada. Solo para pruebas.
   @visibleForTesting
   void restablecer() {
-    if (_codigo != 'es') {
+    if (_codigo != 'es' || _deEmpresa) {
+      _deEmpresa = false;
       _aplicar('es');
       notifyListeners();
     }
@@ -95,7 +114,9 @@ class Idioma extends ChangeNotifier {
 
   void _aplicar(String codigo) {
     _codigo = codigo;
-    _textos = lookupAppLocalizations(Locale(codigo));
+    _textos = _deEmpresa
+        ? textosDeEmpresa(codigo)
+        : lookupAppLocalizations(Locale(codigo));
     // Toda fecha y número sin idioma explícito sigue al de la interfaz.
     Intl.defaultLocale = codigo;
     marcarIdiomaDelDocumento(codigo);

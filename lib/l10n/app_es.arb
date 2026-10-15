@@ -3083,5 +3083,161 @@
   },
   "encuestaSinComentarios": "Sin comentarios todavía.",
   "entregaRecibidaDetalle": "Le avisaremos cuando la revisen. Puede ver su entrega en cualquier momento.",
-  "actividadVerEntrega": "Ver entrega"
+  "actividadVerEntrega": "Ver entrega",
+  "empresaRolEstudiante": "Empleado",
+  "empresaComunEstudiante": "Empleado",
+  "empresaTabMisCursos": "Mis capacitaciones",
+  "empresaTabCursosCorto": "Formación",
+  "empresaTabCalificaciones": "Aprobaciones",
+  "empresaTabCalificarCorto": "Aprobaciones",
+  "empresaTabMisEstudiantes": "Mis empleados",
+  "empresaTabEstudiantesCorto": "Empleados",
+  "empresaBusquedaPista": "Buscar empleados, capacitaciones…",
+  "empresaBusquedaTipoCurso": "Capacitación",
+  "empresaCursoDocente": "Instructor: {docente}",
+  "@empresaCursoDocente": {
+    "placeholders": {
+      "docente": {}
+    }
+  },
+  "empresaCursosSubtitulo": "Las capacitaciones que le asignó su empresa.",
+  "empresaCursosBuscar": "Buscar capacitación",
+  "empresaCursosCargando": "Cargando sus capacitaciones…",
+  "empresaCursosNingunoCoincide": "Ninguna capacitación coincide con su búsqueda. Pruebe con otro término.",
+  "empresaCursosNoTrajo": "No pudimos traer sus capacitaciones.",
+  "empresaCursosSinAsignados": "Sin capacitaciones asignadas",
+  "empresaCursosSinAsignadosTexto": "Su empresa todavía no le ha asignado capacitaciones.",
+  "empresaCursosAsignados": "Capacitaciones asignadas",
+  "empresaActividadSinEntregas": "Todavía no ha hecho ninguna entrega en esta capacitación.",
+  "empresaCursoSinContenido": "Esta capacitación todavía no tiene contenido publicado.",
+  "empresaCursoNoPuedeResponder": "Está viendo el progreso de otro empleado: no puede responder en su nombre.",
+  "empresaCursoSoloLectura": "Está viendo el progreso de otro empleado: modo de solo lectura.",
+  "empresaActividadEnRevision": "Entregada · espera aprobación",
+  "empresaActividadSeCompletaAprobada": "Esta lección se completa cuando su entrega sea aprobada. Mientras tanto, la siguiente queda bloqueada.",
+  "empresaLeccionSeCompletaActividad": "Se completa cuando su entrega sea aprobada.",
+  "empresaCalificarEntregaCalificada": "Entrega revisada",
+  "empresaCalificarTitulo": "Revisar: {tarea}",
+  "@empresaCalificarTitulo": {
+    "placeholders": {
+      "tarea": {}
+    }
+  },
+  "empresaCalificarEscala": "Escala de evaluación",
+  "empresaLeccionCalificacion": "Evaluación",
+  "empresaDashboardCalificadoEl": "Revisado el {fecha}",
+  "@empresaDashboardCalificadoEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "empresaDashboardSinCalificadas": "Aún no tiene entregas revisadas.",
+  "empresaDashboardCursosActivos": "{cantidad, plural, =1{1 capacitación activa} other{{cantidad} capacitaciones activas}}",
+  "@empresaDashboardCursosActivos": {
+    "placeholders": {
+      "cantidad": {
+        "type": "int"
+      }
+    }
+  },
+  "empresaDashboardProgresoPorCurso": "Progreso por capacitación",
+  "empresaDashboardSinCursos": "Aún no tiene capacitaciones asignadas. Cuando su empresa le asigne una, su progreso aparecerá aquí.",
+  "empresaDashboardTodoCompletado": "Ya completó todas sus capacitaciones asignadas.",
+  "empresaCertificadosMisSubtitulo": "Los certificados de las capacitaciones que completó.",
+  "empresaCertificadosVacio": "Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.",
+  "empresaCalendarioSubtitulo": "Las sesiones en vivo de sus capacitaciones.",
+  "empresaPerfilCursosActivos": "Capacitaciones activas",
+  "empresaPerfilAsignaAdmin": "Su cédula y su empresa los asigna su administrador.",
+  "empresaSupervisorTabGente": "Empleados de su empresa",
+  "empresaSupervisorTabGenteCorto": "Empleados",
+  "empresaSupervisorGenteSubtitulo": "Cómo va cada empleado en sus capacitaciones. Toque uno para ver su perfil.",
+  "empresaSupervisorSinGente": "Todavía no hay empleados de su empresa en la plataforma.",
+  "empresaSupervisorSinCursos": "Sin capacitaciones asignadas",
+  "empresaSupervisorCursosTerminados": "{terminados} de {total} capacitaciones terminadas",
+  "@empresaSupervisorCursosTerminados": {
+    "placeholders": {
+      "terminados": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "empresaSupervisorEntregasSubtitulo": "Las entregas de los empleados de su empresa, para revisar y aprobar.",
+  "empresaSupervisorCursosSubtitulo": "Las capacitaciones de los empleados de su empresa. Abra una para ver cómo va cada quien.",
+  "empresaSupervisorSinCursosAun": "Los empleados de su empresa todavía no tienen capacitaciones.",
+  "empresaSupervisorCertificadosSubtitulo": "Qué empleados de su empresa se certificaron.",
+  "empresaLxdCursosSubtitulo": "Las capacitaciones que usted creó para su empresa.",
+  "empresaLxdEstudiantesSubtitulo": "Empleados asignados a las capacitaciones que usted creó.",
+  "empresaLxdCalificacionesSubtitulo": "Entregas de los empleados en sus capacitaciones, para revisar y aprobar.",
+  "empresaLxdSinCursos": "Aún no ha creado ninguna capacitación. Cree la primera.",
+  "empresaLxdSinEstudiantes": "No hay empleados asignados a sus capacitaciones.",
+  "empresaLxdSinEntregas": "No hay entregas por aprobar.",
+  "empresaLxdNuevoCurso": "Nueva capacitación",
+  "empresaLxdNombreDelCurso": "Nombre de la capacitación",
+  "empresaLxdNombreCurso": "Póngale un nombre a la capacitación.",
+  "empresaLxdCursoDeEmpresa": "Será una capacitación exclusiva de {empresa}: solo se podrá asignar a sus empleados.",
+  "@empresaLxdCursoDeEmpresa": {
+    "placeholders": {
+      "empresa": {
+        "type": "String"
+      }
+    }
+  },
+  "empresaLxdCursoEliminado": "Capacitación eliminada",
+  "empresaLxdEliminarCurso": "Eliminar capacitación",
+  "empresaLxdInscritos": "{cantidad} asignados",
+  "@empresaLxdInscritos": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "empresaLxdPromedioCursos": "Promedio de todas sus capacitaciones",
+  "empresaLxdPerfilSubtitulo": "Información visible para administradores y empleados",
+  "empresaLxdCalendarioSubtitulo": "Agende las sesiones en vivo de sus capacitaciones",
+  "empresaCalendarioSinCursosOL": "Todavía no tiene capacitaciones propias. Cree una en \"Mis capacitaciones\" antes de agendar una sesión.",
+  "empresaConstructorTitulo": "Constructor de capacitación",
+  "empresaConstructorDelCurso": "Constructor de la capacitación",
+  "empresaConstructorGuardado": "Capacitación guardada",
+  "empresaConstructorNecesitaNombre": "La capacitación necesita un nombre.",
+  "empresaConstructorObjetivosCurso": "Objetivos de la capacitación",
+  "empresaConstructorArchivarCurso": "Archivar capacitación",
+  "empresaConstructorArchivarTexto": "Deja de asignarse a empleados nuevos, pero quienes ya tienen avance no se bloquean.",
+  "empresaConstructorExclusivoDeSuEmpresa": "Esta capacitación es exclusiva de su empresa: solo se asigna a sus empleados.",
+  "empresaConstructorMaximo": "Máximo de participantes (0 = sin límite)",
+  "empresaConstructorPrerrequisitosTexto": "Capacitaciones que el empleado debería completar antes (o ninguna).",
+  "empresaConstructorSinOtrosCursos": "No hay otras capacitaciones disponibles.",
+  "empresaConstructorEntregaCertificado": "¿Esta capacitación entrega certificado?",
+  "empresaConstructorCierreAntes": "La capacitación no puede cerrar antes de abrir.",
+  "empresaConstructorCategorizacion": "Objetivos",
+  "empresaSeguimientoTitulo": "Seguimiento de la capacitación",
+  "empresaSeguimientoAvanceCurso": "Avance de la capacitación",
+  "empresaSeguimientoInscritos": "Asignados",
+  "empresaSeguimientoSinEstudiantes": "Aún no hay empleados asignados a esta capacitación.\nSe asignan desde el portal del administrador.",
+  "empresaSeguimientoSoloDocentes": "Solo para quien dicta la capacitación. El empleado NO la ve.",
+  "empresaSubidaVistaPreviaAsi": "Vista previa: así lo verán los empleados:",
+  "empresaUsuarioCursosCreados": "Capacitaciones creadas",
+  "empresaUsuarioSinCursos": "Aún no ha creado ninguna capacitación.",
+  "empresaUsuarioEstudiantes": "{cantidad} empleados",
+  "@empresaUsuarioEstudiantes": {
+    "placeholders": {
+      "cantidad": {}
+    }
+  },
+  "empresaPerfilCarrera": "Cargo",
+  "perfilEmpresaEtiqueta": "Empresa",
+  "empresaPortalEmpleado": "Portal del empleado",
+  "empresaCalificacionPendiente": "Por aprobar",
+  "empresaLxdFiltrarNombre": "Filtrar por nombre o cargo",
+  "empresaConstructorRestricciones": "Restricciones",
+  "empresaAvisoEntregaCalificadaTitulo": "Entrega revisada",
+  "empresaAvisoCertificadoCursoCuerpo": "Recibió el certificado por completar la capacitación {curso}.",
+  "@empresaAvisoCertificadoCursoCuerpo": {
+    "placeholders": {
+      "curso": {
+        "type": "String"
+      }
+    }
+  },
+  "supervisorTabCapacitaciones": "Capacitaciones"
 }

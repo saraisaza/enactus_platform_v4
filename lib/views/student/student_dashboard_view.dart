@@ -46,10 +46,14 @@ class StudentDashboardView extends StatelessWidget {
     return ContentScreenShell(
       eyebrow: eyebrow,
       title: tr.dashboardHola(student.name.split(' ').first),
-      subtitle: team != null
-          ? tr.dashboardProyecto(team.projectName) +
-              (student.university.isEmpty ? '' : ' · ${student.university}')
-          : tr.dashboardSinProyecto,
+      // Un empleado de una empresa no tiene proyecto ni universidad: va su
+      // empresa.
+      subtitle: student.esDeEmpresa
+          ? student.client?.name
+          : team != null
+              ? tr.dashboardProyecto(team.projectName) +
+                  (student.university.isEmpty ? '' : ' · ${student.university}')
+              : tr.dashboardSinProyecto,
       searchHint: tr.perfilBuscarPortal,
       trailingBuilder: (context, colors, isDark) =>
           _OverallProgress(student: student, colors: colors),
@@ -100,9 +104,12 @@ class _OverallProgress extends StatelessWidget {
       }
     }
     final ratio = totalLessons == 0 ? 0.0 : doneLessons / totalLessons;
-    final labCount = student.isEnactusStudent
-        ? data.rutaProgress.valueOrNull?.laboratories.length
-        : 0;
+    // Una empresa no tiene laboratorios: ni siquiera «0 laboratorios».
+    final labCount = student.esDeEmpresa
+        ? null
+        : student.isEnactusStudent
+            ? data.rutaProgress.valueOrNull?.laboratories.length
+            : 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
@@ -161,8 +168,10 @@ class _DashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final team = student.team;
-    final project =
-        team == null ? null : data.projectById(team.projectId).valueOrNull;
+    // Los proyectos son de Enactus: en una empresa no hay tarjeta de proyecto.
+    final project = team == null || student.esDeEmpresa
+        ? null
+        : data.projectById(team.projectId).valueOrNull;
 
     return LayoutBuilder(builder: (context, c) {
       final left = Column(
@@ -294,7 +303,8 @@ class _ContinueCard extends StatelessWidget {
                             color: tinta)),
                     // El nombre del laboratorio viene con el curso: no hace
                     // falta pedirlo aparte por cada tarjeta.
-                    if (course.laboratoryName != null) ...[
+                    if (course.laboratoryName != null &&
+                        !Idioma.instancia.deEmpresa) ...[
                       const SizedBox(height: 4),
                       Text(course.laboratoryName!,
                           style: TextStyle(
@@ -489,8 +499,12 @@ class _PendingCard extends StatelessWidget {
         icon: Icons.play_circle_outline,
         color: labColorFor(course.laboratoryId ?? ''),
         title: tr.dashboardContinuarCurso(course.name),
-        meta: course.laboratoryName ??
-            (course.isRutaExpo ? tr.cursoRutaNationalExpo : 'Open Learning'),
+        meta: (Idioma.instancia.deEmpresa ? null : course.laboratoryName) ??
+            (course.isRutaExpo
+                ? tr.cursoRutaNationalExpo
+                : student.esDeEmpresa
+                    ? tr.busquedaTipoCurso
+                    : 'Open Learning'),
         onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -501,7 +515,10 @@ class _PendingCard extends StatelessWidget {
     }
 
     final team = student.team;
-    final group = team == null ? null : data.groupById(team.groupId).valueOrNull;
+    // Los equipos y su checklist de National Expo son de Enactus.
+    final group = team == null || student.esDeEmpresa
+        ? null
+        : data.groupById(team.groupId).valueOrNull;
     if (group != null) {
       for (final item in group.pendingChecklist) {
         teamTasks.add(_PendingRow(

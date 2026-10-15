@@ -620,6 +620,11 @@ class _CategorySectionState extends State<_CategorySection> {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final lab = widget.course.laboratoryName;
+    // Una capacitación de empresa no lleva lo de Enactus: laboratorio,
+    // etiquetas, competencias, ODS ni objetivos de emprendimiento o de la
+    // Ruta. Lo que ya tuviera guardado se conserva; solo no se muestra.
+    final deEmpresa = widget.course.clientId != null ||
+        (context.watch<AuthProvider>().currentUser?.esDeEmpresa ?? false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -628,6 +633,7 @@ class _CategorySectionState extends State<_CategorySection> {
           ErrorBanner(_error!),
           const SizedBox(height: 12),
         ],
+        if (!deEmpresa) ...[
         SectionTitle(tr.comunLaboratorio),
         HoverCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -673,6 +679,7 @@ class _CategorySectionState extends State<_CategorySection> {
             ],
           ),
         ),
+        ],
         _EditableList(
           title: tr.constructorObjetivosCurso,
           items: _meta.byCategory(null),
@@ -680,6 +687,7 @@ class _CategorySectionState extends State<_CategorySection> {
           onAdd: (text) => _addObjective(null, text),
           onRemove: _removeObjective,
         ),
+        if (!deEmpresa) ...[
         SectionTitle(tr.constructorObjetivosRuta),
         Padding(
           padding: EdgeInsets.only(bottom: 8),
@@ -694,6 +702,7 @@ class _CategorySectionState extends State<_CategorySection> {
           onAdd: (text) => _addObjective('entrepreneurship', text),
           onRemove: _removeObjective,
         ),
+        ],
         _EditableList(
           title: tr.constructorObjetivosEmpresariales,
           items: _meta.byCategory('business'),
@@ -1364,6 +1373,11 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           activeThumbColor: AppColors.gold,
           onChanged: _saving ? null : (v) => setState(() => _visible = v),
         ),
+        // Patrocinar un curso es cosa de Enactus (las empresas que apoyan un
+        // laboratorio): una capacitación de empresa no lo lleva.
+        if (widget.course.clientId == null &&
+            !(context.watch<AuthProvider>().currentUser?.esDeEmpresa ??
+                false)) ...[
         SectionTitle(tr.constructorPatrocinio),
         data.users(role: Roles.company).when(
               loading: () => const CardListSkeleton(count: 1, height: 60),
@@ -1394,6 +1408,7 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           tr.constructorPatrocinioTexto,
           style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
         ),
+        ],
         if (_puedeSerExclusivo && _esAdmin) ...[
           SectionTitle(tr.constructorExclusivo),
           data.clients.when(

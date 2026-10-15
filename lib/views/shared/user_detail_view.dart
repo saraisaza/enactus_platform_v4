@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/textos.dart';
 import '../../models/models.dart';
 import '../../models/progress.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../../services/api_errors.dart';
 import '../../utils/app_theme.dart';
@@ -113,7 +114,9 @@ class _Header extends StatelessWidget {
                         label: Roles.label(user.role),
                         color: AppColors.gold,
                         icon: Icons.badge_outlined),
-                    if (Roles.isStudentLike(user.role))
+                    // «Open Learning» o «eduXaction» no le dicen nada a una
+                    // empresa: su gente es su gente.
+                    if (Roles.isStudentLike(user.role) && !_vistaDeEmpresa(context))
                       StatusChip(
                           label: StudentType.label(user.studentType),
                           color: AppColors.textSecondary,
@@ -126,10 +129,13 @@ class _Header extends StatelessWidget {
                 for (final dato in [
                   if (user.email.isNotEmpty) (Icons.mail_outline, user.email),
                   if (user.phone.isNotEmpty) (Icons.phone_outlined, user.phone),
-                  if (user.university.isNotEmpty)
+                  if (user.university.isNotEmpty && !_vistaDeEmpresa(context))
                     (Icons.account_balance_outlined, user.university),
                   if (user.career.isNotEmpty)
-                    (Icons.menu_book_outlined, user.career),
+                    (_vistaDeEmpresa(context)
+                        ? Icons.work_outline
+                        : Icons.menu_book_outlined,
+                        user.career),
                   if (user.city.isNotEmpty)
                     (Icons.place_outlined, user.city),
                 ])
@@ -202,11 +208,15 @@ class _StudentBody extends StatelessWidget {
             ),
           ),
         ],
+        // La Ruta es de Enactus: el servidor se la niega a una empresa, y
+        // sin esto su supervisor veía un error en lugar de la sección.
+        if (!_vistaDeEmpresa(context)) ...[
         SectionTitle(tr.usuarioAvanceRuta),
         // El avance de OTRA persona sale de su propio endpoint: el servidor
         // comprueba que quien mira pueda verlo. Un estudiante que intente
         // leer el de otro recibe 403.
         _RutaProgress(studentId: user.id),
+        ],
         SectionTitle(tr.tabCertificados),
         data.certificates.when(
           loading: () => const CardListSkeleton(count: 1, height: 56),
@@ -231,7 +241,12 @@ class _StudentBody extends StatelessWidget {
                               color: AppColors.gold, size: 20),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(c.laboratoryName,
+                            // Uno de curso lleva el curso; uno de la Ruta, el
+                            // laboratorio.
+                            child: Text(
+                                c.courseName?.isNotEmpty ?? false
+                                    ? c.courseName!
+                                    : c.laboratoryName,
                                 style: const TextStyle(fontSize: 13.5)),
                           ),
                           Text('${c.hours} h',
@@ -537,3 +552,8 @@ class _MentorBody extends StatelessWidget {
 extension _IfEmpty on String {
   String ifEmpty(String fallback) => isEmpty ? fallback : this;
 }
+
+/// Si quien mira es de una empresa (su supervisor, o el LXD de la empresa):
+/// ve a su gente sin lo propio de Enactus.
+bool _vistaDeEmpresa(BuildContext context) =>
+    context.watch<AuthProvider>().currentUser?.esDeEmpresa ?? false;

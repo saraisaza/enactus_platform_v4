@@ -111,7 +111,9 @@ class StudentPortal extends StatelessWidget {
       // Mismo portal para estudiante y alumni (ver Roles.isStudentLike):
       // solo cambia el título visible, según lo pidió el usuario ("que se
       // llame alumni").
-      portalTitle: tr.portalDe(Roles.label(student.role)),
+      portalTitle: student.esDeEmpresa
+          ? tr.empresaPortalEmpleado
+          : tr.portalDe(Roles.label(student.role)),
       tabs: tabs,
       initialSelectedIndex: wantedTabIndex >= 0 ? wantedTabIndex : 0,
       contentOverride: showLabDetail ? LabDetailBody(labId: openLabId!) : null,
@@ -303,6 +305,23 @@ class _StudentProfile extends StatelessWidget {
             const SizedBox(height: 20),
             _ProfileStats(student: student, colors: colors),
             const SizedBox(height: 20),
+            // Un empleado de una empresa no tiene universidad, equipo,
+            // laboratorios ni proyecto: esos son de Enactus. Va su empresa.
+            if (student.esDeEmpresa)
+              _GroupCard(
+                title: tr.perfilDatosPersonales,
+                icon: Icons.badge_outlined,
+                rows: [
+                  (tr.perfilEmpresaEtiqueta, student.client?.name ?? ''),
+                  (tr.perfilCarrera, student.career),
+                  (tr.perfilCedula, student.cedula),
+                  (tr.perfilTelefonoEtiqueta, student.phone),
+                  (tr.perfilCorreoEtiqueta, student.email),
+                  (tr.perfilCiudad, student.city),
+                ],
+                colors: colors,
+              )
+            else
             LayoutBuilder(builder: (context, c) {
               final personal = _GroupCard(
                 title: tr.perfilDatosPersonales,
@@ -345,6 +364,9 @@ class _StudentProfile extends StatelessWidget {
                   children: [personal, const SizedBox(height: 20), enactusLife]);
             }),
             const SizedBox(height: 20),
+            if (student.esDeEmpresa)
+              _CertificatesCard(colors: colors)
+            else
             LayoutBuilder(builder: (context, c) {
               final projectCard = _ProjectCard(project: project, colors: colors);
               final certCard = _CertificatesCard(colors: colors);
@@ -417,14 +439,16 @@ class _ProfileStats extends StatelessWidget {
           _ProfileStat(
               value: '$doneLessons/$totalLessons',
               label: tr.perfilLeccionesCompletadas),
-          _ProfileStat(
-              value: labCount == null ? '—' : '$labCount',
-              label: tr.tabLaboratorios),
+          // Los laboratorios son de Enactus: una empresa no los tiene.
+          if (!student.esDeEmpresa)
+            _ProfileStat(
+                value: labCount == null ? '—' : '$labCount',
+                label: tr.tabLaboratorios),
           _ProfileStat(value: '${certs.length}', label: tr.tabCertificados),
         ];
 
         return LayoutBuilder(builder: (context, c) {
-          final perRow = c.maxWidth > 700 ? 4 : 2;
+          final perRow = c.maxWidth > 700 ? tiles.length : 2;
           final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
           return Wrap(
             spacing: 12,
@@ -472,6 +496,11 @@ class _IdentityBand extends StatelessWidget {
   final ContentColors colors;
   const _IdentityBand(
       {required this.student, required this.team, required this.colors});
+
+  /// El nombre grande del fondo: el de su empresa, o el de su proyecto.
+  String? get _marcaDeAgua => student.esDeEmpresa
+      ? student.client?.name
+      : team?.projectName;
 
   @override
   Widget build(BuildContext context) {
@@ -533,10 +562,26 @@ class _IdentityBand extends StatelessWidget {
           runSpacing: 8,
           children: [
             _CredentialChip(
-                icon: Icons.school_outlined,
+                icon: student.esDeEmpresa
+                    ? Icons.badge_outlined
+                    : Icons.school_outlined,
                 label: Roles.label(student.role),
                 gold: true,
                 colors: colors),
+            if (student.esDeEmpresa) ...[
+              if (student.client != null)
+                _CredentialChip(
+                    icon: Icons.apartment_outlined,
+                    label: student.client!.name,
+                    gold: false,
+                    colors: colors),
+              if (student.career.isNotEmpty)
+                _CredentialChip(
+                    icon: Icons.work_outline,
+                    label: student.career,
+                    gold: false,
+                    colors: colors),
+            ] else ...[
             if (student.university.isNotEmpty)
               _CredentialChip(
                   icon: Icons.apartment_outlined,
@@ -555,6 +600,7 @@ class _IdentityBand extends StatelessWidget {
                   label: team!.groupName,
                   gold: false,
                   colors: colors),
+            ],
           ],
         ),
       ],
@@ -586,11 +632,11 @@ class _IdentityBand extends StatelessWidget {
               children: [
                 const ColoredBox(color: AppColors.slate),
                 const CustomPaint(painter: StripePainter()),
-                if (team != null)
+                if (_marcaDeAgua case final marca?)
                   Positioned(
                     right: compacto ? 14 : 26,
                     bottom: compacto ? -14 : -22,
-                    child: Text(team!.projectName.toUpperCase(),
+                    child: Text(marca.toUpperCase(),
                         style: displayHeading(
                             fontSize: compacto ? 64 : 104,
                             fontWeight: AppWeights.display,

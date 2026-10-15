@@ -5960,4 +5960,368 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actividadVerEntrega => 'See submission';
+
+  @override
+  String get empresaRolEstudiante => 'Employee';
+
+  @override
+  String get empresaComunEstudiante => 'Employee';
+
+  @override
+  String get empresaTabMisCursos => 'My trainings';
+
+  @override
+  String get empresaTabCursosCorto => 'Training';
+
+  @override
+  String get empresaTabCalificaciones => 'Approvals';
+
+  @override
+  String get empresaTabCalificarCorto => 'Approvals';
+
+  @override
+  String get empresaTabMisEstudiantes => 'My employees';
+
+  @override
+  String get empresaTabEstudiantesCorto => 'Employees';
+
+  @override
+  String get empresaBusquedaPista => 'Search employees, trainings…';
+
+  @override
+  String get empresaBusquedaTipoCurso => 'Training';
+
+  @override
+  String empresaCursoDocente(Object docente) {
+    return 'Instructor: $docente';
+  }
+
+  @override
+  String get empresaCursosSubtitulo =>
+      'The trainings your company assigned to you.';
+
+  @override
+  String get empresaCursosBuscar => 'Search for a training';
+
+  @override
+  String get empresaCursosCargando => 'Loading your trainings…';
+
+  @override
+  String get empresaCursosNingunoCoincide =>
+      'No training matches your search. Try another term.';
+
+  @override
+  String get empresaCursosNoTrajo => 'We could not load your trainings.';
+
+  @override
+  String get empresaCursosSinAsignados => 'No assigned trainings';
+
+  @override
+  String get empresaCursosSinAsignadosTexto =>
+      'Your company has not assigned you any trainings yet.';
+
+  @override
+  String get empresaCursosAsignados => 'Assigned trainings';
+
+  @override
+  String get empresaActividadSinEntregas =>
+      'You have not made any submissions in this training yet.';
+
+  @override
+  String get empresaCursoSinContenido =>
+      'This training does not have any published content yet.';
+
+  @override
+  String get empresaCursoNoPuedeResponder =>
+      'You are viewing another employee\'s progress: you cannot answer on their behalf.';
+
+  @override
+  String get empresaCursoSoloLectura =>
+      'You are viewing another employee\'s progress: read-only mode.';
+
+  @override
+  String get empresaActividadEnRevision => 'Submitted · awaiting approval';
+
+  @override
+  String get empresaActividadSeCompletaAprobada =>
+      'This lesson is completed when your submission is approved. Until then, the next one stays locked.';
+
+  @override
+  String get empresaLeccionSeCompletaActividad =>
+      'Completed when your submission is approved.';
+
+  @override
+  String get empresaCalificarEntregaCalificada => 'Submission reviewed';
+
+  @override
+  String empresaCalificarTitulo(Object tarea) {
+    return 'Review: $tarea';
+  }
+
+  @override
+  String get empresaCalificarEscala => 'Evaluation scale';
+
+  @override
+  String get empresaLeccionCalificacion => 'Evaluation';
+
+  @override
+  String empresaDashboardCalificadoEl(Object fecha) {
+    return 'Reviewed on $fecha';
+  }
+
+  @override
+  String get empresaDashboardSinCalificadas =>
+      'You do not have any reviewed submissions yet.';
+
+  @override
+  String empresaDashboardCursosActivos(int cantidad) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cantidad,
+      locale: localeName,
+      other: '$cantidad active trainings',
+      one: '1 active training',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get empresaDashboardProgresoPorCurso => 'Progress by training';
+
+  @override
+  String get empresaDashboardSinCursos =>
+      'You do not have any trainings assigned yet. When your company assigns you one, your progress will appear here.';
+
+  @override
+  String get empresaDashboardTodoCompletado =>
+      'You have completed all your assigned trainings.';
+
+  @override
+  String get empresaCertificadosMisSubtitulo =>
+      'Certificates for the trainings you completed.';
+
+  @override
+  String get empresaCertificadosVacio =>
+      'You do not have any certificates yet.\nComplete your trainings to earn them.';
+
+  @override
+  String get empresaCalendarioSubtitulo => 'Live sessions from your trainings.';
+
+  @override
+  String get empresaPerfilCursosActivos => 'Active trainings';
+
+  @override
+  String get empresaPerfilAsignaAdmin =>
+      'Your ID number and your company are assigned by your administrator.';
+
+  @override
+  String get empresaSupervisorTabGente => 'Employees of your company';
+
+  @override
+  String get empresaSupervisorTabGenteCorto => 'Employees';
+
+  @override
+  String get empresaSupervisorGenteSubtitulo =>
+      'How each employee is doing in their trainings. Tap one to see their profile.';
+
+  @override
+  String get empresaSupervisorSinGente =>
+      'There are no employees of your company on the platform yet.';
+
+  @override
+  String get empresaSupervisorSinCursos => 'No trainings assigned';
+
+  @override
+  String empresaSupervisorCursosTerminados(int terminados, int total) {
+    return '$terminados of $total trainings completed';
+  }
+
+  @override
+  String get empresaSupervisorEntregasSubtitulo =>
+      'Submissions from your company\'s employees, to review and approve.';
+
+  @override
+  String get empresaSupervisorCursosSubtitulo =>
+      'Your company\'s trainings. Open one to see how each employee is doing.';
+
+  @override
+  String get empresaSupervisorSinCursosAun =>
+      'Your company\'s employees do not have any trainings yet.';
+
+  @override
+  String get empresaSupervisorCertificadosSubtitulo =>
+      'Which employees of your company earned a certificate.';
+
+  @override
+  String get empresaLxdCursosSubtitulo =>
+      'The trainings you created for your company.';
+
+  @override
+  String get empresaLxdEstudiantesSubtitulo =>
+      'Employees assigned to the trainings you created.';
+
+  @override
+  String get empresaLxdCalificacionesSubtitulo =>
+      'Employee submissions in your trainings, to review and approve.';
+
+  @override
+  String get empresaLxdSinCursos =>
+      'You have not created any training yet. Create the first one.';
+
+  @override
+  String get empresaLxdSinEstudiantes =>
+      'There are no employees assigned to your trainings.';
+
+  @override
+  String get empresaLxdSinEntregas =>
+      'There are no submissions awaiting approval.';
+
+  @override
+  String get empresaLxdNuevoCurso => 'New training';
+
+  @override
+  String get empresaLxdNombreDelCurso => 'Training name';
+
+  @override
+  String get empresaLxdNombreCurso => 'Give the training a name.';
+
+  @override
+  String empresaLxdCursoDeEmpresa(String empresa) {
+    return 'It will be a training exclusive to $empresa: it can only be assigned to its employees.';
+  }
+
+  @override
+  String get empresaLxdCursoEliminado => 'Training deleted';
+
+  @override
+  String get empresaLxdEliminarCurso => 'Delete training';
+
+  @override
+  String empresaLxdInscritos(Object cantidad) {
+    return '$cantidad assigned';
+  }
+
+  @override
+  String get empresaLxdPromedioCursos => 'Average across all your trainings';
+
+  @override
+  String get empresaLxdPerfilSubtitulo =>
+      'Information visible to administrators and employees';
+
+  @override
+  String get empresaLxdCalendarioSubtitulo =>
+      'Schedule the live sessions of your trainings';
+
+  @override
+  String get empresaCalendarioSinCursosOL =>
+      'You do not have any trainings of your own yet. Create one in \"My trainings\" before scheduling a session.';
+
+  @override
+  String get empresaConstructorTitulo => 'Training builder';
+
+  @override
+  String get empresaConstructorDelCurso => 'Training builder';
+
+  @override
+  String get empresaConstructorGuardado => 'Training saved';
+
+  @override
+  String get empresaConstructorNecesitaNombre => 'The training needs a name.';
+
+  @override
+  String get empresaConstructorObjetivosCurso => 'Training objectives';
+
+  @override
+  String get empresaConstructorArchivarCurso => 'Archive training';
+
+  @override
+  String get empresaConstructorArchivarTexto =>
+      'It is no longer assigned to new employees, but those who already have progress are not blocked.';
+
+  @override
+  String get empresaConstructorExclusivoDeSuEmpresa =>
+      'This training is exclusive to your company: it is only assigned to its employees.';
+
+  @override
+  String get empresaConstructorMaximo =>
+      'Maximum number of participants (0 = no limit)';
+
+  @override
+  String get empresaConstructorPrerrequisitosTexto =>
+      'Trainings the employee should complete beforehand (or none).';
+
+  @override
+  String get empresaConstructorSinOtrosCursos =>
+      'There are no other trainings available.';
+
+  @override
+  String get empresaConstructorEntregaCertificado =>
+      'Does this training award a certificate?';
+
+  @override
+  String get empresaConstructorCierreAntes =>
+      'The training cannot close before it opens.';
+
+  @override
+  String get empresaConstructorCategorizacion => 'Objectives';
+
+  @override
+  String get empresaSeguimientoTitulo => 'Training tracking';
+
+  @override
+  String get empresaSeguimientoAvanceCurso => 'Training progress';
+
+  @override
+  String get empresaSeguimientoInscritos => 'Assigned';
+
+  @override
+  String get empresaSeguimientoSinEstudiantes =>
+      'There are no employees assigned to this training yet.\nThey are assigned from the administrator portal.';
+
+  @override
+  String get empresaSeguimientoSoloDocentes =>
+      'Only for the training\'s instructors. The employee does NOT see it.';
+
+  @override
+  String get empresaSubidaVistaPreviaAsi =>
+      'Preview: this is how employees will see it:';
+
+  @override
+  String get empresaUsuarioCursosCreados => 'Trainings created';
+
+  @override
+  String get empresaUsuarioSinCursos => 'Has not created any training yet.';
+
+  @override
+  String empresaUsuarioEstudiantes(Object cantidad) {
+    return '$cantidad employees';
+  }
+
+  @override
+  String get empresaPerfilCarrera => 'Job title';
+
+  @override
+  String get perfilEmpresaEtiqueta => 'Company';
+
+  @override
+  String get empresaPortalEmpleado => 'Employee portal';
+
+  @override
+  String get empresaCalificacionPendiente => 'Awaiting approval';
+
+  @override
+  String get empresaLxdFiltrarNombre => 'Filter by name or job title';
+
+  @override
+  String get empresaConstructorRestricciones => 'Restrictions';
+
+  @override
+  String get empresaAvisoEntregaCalificadaTitulo => 'Submission reviewed';
+
+  @override
+  String empresaAvisoCertificadoCursoCuerpo(String curso) {
+    return 'You received the certificate for completing the training $curso.';
+  }
+
+  @override
+  String get supervisorTabCapacitaciones => 'Trainings';
 }

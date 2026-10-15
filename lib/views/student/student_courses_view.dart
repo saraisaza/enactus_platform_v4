@@ -82,7 +82,10 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
       }).toList();
     }
 
-    final labNames = allCourses
+    // Los laboratorios son de Enactus: en una empresa no se nombran.
+    final labNames = Idioma.instancia.deEmpresa
+        ? const <String>[]
+        : allCourses
         .map((c) => c.laboratoryName)
         .whereType<String>()
         .toSet()
@@ -173,8 +176,11 @@ class _CourseCard extends StatelessWidget {
     final accent = labColorFor(course.laboratoryId ?? '');
     final tinta = inkSobre(accent);
     final compacto = context.isCompact;
-    final labLabel =
-        course.isRutaExpo ? tr.cursoRutaNationalExpo : (course.laboratoryName ?? '');
+    final labLabel = Idioma.instancia.deEmpresa
+        ? ''
+        : course.isRutaExpo
+            ? tr.cursoRutaNationalExpo
+            : (course.laboratoryName ?? '');
 
     void open() => Navigator.push(
         context,

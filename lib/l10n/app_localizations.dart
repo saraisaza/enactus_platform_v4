@@ -10021,6 +10021,606 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver entrega'**
   String get actividadVerEntrega;
+
+  /// No description provided for @empresaRolEstudiante.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleado'**
+  String get empresaRolEstudiante;
+
+  /// No description provided for @empresaComunEstudiante.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleado'**
+  String get empresaComunEstudiante;
+
+  /// No description provided for @empresaTabMisCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis capacitaciones'**
+  String get empresaTabMisCursos;
+
+  /// No description provided for @empresaTabCursosCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Formación'**
+  String get empresaTabCursosCorto;
+
+  /// No description provided for @empresaTabCalificaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobaciones'**
+  String get empresaTabCalificaciones;
+
+  /// No description provided for @empresaTabCalificarCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobaciones'**
+  String get empresaTabCalificarCorto;
+
+  /// No description provided for @empresaTabMisEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis empleados'**
+  String get empresaTabMisEstudiantes;
+
+  /// No description provided for @empresaTabEstudiantesCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleados'**
+  String get empresaTabEstudiantesCorto;
+
+  /// No description provided for @empresaBusquedaPista.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar empleados, capacitaciones…'**
+  String get empresaBusquedaPista;
+
+  /// No description provided for @empresaBusquedaTipoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitación'**
+  String get empresaBusquedaTipoCurso;
+
+  /// No description provided for @empresaCursoDocente.
+  ///
+  /// In es, this message translates to:
+  /// **'Instructor: {docente}'**
+  String empresaCursoDocente(Object docente);
+
+  /// No description provided for @empresaCursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las capacitaciones que le asignó su empresa.'**
+  String get empresaCursosSubtitulo;
+
+  /// No description provided for @empresaCursosBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar capacitación'**
+  String get empresaCursosBuscar;
+
+  /// No description provided for @empresaCursosCargando.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando sus capacitaciones…'**
+  String get empresaCursosCargando;
+
+  /// No description provided for @empresaCursosNingunoCoincide.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna capacitación coincide con su búsqueda. Pruebe con otro término.'**
+  String get empresaCursosNingunoCoincide;
+
+  /// No description provided for @empresaCursosNoTrajo.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos traer sus capacitaciones.'**
+  String get empresaCursosNoTrajo;
+
+  /// No description provided for @empresaCursosSinAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin capacitaciones asignadas'**
+  String get empresaCursosSinAsignados;
+
+  /// No description provided for @empresaCursosSinAsignadosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Su empresa todavía no le ha asignado capacitaciones.'**
+  String get empresaCursosSinAsignadosTexto;
+
+  /// No description provided for @empresaCursosAsignados.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones asignadas'**
+  String get empresaCursosAsignados;
+
+  /// No description provided for @empresaActividadSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no ha hecho ninguna entrega en esta capacitación.'**
+  String get empresaActividadSinEntregas;
+
+  /// No description provided for @empresaCursoSinContenido.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta capacitación todavía no tiene contenido publicado.'**
+  String get empresaCursoSinContenido;
+
+  /// No description provided for @empresaCursoNoPuedeResponder.
+  ///
+  /// In es, this message translates to:
+  /// **'Está viendo el progreso de otro empleado: no puede responder en su nombre.'**
+  String get empresaCursoNoPuedeResponder;
+
+  /// No description provided for @empresaCursoSoloLectura.
+  ///
+  /// In es, this message translates to:
+  /// **'Está viendo el progreso de otro empleado: modo de solo lectura.'**
+  String get empresaCursoSoloLectura;
+
+  /// No description provided for @empresaActividadEnRevision.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregada · espera aprobación'**
+  String get empresaActividadEnRevision;
+
+  /// No description provided for @empresaActividadSeCompletaAprobada.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta lección se completa cuando su entrega sea aprobada. Mientras tanto, la siguiente queda bloqueada.'**
+  String get empresaActividadSeCompletaAprobada;
+
+  /// No description provided for @empresaLeccionSeCompletaActividad.
+  ///
+  /// In es, this message translates to:
+  /// **'Se completa cuando su entrega sea aprobada.'**
+  String get empresaLeccionSeCompletaActividad;
+
+  /// No description provided for @empresaCalificarEntregaCalificada.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega revisada'**
+  String get empresaCalificarEntregaCalificada;
+
+  /// No description provided for @empresaCalificarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar: {tarea}'**
+  String empresaCalificarTitulo(Object tarea);
+
+  /// No description provided for @empresaCalificarEscala.
+  ///
+  /// In es, this message translates to:
+  /// **'Escala de evaluación'**
+  String get empresaCalificarEscala;
+
+  /// No description provided for @empresaLeccionCalificacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Evaluación'**
+  String get empresaLeccionCalificacion;
+
+  /// No description provided for @empresaDashboardCalificadoEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisado el {fecha}'**
+  String empresaDashboardCalificadoEl(Object fecha);
+
+  /// No description provided for @empresaDashboardSinCalificadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene entregas revisadas.'**
+  String get empresaDashboardSinCalificadas;
+
+  /// No description provided for @empresaDashboardCursosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad, plural, =1{1 capacitación activa} other{{cantidad} capacitaciones activas}}'**
+  String empresaDashboardCursosActivos(int cantidad);
+
+  /// No description provided for @empresaDashboardProgresoPorCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Progreso por capacitación'**
+  String get empresaDashboardProgresoPorCurso;
+
+  /// No description provided for @empresaDashboardSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene capacitaciones asignadas. Cuando su empresa le asigne una, su progreso aparecerá aquí.'**
+  String get empresaDashboardSinCursos;
+
+  /// No description provided for @empresaDashboardTodoCompletado.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya completó todas sus capacitaciones asignadas.'**
+  String get empresaDashboardTodoCompletado;
+
+  /// No description provided for @empresaCertificadosMisSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los certificados de las capacitaciones que completó.'**
+  String get empresaCertificadosMisSubtitulo;
+
+  /// No description provided for @empresaCertificadosVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.'**
+  String get empresaCertificadosVacio;
+
+  /// No description provided for @empresaCalendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las sesiones en vivo de sus capacitaciones.'**
+  String get empresaCalendarioSubtitulo;
+
+  /// No description provided for @empresaPerfilCursosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones activas'**
+  String get empresaPerfilCursosActivos;
+
+  /// No description provided for @empresaPerfilAsignaAdmin.
+  ///
+  /// In es, this message translates to:
+  /// **'Su cédula y su empresa los asigna su administrador.'**
+  String get empresaPerfilAsignaAdmin;
+
+  /// No description provided for @empresaSupervisorTabGente.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleados de su empresa'**
+  String get empresaSupervisorTabGente;
+
+  /// No description provided for @empresaSupervisorTabGenteCorto.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleados'**
+  String get empresaSupervisorTabGenteCorto;
+
+  /// No description provided for @empresaSupervisorGenteSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo va cada empleado en sus capacitaciones. Toque uno para ver su perfil.'**
+  String get empresaSupervisorGenteSubtitulo;
+
+  /// No description provided for @empresaSupervisorSinGente.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay empleados de su empresa en la plataforma.'**
+  String get empresaSupervisorSinGente;
+
+  /// No description provided for @empresaSupervisorSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin capacitaciones asignadas'**
+  String get empresaSupervisorSinCursos;
+
+  /// No description provided for @empresaSupervisorCursosTerminados.
+  ///
+  /// In es, this message translates to:
+  /// **'{terminados} de {total} capacitaciones terminadas'**
+  String empresaSupervisorCursosTerminados(int terminados, int total);
+
+  /// No description provided for @empresaSupervisorEntregasSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las entregas de los empleados de su empresa, para revisar y aprobar.'**
+  String get empresaSupervisorEntregasSubtitulo;
+
+  /// No description provided for @empresaSupervisorCursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las capacitaciones de los empleados de su empresa. Abra una para ver cómo va cada quien.'**
+  String get empresaSupervisorCursosSubtitulo;
+
+  /// No description provided for @empresaSupervisorSinCursosAun.
+  ///
+  /// In es, this message translates to:
+  /// **'Los empleados de su empresa todavía no tienen capacitaciones.'**
+  String get empresaSupervisorSinCursosAun;
+
+  /// No description provided for @empresaSupervisorCertificadosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué empleados de su empresa se certificaron.'**
+  String get empresaSupervisorCertificadosSubtitulo;
+
+  /// No description provided for @empresaLxdCursosSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Las capacitaciones que usted creó para su empresa.'**
+  String get empresaLxdCursosSubtitulo;
+
+  /// No description provided for @empresaLxdEstudiantesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Empleados asignados a las capacitaciones que usted creó.'**
+  String get empresaLxdEstudiantesSubtitulo;
+
+  /// No description provided for @empresaLxdCalificacionesSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas de los empleados en sus capacitaciones, para revisar y aprobar.'**
+  String get empresaLxdCalificacionesSubtitulo;
+
+  /// No description provided for @empresaLxdSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no ha creado ninguna capacitación. Cree la primera.'**
+  String get empresaLxdSinCursos;
+
+  /// No description provided for @empresaLxdSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay empleados asignados a sus capacitaciones.'**
+  String get empresaLxdSinEstudiantes;
+
+  /// No description provided for @empresaLxdSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay entregas por aprobar.'**
+  String get empresaLxdSinEntregas;
+
+  /// No description provided for @empresaLxdNuevoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva capacitación'**
+  String get empresaLxdNuevoCurso;
+
+  /// No description provided for @empresaLxdNombreDelCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la capacitación'**
+  String get empresaLxdNombreDelCurso;
+
+  /// No description provided for @empresaLxdNombreCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Póngale un nombre a la capacitación.'**
+  String get empresaLxdNombreCurso;
+
+  /// No description provided for @empresaLxdCursoDeEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Será una capacitación exclusiva de {empresa}: solo se podrá asignar a sus empleados.'**
+  String empresaLxdCursoDeEmpresa(String empresa);
+
+  /// No description provided for @empresaLxdCursoEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitación eliminada'**
+  String get empresaLxdCursoEliminado;
+
+  /// No description provided for @empresaLxdEliminarCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar capacitación'**
+  String get empresaLxdEliminarCurso;
+
+  /// No description provided for @empresaLxdInscritos.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} asignados'**
+  String empresaLxdInscritos(Object cantidad);
+
+  /// No description provided for @empresaLxdPromedioCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Promedio de todas sus capacitaciones'**
+  String get empresaLxdPromedioCursos;
+
+  /// No description provided for @empresaLxdPerfilSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Información visible para administradores y empleados'**
+  String get empresaLxdPerfilSubtitulo;
+
+  /// No description provided for @empresaLxdCalendarioSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agende las sesiones en vivo de sus capacitaciones'**
+  String get empresaLxdCalendarioSubtitulo;
+
+  /// No description provided for @empresaCalendarioSinCursosOL.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tiene capacitaciones propias. Cree una en \"Mis capacitaciones\" antes de agendar una sesión.'**
+  String get empresaCalendarioSinCursosOL;
+
+  /// No description provided for @empresaConstructorTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Constructor de capacitación'**
+  String get empresaConstructorTitulo;
+
+  /// No description provided for @empresaConstructorDelCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Constructor de la capacitación'**
+  String get empresaConstructorDelCurso;
+
+  /// No description provided for @empresaConstructorGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitación guardada'**
+  String get empresaConstructorGuardado;
+
+  /// No description provided for @empresaConstructorNecesitaNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'La capacitación necesita un nombre.'**
+  String get empresaConstructorNecesitaNombre;
+
+  /// No description provided for @empresaConstructorObjetivosCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos de la capacitación'**
+  String get empresaConstructorObjetivosCurso;
+
+  /// No description provided for @empresaConstructorArchivarCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivar capacitación'**
+  String get empresaConstructorArchivarCurso;
+
+  /// No description provided for @empresaConstructorArchivarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Deja de asignarse a empleados nuevos, pero quienes ya tienen avance no se bloquean.'**
+  String get empresaConstructorArchivarTexto;
+
+  /// No description provided for @empresaConstructorExclusivoDeSuEmpresa.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta capacitación es exclusiva de su empresa: solo se asigna a sus empleados.'**
+  String get empresaConstructorExclusivoDeSuEmpresa;
+
+  /// No description provided for @empresaConstructorMaximo.
+  ///
+  /// In es, this message translates to:
+  /// **'Máximo de participantes (0 = sin límite)'**
+  String get empresaConstructorMaximo;
+
+  /// No description provided for @empresaConstructorPrerrequisitosTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones que el empleado debería completar antes (o ninguna).'**
+  String get empresaConstructorPrerrequisitosTexto;
+
+  /// No description provided for @empresaConstructorSinOtrosCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay otras capacitaciones disponibles.'**
+  String get empresaConstructorSinOtrosCursos;
+
+  /// No description provided for @empresaConstructorEntregaCertificado.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Esta capacitación entrega certificado?'**
+  String get empresaConstructorEntregaCertificado;
+
+  /// No description provided for @empresaConstructorCierreAntes.
+  ///
+  /// In es, this message translates to:
+  /// **'La capacitación no puede cerrar antes de abrir.'**
+  String get empresaConstructorCierreAntes;
+
+  /// No description provided for @empresaConstructorCategorizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos'**
+  String get empresaConstructorCategorizacion;
+
+  /// No description provided for @empresaSeguimientoTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguimiento de la capacitación'**
+  String get empresaSeguimientoTitulo;
+
+  /// No description provided for @empresaSeguimientoAvanceCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance de la capacitación'**
+  String get empresaSeguimientoAvanceCurso;
+
+  /// No description provided for @empresaSeguimientoInscritos.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignados'**
+  String get empresaSeguimientoInscritos;
+
+  /// No description provided for @empresaSeguimientoSinEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay empleados asignados a esta capacitación.\nSe asignan desde el portal del administrador.'**
+  String get empresaSeguimientoSinEstudiantes;
+
+  /// No description provided for @empresaSeguimientoSoloDocentes.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo para quien dicta la capacitación. El empleado NO la ve.'**
+  String get empresaSeguimientoSoloDocentes;
+
+  /// No description provided for @empresaSubidaVistaPreviaAsi.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa: así lo verán los empleados:'**
+  String get empresaSubidaVistaPreviaAsi;
+
+  /// No description provided for @empresaUsuarioCursosCreados.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones creadas'**
+  String get empresaUsuarioCursosCreados;
+
+  /// No description provided for @empresaUsuarioSinCursos.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no ha creado ninguna capacitación.'**
+  String get empresaUsuarioSinCursos;
+
+  /// No description provided for @empresaUsuarioEstudiantes.
+  ///
+  /// In es, this message translates to:
+  /// **'{cantidad} empleados'**
+  String empresaUsuarioEstudiantes(Object cantidad);
+
+  /// No description provided for @empresaPerfilCarrera.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargo'**
+  String get empresaPerfilCarrera;
+
+  /// No description provided for @perfilEmpresaEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa'**
+  String get perfilEmpresaEtiqueta;
+
+  /// No description provided for @empresaPortalEmpleado.
+  ///
+  /// In es, this message translates to:
+  /// **'Portal del empleado'**
+  String get empresaPortalEmpleado;
+
+  /// No description provided for @empresaCalificacionPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Por aprobar'**
+  String get empresaCalificacionPendiente;
+
+  /// No description provided for @empresaLxdFiltrarNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por nombre o cargo'**
+  String get empresaLxdFiltrarNombre;
+
+  /// No description provided for @empresaConstructorRestricciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Restricciones'**
+  String get empresaConstructorRestricciones;
+
+  /// No description provided for @empresaAvisoEntregaCalificadaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega revisada'**
+  String get empresaAvisoEntregaCalificadaTitulo;
+
+  /// No description provided for @empresaAvisoCertificadoCursoCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibió el certificado por completar la capacitación {curso}.'**
+  String empresaAvisoCertificadoCursoCuerpo(String curso);
+
+  /// No description provided for @supervisorTabCapacitaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitaciones'**
+  String get supervisorTabCapacitaciones;
 }
 
 class _AppLocalizationsDelegate

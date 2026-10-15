@@ -43,7 +43,8 @@ class SupervisorPortal extends StatelessWidget {
             builder: (_) => VistaDeCalificaciones(
                 subtitulo: tr.supervisorEntregasSubtitulo)),
         PortalTab(
-            label: tr.tabMisCursos,
+            // No son «mis» capacitaciones: el supervisor no las crea.
+            label: tr.supervisorTabCapacitaciones,
             shortLabel: tr.tabCursosCorto,
             destacada: true,
             icon: Icons.school_outlined,
@@ -156,7 +157,7 @@ class _SusCursos extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     return TabBody(
-      title: tr.tabMisCursos,
+      title: tr.supervisorTabCapacitaciones,
       subtitle: tr.supervisorCursosSubtitulo,
       children: [
         data.courses.when(

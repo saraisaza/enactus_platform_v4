@@ -80,7 +80,8 @@ void main() {
     for (final pestana in [
       tr.supervisorTabGenteCorto,
       tr.tabCalificaciones,
-      tr.tabMisCursos,
+      // «Capacitaciones», no «Mis…»: el supervisor no las crea.
+      tr.supervisorTabCapacitaciones,
       tr.tabCertificados,
     ]) {
       expect(find.text(pestana), findsWidgets, reason: pestana);

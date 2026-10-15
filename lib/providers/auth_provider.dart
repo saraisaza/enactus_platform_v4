@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../utils/marca.dart';
 import '../services/api_errors.dart';
@@ -174,9 +175,11 @@ class AuthProvider extends ChangeNotifier {
 
   /// La plataforma, con la marca del cliente de [user]; sin sesión o sin
   /// cliente, con la de eduXaction. La marca sale de lo que respondió el
-  /// servidor sobre ESTA cuenta: la app no la elige.
+  /// servidor sobre ESTA cuenta: la app no la elige. Con ella, las palabras:
+  /// una cuenta de empresa ve «empleados», «capacitaciones», «aprobaciones».
   void _aplicarMarca(AppUser? user) {
     Marca.instancia.aplicar(user?.client?.paleta ?? PaletaMarca.eduXaction);
+    Idioma.instancia.usarVocabularioDeEmpresa(user?.esDeEmpresa ?? false);
   }
 
   void _onSessionExpired([String? motivo]) {

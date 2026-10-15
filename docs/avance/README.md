@@ -54,6 +54,31 @@ esa persona, pero puede abrir el material para revisarlo.
 lección está abierta si ya está completa o si es esa. Las respuestas de
 completar traen el `nextLessonId` nuevo.
 
+## 4. Igual en el teléfono y en el computador
+
+El avance vive en el servidor: lo que se hace en un dispositivo es lo que lee
+el otro. Lo que podía no coincidir era la app, que se quedaba con lo que ya
+había traído hasta salir por más de cinco minutos (reporte de un estudiante,
+2026-10-15). Ahora (`DataProvider._alDia` y `main.dart`):
+
+- Al volver a la app —o a la ventana del navegador— después de más de 5
+  segundos, el avance que está en pantalla se vuelve a preguntar.
+- El avance traído hace más de 30 segundos (`vigenciaDelAvance`) se vuelve a
+  preguntar la próxima vez que una pantalla lo muestra: cursos, el de cada
+  curso, la Ruta y los certificados.
+- Antes de decir «bloqueada» (un curso o la Ruta) se le pregunta al servidor:
+  la anterior se pudo completar en el otro dispositivo hace un instante.
+- Un video retoma donde quedó en cualquier dispositivo: si lo que hay venció,
+  se pregunta antes de abrirlo (como mucho 2 segundos de espera).
+- Estas consultas no cambian la pantalla mientras van, y si fallan (sin
+  señal) se queda lo que había, sin cartel de error. Completar una lección
+  mientras va una consulta no se deshace cuando llega la respuesta vieja.
+- La API responde `Cache-Control: no-store`: ningún navegador guarda una
+  respuesta.
+- El servidor toma la fila del video al guardarlo: dos dispositivos guardando
+  a la vez leen uno lo del otro. Lo visto nunca supera el tiempo real, aunque
+  haya dos pantallas abiertas.
+
 ## Lo que NO se tocó
 
 - Los avances que ya existían. No hay forma de saber qué se marcó a mano y qué
@@ -67,5 +92,6 @@ completar traen el `nextLessonId` nuevo.
 
 - Servidor: `backend/tests/avance-en-orden.test.ts` (y el ayudante
   `tests/helpers/avance.ts`, que completa lecciones como lo haría una persona).
-- App: `test/avance_en_orden_test.dart`, y el seguidor del video en
+- App: `test/avance_en_orden_test.dart` (grupo «el teléfono y el
+  computador»), `test/volver_a_la_app_test.dart`, y el seguidor del video en
   `test/youtube_test.dart`.

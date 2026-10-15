@@ -100,12 +100,17 @@ class _EnactusAppState extends State<EnactusApp> {
   late final AppLifecycleListener _ciclo;
   DateTime? _ocultaDesde;
 
+  /// Desde cuándo la app (o la ventana del navegador) no tiene el foco.
+  DateTime? _inactivaDesde;
+
   @override
   void initState() {
     super.initState();
     _ciclo = AppLifecycleListener(
-      onHide: () => _ocultaDesde = DateTime.now(),
+      onHide: () => _ocultaDesde = widget.data.reloj(),
       onShow: _alVolver,
+      onInactive: () => _inactivaDesde ??= widget.data.reloj(),
+      onResume: _alRecuperarElFoco,
     );
     // La sesión se recupera acá, en la raíz, y NO en la pantalla de arranque.
     //
@@ -136,7 +141,8 @@ class _EnactusAppState extends State<EnactusApp> {
   /// - Si al abrir no hubo conexión, reintenta sola: la persona no tiene que
   ///   adivinar que debe tocar "Reintentar" cuando vuelve la señal.
   /// - Si estuvo un rato largo afuera, lo que ve puede estar viejo (notas,
-  ///   eventos, el foro). Un cambio rápido de app no recarga nada.
+  ///   eventos, el foro): se recarga todo. Un rato corto lo cubre
+  ///   [_alRecuperarElFoco].
   void _alVolver() {
     final auth = widget.auth;
     final desde = _ocultaDesde;
@@ -148,9 +154,26 @@ class _EnactusAppState extends State<EnactusApp> {
     }
     if (auth.isLoggedIn &&
         desde != null &&
-        DateTime.now().difference(desde) > const Duration(minutes: 5)) {
+        widget.data.reloj().difference(desde) > const Duration(minutes: 5)) {
       widget.data.refreshAll();
       auth.refresh();
+    }
+  }
+
+  /// La app vuelve a tener el foco: en el teléfono, al volver de otra app;
+  /// en el computador, también al volver a la ventana del navegador, que
+  /// pudo quedar a la vista mientras la persona seguía el curso en el
+  /// teléfono. Si pasaron más de unos segundos, el avance se vuelve a
+  /// preguntar: tiene que verse lo que hizo en el otro dispositivo. Un
+  /// vistazo rápido a otra cosa no pide nada.
+  void _alRecuperarElFoco() {
+    final desde = _inactivaDesde;
+    _inactivaDesde = null;
+    final auth = widget.auth;
+    if (auth.isLoggedIn &&
+        desde != null &&
+        widget.data.reloj().difference(desde) > const Duration(seconds: 5)) {
+      widget.data.avanceVencido();
     }
   }
 

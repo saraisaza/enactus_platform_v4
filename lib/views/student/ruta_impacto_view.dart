@@ -1936,6 +1936,32 @@ class _ModuleSummaryRow extends StatelessWidget {
       required this.moduleIndex,
       required this.colors});
 
+  void _abrir(BuildContext context) => Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => ModuleDetailScreen(
+              labId: labId, phaseIndex: phaseIndex, moduleIndex: moduleIndex)));
+
+  /// El módulo anterior se pudo completar en otro dispositivo hace un
+  /// momento: antes de decir que falta, se le pregunta al servidor.
+  Future<void> _abrirSiYaSeAbrio(BuildContext context, String title) async {
+    final data = context.read<DataProvider>();
+    await data.rutaAlDia();
+    if (!context.mounted) return;
+    final fases = data.rutaProgress.valueOrNull?.labById(labId)?.phases;
+    final modulos = fases != null && phaseIndex < fases.length
+        ? fases[phaseIndex].modules
+        : null;
+    final abierto = modulos != null &&
+        moduleIndex < modulos.length &&
+        modulos[moduleIndex].isUnlocked;
+    if (abierto) {
+      _abrir(context);
+    } else {
+      showAppSnack(context, tr.rutaCompleteAnterior(title));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final unlocked = module.isUnlocked;
@@ -1954,15 +1980,8 @@ class _ModuleSummaryRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
         onTap: () => unlocked
-            ? Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => ModuleDetailScreen(
-                        labId: labId,
-                        phaseIndex: phaseIndex,
-                        moduleIndex: moduleIndex)))
-            : showAppSnack(
-                context, tr.rutaCompleteAnterior(title)),
+            ? _abrir(context)
+            : _abrirSiYaSeAbrio(context, title),
         child: MouseRegion(
           cursor: unlocked ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
           child: Container(
@@ -2431,6 +2450,29 @@ class _OwnLessonRow extends StatelessWidget {
         : tr.leccionBloqueada(anterior);
   }
 
+  void _abrirLeccion(BuildContext context) =>
+      lesson.isActivity ? _submit(context) : _openReading(context);
+
+  /// La anterior se pudo completar en otro dispositivo hace un momento: antes
+  /// de decir que falta, se le pregunta al servidor.
+  Future<void> _abrirSiYaLeToca(BuildContext context) async {
+    final data = context.read<DataProvider>();
+    await data.rutaAlDia();
+    if (!context.mounted) return;
+    final ahora = data.rutaProgress.valueOrNull?.laboratories
+        .expand((lab) => lab.phases)
+        .expand((fase) => fase.modules)
+        .where((m) => m.moduleId == moduleId)
+        .expand((m) => m.ownLessons)
+        .where((l) => l.id == lesson.id)
+        .firstOrNull;
+    if (ahora != null && (ahora.isComplete || ahora.isUnlocked)) {
+      _abrirLeccion(context);
+    } else {
+      showAppSnack(context, _lockedMessage);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final done = lesson.isComplete;
@@ -2442,10 +2484,8 @@ class _OwnLessonRow extends StatelessWidget {
         opacity: locked ? 0.55 : 1,
         child: HoverCard(
           onTap: () => locked
-              ? showAppSnack(context, _lockedMessage)
-              : lesson.isActivity
-                  ? _submit(context)
-                  : _openReading(context),
+              ? _abrirSiYaLeToca(context)
+              : _abrirLeccion(context),
           child: Row(
             children: [
               Icon(

@@ -356,6 +356,171 @@ void main() {
     });
   });
 
+  group('el teléfono y el computador de la misma persona', () {
+    // Un estudiante reportó que el avance no coincidía entre el teléfono y
+    // el computador. El servidor siempre tuvo lo mismo para los dos; era la
+    // app la que se quedaba con lo que ya había traído hasta salir por más de
+    // cinco minutos. Acá «el otro dispositivo» es la ruta del servidor que
+    // cambia a mitad de la prueba.
+    const ruta = '/students/student1/course-progress/beta';
+
+    testWidgets('lo completado en el otro dispositivo aparece al volver a la app',
+        (tester) async {
+      final fake = _api(_progreso([], _video));
+      final data =
+          await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+      expect(_indicador('Preguntas del video', Icons.lock_outline), findsOneWidget);
+
+      // En el computador vio el video entero.
+      fake.routes[ruta] = _progreso([_video], _quiz);
+      // Vuelve al teléfono: la app vuelve a primer plano.
+      data.avanceVencido();
+      await _esperar(tester);
+
+      expect(_indicador('Conformar equipo', Icons.check_circle), findsOneWidget);
+      expect(_indicador('Preguntas del video', Icons.radio_button_unchecked),
+          findsOneWidget);
+    });
+
+    testWidgets('pasado un rato, mirar el curso de nuevo lo trae al día',
+        (tester) async {
+      final fake = _api(_progreso([], _video));
+      final data = await _montar(
+          tester,
+          fake,
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => const CourseDetailView(courseId: 'beta'))),
+              child: const Text('abrir curso'),
+            ),
+          ));
+      var ahora = DateTime(2026, 10, 15, 9);
+      data.reloj = () => ahora;
+      await tester.tap(find.text('abrir curso'));
+      await _esperar(tester);
+      expect(_indicador('Preguntas del video', Icons.lock_outline), findsOneWidget);
+      Navigator.of(tester.element(find.text('Conformar equipo'))).pop();
+      await _esperar(tester);
+
+      fake.routes[ruta] = _progreso([_video], _quiz);
+      ahora = ahora.add(DataProvider.vigenciaDelAvance + const Duration(seconds: 1));
+      await tester.tap(find.text('abrir curso'));
+      await _esperar(tester);
+      expect(_indicador('Preguntas del video', Icons.radio_button_unchecked),
+          findsOneWidget);
+    });
+
+    testWidgets('lo que se ve con candado se pregunta al servidor antes de negarlo',
+        (tester) async {
+      final fake = _api(_progreso([], _video));
+      await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+
+      // Hace un instante lo completó en el otro dispositivo.
+      fake.routes[ruta] = _progreso([_video], _quiz);
+      await tester.tap(find.text('Preguntas del video'));
+      await _esperar(tester);
+
+      expect(find.text('Bloqueada: primero complete «Conformar equipo».'),
+          findsNothing);
+      expect(find.textContaining('¿Un equipo necesita roles?'), findsOneWidget,
+          reason: 'el quiz ya le tocaba: se abre');
+    });
+
+    testWidgets('si de verdad falta, lo dice', (tester) async {
+      final fake = _api(_progreso([], _video));
+      await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+      await tester.tap(find.text('Lectura en imagen'));
+      await _esperar(tester);
+      expect(find.text('Bloqueada: primero complete «Conformar equipo».'),
+          findsOneWidget);
+      expect(_escrituras(fake), isEmpty);
+    });
+
+    testWidgets('sin señal, preguntar de nuevo no cambia la pantalla por un error',
+        (tester) async {
+      final fake = _api(_progreso([_video], _quiz));
+      final data =
+          await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+      fake.statuses[ruta] = 503;
+      data.avanceVencido();
+      await _esperar(tester);
+      expect(_indicador('Conformar equipo', Icons.check_circle), findsOneWidget);
+      expect(find.text('Reintentar'), findsNothing);
+    });
+
+    test('la lista de cursos con otro avance hace pedir el detalle de nuevo',
+        () async {
+      final listado = <String, Object?>{
+        'data': [
+          {
+            ..._curso,
+            'progress': {
+              'courseId': 'beta',
+              'totalLessons': 3,
+              'completedLessons': 1,
+              'ratio': 0.33,
+              'isComplete': false,
+            },
+          },
+        ],
+        'page': 1,
+        'pageSize': 100,
+        'total': 1,
+      };
+      final fake = _api(_progreso([_video], _quiz), {'/courses': listado});
+      final data = DataProvider(fake.build())..setCurrentUser('student1');
+      data.courseProgress('beta');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(data.courseProgress('beta').valueOrNull!.isLessonComplete(_quiz),
+          isFalse);
+
+      // En el otro dispositivo aprobó el quiz: el listado ya lo cuenta.
+      fake.routes[ruta] = _progreso([_video, _quiz], _lectura);
+      ((listado['data'] as List).first as Map)['progress'] = {
+        'courseId': 'beta',
+        'totalLessons': 3,
+        'completedLessons': 2,
+        'ratio': 0.66,
+        'isComplete': false,
+      };
+      data.courses;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      data.courseProgress('beta');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(data.courseProgress('beta').valueOrNull!.isLessonComplete(_quiz),
+          isTrue);
+    });
+
+    test('el video retoma donde quedó en el otro dispositivo', () async {
+      Map<String, Object?> conVideo(int posicion) => {
+            ..._progreso([], _video),
+            'videoProgress': [
+              {
+                'lessonId': _video,
+                'positionSec': posicion,
+                'furthestSec': posicion,
+                'durationSec': 300,
+                'watchedSec': posicion,
+              },
+            ],
+          };
+      final fake = _api(conVideo(40));
+      final data = DataProvider(fake.build())..setCurrentUser('student1');
+      var ahora = DateTime(2026, 10, 15, 9);
+      data.reloj = () => ahora;
+      data.courseProgress('beta');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(data.myVideoProgress(_video)?.positionSec, 40);
+
+      // Siguió viéndolo en el computador hasta el minuto 2.
+      fake.routes[ruta] = conVideo(120);
+      ahora = ahora.add(DataProvider.vigenciaDelAvance + const Duration(seconds: 1));
+      await data.avanceDelCursoAlDia('beta', soloSiViejo: true);
+      expect(data.myVideoProgress(_video)?.positionSec, 120);
+    });
+  });
+
   group('el progreso', () {
     test('el resumen del listado no alcanza: se pide el detalle', () async {
       final fake = FakeApi(routes: {
@@ -491,6 +656,36 @@ void main() {
           findsWidgets);
       expect(find.text('Enviar'), findsNothing);
       expect(_escrituras(fake), isEmpty);
+    });
+
+    testWidgets('si la anterior se completó en el otro dispositivo, se abre',
+        (tester) async {
+      final fake = FakeApi(routes: {
+        '/auth/me': {..._ana, 'studentType': 'enactus'},
+        '/students/student1/ruta-progress': ruta(),
+        '/site-content': {'meetingLink': ''},
+        '/notifications': {'data': <Object>[], 'page': 1, 'pageSize': 100, 'total': 0},
+      });
+      await _montar(tester, fake,
+          const ModuleDetailScreen(labId: 'lab1', phaseIndex: 0, moduleIndex: 0));
+      expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+
+      // Abrió la guía en el computador: la entrega ya le toca.
+      final alDia = ruta();
+      final lecciones = (((((alDia['laboratories'] as List).first as Map)['phases']
+                  as List)
+              .first as Map)['modules'] as List)
+          .first['ownLessons'] as List;
+      (lecciones[0] as Map)['isComplete'] = true;
+      (lecciones[1] as Map)['isUnlocked'] = true;
+      fake.routes['/students/student1/ruta-progress'] = alDia;
+
+      await tester.tap(find.text('Entrega del diagnóstico'));
+      await _esperar(tester);
+      expect(find.text('Bloqueada: primero complete «Guía de la fase».'),
+          findsNothing);
+      expect(find.text('Enviar'), findsOneWidget,
+          reason: 'la entrega ya le tocaba: se abre el formulario');
     });
   });
 }

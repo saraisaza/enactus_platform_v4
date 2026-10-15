@@ -95,71 +95,78 @@ export async function saveVideoProgress(
   // muestra con candado. Lo ya completado se repasa sin restricción.
   if (!yaCompleta) await exigirDisponible(db, studentId, lesson, lugar);
 
-  const [previo] = await db
-    .select()
-    .from(lessonVideoProgress)
-    .where(
-      and(
-        eq(lessonVideoProgress.studentId, studentId),
-        eq(lessonVideoProgress.lessonId, lesson.id),
-      ),
-    )
-    .limit(1);
+  // Leer lo visto y escribirlo con el tramo nuevo, con la fila tomada: con
+  // el teléfono y el computador guardando a la vez, los dos leían lo mismo
+  // y el segundo en escribir borraba el tramo del primero.
+  const row = await db.transaction(async (tx) => {
+    const [previo] = await tx
+      .select()
+      .from(lessonVideoProgress)
+      .where(
+        and(
+          eq(lessonVideoProgress.studentId, studentId),
+          eq(lessonVideoProgress.lessonId, lesson.id),
+        ),
+      )
+      .limit(1)
+      .for('update');
 
-  // Una posición más allá del final es un reporte desprolijo del reproductor
-  // (el último evento llega con unos milisegundos de más), no un dato: se
-  // recorta en vez de rechazar la escritura entera.
-  const duration = input.durationSec ?? null;
-  const conocida = duracionDeReferencia(
-    lesson,
-    Math.max(duration ?? 0, previo?.durationSec ?? 0) || null,
-  );
-  const position =
-    conocida === null ? input.positionSec : Math.min(input.positionSec, conocida);
+    // Una posición más allá del final es un reporte desprolijo del reproductor
+    // (el último evento llega con unos milisegundos de más), no un dato: se
+    // recorta en vez de rechazar la escritura entera.
+    const duration = input.durationSec ?? null;
+    const conocida = duracionDeReferencia(
+      lesson,
+      Math.max(duration ?? 0, previo?.durationSec ?? 0) || null,
+    );
+    const position =
+      conocida === null ? input.positionSec : Math.min(input.positionSec, conocida);
 
-  const tramo = tramoAcreditable(input, previo ?? null, conocida, new Date());
-  const tramos = unirTramos(previo?.watchedSegments ?? [], tramo);
-  const visto = sumarTramos(tramos);
+    const tramo = tramoAcreditable(input, previo ?? null, conocida, new Date());
+    const tramos = unirTramos(previo?.watchedSegments ?? [], tramo);
+    const visto = sumarTramos(tramos);
 
-  const [row] = await db
-    .insert(lessonVideoProgress)
-    .values({
-      studentId,
-      lessonId: lesson.id,
-      positionSec: position,
-      furthestSec: position,
-      durationSec: duration,
-      watchedSegments: tramos,
-      watchedSec: visto,
-    })
-    .onConflictDoUpdate({
-      target: [lessonVideoProgress.studentId, lessonVideoProgress.lessonId],
-      set: {
-        positionSec: sql`excluded.position_sec`,
-        // Solo crece: volver a ver un tramo no le resta lo que ya vio.
-        furthestSec: sql`greatest(${lessonVideoProgress.furthestSec}, excluded.position_sec)`,
-        // Un guardado sin duración (el reproductor todavía no la sabía) no
-        // borra la que ya se tenía, y una duración más corta tampoco: con ella
-        // se mide el 90%, y achicarla sería la forma de completar sin ver.
-        durationSec: sql`greatest(excluded.duration_sec, ${lessonVideoProgress.durationSec})`,
-        watchedSegments: sql`excluded.watched_segments`,
-        watchedSec: sql`excluded.watched_sec`,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+    const [fila] = await tx
+      .insert(lessonVideoProgress)
+      .values({
+        studentId,
+        lessonId: lesson.id,
+        positionSec: position,
+        furthestSec: position,
+        durationSec: duration,
+        watchedSegments: tramos,
+        watchedSec: visto,
+      })
+      .onConflictDoUpdate({
+        target: [lessonVideoProgress.studentId, lessonVideoProgress.lessonId],
+        set: {
+          positionSec: sql`excluded.position_sec`,
+          // Solo crece: volver a ver un tramo no le resta lo que ya vio.
+          furthestSec: sql`greatest(${lessonVideoProgress.furthestSec}, excluded.position_sec)`,
+          // Un guardado sin duración (el reproductor todavía no la sabía) no
+          // borra la que ya se tenía, y una duración más corta tampoco: con ella
+          // se mide el 90%, y achicarla sería la forma de completar sin ver.
+          durationSec: sql`greatest(excluded.duration_sec, ${lessonVideoProgress.durationSec})`,
+          watchedSegments: sql`excluded.watched_segments`,
+          watchedSec: sql`excluded.watched_sec`,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return fila!;
+  });
 
   let completion: LessonImpact | null = null;
   if (
     !yaCompleta &&
     videoConAvance(lesson) &&
-    alcanzaLoVisto(row!.watchedSec, duracionDeReferencia(lesson, row!.durationSec))
+    alcanzaLoVisto(row.watchedSec, duracionDeReferencia(lesson, row.durationSec))
   ) {
     await registrarCompleta(db, studentId, lesson, lugar);
     completion = await impactoDeLeccion(db, studentId, lesson);
   }
 
-  return { ...toVideoProgress(row!), completion };
+  return { ...toVideoProgress(row), completion };
 }
 
 /**

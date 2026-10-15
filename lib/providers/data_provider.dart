@@ -161,6 +161,7 @@ class DataProvider extends ChangeNotifier {
     _courseProgress.clear();
     _myVideoProgress.clear();
     _completing.clear();
+    _avanceLeidoEn.clear();
     // El repaso viaja dentro del glosario y es de la cuenta con sesión.
     _glossaryByCourse.clear();
     _usersByQuery.clear();
@@ -182,6 +183,8 @@ class DataProvider extends ChangeNotifier {
   /// servidor: un estudiante recibe solo lo publicado de sus laboratorios.
   AsyncValue<List<Course>> get courses {
     _lazy(_courses, (v) => _courses = v, _fetchCourses);
+    // Cada tarjeta muestra su avance, que pudo cambiar en otro dispositivo.
+    _alDia('cursos', () => _courses, (v) => _courses = v, _fetchCourses);
     return _courses;
   }
 
@@ -234,12 +237,19 @@ class DataProvider extends ChangeNotifier {
         // trae más detalle que este resumen.
         // Bajo la clave del usuario con sesión: este resumen es SUYO.
         final key = _progressKey(parsed.courseId, null);
-        if (_courseProgress[key]?.valueOrNull == null) {
+        final cargado = _courseProgress[key]?.valueOrNull;
+        if (cargado == null) {
           _courseProgress[key] = AsyncValue.data(parsed);
+        } else if (cargado.completedLessons != parsed.completedLessons) {
+          // El resumen dice otra cosa que el detalle que había: avanzó en otro
+          // dispositivo. El detalle se vuelve a pedir la próxima vez que se
+          // mire.
+          _avanceLeidoEn.remove(key);
         }
       }
     }
 
+    _avanceLeidoEn['cursos'] = reloj();
     return Page.fromJson(page, Course.fromJson).data;
   }
 
@@ -809,7 +819,18 @@ class DataProvider extends ChangeNotifier {
   /// mostrar ese error, no "todavía no hay laboratorios".
   AsyncValue<RutaProgress> get rutaProgress {
     _lazy(_rutaProgress, (v) => _rutaProgress = v, _fetchRutaProgress);
+    _alDia('ruta', () => _rutaProgress, (v) => _rutaProgress = v,
+        _fetchRutaProgress);
     return _rutaProgress;
+  }
+
+  /// Pregunta al servidor por la Ruta propia antes de decir «bloqueado»: lo
+  /// anterior se pudo completar en otro dispositivo hace un momento. Nunca
+  /// lanza ni muestra un error: sin señal, queda lo que había.
+  Future<void> rutaAlDia() async {
+    _avanceLeidoEn.remove('ruta');
+    await _alDia('ruta', () => _rutaProgress, (v) => _rutaProgress = v,
+        _fetchRutaProgress);
   }
 
   Future<void> reloadRutaProgress() => _refresh(
@@ -822,6 +843,7 @@ class DataProvider extends ChangeNotifier {
     final id = _requireUser();
     final json = await api.get('/students/$id/ruta-progress');
     final ruta = RutaProgress.fromJson(Map<String, dynamic>.from(json as Map));
+    _avanceLeidoEn['ruta'] = reloj();
     for (final lab in ruta.laboratories) {
       for (final phase in lab.phases) {
         for (final module in phase.modules) {
@@ -866,7 +888,25 @@ class DataProvider extends ChangeNotifier {
     }
     _lazy(current, (v) => _courseProgress[key] = v,
         () => _fetchCourseProgress(courseId, studentId));
+    _alDia(key, () => _courseProgress[key] ?? current,
+        (v) => _courseProgress[key] = v,
+        () => _fetchCourseProgress(courseId, studentId));
     return _courseProgress[key] ?? current;
+  }
+
+  /// Pregunta al servidor por el avance propio en un curso, aunque el que
+  /// hay sea reciente (con [soloSiViejo], solo si ya venció). Para antes de
+  /// decir «bloqueada» o de retomar un video: lo pudo completar o avanzar en
+  /// otro dispositivo hace un momento. Nunca lanza ni muestra un error: sin
+  /// señal, queda lo que había.
+  Future<void> avanceDelCursoAlDia(String courseId,
+      {bool soloSiViejo = false}) async {
+    final key = _progressKey(courseId, null);
+    if (!soloSiViejo) _avanceLeidoEn.remove(key);
+    if (_courseProgress[key] == null) return;
+    await _alDia(key, () => _courseProgress[key]!,
+        (v) => _courseProgress[key] = v,
+        () => _fetchCourseProgress(courseId, null));
   }
 
   Future<void> reloadCourseProgress(String courseId, {String? studentId}) {
@@ -888,6 +928,7 @@ class DataProvider extends ChangeNotifier {
       String courseId, String? studentId) async {
     final id = studentId ?? _requireUser();
     final json = await api.get('/students/$id/course-progress/$courseId');
+    _avanceLeidoEn[_progressKey(courseId, studentId)] = reloj();
     // Es el detalle aunque no traiga ninguna lección completa: sin esto, un
     // cuerpo sin la lista volvería a pedirse en cada redibujo.
     final progress = CourseProgress.fromJson({
@@ -970,6 +1011,9 @@ class DataProvider extends ChangeNotifier {
       // Completar solo lo hace la propia persona: va bajo su clave.
       final key = _progressKey(courseId ?? course.courseId, null);
       final previous = _courseProgress[key]?.valueOrNull;
+      // Esto es lo más nuevo: una lectura que salió antes no lo pisa.
+      _versionDelAvance[key] = (_versionDelAvance[key] ?? 0) + 1;
+      _avanceLeidoEn[key] = reloj();
       _courseProgress[key] = AsyncValue.data(CourseProgress(
         courseId: course.courseId,
         courseName: previous?.courseName ?? '',
@@ -1871,6 +1915,9 @@ class DataProvider extends ChangeNotifier {
 
   AsyncValue<List<Certificate>> get certificates {
     _lazy(_certificates, (v) => _certificates = v, _fetchCertificates);
+    // Un certificado que se emitió al terminar el curso en otro dispositivo.
+    _alDia('certificados', () => _certificates, (v) => _certificates = v,
+        _fetchCertificates);
     return _certificates;
   }
 
@@ -1882,6 +1929,7 @@ class DataProvider extends ChangeNotifier {
 
   Future<List<Certificate>> _fetchCertificates() async {
     final json = await api.get('/certificates', query: {'pageSize': 100});
+    _avanceLeidoEn['certificados'] = reloj();
     return Page.fromJson(
       Map<String, dynamic>.from(json as Map),
       Certificate.fromJson,
@@ -2506,6 +2554,79 @@ class DataProvider extends ChangeNotifier {
   /// Pasa a `loading` de forma SÍNCRONA y sin notificar —para que la misma
   /// construcción ya vea el esqueleto y para que un segundo acceso no dispare
   /// otro pedido— y deja el `notifyListeners` para cuando responda la red.
+  // -------------------------------------------------------------------------
+  // El avance, al día entre dispositivos
+  // -------------------------------------------------------------------------
+
+  /// Cuánto vale el avance que ya se trajo antes de volver a preguntarlo.
+  ///
+  /// La misma persona avanza en el computador y sigue en el teléfono (o al
+  /// revés). Antes, lo que una pantalla ya había traído se quedaba en memoria
+  /// hasta salir de la app por más de cinco minutos: el otro dispositivo
+  /// mostraba la lección pendiente y la siguiente con candado, aunque el
+  /// servidor ya la tuviera completa.
+  ///
+  /// Treinta segundos y no menos: mientras corre un video la pantalla se
+  /// redibuja con cada guardado, y una sala de cómputo entera sale por una
+  /// sola IP. Volver a la app, tocar un candado o abrir un video preguntan
+  /// enseguida, sin esperar a que venza.
+  static const vigenciaDelAvance = Duration(seconds: 30);
+
+  /// El reloj del avance y de la vuelta a la app (`main.dart`): uno solo,
+  /// para que las pruebas puedan adelantarlo.
+  DateTime Function() reloj = DateTime.now;
+
+  /// Cuándo llegó del servidor cada dato de avance: `cursos`, `ruta`,
+  /// `certificados` y la clave de cada curso ([_progressKey]).
+  final Map<String, DateTime> _avanceLeidoEn = {};
+
+  /// Sube cada vez que completar una lección cambia el avance de un curso:
+  /// una lectura que salió antes y llega después no lo deshace.
+  final Map<String, int> _versionDelAvance = {};
+
+  /// Todo el avance pasa a estar vencido: lo que esté en pantalla se vuelve a
+  /// pedir. Para cuando la app vuelve a primer plano: la persona pudo haber
+  /// seguido en otro dispositivo.
+  void avanceVencido() {
+    if (_avanceLeidoEn.isEmpty) return;
+    _avanceLeidoEn.clear();
+    notifyListeners();
+  }
+
+  /// Si lo que hay en [clave] ya se está mostrando pero venció
+  /// ([vigenciaDelAvance]), lo vuelve a pedir por detrás. La pantalla no
+  /// cambia mientras tanto —ni ruedita ni parpadeo— y, si el pedido falla
+  /// (el teléfono sin señal), se queda lo que había, sin cartel de error.
+  /// Devuelve el pedido, o `null` si no hacía falta.
+  Future<void>? _alDia<T>(
+    String clave,
+    AsyncValue<T> Function() leer,
+    void Function(AsyncValue<T>) set,
+    Future<T> Function() fetch,
+  ) {
+    if (leer() is! AsyncData<T>) return null;
+    final leido = _avanceLeidoEn[clave];
+    if (leido != null && reloj().difference(leido) <= vigenciaDelAvance) {
+      return null;
+    }
+    // Uno a la vez: mientras va, cuenta como recién leído.
+    _avanceLeidoEn[clave] = reloj();
+    final version = _versionDelAvance[clave] ?? 0;
+    return Future.microtask(() async {
+      try {
+        final nuevo = await fetch();
+        // Completar una lección mientras tanto ya dejó algo más nuevo; y si
+        // se cerró la sesión o se recargó todo, esto ya no corresponde.
+        if ((_versionDelAvance[clave] ?? 0) != version) return;
+        if (leer() is! AsyncData<T>) return;
+        set(AsyncValue.data(nuevo));
+        notifyListeners();
+      } catch (_) {
+        // Se vuelve a intentar la próxima vez que se mire.
+      }
+    });
+  }
+
   void _lazy<T>(
     AsyncValue<T> current,
     void Function(AsyncValue<T>) set,

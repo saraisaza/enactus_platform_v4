@@ -328,6 +328,75 @@ describe('el video se completa viéndolo', () => {
   });
 });
 
+describe('el teléfono y el computador de la misma persona', () => {
+  // Un estudiante reportó que el avance no coincidía entre el teléfono y el
+  // computador. El avance vive en el servidor: estas pruebas fijan que lo
+  // hecho en una sesión es lo que lee la otra, y que dos sesiones guardando
+  // el mismo video a la vez no se pisan.
+  async function dosSesiones(nombre: string) {
+    const c = await cursoBeta(nombre);
+    const correo = `${nombre.toLowerCase().replace(/\W+/g, '')}@beta.co`;
+    const telefono = (await login(t.app, correo, 'Clave123')).accessToken;
+    return { ...c, computador: c.token, telefono };
+  }
+
+  const guardarVideo = (leccion: string, token: string, cuerpo: Record<string, number>) =>
+    pedir(`/progress/lessons/${leccion}/video`, 'PUT', token, { durationSec: 300, ...cuerpo });
+
+  it('lo completado en el computador es lo que lee el teléfono', async () => {
+    const c = await dosSesiones('Completa en uno');
+    await verVideoEntero(t.app, sql, c.computador, c.personaId, c.video, 300);
+    expect(await siguiente({ ...c, token: c.telefono })).toBe(c.quiz);
+  });
+
+  it('el navegador no guarda el avance: cada lectura va al servidor', async () => {
+    const c = await dosSesiones('Sin guardar');
+    const res = await pedir(`/students/${c.personaId}/course-progress/${c.cursoId}`, 'GET', c.telefono);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('el video sigue en el teléfono donde quedó en el computador, y suma', async () => {
+    const c = await dosSesiones('Sigue en otro');
+    await guardarVideo(c.video, c.computador, { positionSec: 0, watchedFromSec: 0, watchedToSec: 0 });
+    await pasaElTiempo(sql, c.personaId, c.video, 120);
+    await guardarVideo(c.video, c.computador, {
+      positionSec: 120, watchedFromSec: 0, watchedToSec: 120,
+    });
+
+    const res = await pedir(`/students/${c.personaId}/course-progress/${c.cursoId}`, 'GET', c.telefono);
+    const progreso = await leer<{ videoProgress: { lessonId: string; positionSec: number; watchedSec: number }[] }>(res);
+    const video = progreso.videoProgress.find((v) => v.lessonId === c.video);
+    expect(video?.positionSec).toBe(120);
+    expect(video?.watchedSec).toBe(120);
+
+    // El teléfono arranca donde quedó y sigue: lo visto se suma, no empieza de cero.
+    await guardarVideo(c.video, c.telefono, { positionSec: 120, watchedFromSec: 120, watchedToSec: 120 });
+    await pasaElTiempo(sql, c.personaId, c.video, 60);
+    const sigue = await leer<{ watchedSec: number }>(await guardarVideo(c.video, c.telefono, {
+      positionSec: 180, watchedFromSec: 120, watchedToSec: 180,
+    }));
+    expect(sigue.watchedSec).toBe(180);
+  });
+
+  it('dos sesiones a la vez: ninguna falla, y lo visto no supera el tiempo real', async () => {
+    const c = await dosSesiones('A la vez');
+    await guardarVideo(c.video, c.computador, { positionSec: 0, watchedFromSec: 0, watchedToSec: 0 });
+    await pasaElTiempo(sql, c.personaId, c.video, 60);
+    // La fila se toma al guardar: el segundo guardado lee lo que dejó el
+    // primero. Una persona no ve dos tramos a la vez, así que pasados 60
+    // segundos no se acreditan 120 por tener dos pantallas abiertas.
+    const respuestas = await Promise.all([
+      guardarVideo(c.video, c.computador, { positionSec: 60, watchedFromSec: 0, watchedToSec: 60 }),
+      guardarVideo(c.video, c.telefono, { positionSec: 260, watchedFromSec: 200, watchedToSec: 260 }),
+    ]);
+    expect(respuestas.map((r) => r.status)).toEqual([200, 200]);
+    const [fila] = await sql<{ watched_sec: number }[]>`
+      select watched_sec from lesson_video_progress
+       where student_id = ${c.personaId} and lesson_id = ${c.video}`;
+    expect(fila!.watched_sec).toBe(60);
+  });
+});
+
 describe('el quiz se completa aprobándolo', () => {
   it('reprobar no completa; aprobar sí, y lo dice la respuesta', async () => {
     const c = await cursoBeta('Aprobar');

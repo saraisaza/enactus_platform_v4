@@ -459,7 +459,7 @@ class _LessonTile extends StatelessWidget {
           // El candado es del estudiante: quien mira su curso desde el equipo
           // no avanza nada, y puede abrir el material para revisarlo.
           onTap: () => locked && !readOnly
-              ? showAppSnack(context, _lockedMessage)
+              ? _abrirSiYaLeToca(context)
               : _open(context),
           child: Row(
             children: [
@@ -574,6 +574,35 @@ class _LessonTile extends StatelessWidget {
     }
   }
 
+  /// Una lección con candado pudo completarse en otro dispositivo hace un
+  /// momento —la anterior, vista en el computador—: antes de decir que falta
+  /// algo se le pregunta al servidor, y si ya le toca, se abre.
+  Future<void> _abrirSiYaLeToca(BuildContext context) async {
+    final data = context.read<DataProvider>();
+    await data.avanceDelCursoAlDia(course.id);
+    if (!context.mounted) return;
+    final progreso = data.courseProgress(course.id).valueOrNull;
+    if (progreso != null &&
+        (progreso.isLessonComplete(lesson.id) ||
+            progreso.nextLessonId == lesson.id)) {
+      _open(context);
+      return;
+    }
+    final siguiente = progreso?.nextLessonId;
+    final falta = siguiente == null
+        ? null
+        : course.modules
+            .expand((m) => m.lessons)
+            .where((l) => l.id == siguiente)
+            .firstOrNull
+            ?.title;
+    showAppSnack(
+        context,
+        falta == null
+            ? tr.leccionBloqueadaSinNombre
+            : tr.leccionBloqueada(falta));
+  }
+
   /// El video de YouTube o subido se completa en el servidor con lo que se
   /// ve (el 90%, sin adelantar). Uno de Vimeo, o una lección sin video, no
   /// informa qué se vio: se completa al verlo y cerrarlo.
@@ -581,6 +610,16 @@ class _LessonTile extends StatelessWidget {
     // El avance se guarda solo para el propio estudiante: el equipo puede
     // abrir el curso de alguien, pero mirar el video no es avance suyo.
     final sigue = _sigue(context);
+    // Retoma donde quedó, aunque haya sido en otro dispositivo: si lo que
+    // hay ya venció, se pregunta antes de abrir (sin esperar más de un par
+    // de segundos, para no dejar a nadie mirando una pantalla quieta).
+    if (sigue) {
+      await context
+          .read<DataProvider>()
+          .avanceDelCursoAlDia(course.id, soloSiViejo: true)
+          .timeout(const Duration(seconds: 2), onTimeout: () {});
+      if (!context.mounted) return;
+    }
     await VideoPlayerDialog.show(
       context,
       lesson,

@@ -120,6 +120,17 @@ export function createApp(database: Database = defaultDb) {
     }),
   );
 
+  // Nada de la API se guarda en el navegador ni en un intermediario: el
+  // avance, las notas y los avisos cambian desde otro dispositivo, y una
+  // respuesta guardada mostraría el estado viejo. Una ruta que quiera otra
+  // cosa la fija ella misma.
+  app.use('*', async (c, next) => {
+    await next();
+    if (!c.res.headers.has('Cache-Control')) {
+      c.res.headers.set('Cache-Control', 'no-store');
+    }
+  });
+
   app.use('*', async (c, next) => {
     c.set('db', database);
     // La IP se resuelve en `lib/client-ip.ts`, NO leyendo la primera entrada

@@ -895,10 +895,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get calendarioRepetir => 'Repetir cada 15 días';
 
   @override
-  String get calendarioEventoActualizado => 'Evento actualizado ✓';
+  String get calendarioEventoActualizado => 'Evento actualizado';
 
   @override
-  String get calendarioEventoAgregado => 'Evento agregado ✓';
+  String get calendarioEventoAgregado => 'Evento agregado';
 
   @override
   String get comunGuardando => 'Guardando…';
@@ -1673,7 +1673,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ingrese un teléfono válido (mínimo 7 dígitos).';
 
   @override
-  String get perfilActualizado => 'Perfil actualizado ✓';
+  String get perfilActualizado => 'Perfil actualizado';
 
   @override
   String get perfilSubiendoFoto => 'Subiendo foto…';
@@ -2083,7 +2083,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Esta actividad requiere adjuntar un archivo.';
 
   @override
-  String get actividadEntregada => 'Actividad entregada ✓';
+  String get actividadEntregada => 'Actividad entregada';
 
   @override
   String actividadEntregarTitulo(Object leccion) {
@@ -2107,7 +2107,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get actividadPongaNombre => 'Póngale un nombre a la entrega.';
 
   @override
-  String get actividadEntregaEnviada => 'Entrega enviada ✓';
+  String get actividadEntregaEnviada => 'Entrega enviada';
 
   @override
   String get actividadNombreTarea => 'Nombre de la tarea';
@@ -3071,7 +3071,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get talentoNecesitaTitulo => 'El aviso necesita un título.';
 
   @override
-  String get talentoMensajeEnviado => 'Mensaje enviado ✓';
+  String get talentoMensajeEnviado => 'Mensaje enviado';
 
   @override
   String talentoContactarA(Object nombre) {
@@ -3116,7 +3116,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get recursosFaltaUrl => 'Falta la URL.';
 
   @override
-  String get recursosPublicado => 'Recurso publicado ✓';
+  String get recursosPublicado => 'Recurso publicado';
 
   @override
   String get comunDescripcion => 'Descripción';
@@ -3314,7 +3314,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get calificarNotaRango => 'La nota va de 0.0 a 5.0.';
 
   @override
-  String get calificarEntregaCalificada => 'Entrega calificada ✓';
+  String get calificarEntregaCalificada => 'Entrega calificada';
 
   @override
   String calificarTitulo(Object tarea) {
@@ -3454,7 +3454,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get constructorNecesitaNombre => 'El curso necesita un nombre.';
 
   @override
-  String get constructorGuardado => 'Curso guardado ✓';
+  String get constructorGuardado => 'Curso guardado';
 
   @override
   String get constructorSubtitulo => 'Subtítulo';
@@ -3501,7 +3501,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get constructorLeccionesCompletar => 'Lecciones a completar:';
 
   @override
-  String get constructorCategorizacionGuardada => 'Categorización guardada ✓';
+  String get constructorCategorizacionGuardada => 'Categorización guardada';
 
   @override
   String get constructorSinLab => 'Sin laboratorio (curso especial)';
@@ -3607,7 +3607,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get comunGuardado => 'Guardado ✓';
+  String get comunGuardado => 'Guardado';
 
   @override
   String get constructorCuentaCertificado =>
@@ -3916,7 +3916,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Hay cambios sin guardar en este término. ¿Desea salir de todas formas?';
 
   @override
-  String get glosarioTerminoAgregado => 'Término agregado ✓';
+  String get glosarioTerminoAgregado => 'Término agregado';
 
   @override
   String get glosarioNuevoTermino => 'Nuevo término';
@@ -4158,10 +4158,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma';
 
   @override
-  String get asignarCursosOk => 'Cursos asignados ✓';
+  String get asignarCursosOk => 'Cursos asignados';
 
   @override
-  String get asignarLabsOk => 'Laboratorios asignados ✓';
+  String get asignarLabsOk => 'Laboratorios asignados';
 
   @override
   String asignarA(Object nombre) {
@@ -4285,7 +4285,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get usuariosCuentaEliminada => 'Cuenta eliminada ✓';
+  String get usuariosCuentaEliminada => 'Cuenta eliminada';
 
   @override
   String get usuariosNombreCorreoObligatorios =>
@@ -4813,7 +4813,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get respaldoGuardarCopia => 'Guardar copia de seguridad';
 
   @override
-  String get respaldoCopiaDescargada => 'Copia descargada ✓';
+  String get respaldoCopiaDescargada => 'Copia descargada';
 
   @override
   String get respaldoSeleccioneArchivo => 'Seleccione el archivo de respaldo';
@@ -4831,7 +4831,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ese archivo no es un respaldo válido: no se pudo leer como JSON.';
 
   @override
-  String get respaldoRestaurado => 'Datos restaurados ✓';
+  String get respaldoRestaurado => 'Datos restaurados';
 
   @override
   String get contenidoHerramienta => 'la edición de la página principal';
@@ -4848,10 +4848,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'El título del hero no puede quedar vacío.';
 
   @override
-  String get contenidoActualizado => 'Página principal actualizada ✓';
+  String get contenidoActualizado => 'Página principal actualizada';
 
   @override
-  String get contenidoImagenesPublicadas => 'Imágenes publicadas ✓';
+  String get contenidoImagenesPublicadas => 'Imágenes publicadas';
 
   @override
   String get contenidoTituloHero => 'Título del hero';
@@ -5025,7 +5025,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Escriba su comentario antes de guardar.';
 
   @override
-  String get mentorComentarioGuardado => 'Comentario guardado ✓';
+  String get mentorComentarioGuardado => 'Comentario guardado';
 
   @override
   String get mentorRevisarEntrega => 'Revisar entrega';
@@ -5174,7 +5174,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get empresaCuentaCreada => 'Cuenta creada ✓';
+  String get empresaCuentaCreada => 'Cuenta creada';
 
   @override
   String get empresaNuevaCuentaEquipo => 'Nueva cuenta de su equipo';
@@ -5937,4 +5937,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get encuestaSinComentarios => 'Sin comentarios todavía.';
+
+  @override
+  String get entregaRecibidaDetalle =>
+      'Le avisaremos cuando la revisen. Puede ver su entrega en cualquier momento.';
+
+  @override
+  String get actividadVerEntrega => 'Ver entrega';
 }

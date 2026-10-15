@@ -2637,7 +2637,10 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, tr.actividadEntregaEnviada);
+      // En la Ruta no hay una lista de entregas a la cual llevar: solo
+      // «Continuar».
+      showSuccessCheck(context, tr.actividadEntregaEnviada,
+          detalle: tr.entregaRecibidaDetalle);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {

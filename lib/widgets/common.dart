@@ -698,93 +698,311 @@ void showAppSnack(BuildContext context, String message, {bool error = false}) {
   ));
 }
 
-/// Micro-interacción de éxito: check animado que aparece al centro y se
-/// desvanece solo. Úsala al completar lecciones, enviar entregas, aprobar
-/// quizzes o emitir certificados — el progreso se siente gratificante.
-void showSuccessCheck(BuildContext context, String message) {
-  final overlay = Overlay.of(context);
+/// El aviso de que algo salió bien: entregar una actividad, guardar,
+/// publicar, calificar. Una tarjeta centrada con el check, el título, una
+/// explicación opcional ([detalle]) y los botones: «Continuar» lo cierra y,
+/// si hay [accion], un botón secundario la ejecuta (p. ej. «Ver entrega»).
+///
+/// Se cierra con «Continuar», con Esc o tocando fuera. Va en la capa de más
+/// arriba, así que sobrevive a que quien lo pidió cierre su diálogo justo
+/// antes —que es lo que hacen casi todos—. Uno nuevo reemplaza al anterior.
+void showSuccessCheck(
+  BuildContext context,
+  String message, {
+  String? detalle,
+  String? accion,
+  VoidCallback? alAccion,
+}) {
+  final overlay = Overlay.of(context, rootOverlay: true);
+  _avisoAbierto?.remove();
   late OverlayEntry entry;
   entry = OverlayEntry(
-    builder: (_) => _SuccessToast(message: message, onDone: () => entry.remove()),
+    builder: (_) => AvisoDeExito(
+      titulo: message,
+      detalle: detalle,
+      accion: accion,
+      alAccion: alAccion,
+      alCerrar: () {
+        if (_avisoAbierto == entry) _avisoAbierto = null;
+        if (entry.mounted) entry.remove();
+      },
+    ),
   );
+  _avisoAbierto = entry;
   overlay.insert(entry);
 }
 
-class _SuccessToast extends StatefulWidget {
-  final String message;
-  final VoidCallback onDone;
-  const _SuccessToast({required this.message, required this.onDone});
+OverlayEntry? _avisoAbierto;
 
-  @override
-  State<_SuccessToast> createState() => _SuccessToastState();
+/// Los colores del aviso: el verde es el de «salió bien», no el acento de la
+/// marca, así que no cambia con el cliente.
+abstract final class _ColoresDelAviso {
+  static const velo = Color(0x80000000);
+  static const tarjeta = Color(0xFF232327);
+  static const borde = Color(0xFF34343A);
+  static const fondoDelCheck = Color(0x2940BE6E);
+  static const check = Color(0xFF4CC97A);
+  static const titulo = Color(0xFFECECF1);
+  static const detalle = Color(0xFFA3A3AD);
+  static const bordeSecundario = Color(0xFF3A3A41);
+  static const textoSecundario = Color(0xFFD6D6DC);
+  static const fondoSecundarioEncima = Color(0xFF2D2D33);
+  static const primario = Color(0xFF3FB26C);
+  static const primarioEncima = Color(0xFF4FC27C);
+  static const textoPrimario = Color(0xFF0F1A13);
 }
 
-class _SuccessToastState extends State<_SuccessToast> {
-  bool _visible = false;
+/// La tarjeta de [showSuccessCheck], con su velo.
+class AvisoDeExito extends StatefulWidget {
+  final String titulo;
+  final String? detalle;
+  final String? accion;
+  final VoidCallback? alAccion;
+  final VoidCallback alCerrar;
+
+  const AvisoDeExito({
+    super.key,
+    required this.titulo,
+    required this.alCerrar,
+    this.detalle,
+    this.accion,
+    this.alAccion,
+  });
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _visible = true);
-    });
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (mounted) setState(() => _visible = false);
-    });
-    Future.delayed(const Duration(milliseconds: 1750), widget.onDone);
+  State<AvisoDeExito> createState() => _AvisoDeExitoState();
+}
+
+class _AvisoDeExitoState extends State<AvisoDeExito>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entrada = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 160),
+  )..forward();
+  late final Animation<double> _curva =
+      CurvedAnimation(parent: _entrada, curve: Curves.easeOut);
+  bool _cerrado = false;
+
+  @override
+  void dispose() {
+    _entrada.dispose();
+    super.dispose();
+  }
+
+  void _cerrar() {
+    if (_cerrado) return;
+    _cerrado = true;
+    widget.alCerrar();
+  }
+
+  void _accion() {
+    _cerrar();
+    widget.alAccion?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: Center(
-          child: AnimatedOpacity(
-            opacity: _visible ? 1 : 0,
-            duration: const Duration(milliseconds: 300),
-            child: AnimatedScale(
-              scale: _visible ? 1 : 0.7,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutBack,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
-                decoration: BoxDecoration(
-                  color: AppColors.slate,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: AppColors.statusGood.withValues(alpha: 0.6)),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.black54,
-                        blurRadius: 24,
-                        offset: Offset(0, 8)),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.statusGood.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.check_rounded,
-                          color: AppColors.statusGood, size: 34),
+    final ancho = MediaQuery.sizeOf(context).width;
+    final accion = widget.accion;
+    // `Material` debajo de todo: sin él, el texto que se dibuja en esta capa
+    // no hereda estilo y Flutter lo marca con el subrayado amarillo doble.
+    return Material(
+      type: MaterialType.transparency,
+      child: Shortcuts(
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.escape): DismissIntent(),
+        },
+        child: Actions(
+          actions: {
+            DismissIntent: CallbackAction<DismissIntent>(onInvoke: (_) {
+              _cerrar();
+              return null;
+            }),
+          },
+          // El foco no sale del aviso mientras está abierto.
+          child: FocusScope(
+            autofocus: true,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: FadeTransition(
+                    opacity: _curva,
+                    child: GestureDetector(
+                      key: const ValueKey('aviso-velo'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _cerrar,
+                      child: const ColoredBox(color: _ColoresDelAviso.velo),
                     ),
-                    const SizedBox(height: 10),
-                    Text(widget.message,
-                        style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w700)),
-                  ],
+                  ),
                 ),
-              ),
+                Center(
+                  child: FadeTransition(
+                    opacity: _curva,
+                    child: ScaleTransition(
+                      scale: Tween(begin: 0.96, end: 1.0).animate(_curva),
+                      child: Semantics(
+                        // role="dialog" y aria-modal: el lector de pantalla
+                        // entra al aviso y lo nombra por su título.
+                        scopesRoute: true,
+                        namesRoute: true,
+                        explicitChildNodes: true,
+                        label: widget.titulo,
+                        child: Container(
+                          key: const ValueKey('aviso-de-exito'),
+                          width: 320,
+                          constraints: BoxConstraints(maxWidth: ancho - 32),
+                          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                          decoration: BoxDecoration(
+                            color: _ColoresDelAviso.tarjeta,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: _ColoresDelAviso.borde),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x66000000),
+                                blurRadius: 40,
+                                offset: Offset(0, 16),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: const BoxDecoration(
+                                  color: _ColoresDelAviso.fondoDelCheck,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.check_rounded,
+                                    color: _ColoresDelAviso.check, size: 24),
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                widget.titulo,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w600,
+                                  color: _ColoresDelAviso.titulo,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                              if (widget.detalle != null) ...[
+                                const SizedBox(height: 14),
+                                Text(
+                                  widget.detalle!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    height: 1.45,
+                                    color: _ColoresDelAviso.detalle,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ],
+                              // 14 de separación más 6 de margen arriba.
+                              const SizedBox(height: 20),
+                              Row(
+                                children: [
+                                  if (accion != null) ...[
+                                    Expanded(
+                                      child: _BotonDelAviso(
+                                        texto: accion,
+                                        primario: false,
+                                        alTocar: _accion,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                  Expanded(
+                                    child: _BotonDelAviso(
+                                      texto: tr.comunContinuar,
+                                      primario: true,
+                                      autofocus: true,
+                                      alTocar: _cerrar,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// «Continuar» (primario) o la acción secundaria del aviso.
+class _BotonDelAviso extends StatelessWidget {
+  final String texto;
+  final bool primario;
+  final bool autofocus;
+  final VoidCallback alTocar;
+
+  const _BotonDelAviso({
+    required this.texto,
+    required this.primario,
+    required this.alTocar,
+    this.autofocus = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final forma =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
+    return TextButton(
+      autofocus: autofocus,
+      onPressed: alTocar,
+      style: ButtonStyle(
+        padding: const WidgetStatePropertyAll(EdgeInsets.all(10)),
+        minimumSize: const WidgetStatePropertyAll(Size(0, 40)),
+        shape: WidgetStatePropertyAll(forma),
+        // Con teclado, el foco se ve como un contorno; con el mouse o el
+        // dedo no, para que «Continuar» no parezca siempre resaltado.
+        side: WidgetStateProperty.resolveWith((estados) {
+          if (estados.contains(WidgetState.focused) &&
+              FocusManager.instance.highlightMode ==
+                  FocusHighlightMode.traditional) {
+            return const BorderSide(color: _ColoresDelAviso.titulo, width: 2);
+          }
+          return primario
+              ? BorderSide.none
+              : const BorderSide(color: _ColoresDelAviso.bordeSecundario);
+        }),
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        backgroundColor: WidgetStateProperty.resolveWith((estados) {
+          final encima = estados.contains(WidgetState.hovered) ||
+              estados.contains(WidgetState.pressed);
+          if (primario) {
+            return encima
+                ? _ColoresDelAviso.primarioEncima
+                : _ColoresDelAviso.primario;
+          }
+          return encima
+              ? _ColoresDelAviso.fondoSecundarioEncima
+              : Colors.transparent;
+        }),
+        foregroundColor: WidgetStatePropertyAll(primario
+            ? _ColoresDelAviso.textoPrimario
+            : _ColoresDelAviso.textoSecundario),
+        // `fontFamily` explícita, como en el tema: el `textStyle` de un
+        // `ButtonStyle` reemplaza el estilo entero, letra incluida.
+        textStyle: WidgetStatePropertyAll(TextStyle(
+          fontFamily: AppFonts.ui,
+          fontSize: 14,
+          fontWeight: primario ? FontWeight.w500 : FontWeight.w400,
+        )),
+      ),
+      child: Text(texto, textAlign: TextAlign.center),
     );
   }
 }

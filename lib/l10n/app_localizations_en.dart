@@ -897,10 +897,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarioRepetir => 'Repeat every 15 days';
 
   @override
-  String get calendarioEventoActualizado => 'Event updated ✓';
+  String get calendarioEventoActualizado => 'Event updated';
 
   @override
-  String get calendarioEventoAgregado => 'Event added ✓';
+  String get calendarioEventoAgregado => 'Event added';
 
   @override
   String get comunGuardando => 'Saving…';
@@ -1673,7 +1673,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter a valid phone number (at least 7 digits).';
 
   @override
-  String get perfilActualizado => 'Profile updated ✓';
+  String get perfilActualizado => 'Profile updated';
 
   @override
   String get perfilSubiendoFoto => 'Uploading photo…';
@@ -2094,7 +2094,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This activity requires an attached file.';
 
   @override
-  String get actividadEntregada => 'Activity submitted ✓';
+  String get actividadEntregada => 'Activity submitted';
 
   @override
   String actividadEntregarTitulo(Object leccion) {
@@ -2118,7 +2118,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actividadPongaNombre => 'Give the submission a name.';
 
   @override
-  String get actividadEntregaEnviada => 'Submission sent ✓';
+  String get actividadEntregaEnviada => 'Submission sent';
 
   @override
   String get actividadNombreTarea => 'Task name';
@@ -3090,7 +3090,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get talentoNecesitaTitulo => 'The notice needs a title.';
 
   @override
-  String get talentoMensajeEnviado => 'Message sent ✓';
+  String get talentoMensajeEnviado => 'Message sent';
 
   @override
   String talentoContactarA(Object nombre) {
@@ -3135,7 +3135,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recursosFaltaUrl => 'The URL is missing.';
 
   @override
-  String get recursosPublicado => 'Resource published ✓';
+  String get recursosPublicado => 'Resource published';
 
   @override
   String get comunDescripcion => 'Description';
@@ -3335,7 +3335,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calificarNotaRango => 'The grade goes from 0.0 to 5.0.';
 
   @override
-  String get calificarEntregaCalificada => 'Submission graded ✓';
+  String get calificarEntregaCalificada => 'Submission graded';
 
   @override
   String calificarTitulo(Object tarea) {
@@ -3475,7 +3475,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get constructorNecesitaNombre => 'The course needs a name.';
 
   @override
-  String get constructorGuardado => 'Course saved ✓';
+  String get constructorGuardado => 'Course saved';
 
   @override
   String get constructorSubtitulo => 'Subtitle';
@@ -3522,7 +3522,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get constructorLeccionesCompletar => 'Lessons to complete:';
 
   @override
-  String get constructorCategorizacionGuardada => 'Categorization saved ✓';
+  String get constructorCategorizacionGuardada => 'Categorization saved';
 
   @override
   String get constructorSinLab => 'No laboratory (special course)';
@@ -3628,7 +3628,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get comunGuardado => 'Saved ✓';
+  String get comunGuardado => 'Saved';
 
   @override
   String get constructorCuentaCertificado =>
@@ -3941,7 +3941,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'There are unsaved changes in this term. Do you want to leave anyway?';
 
   @override
-  String get glosarioTerminoAgregado => 'Term added ✓';
+  String get glosarioTerminoAgregado => 'Term added';
 
   @override
   String get glosarioNuevoTermino => 'New term';
@@ -4181,10 +4181,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Open Learning live sessions, Impact Path events and mentoring sessions across the whole platform';
 
   @override
-  String get asignarCursosOk => 'Courses assigned ✓';
+  String get asignarCursosOk => 'Courses assigned';
 
   @override
-  String get asignarLabsOk => 'Laboratories assigned ✓';
+  String get asignarLabsOk => 'Laboratories assigned';
 
   @override
   String asignarA(Object nombre) {
@@ -4308,7 +4308,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get usuariosCuentaEliminada => 'Account deleted ✓';
+  String get usuariosCuentaEliminada => 'Account deleted';
 
   @override
   String get usuariosNombreCorreoObligatorios => 'Name and email are required.';
@@ -4838,7 +4838,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get respaldoGuardarCopia => 'Save backup';
 
   @override
-  String get respaldoCopiaDescargada => 'Backup downloaded ✓';
+  String get respaldoCopiaDescargada => 'Backup downloaded';
 
   @override
   String get respaldoSeleccioneArchivo => 'Select the backup file';
@@ -4856,7 +4856,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'That file is not a valid backup: it could not be read as JSON.';
 
   @override
-  String get respaldoRestaurado => 'Data restored ✓';
+  String get respaldoRestaurado => 'Data restored';
 
   @override
   String get contenidoHerramienta => 'editing the home page';
@@ -4872,10 +4872,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contenidoTituloVacio => 'The hero title cannot be empty.';
 
   @override
-  String get contenidoActualizado => 'Home page updated ✓';
+  String get contenidoActualizado => 'Home page updated';
 
   @override
-  String get contenidoImagenesPublicadas => 'Images published ✓';
+  String get contenidoImagenesPublicadas => 'Images published';
 
   @override
   String get contenidoTituloHero => 'Hero title';
@@ -5047,7 +5047,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mentorEscribaComentario => 'Write your comment before saving.';
 
   @override
-  String get mentorComentarioGuardado => 'Comment saved ✓';
+  String get mentorComentarioGuardado => 'Comment saved';
 
   @override
   String get mentorRevisarEntrega => 'Review submission';
@@ -5195,7 +5195,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get empresaCuentaCreada => 'Account created ✓';
+  String get empresaCuentaCreada => 'Account created';
 
   @override
   String get empresaNuevaCuentaEquipo => 'New account for your team';
@@ -5953,4 +5953,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get encuestaSinComentarios => 'No comments yet.';
+
+  @override
+  String get entregaRecibidaDetalle =>
+      'We will let you know when it is reviewed. You can see your submission at any time.';
+
+  @override
+  String get actividadVerEntrega => 'See submission';
 }

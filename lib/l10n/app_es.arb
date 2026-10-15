@@ -410,8 +410,8 @@
   "calendarioInvitadosPista": "Ej: María Pérez (Bancolombia)",
   "comunDescripcionOpcional": "Descripción (opcional)",
   "calendarioRepetir": "Repetir cada 15 días",
-  "calendarioEventoActualizado": "Evento actualizado ✓",
-  "calendarioEventoAgregado": "Evento agregado ✓",
+  "calendarioEventoActualizado": "Evento actualizado",
+  "calendarioEventoAgregado": "Evento agregado",
   "comunGuardando": "Guardando…",
   "comunGuardar": "Guardar",
   "archivoTipoNoPermitido": "Tipo de archivo no permitido. Se aceptan PDF, imágenes, documentos de Word y ZIP.",
@@ -820,7 +820,7 @@
   "perfilFotoFormato": "Use una foto en JPG o PNG.",
   "perfilFotoPesada": "La foto pesa más de 25 MB. Elija una más liviana.",
   "perfilTelefonoInvalido": "Ingrese un teléfono válido (mínimo 7 dígitos).",
-  "perfilActualizado": "Perfil actualizado ✓",
+  "perfilActualizado": "Perfil actualizado",
   "perfilSubiendoFoto": "Subiendo foto…",
   "perfilCambiarFoto": "Cambiar foto de perfil",
   "perfilAsignaAdmin": "Cédula, universidad, equipo, proyecto y empresa patrocinadora los asigna su administrador.",
@@ -1049,7 +1049,7 @@
   "actividadNuevaEntrega": "Nueva entrega",
   "actividadRequiereTexto": "Esta actividad requiere una respuesta escrita.",
   "actividadRequiereArchivo": "Esta actividad requiere adjuntar un archivo.",
-  "actividadEntregada": "Actividad entregada ✓",
+  "actividadEntregada": "Actividad entregada",
   "actividadEntregarTitulo": "Entregar: {leccion}",
   "@actividadEntregarTitulo": {
     "placeholders": {
@@ -1061,7 +1061,7 @@
   "actividadSinEntregas": "Todavía no ha realizado ninguna entrega en este curso.",
   "actividadEntregaLibre": "Nueva entrega libre",
   "actividadPongaNombre": "Póngale un nombre a la entrega.",
-  "actividadEntregaEnviada": "Entrega enviada ✓",
+  "actividadEntregaEnviada": "Entrega enviada",
   "actividadNombreTarea": "Nombre de la tarea",
   "comunComentario": "Comentario",
   "actividadLimite": "Límite: {fecha}",
@@ -1626,7 +1626,7 @@
   "talentoContactar": "Contactar",
   "talentoOportunidad": "Una oportunidad para usted",
   "talentoNecesitaTitulo": "El aviso necesita un título.",
-  "talentoMensajeEnviado": "Mensaje enviado ✓",
+  "talentoMensajeEnviado": "Mensaje enviado",
   "talentoContactarA": "Contactar a {nombre}",
   "@talentoContactarA": {
     "placeholders": {
@@ -1649,7 +1649,7 @@
   "recursosNecesitaTitulo": "El recurso necesita un título.",
   "recursosFaltaArchivo": "Falta subir el archivo.",
   "recursosFaltaUrl": "Falta la URL.",
-  "recursosPublicado": "Recurso publicado ✓",
+  "recursosPublicado": "Recurso publicado",
   "comunDescripcion": "Descripción",
   "mapaSufijoEstudiantes": "estudiantes",
   "lxdPortal": "Portal LXD",
@@ -1751,7 +1751,7 @@
   "calificarElija": "Elija aprobado o reprobado.",
   "calificarPuntajeRango": "El puntaje va de 0 a 100.",
   "calificarNotaRango": "La nota va de 0.0 a 5.0.",
-  "calificarEntregaCalificada": "Entrega calificada ✓",
+  "calificarEntregaCalificada": "Entrega calificada",
   "calificarTitulo": "Calificar: {tarea}",
   "@calificarTitulo": {
     "placeholders": {
@@ -1814,7 +1814,7 @@
   "comunVolver": "Volver",
   "constructorHerramienta": "el constructor de módulos y lecciones",
   "constructorNecesitaNombre": "El curso necesita un nombre.",
-  "constructorGuardado": "Curso guardado ✓",
+  "constructorGuardado": "Curso guardado",
   "constructorSubtitulo": "Subtítulo",
   "constructorDescCorta": "Descripción corta",
   "constructorDescCompleta": "Descripción completa",
@@ -1829,7 +1829,7 @@
   "constructorArchivarCurso": "Archivar curso",
   "constructorArchivarTexto": "Deja de asignarse a estudiantes nuevos, pero quienes ya tienen avance no se bloquean.",
   "constructorLeccionesCompletar": "Lecciones a completar:",
-  "constructorCategorizacionGuardada": "Categorización guardada ✓",
+  "constructorCategorizacionGuardada": "Categorización guardada",
   "constructorSinLab": "Sin laboratorio (curso especial)",
   "constructorEtiquetas": "Etiquetas",
   "constructorCompetencias": "Competencias que desarrolla (métricas de impacto)",
@@ -1875,7 +1875,7 @@
       "titulo": {}
     }
   },
-  "comunGuardado": "Guardado ✓",
+  "comunGuardado": "Guardado",
   "constructorCuentaCertificado": "¿Este curso cuenta para certificado?",
   "constructorCuentaCertificadoTexto": "Se ve un sello en el curso y sus horas cuentan para el certificado de la Ruta de Impacto del laboratorio (el PDF lo emite el LXD al completar toda la Ruta, no por curso individual)",
   "constructorHorasCertificadas": "Horas certificadas",
@@ -2044,7 +2044,7 @@
     }
   },
   "glosarioDescartarTexto": "Hay cambios sin guardar en este término. ¿Desea salir de todas formas?",
-  "glosarioTerminoAgregado": "Término agregado ✓",
+  "glosarioTerminoAgregado": "Término agregado",
   "glosarioNuevoTermino": "Nuevo término",
   "glosarioEditarTermino": "Editar término",
   "glosarioModulo": "Módulo: {modulo}",
@@ -2150,8 +2150,8 @@
     }
   },
   "adminCalendarioSubtitulo": "Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma",
-  "asignarCursosOk": "Cursos asignados ✓",
-  "asignarLabsOk": "Laboratorios asignados ✓",
+  "asignarCursosOk": "Cursos asignados",
+  "asignarLabsOk": "Laboratorios asignados",
   "asignarA": "Asignar a {nombre}",
   "@asignarA": {
     "placeholders": {
@@ -2232,7 +2232,7 @@
       "rol": {}
     }
   },
-  "usuariosCuentaEliminada": "Cuenta eliminada ✓",
+  "usuariosCuentaEliminada": "Cuenta eliminada",
   "usuariosNombreCorreoObligatorios": "El nombre y el correo son obligatorios.",
   "usuariosContrasenaMinima": "La contraseña necesita al menos 6 caracteres.",
   "usuariosEscribaInstitucion": "Escriba el nombre de la institución en «¿Cuál institución?».",
@@ -2483,7 +2483,7 @@
   "respaldoReemplaza": "Restaurar reemplaza la base entera por la del archivo. No se puede deshacer.",
   "respaldoSoloSuper": "Restaurar reemplaza la base entera, así que solo lo puede hacer un Super Admin.",
   "respaldoGuardarCopia": "Guardar copia de seguridad",
-  "respaldoCopiaDescargada": "Copia descargada ✓",
+  "respaldoCopiaDescargada": "Copia descargada",
   "respaldoSeleccioneArchivo": "Seleccione el archivo de respaldo",
   "respaldoRestaurarCopia": "Restaurar copia de seguridad",
   "respaldoRestaurarTexto": "La base entera se reemplaza por la del archivo \"{archivo}\". No se puede deshacer.",
@@ -2493,13 +2493,13 @@
     }
   },
   "respaldoNoValido": "Ese archivo no es un respaldo válido: no se pudo leer como JSON.",
-  "respaldoRestaurado": "Datos restaurados ✓",
+  "respaldoRestaurado": "Datos restaurados",
   "contenidoHerramienta": "la edición de la página principal",
   "contenidoTitulo": "Contenido de la Página Principal",
   "contenidoSubtitulo": "Hero, banner y textos visibles para el público",
   "contenidoTituloVacio": "El título del hero no puede quedar vacío.",
-  "contenidoActualizado": "Página principal actualizada ✓",
-  "contenidoImagenesPublicadas": "Imágenes publicadas ✓",
+  "contenidoActualizado": "Página principal actualizada",
+  "contenidoImagenesPublicadas": "Imágenes publicadas",
   "contenidoTituloHero": "Título del hero",
   "contenidoSubtituloHero": "Subtítulo del hero",
   "contenidoBanner": "Banner de anuncio (vacío = oculto)",
@@ -2589,7 +2589,7 @@
   },
   "mentorEditarComentario": "Editar comentario",
   "mentorEscribaComentario": "Escriba su comentario antes de guardar.",
-  "mentorComentarioGuardado": "Comentario guardado ✓",
+  "mentorComentarioGuardado": "Comentario guardado",
   "mentorRevisarEntrega": "Revisar entrega",
   "mentorReviseComente": "Revise y comente; la nota la pone quien califica el curso.",
   "mentorSuRetro": "Su retroalimentación",
@@ -2650,7 +2650,7 @@
       "cantidad": {}
     }
   },
-  "empresaCuentaCreada": "Cuenta creada ✓",
+  "empresaCuentaCreada": "Cuenta creada",
   "empresaNuevaCuentaEquipo": "Nueva cuenta de su equipo",
   "empresaContrasenaAyuda": "Mínimo 6 caracteres. Usted se la comparte.",
   "empresaCargoOpcional": "Cargo (opcional)",
@@ -3081,5 +3081,7 @@
       "valor": {}
     }
   },
-  "encuestaSinComentarios": "Sin comentarios todavía."
+  "encuestaSinComentarios": "Sin comentarios todavía.",
+  "entregaRecibidaDetalle": "Le avisaremos cuando la revisen. Puede ver su entrega en cualquier momento.",
+  "actividadVerEntrega": "Ver entrega"
 }

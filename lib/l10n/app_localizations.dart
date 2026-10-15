@@ -1679,13 +1679,13 @@ abstract class AppLocalizations {
   /// No description provided for @calendarioEventoActualizado.
   ///
   /// In es, this message translates to:
-  /// **'Evento actualizado ✓'**
+  /// **'Evento actualizado'**
   String get calendarioEventoActualizado;
 
   /// No description provided for @calendarioEventoAgregado.
   ///
   /// In es, this message translates to:
-  /// **'Evento agregado ✓'**
+  /// **'Evento agregado'**
   String get calendarioEventoAgregado;
 
   /// No description provided for @comunGuardando.
@@ -2987,7 +2987,7 @@ abstract class AppLocalizations {
   /// No description provided for @perfilActualizado.
   ///
   /// In es, this message translates to:
-  /// **'Perfil actualizado ✓'**
+  /// **'Perfil actualizado'**
   String get perfilActualizado;
 
   /// No description provided for @perfilSubiendoFoto.
@@ -3653,7 +3653,7 @@ abstract class AppLocalizations {
   /// No description provided for @actividadEntregada.
   ///
   /// In es, this message translates to:
-  /// **'Actividad entregada ✓'**
+  /// **'Actividad entregada'**
   String get actividadEntregada;
 
   /// No description provided for @actividadEntregarTitulo.
@@ -3695,7 +3695,7 @@ abstract class AppLocalizations {
   /// No description provided for @actividadEntregaEnviada.
   ///
   /// In es, this message translates to:
-  /// **'Entrega enviada ✓'**
+  /// **'Entrega enviada'**
   String get actividadEntregaEnviada;
 
   /// No description provided for @actividadNombreTarea.
@@ -5207,7 +5207,7 @@ abstract class AppLocalizations {
   /// No description provided for @talentoMensajeEnviado.
   ///
   /// In es, this message translates to:
-  /// **'Mensaje enviado ✓'**
+  /// **'Mensaje enviado'**
   String get talentoMensajeEnviado;
 
   /// No description provided for @talentoContactarA.
@@ -5285,7 +5285,7 @@ abstract class AppLocalizations {
   /// No description provided for @recursosPublicado.
   ///
   /// In es, this message translates to:
-  /// **'Recurso publicado ✓'**
+  /// **'Recurso publicado'**
   String get recursosPublicado;
 
   /// No description provided for @comunDescripcion.
@@ -5627,7 +5627,7 @@ abstract class AppLocalizations {
   /// No description provided for @calificarEntregaCalificada.
   ///
   /// In es, this message translates to:
-  /// **'Entrega calificada ✓'**
+  /// **'Entrega calificada'**
   String get calificarEntregaCalificada;
 
   /// No description provided for @calificarTitulo.
@@ -5873,7 +5873,7 @@ abstract class AppLocalizations {
   /// No description provided for @constructorGuardado.
   ///
   /// In es, this message translates to:
-  /// **'Curso guardado ✓'**
+  /// **'Curso guardado'**
   String get constructorGuardado;
 
   /// No description provided for @constructorSubtitulo.
@@ -5963,7 +5963,7 @@ abstract class AppLocalizations {
   /// No description provided for @constructorCategorizacionGuardada.
   ///
   /// In es, this message translates to:
-  /// **'Categorización guardada ✓'**
+  /// **'Categorización guardada'**
   String get constructorCategorizacionGuardada;
 
   /// No description provided for @constructorSinLab.
@@ -6143,7 +6143,7 @@ abstract class AppLocalizations {
   /// No description provided for @comunGuardado.
   ///
   /// In es, this message translates to:
-  /// **'Guardado ✓'**
+  /// **'Guardado'**
   String get comunGuardado;
 
   /// No description provided for @constructorCuentaCertificado.
@@ -6653,7 +6653,7 @@ abstract class AppLocalizations {
   /// No description provided for @glosarioTerminoAgregado.
   ///
   /// In es, this message translates to:
-  /// **'Término agregado ✓'**
+  /// **'Término agregado'**
   String get glosarioTerminoAgregado;
 
   /// No description provided for @glosarioNuevoTermino.
@@ -7079,13 +7079,13 @@ abstract class AppLocalizations {
   /// No description provided for @asignarCursosOk.
   ///
   /// In es, this message translates to:
-  /// **'Cursos asignados ✓'**
+  /// **'Cursos asignados'**
   String get asignarCursosOk;
 
   /// No description provided for @asignarLabsOk.
   ///
   /// In es, this message translates to:
-  /// **'Laboratorios asignados ✓'**
+  /// **'Laboratorios asignados'**
   String get asignarLabsOk;
 
   /// No description provided for @asignarA.
@@ -7271,7 +7271,7 @@ abstract class AppLocalizations {
   /// No description provided for @usuariosCuentaEliminada.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta eliminada ✓'**
+  /// **'Cuenta eliminada'**
   String get usuariosCuentaEliminada;
 
   /// No description provided for @usuariosNombreCorreoObligatorios.
@@ -8129,7 +8129,7 @@ abstract class AppLocalizations {
   /// No description provided for @respaldoCopiaDescargada.
   ///
   /// In es, this message translates to:
-  /// **'Copia descargada ✓'**
+  /// **'Copia descargada'**
   String get respaldoCopiaDescargada;
 
   /// No description provided for @respaldoSeleccioneArchivo.
@@ -8159,7 +8159,7 @@ abstract class AppLocalizations {
   /// No description provided for @respaldoRestaurado.
   ///
   /// In es, this message translates to:
-  /// **'Datos restaurados ✓'**
+  /// **'Datos restaurados'**
   String get respaldoRestaurado;
 
   /// No description provided for @contenidoHerramienta.
@@ -8189,13 +8189,13 @@ abstract class AppLocalizations {
   /// No description provided for @contenidoActualizado.
   ///
   /// In es, this message translates to:
-  /// **'Página principal actualizada ✓'**
+  /// **'Página principal actualizada'**
   String get contenidoActualizado;
 
   /// No description provided for @contenidoImagenesPublicadas.
   ///
   /// In es, this message translates to:
-  /// **'Imágenes publicadas ✓'**
+  /// **'Imágenes publicadas'**
   String get contenidoImagenesPublicadas;
 
   /// No description provided for @contenidoTituloHero.
@@ -8489,7 +8489,7 @@ abstract class AppLocalizations {
   /// No description provided for @mentorComentarioGuardado.
   ///
   /// In es, this message translates to:
-  /// **'Comentario guardado ✓'**
+  /// **'Comentario guardado'**
   String get mentorComentarioGuardado;
 
   /// No description provided for @mentorRevisarEntrega.
@@ -8751,7 +8751,7 @@ abstract class AppLocalizations {
   /// No description provided for @empresaCuentaCreada.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta creada ✓'**
+  /// **'Cuenta creada'**
   String get empresaCuentaCreada;
 
   /// No description provided for @empresaNuevaCuentaEquipo.
@@ -10009,6 +10009,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sin comentarios todavía.'**
   String get encuestaSinComentarios;
+
+  /// No description provided for @entregaRecibidaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Le avisaremos cuando la revisen. Puede ver su entrega en cualquier momento.'**
+  String get entregaRecibidaDetalle;
+
+  /// No description provided for @actividadVerEntrega.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver entrega'**
+  String get actividadVerEntrega;
 }
 
 class _AppLocalizationsDelegate

@@ -1413,7 +1413,7 @@ class _SubmitDialogState extends State<_SubmitDialog> {
     });
     try {
       final data = context.read<DataProvider>();
-      await data.createSubmission(
+      final entrega = await data.createSubmission(
         courseId: widget.course.id,
         lessonId: widget.lesson.id,
         taskName: widget.lesson.title,
@@ -1422,7 +1422,7 @@ class _SubmitDialogState extends State<_SubmitDialog> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, tr.actividadEntregada);
+      _avisarEntrega(context, tr.actividadEntregada, entrega.id);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -1482,6 +1482,33 @@ class _SubmitDialogState extends State<_SubmitDialog> {
 // Entregas del curso
 // ---------------------------------------------------------------------------
 
+/// La tarjeta de cada entrega en «Mis entregas», para que «Ver entrega» la
+/// lleve a la vista.
+final Map<String, GlobalKey> _tarjetasDeEntrega = {};
+
+GlobalKey _tarjetaDeEntrega(String id) =>
+    _tarjetasDeEntrega.putIfAbsent(id, GlobalKey.new);
+
+/// «Actividad entregada», con «Ver entrega»: baja hasta su tarjeta en «Mis
+/// entregas», en esta misma pantalla.
+void _avisarEntrega(BuildContext context, String titulo, String entregaId) {
+  showSuccessCheck(
+    context,
+    titulo,
+    detalle: tr.entregaRecibidaDetalle,
+    accion: tr.actividadVerEntrega,
+    alAccion: () {
+      final tarjeta = _tarjetaDeEntrega(entregaId).currentContext;
+      if (tarjeta != null && tarjeta.mounted) {
+        Scrollable.ensureVisible(tarjeta,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            alignment: 0.2);
+      }
+    },
+  );
+}
+
 class _SubmissionsSection extends StatelessWidget {
   final Course course;
   final List<Submission> submissions;
@@ -1506,7 +1533,8 @@ class _SubmissionsSection extends StatelessWidget {
         for (final submission in submissions)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: _SubmissionCard(submission: submission),
+            child: _SubmissionCard(
+                key: _tarjetaDeEntrega(submission.id), submission: submission),
           ),
         if (!readOnly) ...[
           const SizedBox(height: 8),
@@ -1526,7 +1554,7 @@ class _SubmissionsSection extends StatelessWidget {
 
 class _SubmissionCard extends StatelessWidget {
   final Submission submission;
-  const _SubmissionCard({required this.submission});
+  const _SubmissionCard({super.key, required this.submission});
 
   @override
   Widget build(BuildContext context) {
@@ -1613,7 +1641,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
       _error = null;
     });
     try {
-      await context.read<DataProvider>().createSubmission(
+      final entrega = await context.read<DataProvider>().createSubmission(
             courseId: widget.course.id,
             taskName: _task.text.trim(),
             comment: _comment.text.trim(),
@@ -1621,7 +1649,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
           );
       if (!mounted) return;
       Navigator.pop(context);
-      showSuccessCheck(context, tr.actividadEntregaEnviada);
+      _avisarEntrega(context, tr.actividadEntregaEnviada, entrega.id);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {

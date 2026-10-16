@@ -2216,7 +2216,7 @@ paths:
     post:
       tags: [content]
       security: []
-      summary: Escribir desde la portada («Hablemos»)
+      summary: Escribir desde la portada («Contáctenos»)
       description: |
         Sin sesión. El mensaje llega como aviso (`kind: contacto`) a cada
         administrador, con nombre, correo, empresa y mensaje. Cinco mensajes

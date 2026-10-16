@@ -8,7 +8,7 @@ import { ADMIN_ROLES } from '../middleware/auth';
 import { rateLimit } from '../middleware/rate-limit';
 
 /**
- * El formulario «Hablemos» de la portada, sin iniciar sesión.
+ * El formulario «Contáctenos» de la portada, sin iniciar sesión.
  *
  * Antes el formulario decía «¡Mensaje enviado!» pero el mensaje no salía de
  * la consola del navegador: quien escribía para conocer eduXaction se perdía

@@ -5,7 +5,7 @@ import '../services/contact_service.dart';
 import '../utils/app_theme.dart';
 import 'common.dart';
 
-/// Formulario «Hablemos» de la portada («Agendar una demo»). Le llega a cada
+/// Formulario «Contáctenos» de la portada. Le llega a cada
 /// administrador como aviso: ver [ContactService.sendMessage].
 Future<void> showContactDialog(BuildContext context) {
   return showDialog<void>(

@@ -20,7 +20,7 @@ import '../../widgets/selector_idioma.dart';
 /// Página principal pública: qué es eduXaction —una plataforma de formación
 /// para empresas que integra a todos los roles del aprendizaje—, cómo
 /// funciona, qué trae, quiénes ya la usan (Enactus) y la invitación a
-/// agendar una demo.
+/// escribirnos («Contáctenos»).
 ///
 /// Lo que el admin edita en «Contenido página» que se ve acá: el anuncio de
 /// arriba, las cifras de Enactus y su galería. El texto de la portada es de
@@ -69,7 +69,7 @@ class LandingView extends StatelessWidget {
                 SizedBox(width: isCompact ? 8 : 16),
                 if (!isCompact) ...[
                   OutlinedButton.icon(
-                    icon: const Icon(Icons.event_available_outlined, size: 18),
+                    icon: const Icon(Icons.mail_outline, size: 18),
                     label: Text(tr.portadaAgendarDemo),
                     onPressed: () => showContactDialog(context),
                   ),
@@ -325,7 +325,7 @@ class _TextoDelHero extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 key: const ValueKey('portada-agendar'),
-                icon: const Icon(Icons.event_available_outlined, size: 18),
+                icon: const Icon(Icons.mail_outline, size: 18),
                 label: Text(tr.portadaAgendarDemo),
                 onPressed: () => showContactDialog(context),
               ),
@@ -1102,7 +1102,7 @@ class _Cierre extends StatelessWidget {
             ),
             const SizedBox(height: 26),
             ElevatedButton.icon(
-              icon: const Icon(Icons.event_available_outlined, size: 18),
+              icon: const Icon(Icons.mail_outline, size: 18),
               label: Text(tr.portadaAgendarDemo),
               onPressed: () => showContactDialog(context),
             ),

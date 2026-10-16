@@ -6,7 +6,7 @@ import { json, makeTestApp } from './helpers/app';
 import { seedTestDatabase } from './helpers/db';
 
 /**
- * El formulario «Hablemos» de la portada.
+ * El formulario «Contáctenos» de la portada.
  *
  * Antes decía «¡Mensaje enviado!» y el mensaje no salía del navegador: nadie
  * se enteraba de quien escribía. Ahora le llega como aviso a cada

@@ -623,7 +623,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pudimos enviar su mensaje. Intente de nuevo en un momento.';
 
   @override
-  String get contactoTitulo => 'Hablemos';
+  String get contactoTitulo => 'Contáctenos';
 
   @override
   String get contactoTexto =>
@@ -6324,7 +6324,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'eduXaction integra a quienes diseñan, enseñan, acompañan y aprenden. Cree capacitaciones en minutos, asígnelas a sus equipos y vea quién avanza, quién aprueba y quién se certifica, desde el computador o el teléfono.';
 
   @override
-  String get portadaAgendarDemo => 'Agendar una demo';
+  String get portadaAgendarDemo => 'Contáctenos';
 
   @override
   String get portadaVentajaMarca => 'Con la marca de su empresa';

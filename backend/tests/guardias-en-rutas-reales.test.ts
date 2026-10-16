@@ -53,7 +53,7 @@ const PUBLICAS = new Set([
   // Lo que abre el QR de un certificado: cualquiera verifica que es real.
   // Por id (imposible de adivinar) y solo con lo que el certificado dice.
   'GET /certificate-verification/:id',
-  // El formulario «Hablemos» de la portada: lo llena quien todavía no tiene
+  // El formulario «Contáctenos» de la portada: lo llena quien todavía no tiene
   // cuenta. Limitado por IP y con trampa para robots.
   'POST /contact',
 ]);

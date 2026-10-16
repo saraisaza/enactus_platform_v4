@@ -185,7 +185,7 @@ export function createApp(database: Database = defaultDb) {
   app.route('/auth', authRoutes);
   // Público: la portada se ve sin sesión.
   app.route('/site-content', siteRoutes);
-  // Público: el formulario «Hablemos» de la portada.
+  // Público: el formulario «Contáctenos» de la portada.
   app.route('/contact', contactoRoutes);
   app.route('/users', userRoutes);
   // Segundo router en la misma base: asignar laboratorios o cursos a un

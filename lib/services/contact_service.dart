@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'api_service.dart';
 
-/// Envía el formulario «Hablemos» de la portada (`POST /contact`).
+/// Envía el formulario «Contáctenos» de la portada (`POST /contact`).
 ///
 /// Antes no había adónde mandarlo: el formulario decía «¡Mensaje enviado!»
 /// y el mensaje solo quedaba en la consola del navegador. Ahora el servidor

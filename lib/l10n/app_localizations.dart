@@ -1211,7 +1211,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactoTitulo.
   ///
   /// In es, this message translates to:
-  /// **'Hablemos'**
+  /// **'Contáctenos'**
   String get contactoTitulo;
 
   /// No description provided for @contactoTexto.
@@ -10649,7 +10649,7 @@ abstract class AppLocalizations {
   /// No description provided for @portadaAgendarDemo.
   ///
   /// In es, this message translates to:
-  /// **'Agendar una demo'**
+  /// **'Contáctenos'**
   String get portadaAgendarDemo;
 
   /// No description provided for @portadaVentajaMarca.

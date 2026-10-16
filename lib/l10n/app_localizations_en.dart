@@ -625,7 +625,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'We could not send your message. Please try again in a moment.';
 
   @override
-  String get contactoTitulo => 'Let\'s talk';
+  String get contactoTitulo => 'Contact us';
 
   @override
   String get contactoTexto =>
@@ -6339,7 +6339,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'eduXaction brings together the people who design, teach, support and learn. Build trainings in minutes, assign them to your teams and see who is progressing, who passes and who earns a certificate, on desktop or mobile.';
 
   @override
-  String get portadaAgendarDemo => 'Book a demo';
+  String get portadaAgendarDemo => 'Contact us';
 
   @override
   String get portadaVentajaMarca => 'With your company\'s brand';

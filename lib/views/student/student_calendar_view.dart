@@ -8,7 +8,12 @@ import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
-    show calendarEventColor, calendarEventIcon, calendarEventTypeLabel;
+    show
+        VistaCalendario,
+        calendarEventColor,
+        calendarEventIcon,
+        calendarEventTypeLabel,
+        estiloSelectorDeVista;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/visor_pdf.dart';
@@ -34,17 +39,43 @@ class StudentCalendarView extends StatefulWidget {
 class _StudentCalendarViewState extends State<StudentCalendarView> {
   late DateTime _visibleMonth;
 
+  /// Un día de la semana a la vista, en la vista de semana.
+  late DateTime _semana;
+  VistaCalendario _vista = VistaCalendario.mes;
+
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
     _visibleMonth = DateTime(now.year, now.month);
+    _semana = DateTime(now.year, now.month, now.day);
   }
 
-  void _changeMonth(int delta) {
+  void _mover(int delta) {
     setState(() {
-      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta);
+      if (_vista == VistaCalendario.mes) {
+        _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta);
+      } else {
+        _semana = _semana.add(Duration(days: 7 * delta));
+        _visibleMonth = DateTime(_semana.year, _semana.month);
+      }
     });
+  }
+
+  void _irAHoy() {
+    final now = DateTime.now();
+    setState(() {
+      _semana = DateTime(now.year, now.month, now.day);
+      _visibleMonth = DateTime(now.year, now.month);
+    });
+  }
+
+  String get _titulo {
+    if (_vista == VistaCalendario.mes) return mesAnio(_visibleMonth).toUpperCase();
+    final lunes = _lunes(_semana);
+    final domingo = lunes.add(const Duration(days: 6));
+    return '${diaMesCorto(lunes)} – ${diaMesCorto(domingo)} ${domingo.year}'
+        .toUpperCase();
   }
 
   @override
@@ -94,7 +125,10 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
         spacing: 18,
         runSpacing: 8,
         children: [
-          for (final t in CalendarEventType.values)
+          // Solo los tipos que hay: una leyenda de cinco colores para dos
+          // tipos de evento no ayuda.
+          for (final t in CalendarEventType.values
+              .where({for (final e in events) e.type}.contains))
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -129,21 +163,66 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                 children: [
                   IconButton(
                       icon: Icon(Icons.chevron_left, color: colors.text2),
-                      onPressed: () => _changeMonth(-1)),
+                      tooltip: _vista == VistaCalendario.mes
+                          ? tr.calendarioMesAnterior
+                          : tr.calendarioSemanaAnterior,
+                      onPressed: () => _mover(-1)),
                   Expanded(
-                    child: Text(
-                        mesAnio(_visibleMonth).toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: displayHeading(
-                            fontSize: 20, fontWeight: AppWeights.display, color: colors.text)),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(_titulo,
+                          key: const ValueKey('calendario-titulo'),
+                          textAlign: TextAlign.center,
+                          style: displayHeading(
+                              fontSize: 20, fontWeight: AppWeights.display, color: colors.text)),
+                    ),
                   ),
                   IconButton(
                       icon: Icon(Icons.chevron_right, color: colors.text2),
-                      onPressed: () => _changeMonth(1)),
+                      tooltip: _vista == VistaCalendario.mes
+                          ? tr.calendarioMesSiguiente
+                          : tr.calendarioSemanaSiguiente,
+                      onPressed: () => _mover(1)),
                 ],
               ),
-              const SizedBox(height: 12),
-              _MonthGrid(visibleMonth: _visibleMonth, events: monthEvents, colors: colors),
+              const SizedBox(height: 8),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  SegmentedButton<VistaCalendario>(
+                    key: const ValueKey('calendario-vista'),
+                    showSelectedIcon: false,
+                    style: estiloSelectorDeVista,
+                    segments: [
+                      ButtonSegment(
+                          value: VistaCalendario.mes,
+                          icon: const Icon(Icons.calendar_view_month, size: 16),
+                          label: Text(tr.calendarioVistaMes)),
+                      ButtonSegment(
+                          value: VistaCalendario.semana,
+                          icon: const Icon(Icons.view_week_outlined, size: 16),
+                          label: Text(tr.calendarioVistaSemana)),
+                    ],
+                    selected: {_vista},
+                    onSelectionChanged: (v) => setState(() {
+                      _vista = v.first;
+                      if (_vista == VistaCalendario.semana &&
+                          (_semana.year != _visibleMonth.year ||
+                              _semana.month != _visibleMonth.month)) {
+                        _semana = _visibleMonth;
+                      }
+                    }),
+                  ),
+                  OutlinedButton(onPressed: _irAHoy, child: Text(tr.calendarioHoy)),
+                ],
+              ),
+              const SizedBox(height: 14),
+              if (_vista == VistaCalendario.mes)
+                _MonthGrid(visibleMonth: _visibleMonth, events: monthEvents, colors: colors)
+              else
+                _WeekGrid(semana: _semana, events: events, colors: colors),
             ],
           ),
         );
@@ -172,7 +251,9 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
           ),
         );
 
-        if (monthEvents.isEmpty && upcoming.isEmpty) {
+        // Solo sin ningún evento: si se mostrara al llegar a un mes vacío, se
+        // irían con él las flechas y no habría cómo volver.
+        if (events.isEmpty) {
           return EmptyState(
             icon: Icons.event_busy_outlined,
             title: tr.calendarioAgendaDespejada,
@@ -197,6 +278,150 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
           return Column(children: [month, const SizedBox(height: 22), upcomingCard]);
         });
       },
+    );
+  }
+}
+
+DateTime _lunes(DateTime d) =>
+    DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
+
+/// La semana: siete columnas en una pantalla ancha, una lista de días en el
+/// teléfono. Tocar un evento abre su detalle, como en el mes.
+class _WeekGrid extends StatelessWidget {
+  final DateTime semana;
+  final List<CalendarEvent> events;
+  final ContentColors colors;
+  const _WeekGrid({required this.semana, required this.events, required this.colors});
+
+  List<CalendarEvent> _eventsOn(DateTime day) =>
+      events.where((e) => _sameDay(e.startsAt, day)).toList()
+        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+
+  @override
+  Widget build(BuildContext context) {
+    final lunes = _lunes(semana);
+    final dias = [for (var i = 0; i < 7; i++) lunes.add(Duration(days: i))];
+    final hoy = DateTime.now();
+    return LayoutBuilder(builder: (context, c) {
+      if (c.maxWidth < 600) {
+        return Column(
+          children: [
+            for (final dia in dias) _fila(context, dia, hoy),
+          ],
+        );
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < 7; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            Expanded(child: _columna(context, dias[i], hoy)),
+          ],
+        ],
+      );
+    });
+  }
+
+  Widget _bloque(BuildContext context, CalendarEvent e) {
+    final color = calendarEventColor(e.type);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => showEventsDialog(context, [e], colors),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.fromLTRB(8, 6, 6, 6),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(8),
+            border: Border(left: BorderSide(color: color, width: 3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(hora(e.startsAt),
+                  style: TextStyle(
+                      fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.text2)),
+              Text(e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, height: 1.3, color: colors.text)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _columna(BuildContext context, DateTime dia, DateTime hoy) {
+    final esHoy = _sameDay(dia, hoy);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 280),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: esHoy ? colors.goldSoft : colors.surface2,
+        border: esHoy ? Border.all(color: colors.goldInk) : null,
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(diaSemanaCorto(dia).toUpperCase(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.w600, color: colors.text3)),
+          Text('${dia.day}',
+              textAlign: TextAlign.center,
+              style: displayHeading(
+                  fontSize: 20, fontWeight: AppWeights.display,
+                  color: esHoy ? colors.goldInk : colors.text)),
+          const SizedBox(height: 8),
+          for (final e in _eventsOn(dia)) _bloque(context, e),
+        ],
+      ),
+    );
+  }
+
+  Widget _fila(BuildContext context, DateTime dia, DateTime hoy) {
+    final esHoy = _sameDay(dia, hoy);
+    final eventos = _eventsOn(dia);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: esHoy ? colors.goldSoft : colors.surface2,
+        border: esHoy ? Border.all(color: colors.goldInk) : null,
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 48,
+            child: Column(
+              children: [
+                Text(diaSemanaCorto(dia).toUpperCase(),
+                    style: TextStyle(fontSize: 10.5, letterSpacing: 1, color: colors.text3)),
+                Text('${dia.day}',
+                    style: displayHeading(
+                        fontSize: 22, fontWeight: AppWeights.display,
+                        color: esHoy ? colors.goldInk : colors.text)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: eventos.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(tr.calendarioSinEventos,
+                        style: TextStyle(fontSize: 12.5, color: colors.text3)),
+                  )
+                : Column(children: [for (final e in eventos) _bloque(context, e)]),
+          ),
+        ],
+      ),
     );
   }
 }

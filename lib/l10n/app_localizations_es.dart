@@ -1760,7 +1760,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get calendarioSubtitulo =>
-      'Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.';
+      'Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.';
 
   @override
   String get calendarioProximos => 'Próximos eventos';
@@ -3198,7 +3198,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get lxdCalendarioSubtitulo =>
-      'Agende las sesiones sincrónicas de sus cursos Open Learning';
+      'Agende eventos para sus cursos, para los laboratorios de sus cursos o para toda su organización';
 
   @override
   String get lxdCursosSubtitulo =>
@@ -4154,7 +4154,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminCalendarioSubtitulo =>
-      'Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma';
+      'Los eventos de toda la plataforma: de cursos, de laboratorios, de cada organización y de la Ruta de Impacto';
 
   @override
   String get asignarCursosOk => 'Cursos asignados';
@@ -6088,7 +6088,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get empresaCalendarioSubtitulo =>
-      'Las sesiones en vivo de sus capacitaciones.';
+      'Los eventos de sus capacitaciones y de su empresa.';
 
   @override
   String get empresaPerfilCursosActivos => 'Capacitaciones activas';
@@ -6192,7 +6192,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get empresaLxdCalendarioSubtitulo =>
-      'Agende las sesiones en vivo de sus capacitaciones';
+      'Agende eventos para sus capacitaciones o para toda su empresa';
 
   @override
   String get empresaCalendarioSinCursosOL =>
@@ -6506,4 +6506,102 @@ class AppLocalizationsEs extends AppLocalizations {
   String avisoContactoCuerpo(Object quien, Object correo, Object mensaje) {
     return '$quien <$correo> escribió:\n\n$mensaje';
   }
+
+  @override
+  String get eventoCurso => 'Curso';
+
+  @override
+  String get eventoLaboratorio => 'Laboratorio';
+
+  @override
+  String get eventoOrganizacion => 'Toda la organización';
+
+  @override
+  String get calendarioVistaMes => 'Mes';
+
+  @override
+  String get calendarioVistaSemana => 'Semana';
+
+  @override
+  String get calendarioHoy => 'Hoy';
+
+  @override
+  String get calendarioSemanaAnterior => 'Semana anterior';
+
+  @override
+  String get calendarioSemanaSiguiente => 'Semana siguiente';
+
+  @override
+  String get calendarioSinEventos => 'Sin eventos';
+
+  @override
+  String get calendarioParaQuien => '¿Para quién es?';
+
+  @override
+  String get calendarioDestinoCurso => 'Un curso';
+
+  @override
+  String get calendarioDestinoLaboratorio => 'Un laboratorio';
+
+  @override
+  String get calendarioDestinoOrganizacion => 'Toda la organización';
+
+  @override
+  String get calendarioOrganizacion => 'Organización';
+
+  @override
+  String get calendarioQuienCurso =>
+      'Lo verán todos los que cursan este curso.';
+
+  @override
+  String get calendarioQuienLaboratorio =>
+      'Lo verán los estudiantes, los mentores y los asesores del laboratorio.';
+
+  @override
+  String calendarioQuienOrganizacion(Object organizacion) {
+    return 'Lo verá toda la gente de $organizacion.';
+  }
+
+  @override
+  String get calendarioQuienMentoria =>
+      'Lo verán los estudiantes y los mentores del laboratorio.';
+
+  @override
+  String get calendarioSinCursosPropios =>
+      'Todavía no tiene cursos. Cree uno antes de agendar un evento del curso.';
+
+  @override
+  String get calendarioSinLabsParaElegir =>
+      'No hay laboratorios para elegir: sus cursos no están en ninguno.';
+
+  @override
+  String get calendarioSinOrganizaciones =>
+      'No hay organizaciones para elegir.';
+
+  @override
+  String get calendarioSupervisorSubtitulo =>
+      'Los eventos de su empresa y de sus capacitaciones.';
+
+  @override
+  String get empresaEventoCurso => 'Capacitación';
+
+  @override
+  String get empresaEventoOrganizacion => 'Toda la empresa';
+
+  @override
+  String get empresaCalendarioDestinoCurso => 'Una capacitación';
+
+  @override
+  String get empresaCalendarioDestinoOrganizacion => 'Toda la empresa';
+
+  @override
+  String get empresaCalendarioOrganizacion => 'Empresa';
+
+  @override
+  String get empresaCalendarioQuienCurso =>
+      'Lo verán todos los que toman esta capacitación.';
+
+  @override
+  String get empresaCalendarioSinCursosPropios =>
+      'Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación.';
 }

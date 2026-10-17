@@ -2346,14 +2346,29 @@ class DeletionRequest {
       );
 }
 
+/// A quién va un evento. El nombre de `openLearningSync` es histórico: es
+/// el evento de un curso, de cualquier curso.
 enum CalendarEventType {
+  /// De un curso: lo ve todo el que lo cursa.
   openLearningSync,
+
+  /// De la Ruta de Impacto: todo el mundo Enactus.
   rutaImpacto,
-  mentoria;
+
+  /// Una mentoría de un laboratorio (la agenda el Mentor).
+  mentoria,
+
+  /// De un laboratorio: sus estudiantes, mentores y asesores.
+  laboratorio,
+
+  /// De toda una organización (una empresa, o Enactus).
+  organizacion;
 
   static CalendarEventType fromJson(String? raw) => switch (raw) {
         'open_learning_sync' => CalendarEventType.openLearningSync,
         'mentoria' => CalendarEventType.mentoria,
+        'laboratorio' => CalendarEventType.laboratorio,
+        'organizacion' => CalendarEventType.organizacion,
         _ => CalendarEventType.rutaImpacto,
       };
 
@@ -2361,12 +2376,8 @@ enum CalendarEventType {
         CalendarEventType.openLearningSync => 'open_learning_sync',
         CalendarEventType.rutaImpacto => 'ruta_impacto',
         CalendarEventType.mentoria => 'mentoria',
-      };
-
-  String get label => switch (this) {
-        CalendarEventType.openLearningSync => tr.eventoSesionOpenLearning,
-        CalendarEventType.rutaImpacto => tr.rutaDeImpacto,
-        CalendarEventType.mentoria => tr.eventoMentoria,
+        CalendarEventType.laboratorio => 'laboratorio',
+        CalendarEventType.organizacion => 'organizacion',
       };
 }
 
@@ -2381,6 +2392,9 @@ class CalendarEvent {
   final String? courseId;
   final String? laboratoryId;
 
+  /// Solo [CalendarEventType.organizacion]: de qué organización es.
+  final String? clientId;
+
   const CalendarEvent({
     required this.id,
     this.title = '',
@@ -2391,6 +2405,7 @@ class CalendarEvent {
     this.guests = '',
     this.courseId,
     this.laboratoryId,
+    this.clientId,
   });
 
   factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
@@ -2403,6 +2418,7 @@ class CalendarEvent {
         guests: (j['guests'] as String?) ?? '',
         courseId: j['courseId'] as String?,
         laboratoryId: j['laboratoryId'] as String?,
+        clientId: j['clientId'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -2419,6 +2435,7 @@ class CalendarEvent {
         // solo puede significar "sin vincular", que es exactamente `null`.
         'courseId': _idONulo(courseId),
         'laboratoryId': _idONulo(laboratoryId),
+        'clientId': _idONulo(clientId),
       };
 
   static String? _idONulo(String? id) =>

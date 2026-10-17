@@ -124,9 +124,16 @@ export const gradingMode = pgEnum('grading_mode', [
 ]);
 
 export const calendarEventType = pgEnum('calendar_event_type', [
+  /** De un curso: lo ve todo el que lo cursa (el nombre es histórico). */
   'open_learning_sync',
+  /** De la Ruta de Impacto: lo ve todo el mundo Enactus. */
   'ruta_impacto',
+  /** Una mentoría de un laboratorio (la agenda el Mentor). */
   'mentoria',
+  /** De un laboratorio: lo ven sus estudiantes, mentores y asesores. */
+  'laboratorio',
+  /** De toda una organización (una empresa, o Enactus): lo ve toda su gente. */
+  'organizacion',
 ]);
 
 export const forumCategory = pgEnum('forum_category', [

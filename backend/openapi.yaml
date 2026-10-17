@@ -2804,23 +2804,58 @@ paths:
   /calendar-events:
     get:
       tags: [content]
-      summary: Eventos visibles para el rol
+      summary: Eventos visibles para quien pregunta
       description: |
-        `ruta_impacto` es global para el mundo Enactus; `mentoria` sigue atado
-        al laboratorio; `open_learning_sync`, al curso. Empresa y Donante no
-        tienen calendario.
+        Por alcance: de un curso (`open_learning_sync`), lo ve todo el que lo
+        cursa, quien lo creó y, si el curso es de una empresa, su supervisor;
+        de un laboratorio (`laboratorio`, y la `mentoria` del Mentor), sus
+        estudiantes, mentores y asesores; de una organización
+        (`organizacion`, con `clientId`), toda la gente de ese cliente; de la
+        Ruta (`ruta_impacto`), todo el mundo Enactus. El admin ve todo.
+        Empresa y Donante no tienen calendario.
       responses: { '200': { description: Página de eventos } }
     post:
       tags: [content]
       summary: Crear un evento
-      description: El LXD solo `open_learning_sync`; el Mentor solo `ruta_impacto`/`mentoria`; el Admin, cualquiera.
+      description: |
+        Admin: cualquier curso, laboratorio u organización, y la Ruta. LXD:
+        los cursos que creó, los laboratorios de esos cursos y su propia
+        organización (un LXD sin cliente, del equipo de eduXaction, elige la
+        organización). Mentor: `ruta_impacto` y `mentoria`. Solo se guarda el
+        destino que el tipo lleva (`courseId`, `laboratoryId` o `clientId`).
       responses:
         '201': { description: Creado }
-        '403': { description: Ese rol no puede crear ese tipo de evento }
+        '400': { description: Falta el curso, el laboratorio o la organización }
+        '403': { description: Ese rol no puede agendar ahí }
+        '404': { description: El curso, laboratorio u organización no existe }
+
+  /calendar-events/organizaciones:
+    get:
+      tags: [content]
+      summary: Para qué organizaciones puede agendar quien pregunta
+      description: |
+        La suya, si es de un cliente; todas las activas, si es admin o del
+        equipo de eduXaction. Solo admin y LXD.
+      responses:
+        '200':
+          description: Organizaciones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        name: { type: string }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   /calendar-events/{id}:
     parameters: [{ $ref: '#/components/parameters/id' }]
-    patch: { tags: [content], summary: Editar (solo quien lo creó, o admin), responses: { '200': { description: Actualizado } } }
+    patch: { tags: [content], summary: "Editar (solo quien lo creó, o admin): el destino nuevo se revisa igual que al crear", responses: { '200': { description: Actualizado } } }
     delete: { tags: [content], summary: Borrado lógico, responses: { '204': { description: Borrado } } }
 
   /communication-resources:

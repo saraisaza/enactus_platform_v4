@@ -8,6 +8,7 @@ import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
+import '../../widgets/calendar_view.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../lxd/course_tracking_view.dart';
@@ -50,9 +51,35 @@ class SupervisorPortal extends StatelessWidget {
             icon: Icons.school_outlined,
             builder: (_) => const _SusCursos()),
         PortalTab(
+            label: tr.tabCalendario,
+            icon: Icons.calendar_month_outlined,
+            builder: (_) => const _SuCalendario()),
+        PortalTab(
             label: tr.tabCertificados,
             icon: Icons.workspace_premium_outlined,
             builder: (_) => const _SusCertificados()),
+      ],
+    );
+  }
+}
+
+/// Los eventos de su empresa y de sus capacitaciones. Solo los ve: los crean
+/// el LXD de la empresa y el admin.
+class _SuCalendario extends StatelessWidget {
+  const _SuCalendario();
+
+  @override
+  Widget build(BuildContext context) {
+    final data = context.watch<DataProvider>();
+    return TabBody(
+      title: tr.tabCalendario,
+      subtitle: tr.calendarioSupervisorSubtitulo,
+      children: [
+        data.calendarEvents.when(
+          loading: () => const CardListSkeleton(count: 1, height: 320),
+          error: (e) => ErrorState(e, onRetry: data.reloadCalendarEvents),
+          data: (events) => CalendarView(events: events),
+        ),
       ],
     );
   }

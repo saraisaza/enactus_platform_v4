@@ -426,8 +426,12 @@ class _LxdCalendar extends StatelessWidget {
           error: (e) => ErrorState(e, onRetry: data.reloadCalendarEvents),
           data: (values) {
             final (events, courses) = values;
-            final openLearning =
-                courses.where((c) => c.isOpenLearning).toList();
+            // Los laboratorios de sus cursos: ahí puede agendar.
+            final labs = <String, String>{
+              for (final c in courses)
+                if (c.laboratoryId != null)
+                  c.laboratoryId!: c.laboratoryName ?? '',
+            };
 
             Future<void> save(
               List<CalendarEvent> list,
@@ -438,31 +442,30 @@ class _LxdCalendar extends StatelessWidget {
               }
             }
 
+            // Un evento de un curso (cualquiera de los suyos), de un
+            // laboratorio de sus cursos o de toda su organización. La Ruta y
+            // las mentorías son del Mentor; el servidor lo revisa igual.
+            Future<void> abrir({CalendarEvent? existente, DateTime? dia}) =>
+                abrirEventoDelCalendario(
+                  context,
+                  data: data,
+                  existente: existente,
+                  dia: dia,
+                  tipos: const [
+                    CalendarEventType.openLearningSync,
+                    CalendarEventType.laboratorio,
+                    CalendarEventType.organizacion,
+                  ],
+                  cursos: courses,
+                  labs: [for (final e in labs.entries) (e.key, e.value)],
+                  alGuardar: save,
+                );
+
             return CalendarView(
               events: events,
               canManage: true,
-              onAddEvent: (day) => showCalendarEventDialog(
-                context,
-                initialDay: day,
-                // Un LXD solo agenda sesiones de Open Learning: la mentoría
-                // la agenda el Mentor, y el servidor lo verifica igual.
-                allowedTypes: const [CalendarEventType.openLearningSync],
-                courses: openLearning,
-                labs: const [],
-                defaultMeetLink:
-                    data.siteContent.valueOrNull?.meetingLink ?? '',
-                onSave: save,
-              ),
-              onEditEvent: (event) => showCalendarEventDialog(
-                context,
-                existing: event,
-                allowedTypes: const [CalendarEventType.openLearningSync],
-                courses: openLearning,
-                labs: const [],
-                defaultMeetLink:
-                    data.siteContent.valueOrNull?.meetingLink ?? '',
-                onSave: save,
-              ),
+              onAddEvent: (day) => abrir(dia: day),
+              onEditEvent: (event) => abrir(existente: event),
               onDeleteEvent: (event) => data.deleteCalendarEvent(event.id),
             );
           },

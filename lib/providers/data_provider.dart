@@ -2095,6 +2095,17 @@ class DataProvider extends ChangeNotifier {
     await reloadCalendarEvents();
   }
 
+  /// Para qué organizaciones puede agendar quien tiene la sesión (admin y
+  /// LXD): la suya si es de una empresa; todas, si es del equipo de
+  /// eduXaction. `(id, nombre)`.
+  Future<List<(String, String)>> organizacionesParaAgendar() async {
+    final json = await api.get('/calendar-events/organizaciones');
+    return [
+      for (final o in ((json as Map)['data'] as List? ?? const []))
+        ((o as Map)['id'] as String, (o['name'] as String?) ?? ''),
+    ];
+  }
+
   Future<void> deleteCalendarEvent(String id) async {
     await api.delete('/calendar-events/$id');
     await reloadCalendarEvents();

@@ -431,9 +431,6 @@ class AdminCalendar extends StatelessWidget {
           error: (e) => ErrorState(e, onRetry: data.reloadCalendarEvents),
           data: (values) {
             final (events, courses, labs) = values;
-            final openLearning =
-                courses.where((c) => c.isOpenLearning).toList();
-            final meetLink = data.siteContent.valueOrNull?.meetingLink ?? '';
 
             Future<void> guardar(
               List<CalendarEvent> nuevos,
@@ -449,23 +446,31 @@ class AdminCalendar extends StatelessWidget {
               // filtrar por quién mira.
               events: events,
               canManage: true,
-              onAddEvent: (day) => showCalendarEventDialog(
+              // El admin agenda para cualquier curso, laboratorio u
+              // organización, y la Ruta de Impacto.
+              onAddEvent: (day) => abrirEventoDelCalendario(
                 context,
-                initialDay: day,
-                allowedTypes: CalendarEventType.values,
-                courses: openLearning,
-                labs: labs,
-                defaultMeetLink: meetLink,
-                onSave: guardar,
+                data: data,
+                dia: day,
+                tipos: const [
+                  CalendarEventType.openLearningSync,
+                  CalendarEventType.laboratorio,
+                  CalendarEventType.organizacion,
+                  CalendarEventType.rutaImpacto,
+                  CalendarEventType.mentoria,
+                ],
+                cursos: courses,
+                labs: [for (final l in labs) (l.id, l.name)],
+                alGuardar: guardar,
               ),
-              onEditEvent: (event) => showCalendarEventDialog(
+              onEditEvent: (event) => abrirEventoDelCalendario(
                 context,
-                existing: event,
-                allowedTypes: CalendarEventType.values,
-                courses: openLearning,
-                labs: labs,
-                defaultMeetLink: meetLink,
-                onSave: guardar,
+                data: data,
+                existente: event,
+                tipos: CalendarEventType.values,
+                cursos: courses,
+                labs: [for (final l in labs) (l.id, l.name)],
+                alGuardar: guardar,
               ),
               onDeleteEvent: (event) => data.deleteCalendarEvent(event.id),
             );

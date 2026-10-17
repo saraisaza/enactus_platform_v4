@@ -250,4 +250,10 @@ export const MENSAJES_EN: ReadonlyArray<readonly [string, string]> = [
   ["Esta lección no es una encuesta.", "This lesson is not a survey."],
   ["Esta encuesta no tiene preguntas configuradas.", "This survey has no questions set up."],
   ["Responda todas las preguntas antes de enviar; el comentario es opcional.", "Answer all the questions before sending; the comment is optional."],
+  ["Elija el curso del evento.", "Choose the event's course."],
+  ["Elija el laboratorio del evento.", "Choose the event's laboratory."],
+  ["Elija la organización del evento.", "Choose the event's organization."],
+  ["Solo puede agendar en los cursos que usted creó.", "You can only schedule events in the courses you created."],
+  ["Solo puede agendar en los laboratorios de sus cursos.", "You can only schedule events in the laboratories of your courses."],
+  ["Solo puede agendar para su propia organización.", "You can only schedule events for your own organization."],
 ];

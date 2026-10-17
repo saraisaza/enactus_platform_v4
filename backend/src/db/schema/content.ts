@@ -16,6 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { softDelete, timestamps } from './_shared';
+import { clients } from './clients';
 import { courses } from './courses';
 import {
   calendarEventType,
@@ -286,6 +287,8 @@ export const calendarEvents = pgTable(
     laboratoryId: uuid().references(() => laboratories.id, {
       onDelete: 'cascade',
     }),
+    /** Solo `organizacion`: el cliente cuya gente lo ve. */
+    clientId: uuid().references(() => clients.id, { onDelete: 'cascade' }),
     createdBy: uuid().references(() => users.id, { onDelete: 'set null' }),
     ...timestamps,
     ...softDelete,
@@ -295,10 +298,15 @@ export const calendarEvents = pgTable(
     index('calendar_events_course_id_idx').on(t.courseId),
     index('calendar_events_laboratory_id_idx').on(t.laboratoryId),
     index('calendar_events_type_idx').on(t.type),
+    index('calendar_events_client_id_idx').on(t.clientId),
+    // `::text`: los valores nuevos del tipo no se pueden usar como tipo en la
+    // misma transacción en que se agregan (la migración va entera en una).
     check(
       'calendar_events_target_matches_type',
-      sql`(${t.type} = 'open_learning_sync' and ${t.courseId} is not null and ${t.laboratoryId} is null)
-       or (${t.type} in ('ruta_impacto','mentoria') and ${t.courseId} is null)`,
+      sql`(${t.type}::text = 'open_learning_sync' and ${t.courseId} is not null and ${t.laboratoryId} is null and ${t.clientId} is null)
+       or (${t.type}::text in ('ruta_impacto','mentoria') and ${t.courseId} is null and ${t.clientId} is null)
+       or (${t.type}::text = 'laboratorio' and ${t.laboratoryId} is not null and ${t.courseId} is null and ${t.clientId} is null)
+       or (${t.type}::text = 'organizacion' and ${t.clientId} is not null and ${t.courseId} is null and ${t.laboratoryId} is null)`,
     ),
   ],
 );

@@ -308,6 +308,27 @@ mixin VocabularioDeEmpresa on AppLocalizations {
   String get constructorRestricciones => empresaConstructorRestricciones;
 
   @override
+  String get eventoCurso => empresaEventoCurso;
+
+  @override
+  String get eventoOrganizacion => empresaEventoOrganizacion;
+
+  @override
+  String get calendarioDestinoCurso => empresaCalendarioDestinoCurso;
+
+  @override
+  String get calendarioDestinoOrganizacion => empresaCalendarioDestinoOrganizacion;
+
+  @override
+  String get calendarioOrganizacion => empresaCalendarioOrganizacion;
+
+  @override
+  String get calendarioQuienCurso => empresaCalendarioQuienCurso;
+
+  @override
+  String get calendarioSinCursosPropios => empresaCalendarioSinCursosPropios;
+
+  @override
   String get avisoEntregaCalificadaTitulo => empresaAvisoEntregaCalificadaTitulo;
 
   @override

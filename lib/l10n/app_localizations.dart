@@ -3143,7 +3143,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.'**
+  /// **'Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.'**
   String get calendarioSubtitulo;
 
   /// No description provided for @calendarioProximos.
@@ -5435,7 +5435,7 @@ abstract class AppLocalizations {
   /// No description provided for @lxdCalendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Agende las sesiones sincrónicas de sus cursos Open Learning'**
+  /// **'Agende eventos para sus cursos, para los laboratorios de sus cursos o para toda su organización'**
   String get lxdCalendarioSubtitulo;
 
   /// No description provided for @lxdCursosSubtitulo.
@@ -7073,7 +7073,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminCalendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma'**
+  /// **'Los eventos de toda la plataforma: de cursos, de laboratorios, de cada organización y de la Ruta de Impacto'**
   String get adminCalendarioSubtitulo;
 
   /// No description provided for @asignarCursosOk.
@@ -10253,7 +10253,7 @@ abstract class AppLocalizations {
   /// No description provided for @empresaCalendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Las sesiones en vivo de sus capacitaciones.'**
+  /// **'Los eventos de sus capacitaciones y de su empresa.'**
   String get empresaCalendarioSubtitulo;
 
   /// No description provided for @empresaPerfilCursosActivos.
@@ -10421,7 +10421,7 @@ abstract class AppLocalizations {
   /// No description provided for @empresaLxdCalendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Agende las sesiones en vivo de sus capacitaciones'**
+  /// **'Agende eventos para sus capacitaciones o para toda su empresa'**
   String get empresaLxdCalendarioSubtitulo;
 
   /// No description provided for @empresaCalendarioSinCursosOL.
@@ -10975,6 +10975,180 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{quien} <{correo}> escribió:\n\n{mensaje}'**
   String avisoContactoCuerpo(Object quien, Object correo, Object mensaje);
+
+  /// No description provided for @eventoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Curso'**
+  String get eventoCurso;
+
+  /// No description provided for @eventoLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio'**
+  String get eventoLaboratorio;
+
+  /// No description provided for @eventoOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la organización'**
+  String get eventoOrganizacion;
+
+  /// No description provided for @calendarioVistaMes.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get calendarioVistaMes;
+
+  /// No description provided for @calendarioVistaSemana.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get calendarioVistaSemana;
+
+  /// No description provided for @calendarioHoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get calendarioHoy;
+
+  /// No description provided for @calendarioSemanaAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana anterior'**
+  String get calendarioSemanaAnterior;
+
+  /// No description provided for @calendarioSemanaSiguiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana siguiente'**
+  String get calendarioSemanaSiguiente;
+
+  /// No description provided for @calendarioSinEventos.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin eventos'**
+  String get calendarioSinEventos;
+
+  /// No description provided for @calendarioParaQuien.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Para quién es?'**
+  String get calendarioParaQuien;
+
+  /// No description provided for @calendarioDestinoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Un curso'**
+  String get calendarioDestinoCurso;
+
+  /// No description provided for @calendarioDestinoLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Un laboratorio'**
+  String get calendarioDestinoLaboratorio;
+
+  /// No description provided for @calendarioDestinoOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la organización'**
+  String get calendarioDestinoOrganizacion;
+
+  /// No description provided for @calendarioOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Organización'**
+  String get calendarioOrganizacion;
+
+  /// No description provided for @calendarioQuienCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo verán todos los que cursan este curso.'**
+  String get calendarioQuienCurso;
+
+  /// No description provided for @calendarioQuienLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo verán los estudiantes, los mentores y los asesores del laboratorio.'**
+  String get calendarioQuienLaboratorio;
+
+  /// No description provided for @calendarioQuienOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo verá toda la gente de {organizacion}.'**
+  String calendarioQuienOrganizacion(Object organizacion);
+
+  /// No description provided for @calendarioQuienMentoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo verán los estudiantes y los mentores del laboratorio.'**
+  String get calendarioQuienMentoria;
+
+  /// No description provided for @calendarioSinCursosPropios.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tiene cursos. Cree uno antes de agendar un evento del curso.'**
+  String get calendarioSinCursosPropios;
+
+  /// No description provided for @calendarioSinLabsParaElegir.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay laboratorios para elegir: sus cursos no están en ninguno.'**
+  String get calendarioSinLabsParaElegir;
+
+  /// No description provided for @calendarioSinOrganizaciones.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay organizaciones para elegir.'**
+  String get calendarioSinOrganizaciones;
+
+  /// No description provided for @calendarioSupervisorSubtitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Los eventos de su empresa y de sus capacitaciones.'**
+  String get calendarioSupervisorSubtitulo;
+
+  /// No description provided for @empresaEventoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Capacitación'**
+  String get empresaEventoCurso;
+
+  /// No description provided for @empresaEventoOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la empresa'**
+  String get empresaEventoOrganizacion;
+
+  /// No description provided for @empresaCalendarioDestinoCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Una capacitación'**
+  String get empresaCalendarioDestinoCurso;
+
+  /// No description provided for @empresaCalendarioDestinoOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Toda la empresa'**
+  String get empresaCalendarioDestinoOrganizacion;
+
+  /// No description provided for @empresaCalendarioOrganizacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresa'**
+  String get empresaCalendarioOrganizacion;
+
+  /// No description provided for @empresaCalendarioQuienCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo verán todos los que toman esta capacitación.'**
+  String get empresaCalendarioQuienCurso;
+
+  /// No description provided for @empresaCalendarioSinCursosPropios.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación.'**
+  String get empresaCalendarioSinCursosPropios;
 }
 
 class _AppLocalizationsDelegate

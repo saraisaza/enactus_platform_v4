@@ -7,7 +7,8 @@
   "meetLink": "",
   "guests": "",
   "courseId": null,
-  "laboratoryId": null
+  "laboratoryId": null,
+  "clientId": null
  },
  "PATCH /clients/:id": {
   "name": "Banco Andino",
@@ -51,7 +52,8 @@
   "meetLink": "",
   "guests": "",
   "courseId": null,
-  "laboratoryId": null
+  "laboratoryId": null,
+  "clientId": null
  },
  "POST /clients": {
   "name": "Banco Norte",

@@ -863,7 +863,7 @@
   "dashboardSuProyecto": "Su proyecto",
   "calendarioNoTrajo": "No pudimos traer sus eventos.",
   "calendarioCargando": "Cargando sus eventos…",
-  "calendarioSubtitulo": "Sesiones sincrónicas de sus cursos y eventos de su Ruta de Impacto.",
+  "calendarioSubtitulo": "Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.",
   "calendarioProximos": "Próximos eventos",
   "calendarioSinProximos": "No tiene próximos eventos.",
   "calendarioAgendaDespejada": "Agenda despejada",
@@ -1684,7 +1684,7 @@
   },
   "lxdProyectosSubtitulo": "Equipos y avance en la Ruta de Impacto de sus estudiantes",
   "lxdSinProyectos": "Ninguno de sus estudiantes tiene proyecto asignado todavía.",
-  "lxdCalendarioSubtitulo": "Agende las sesiones sincrónicas de sus cursos Open Learning",
+  "lxdCalendarioSubtitulo": "Agende eventos para sus cursos, para los laboratorios de sus cursos o para toda su organización",
   "lxdCursosSubtitulo": "Cursos que usted creó — eduXaction (asignados o no a un laboratorio) y Open Learning",
   "lxdNuevoCurso": "Nuevo curso",
   "lxdSinCursos": "Aún no ha creado ningún curso. Cree el primero.",
@@ -2149,7 +2149,7 @@
       "total": {}
     }
   },
-  "adminCalendarioSubtitulo": "Sesiones sincrónicas de Open Learning, eventos de Ruta de Impacto y mentorías de toda la plataforma",
+  "adminCalendarioSubtitulo": "Los eventos de toda la plataforma: de cursos, de laboratorios, de cada organización y de la Ruta de Impacto",
   "asignarCursosOk": "Cursos asignados",
   "asignarLabsOk": "Laboratorios asignados",
   "asignarA": "Asignar a {nombre}",
@@ -3144,7 +3144,7 @@
   "empresaDashboardTodoCompletado": "Ya completó todas sus capacitaciones asignadas.",
   "empresaCertificadosMisSubtitulo": "Los certificados de las capacitaciones que completó.",
   "empresaCertificadosVacio": "Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.",
-  "empresaCalendarioSubtitulo": "Las sesiones en vivo de sus capacitaciones.",
+  "empresaCalendarioSubtitulo": "Los eventos de sus capacitaciones y de su empresa.",
   "empresaPerfilCursosActivos": "Capacitaciones activas",
   "empresaPerfilAsignaAdmin": "Su cédula y su empresa los asigna su administrador.",
   "empresaSupervisorTabGente": "Empleados de su empresa",
@@ -3194,7 +3194,7 @@
   },
   "empresaLxdPromedioCursos": "Promedio de todas sus capacitaciones",
   "empresaLxdPerfilSubtitulo": "Información visible para administradores y empleados",
-  "empresaLxdCalendarioSubtitulo": "Agende las sesiones en vivo de sus capacitaciones",
+  "empresaLxdCalendarioSubtitulo": "Agende eventos para sus capacitaciones o para toda su empresa",
   "empresaCalendarioSinCursosOL": "Todavía no tiene capacitaciones propias. Cree una en \"Mis capacitaciones\" antes de agendar una sesión.",
   "empresaConstructorTitulo": "Constructor de capacitación",
   "empresaConstructorDelCurso": "Constructor de la capacitación",
@@ -3305,5 +3305,39 @@
       "correo": {},
       "mensaje": {}
     }
-  }
+  },
+  "eventoCurso": "Curso",
+  "eventoLaboratorio": "Laboratorio",
+  "eventoOrganizacion": "Toda la organización",
+  "calendarioVistaMes": "Mes",
+  "calendarioVistaSemana": "Semana",
+  "calendarioHoy": "Hoy",
+  "calendarioSemanaAnterior": "Semana anterior",
+  "calendarioSemanaSiguiente": "Semana siguiente",
+  "calendarioSinEventos": "Sin eventos",
+  "calendarioParaQuien": "¿Para quién es?",
+  "calendarioDestinoCurso": "Un curso",
+  "calendarioDestinoLaboratorio": "Un laboratorio",
+  "calendarioDestinoOrganizacion": "Toda la organización",
+  "calendarioOrganizacion": "Organización",
+  "calendarioQuienCurso": "Lo verán todos los que cursan este curso.",
+  "calendarioQuienLaboratorio": "Lo verán los estudiantes, los mentores y los asesores del laboratorio.",
+  "calendarioQuienOrganizacion": "Lo verá toda la gente de {organizacion}.",
+  "@calendarioQuienOrganizacion": {
+    "placeholders": {
+      "organizacion": {}
+    }
+  },
+  "calendarioQuienMentoria": "Lo verán los estudiantes y los mentores del laboratorio.",
+  "calendarioSinCursosPropios": "Todavía no tiene cursos. Cree uno antes de agendar un evento del curso.",
+  "calendarioSinLabsParaElegir": "No hay laboratorios para elegir: sus cursos no están en ninguno.",
+  "calendarioSinOrganizaciones": "No hay organizaciones para elegir.",
+  "calendarioSupervisorSubtitulo": "Los eventos de su empresa y de sus capacitaciones.",
+  "empresaEventoCurso": "Capacitación",
+  "empresaEventoOrganizacion": "Toda la empresa",
+  "empresaCalendarioDestinoCurso": "Una capacitación",
+  "empresaCalendarioDestinoOrganizacion": "Toda la empresa",
+  "empresaCalendarioOrganizacion": "Empresa",
+  "empresaCalendarioQuienCurso": "Lo verán todos los que toman esta capacitación.",
+  "empresaCalendarioSinCursosPropios": "Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación."
 }

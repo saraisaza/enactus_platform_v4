@@ -148,6 +148,13 @@
       "when": 1792003045029,
       "tag": "0020_avance_en_orden",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792264237329,
+      "tag": "0021_calendario_por_alcance",
+      "breakpoints": true
     }
   ]
 }

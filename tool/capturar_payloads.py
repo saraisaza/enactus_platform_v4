@@ -56,6 +56,8 @@ RUTAS = [
     ("/submissions?pageSize=100", ["superadmin"]),
     ("/evidences?pageSize=100", ["superadmin"]),
     ("/calendar-events?pageSize=100", ["student", "superadmin"]),
+    # Las entregas con fecha son de quien estudia: solo el estudiante las trae.
+    ("/calendar-events/entregas", ["student"]),
     ("/forum-posts?pageSize=100", ["student"]),
     ("/forum-posts/stats", ["student"]),
     ("/communication-resources?pageSize=100", ["superadmin"]),

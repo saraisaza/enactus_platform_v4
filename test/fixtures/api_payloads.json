@@ -1127,6 +1127,34 @@
       "total": 0,
       "totalPages": 0
     },
+    "/calendar-events/entregas": {
+      "data": [
+        {
+          "kind": "lab_phase",
+          "id": "92057f90-fcf5-571a-a256-61bebf360dd9",
+          "title": "Fase 1: Fundamentos",
+          "dueDate": "2026-07-01",
+          "done": false,
+          "courseId": null,
+          "courseName": null,
+          "laboratoryId": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+          "laboratoryName": "Laboratorio IA y Tecnología",
+          "phaseOrder": 1
+        },
+        {
+          "kind": "lab_phase",
+          "id": "ff7975f0-bb6d-54c8-9076-243c11d57e7f",
+          "title": "Fase 2",
+          "dueDate": "2026-08-02",
+          "done": false,
+          "courseId": null,
+          "courseName": null,
+          "laboratoryId": "b0b722b7-5dc6-58de-b9ad-77b0415e8d85",
+          "laboratoryName": "Laboratorio IA y Tecnología",
+          "phaseOrder": 2
+        }
+      ]
+    },
     "/forum-posts": {
       "data": [
         {

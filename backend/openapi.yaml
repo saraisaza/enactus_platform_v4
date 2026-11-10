@@ -2829,6 +2829,44 @@ paths:
         '403': { description: Ese rol no puede agendar ahí }
         '404': { description: El curso, laboratorio u organización no existe }
 
+  /calendar-events/entregas:
+    get:
+      tags: [content]
+      summary: Entregas con fecha de quien pregunta
+      description: |
+        Las actividades con fecha límite de los cursos que cursa
+        (`course_activity`) y, si es del mundo Enactus, las fases con fecha de
+        sus laboratorios (`lab_phase`) y las entregas propias de sus módulos
+        de la Ruta (`lab_activity`). Es lo que el calendario muestra como
+        recordatorio y lo que el inicio cuenta como entregas de la semana.
+
+        `done` dice si ya la entregó (o completó la fase): una actividad
+        cuenta como entregada desde que se manda, sin esperar la nota. Solo
+        las tiene quien estudia; los demás roles reciben la lista vacía.
+      responses:
+        '200':
+          description: Entregas, en orden de fecha
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kind: { type: string, enum: [course_activity, lab_phase, lab_activity] }
+                        id: { type: string, format: uuid }
+                        title: { type: string }
+                        dueDate: { type: string, format: date }
+                        done: { type: boolean }
+                        courseId: { type: [string, 'null'], format: uuid }
+                        courseName: { type: [string, 'null'] }
+                        laboratoryId: { type: [string, 'null'], format: uuid }
+                        laboratoryName: { type: [string, 'null'] }
+                        phaseOrder: { type: [integer, 'null'] }
+
   /calendar-events/organizaciones:
     get:
       tags: [content]

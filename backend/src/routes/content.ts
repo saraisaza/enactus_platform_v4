@@ -24,6 +24,7 @@ import {
   requireRole,
 } from '../middleware/auth';
 import type { AppEnv, AuthUser } from '../middleware/context';
+import { entregasDe } from '../services/entregas';
 import { delMismoCliente } from '../services/frontera-de-cliente';
 
 // ---------------------------------------------------------------------------
@@ -339,6 +340,18 @@ async function assertPuedeAgendar(db: Database, user: AuthUser, d: DestinoDelEve
     }
   }
 }
+
+/**
+ * Las entregas con fecha de quien pregunta: las actividades de sus cursos y
+ * las fases (y entregas propias) de sus laboratorios. Es lo que el
+ * calendario muestra como recordatorio y lo que el inicio cuenta como
+ * «entregas de esta semana». No son eventos: nadie las agenda, salen de la
+ * fecha límite que ya tiene cada actividad y cada fase.
+ */
+calendarRoutes.get('/entregas', async (c) => {
+  const data = await entregasDe(c.get('db'), currentUser(c));
+  return c.json({ data });
+});
 
 /**
  * Para qué organizaciones puede agendar quien pregunta: la suya, si es de

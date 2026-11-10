@@ -93,6 +93,7 @@ class DataProvider extends ChangeNotifier {
   AsyncValue<List<Certificate>> _certificates = const AsyncValue.idle();
   AsyncValue<List<AppNotification>> _notifications = const AsyncValue.idle();
   AsyncValue<List<CalendarEvent>> _calendarEvents = const AsyncValue.idle();
+  AsyncValue<List<Entrega>> _entregas = const AsyncValue.idle();
   AsyncValue<List<ForumPost>> _forumPosts = const AsyncValue.idle();
   AsyncValue<ForumStats> _forumStats = const AsyncValue.idle();
   AsyncValue<List<ForumBlock>> _forumBlocks = const AsyncValue.idle();
@@ -137,6 +138,7 @@ class DataProvider extends ChangeNotifier {
     _certificates = const AsyncValue.idle();
     _notifications = const AsyncValue.idle();
     _calendarEvents = const AsyncValue.idle();
+    _entregas = const AsyncValue.idle();
     _forumPosts = const AsyncValue.idle();
     _forumStats = const AsyncValue.idle();
     _forumBlocks = const AsyncValue.idle();
@@ -1034,6 +1036,8 @@ class DataProvider extends ChangeNotifier {
     }
     if (impact.rutaImpact.isNotEmpty || course == null) {
       unawaited(reloadRutaProgress());
+      // Una fase que se completó deja de ser una entrega pendiente.
+      _entregasPorRevisar();
     }
     notifyListeners();
   }
@@ -2002,6 +2006,7 @@ class DataProvider extends ChangeNotifier {
       _applyImpact(LessonImpact.fromJson(Map<String, dynamic>.from(impact)));
     }
     await reloadSubmissions();
+    _entregasPorRevisar();
     return Submission.fromJson(respuesta);
   }
 
@@ -2084,6 +2089,40 @@ class DataProvider extends ChangeNotifier {
       Map<String, dynamic>.from(json as Map),
       CalendarEvent.fromJson,
     ).data;
+  }
+
+  /// Las entregas con fecha de quien tiene la sesión: las actividades de sus
+  /// cursos y las fases de sus laboratorios. El calendario las muestra como
+  /// recordatorio y el inicio las cuenta por semana.
+  ///
+  /// Quien no estudia recibe la lista vacía. Si el pedido falla, las
+  /// pantallas siguen con lo demás: un recordatorio que no llegó no puede
+  /// tumbar el calendario entero.
+  AsyncValue<List<Entrega>> get entregas {
+    _lazy(_entregas, (v) => _entregas = v, _fetchEntregas);
+    return _entregas;
+  }
+
+  Future<void> reloadEntregas() => _refresh(
+        (v) => _entregas = v,
+        _fetchEntregas,
+        _entregas.valueOrNull,
+      );
+
+  Future<List<Entrega>> _fetchEntregas() async {
+    final json = await api.get('/calendar-events/entregas');
+    return [
+      for (final e in ((json as Map)['data'] as List? ?? const []))
+        ?Entrega.fromJson(Map<String, dynamic>.from(e as Map)),
+    ];
+  }
+
+  /// Después de entregar o de completar algo, lo que estaba pendiente pudo
+  /// dejar de estarlo. Solo se vuelve a pedir si alguna pantalla ya las
+  /// había pedido: nadie las necesita antes.
+  void _entregasPorRevisar() {
+    if (_entregas is AsyncIdle<List<Entrega>>) return;
+    unawaited(reloadEntregas());
   }
 
   Future<void> saveCalendarEvent(CalendarEvent event, {String? id}) async {

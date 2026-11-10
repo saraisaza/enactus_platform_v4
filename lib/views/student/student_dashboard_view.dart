@@ -17,9 +17,42 @@ import '../../widgets/portal_shell.dart';
 import '../shared/projects_directory_view.dart' show ProjectDetailView;
 import 'course_detail_view.dart';
 
-/// Dashboard del estudiante: progreso general, curso a continuar, progreso por
-/// curso, pendientes priorizados, última entrega calificada y estado del
-/// proyecto.
+/// Lo que la persona tiene esta semana, en una frase: sus cursos y sus
+/// entregas y, si tiene laboratorios, cuántos y con cuántas entregas.
+///
+/// Va debajo del saludo, donde antes decía «Aún no tiene proyecto asignado»
+/// —que a quien no es de un equipo de Enactus no le decía nada, y a quien sí
+/// lo es tampoco le decía qué hacer—.
+String resumenDeLaSemana({
+  required int cursosActivos,
+  required int entregasDeCursos,
+  required int laboratorios,
+  required int entregasDeLaboratorios,
+}) {
+  final deCursos = entregasDeCursos == 0
+      ? tr.dashboardSemanaSinEntregas
+      : cursosActivos == 0
+          ? tr.dashboardSemanaSoloEntregas(entregasDeCursos)
+          : tr.dashboardSemanaCursosYEntregas(cursosActivos, entregasDeCursos);
+  // Una empresa y un Open Learning no tienen laboratorios: ni se nombran.
+  if (laboratorios == 0) return deCursos;
+  final deLaboratorios = entregasDeLaboratorios == 0
+      ? tr.dashboardSemanaLabsSinEntregas(laboratorios)
+      : tr.dashboardSemanaLabsConEntregas(laboratorios, entregasDeLaboratorios);
+  return '$deCursos $deLaboratorios';
+}
+
+/// Las entregas sin hacer que vencen entre [lunes] y [domingo].
+List<Entrega> entregasDeLaSemana(
+        List<Entrega> todas, DateTime lunes, DateTime domingo) =>
+    [
+      for (final e in todas)
+        if (!e.done && e.venceEntre(lunes, domingo)) e,
+    ];
+
+/// Dashboard del estudiante: lo que tiene esta semana, el acceso rápido a su
+/// curso o a la fase de su laboratorio, progreso por curso, pendientes
+/// priorizados, última entrega calificada y estado del proyecto.
 ///
 /// Nada de esto se calcula acá. El avance por curso, el desbloqueo de módulos
 /// y el estado de cada fecha límite los resuelve el servidor y llegan ya
@@ -28,11 +61,36 @@ import 'course_detail_view.dart';
 class StudentDashboardView extends StatelessWidget {
   const StudentDashboardView({super.key});
 
+  /// El resumen de la semana, o `null` mientras falta algún dato: decir «no
+  /// tiene entregas» antes de saberlo sería afirmar algo que quizá no es.
+  String? _resumen(DataProvider data, AppUser student, DateTime lunes,
+      DateTime domingo) {
+    final cursos = data.courses.valueOrNull;
+    final entregas = data.entregas.valueOrNull;
+    if (cursos == null || entregas == null) return null;
+    var laboratorios = 0;
+    if (student.isEnactusStudent) {
+      final ruta = data.rutaProgress;
+      // Si la Ruta no llegó, se dice lo de los cursos y nada de laboratorios.
+      if (ruta.valueOrNull == null && ruta.errorOrNull == null) return null;
+      laboratorios = ruta.valueOrNull?.laboratories.length ?? 0;
+    }
+    final semana = entregasDeLaSemana(entregas, lunes, domingo);
+    return resumenDeLaSemana(
+      cursosActivos: [
+        for (final c in cursos)
+          if (data.courseProgress(c.id).valueOrNull?.isComplete != true) c,
+      ].length,
+      entregasDeCursos: semana.where((e) => !e.esDeLaboratorio).length,
+      laboratorios: laboratorios,
+      entregasDeLaboratorios: semana.where((e) => e.esDeLaboratorio).length,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final student = context.watch<AuthProvider>().currentUser!;
-    final team = student.team;
 
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
@@ -46,14 +104,10 @@ class StudentDashboardView extends StatelessWidget {
     return ContentScreenShell(
       eyebrow: eyebrow,
       title: tr.dashboardHola(student.name.split(' ').first),
-      // Un empleado de una empresa no tiene proyecto ni universidad: va su
-      // empresa.
-      subtitle: student.esDeEmpresa
-          ? student.client?.name
-          : team != null
-              ? tr.dashboardProyecto(team.projectName) +
-                  (student.university.isEmpty ? '' : ' · ${student.university}')
-              : tr.dashboardSinProyecto,
+      // Mientras carga va un espacio, para que la cabecera no salte cuando
+      // llegue la frase.
+      subtitle: _resumen(data, student, monday, sunday) ??
+          (data.entregas.errorOrNull == null ? '\u00A0' : null),
       searchHint: tr.perfilBuscarPortal,
       trailingBuilder: (context, colors, isDark) =>
           _OverallProgress(student: student, colors: colors),
@@ -62,14 +116,25 @@ class StudentDashboardView extends StatelessWidget {
         error: (e) => ErrorState(e, onRetry: data.reloadCourses),
         data: (courses) {
           if (courses.isEmpty) {
-            return EmptyState(
-              icon: Icons.school_outlined,
-              title: tr.dashboardTodoPorEmpezar,
-              message: tr.dashboardSinCursos,
-              primaryLabel: tr.comunActualizar,
-              onPrimary: data.reloadCourses,
-              colors: colors,
-            );
+            // Sin cursos todavía puede haber un laboratorio asignado, con su
+            // Ruta: antes esta pantalla decía «todo por empezar» y no
+            // mostraba por dónde.
+            final ruta = student.isEnactusStudent ? data.rutaProgress : null;
+            if (ruta != null &&
+                ruta.valueOrNull == null &&
+                ruta.errorOrNull == null) {
+              return const CardListSkeleton(count: 3);
+            }
+            if (ruta?.valueOrNull?.laboratories.isEmpty ?? true) {
+              return EmptyState(
+                icon: Icons.school_outlined,
+                title: tr.dashboardTodoPorEmpezar,
+                message: tr.dashboardSinCursos,
+                primaryLabel: tr.comunActualizar,
+                onPrimary: data.reloadCourses,
+                colors: colors,
+              );
+            }
           }
           return _DashboardBody(
               student: student, courses: courses, colors: colors);
@@ -177,11 +242,15 @@ class _DashboardBody extends StatelessWidget {
       final left = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Entrance(child: _ContinueCard(courses: courses, colors: colors)),
-          const SizedBox(height: 20),
           Entrance(
-              delayMs: 90,
-              child: _CourseProgressCard(courses: courses, colors: colors)),
+              child: _ContinueCard(
+                  student: student, courses: courses, colors: colors)),
+          if (courses.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Entrance(
+                delayMs: 90,
+                child: _CourseProgressCard(courses: courses, colors: colors)),
+          ],
         ],
       );
       final right = Column(
@@ -216,10 +285,18 @@ class _DashboardBody extends StatelessWidget {
   }
 }
 
+/// El acceso rápido: el curso que tiene a medias o, si no tiene ninguno, la
+/// fase en curso de cada laboratorio asignado.
+///
+/// Un empleado de una empresa y un Open Learning solo tienen cursos, así que
+/// siempre ven su curso. Un estudiante de Enactus ve su curso mientras tenga
+/// uno a medias y, cuando no, por dónde va en su laboratorio.
 class _ContinueCard extends StatelessWidget {
+  final AppUser student;
   final List<Course> courses;
   final ContentColors colors;
-  const _ContinueCard({required this.courses, required this.colors});
+  const _ContinueCard(
+      {required this.student, required this.courses, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +314,26 @@ class _ContinueCard extends StatelessWidget {
     }
 
     if (course == null || progress == null) {
+      final laboratorios = student.isEnactusStudent
+          ? [
+              for (final lab in data.rutaProgress.valueOrNull?.laboratories ??
+                  const <LabProgress>[])
+                if (!lab.isComplete && lab.phases.isNotEmpty) lab,
+            ]
+          : const <LabProgress>[];
+      if (laboratorios.isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < laboratorios.length; i++) ...[
+              if (i > 0) const SizedBox(height: 20),
+              _LabPhaseCard(
+                  student: student, lab: laboratorios[i], colors: colors),
+            ],
+          ],
+        );
+      }
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -356,6 +453,119 @@ class _ContinueCard extends StatelessWidget {
   }
 }
 
+/// Acceso rápido a la fase en curso de un laboratorio: en cuál va, cuánto
+/// lleva, cuándo vence y un botón que lo deja ahí.
+class _LabPhaseCard extends StatelessWidget {
+  final AppUser student;
+  final LabProgress lab;
+  final ContentColors colors;
+  const _LabPhaseCard(
+      {required this.student, required this.lab, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    // La que le toca: la primera sin completar, en el orden de la Ruta.
+    final indice = lab.phases.indexWhere((p) => !p.isComplete);
+    final numero = indice < 0 ? lab.phases.length : indice + 1;
+    final fase = lab.phases[numero - 1];
+    final accent = labColorFor(lab.laboratoryId);
+    final tinta = inkSobre(accent);
+    final compacto = context.isCompact;
+    final vence = fase.deadlineDate;
+
+    void abrir() => Navigator.pushNamed(context,
+        '${AppRoutes.forRole(student.role)}/lab/${lab.laboratoryId}');
+
+    return Container(
+      key: ValueKey('acceso-laboratorio-${lab.laboratoryId}'),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(28, 26, 28, 26),
+            decoration: BoxDecoration(color: accent),
+            child: Stack(
+              children: [
+                const Positioned.fill(
+                    child: CustomPaint(painter: StripePainter())),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(tr.dashboardFaseEnCurso,
+                        style: TextStyle(
+                            fontSize: 12,
+                            letterSpacing: 12 * 0.16,
+                            fontWeight: FontWeight.w600,
+                            color: tinta.withValues(alpha: 0.85))),
+                    const SizedBox(height: 8),
+                    Text(
+                        (fase.title.isEmpty
+                                ? tr.rutaFaseNumero(numero)
+                                : fase.title)
+                            .toUpperCase(),
+                        style: displayHeading(
+                            fontSize: compacto ? 24 : 38,
+                            fontWeight: AppWeights.display,
+                            color: tinta)),
+                    const SizedBox(height: 4),
+                    Text(lab.laboratoryName,
+                        style: TextStyle(
+                            fontSize: 13.5,
+                            color: tinta.withValues(alpha: 0.88))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 20, 28, 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ThinProgressBar(value: fase.ratio, color: accent),
+                      const SizedBox(height: 6),
+                      Text(
+                          [
+                            tr.rutaFaseDe(numero, lab.phases.length),
+                            tr.rutaModulosDeTotal(
+                                fase.modulesDone, fase.modulesTotal),
+                            if (vence != null)
+                              tr.labFechaLimite(fechaCorta(vence)),
+                          ].join(' · '),
+                          style:
+                              TextStyle(fontSize: 12.5, color: colors.text3)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 20),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.arrow_forward, size: 19),
+                  label: Text(tr.dashboardIrALaFase),
+                  onPressed: abrir,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CourseProgressCard extends StatelessWidget {
   final List<Course> courses;
   final ContentColors colors;
@@ -434,8 +644,8 @@ class _PendingRow {
       this.onTap});
 }
 
-/// Pendientes, en orden de urgencia: fases vencidas, mentorías por confirmar,
-/// cursos a medias y tareas del checklist del equipo.
+/// Pendientes, en orden de urgencia: fases vencidas, entregas de esta semana,
+/// mentorías por confirmar, cursos a medias y tareas del checklist del equipo.
 ///
 /// Qué está vencido, qué está desbloqueado y qué está completo lo dice el
 /// servidor. Un Open Learning no tiene fases ni mentorías —y pedirlas le daría
@@ -451,6 +661,7 @@ class _PendingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final overdue = <_PendingRow>[];
+    final deLaSemana = <_PendingRow>[];
     final mentoring = <_PendingRow>[];
     final toContinue = <_PendingRow>[];
     final teamTasks = <_PendingRow>[];
@@ -492,6 +703,47 @@ class _PendingCard extends StatelessWidget {
       }
     }
 
+    // Las entregas que el encabezado cuenta: acá se ve cuáles son.
+    final hoy = DateTime.now();
+    final lunes = hoy.subtract(Duration(days: hoy.weekday - 1));
+    for (final entrega in entregasDeLaSemana(
+        data.entregas.valueOrNull ?? const <Entrega>[],
+        lunes,
+        lunes.add(const Duration(days: 6)))) {
+      // Una fase que ya venció sale arriba como «fase vencida»: no dos veces.
+      if (entrega.tipo == TipoDeEntrega.faseDeLaboratorio &&
+          entrega.dueDate.isBefore(DateTime(hoy.year, hoy.month, hoy.day))) {
+        continue;
+      }
+      final cursoId = entrega.courseId;
+      final labId = entrega.laboratoryId;
+      deLaSemana.add(_PendingRow(
+        icon: Icons.assignment_outlined,
+        color: labColorFor(labId ?? ''),
+        title: tr.dashboardEntregaPendiente(entrega.title.isEmpty
+            ? tr.rutaFaseNumero(entrega.phaseOrder ?? 1)
+            : entrega.title),
+        meta: [
+          if (!entrega.esDeLaboratorio && entrega.courseName != null)
+            entrega.courseName!
+          else if (entrega.laboratoryName != null)
+            entrega.laboratoryName!,
+          tr.dashboardVenceEl(diaMesCorto(entrega.dueDate)),
+        ].join(' · '),
+        onTap: !entrega.esDeLaboratorio && cursoId != null
+            ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    settings:
+                        RouteSettings(name: '${AppRoutes.courses}/$cursoId'),
+                    builder: (_) => CourseDetailView(courseId: cursoId)))
+            : labId != null
+                ? () => Navigator.pushNamed(context,
+                    '${AppRoutes.forRole(student.role)}/lab/$labId')
+                : null,
+      ));
+    }
+
     for (final course in courses) {
       final progress = data.courseProgress(course.id).valueOrNull;
       if (progress == null || progress.isComplete) continue;
@@ -531,8 +783,13 @@ class _PendingCard extends StatelessWidget {
       }
     }
 
-    final items =
-        [...overdue, ...mentoring, ...toContinue, ...teamTasks].take(6).toList();
+    final items = [
+      ...overdue,
+      ...deLaSemana,
+      ...mentoring,
+      ...toContinue,
+      ...teamTasks,
+    ].take(6).toList();
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),

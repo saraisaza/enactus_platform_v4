@@ -838,7 +838,6 @@
       "fecha": {}
     }
   },
-  "dashboardSinProyecto": "Aún no tiene proyecto asignado",
   "dashboardTodoPorEmpezar": "Todo por empezar",
   "dashboardSinCursos": "Aún no tiene cursos asignados. Cuando su administrador le asigne uno, su progreso aparecerá aquí.",
   "comunActualizar": "Actualizar",
@@ -863,9 +862,9 @@
   "dashboardSuProyecto": "Su proyecto",
   "calendarioNoTrajo": "No pudimos traer sus eventos.",
   "calendarioCargando": "Cargando sus eventos…",
-  "calendarioSubtitulo": "Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.",
-  "calendarioProximos": "Próximos eventos",
-  "calendarioSinProximos": "No tiene próximos eventos.",
+  "calendarioSubtitulo": "Los próximos eventos y entregas aparecerán en el calendario.",
+  "calendarioProximos": "Próximos eventos y entregas",
+  "calendarioSinProximos": "No tiene próximos eventos ni entregas.",
   "calendarioAgendaDespejada": "Agenda despejada",
   "calendarioAgendaDespejadaTexto": "No tiene sesiones ni entregas programadas este mes.",
   "comunActualizado": "Actualizado",
@@ -884,7 +883,7 @@
   "cursosAsignados": "Cursos asignados",
   "cursosCargando": "Cargando sus cursos…",
   "cursosNoTrajo": "No pudimos traer sus cursos.",
-  "cursosSubtitulo": "Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.",
+  "cursosSubtitulo": "Cursos especializados para cada línea de trabajo que puede tener una empresa.",
   "cursosBuscar": "Buscar curso o laboratorio",
   "cursosSinAsignados": "Sin cursos asignados",
   "cursosSinAsignadosTexto": "Aún no tiene cursos asignados por su administrador.",
@@ -928,12 +927,6 @@
   "@dashboardHola": {
     "placeholders": {
       "nombre": {}
-    }
-  },
-  "dashboardProyecto": "Proyecto {proyecto}",
-  "@dashboardProyecto": {
-    "placeholders": {
-      "proyecto": {}
     }
   },
   "dashboardCursosActivos": "{cantidad} cursos activos",
@@ -3144,7 +3137,6 @@
   "empresaDashboardTodoCompletado": "Ya completó todas sus capacitaciones asignadas.",
   "empresaCertificadosMisSubtitulo": "Los certificados de las capacitaciones que completó.",
   "empresaCertificadosVacio": "Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.",
-  "empresaCalendarioSubtitulo": "Los eventos de sus capacitaciones y de su empresa.",
   "empresaPerfilCursosActivos": "Capacitaciones activas",
   "empresaPerfilAsignaAdmin": "Su cédula y su empresa los asigna su administrador.",
   "empresaSupervisorTabGente": "Empleados de su empresa",
@@ -3339,5 +3331,88 @@
   "empresaCalendarioDestinoOrganizacion": "Toda la empresa",
   "empresaCalendarioOrganizacion": "Empresa",
   "empresaCalendarioQuienCurso": "Lo verán todos los que toman esta capacitación.",
-  "empresaCalendarioSinCursosPropios": "Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación."
+  "empresaCalendarioSinCursosPropios": "Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación.",
+  "dashboardSemanaSinEntregas": "No tiene entregas de cursos para esta semana.",
+  "dashboardSemanaCursosYEntregas": "Tiene {cursos, plural, =1{1 curso} other{{cursos} cursos}} para esta semana y {entregas, plural, =1{1 entregable} other{{entregas} entregables}}.",
+  "@dashboardSemanaCursosYEntregas": {
+    "placeholders": {
+      "cursos": {
+        "type": "int"
+      },
+      "entregas": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardSemanaSoloEntregas": "Tiene {entregas, plural, =1{1 entregable de cursos} other{{entregas} entregables de cursos}} para esta semana.",
+  "@dashboardSemanaSoloEntregas": {
+    "placeholders": {
+      "entregas": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardSemanaLabsSinEntregas": "{laboratorios, plural, =1{Tiene 1 laboratorio asignado} other{Tiene {laboratorios} laboratorios asignados}}, sin entregas esta semana.",
+  "@dashboardSemanaLabsSinEntregas": {
+    "placeholders": {
+      "laboratorios": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardSemanaLabsConEntregas": "{laboratorios, plural, =1{Tiene 1 laboratorio asignado} other{Tiene {laboratorios} laboratorios asignados}} y {entregas, plural, =1{1 entrega de laboratorio} other{{entregas} entregas de laboratorio}} esta semana.",
+  "@dashboardSemanaLabsConEntregas": {
+    "placeholders": {
+      "laboratorios": {
+        "type": "int"
+      },
+      "entregas": {
+        "type": "int"
+      }
+    }
+  },
+  "empresaDashboardSemanaSinEntregas": "No tiene entregas de capacitaciones para esta semana.",
+  "empresaDashboardSemanaCursosYEntregas": "Tiene {cursos, plural, =1{1 capacitación} other{{cursos} capacitaciones}} para esta semana y {entregas, plural, =1{1 entregable} other{{entregas} entregables}}.",
+  "@empresaDashboardSemanaCursosYEntregas": {
+    "placeholders": {
+      "cursos": {
+        "type": "int"
+      },
+      "entregas": {
+        "type": "int"
+      }
+    }
+  },
+  "empresaDashboardSemanaSoloEntregas": "Tiene {entregas, plural, =1{1 entregable de capacitaciones} other{{entregas} entregables de capacitaciones}} para esta semana.",
+  "@empresaDashboardSemanaSoloEntregas": {
+    "placeholders": {
+      "entregas": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardFaseEnCurso": "SU FASE EN CURSO",
+  "dashboardIrALaFase": "Ir a la fase",
+  "dashboardEntregaPendiente": "Entrega: {titulo}",
+  "@dashboardEntregaPendiente": {
+    "placeholders": {
+      "titulo": {}
+    }
+  },
+  "dashboardVenceEl": "Vence el {fecha}",
+  "@dashboardVenceEl": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "calendarioEntregas": "Entregas",
+  "calendarioEntregaDeCurso": "Entrega de curso",
+  "empresaCalendarioEntregaDeCurso": "Entrega de capacitación",
+  "calendarioEntregaDeLaboratorio": "Entrega de laboratorio",
+  "calendarioFechaDeFase": "Fecha límite de fase",
+  "calendarioEntregaHecha": "Entregada",
+  "calendarioVenceEsteDia": "Vence este día",
+  "calendarioIrAlCurso": "Ir al curso",
+  "empresaCalendarioIrAlCurso": "Ir a la capacitación",
+  "calendarioIrAlLaboratorio": "Ir al laboratorio"
 }

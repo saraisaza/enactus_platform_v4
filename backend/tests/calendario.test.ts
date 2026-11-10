@@ -120,6 +120,21 @@ describe('un evento de un curso', () => {
     expect(curso!.laboratory_id).toBe(LAB_IA);
   });
 
+  it('llega con el nombre de su curso y con su laboratorio, para el color', async () => {
+    const res = await pedir('/calendar-events?pageSize=100', 'GET', tok.est1!);
+    const { data } = (await res.json()) as {
+      data: { title: string; courseName: string | null; laboratoryName: string | null;
+              courseLaboratoryId: string | null; laboratoryId: string | null }[];
+    };
+    const sesion = data.find((e) => e.title === 'Sesión IA')!;
+    // El evento es del curso, no del laboratorio: el laboratorio le llega
+    // por el curso, y con su nombre.
+    expect(sesion.laboratoryId).toBeNull();
+    expect(sesion.courseLaboratoryId).toBe(LAB_IA);
+    expect(sesion.courseName).toBeTruthy();
+    expect(sesion.laboratoryName).toBeTruthy();
+  });
+
   it('un LXD solo agenda en los cursos que creó', async () => {
     const res = await agendar('lxdAgua', 'Intruso', { type: 'open_learning_sync', courseId: CURSO_IA });
     expect(res.status).toBe(403);

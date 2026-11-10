@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, getTableColumns, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -236,8 +236,23 @@ calendarRoutes.get('/', async (c) => {
   const scope = alcanceDelCalendario(user);
   if (!scope) return c.json(paginated([], 0, query));
 
+  // Con el nombre de su curso y de su laboratorio: el calendario pinta cada
+  // evento con el color de su laboratorio y lo nombra en la leyenda, y un
+  // evento de un curso de laboratorio lleva el color de ESE laboratorio. Sin
+  // esto la pantalla tendría que pedir aparte cursos y laboratorios solo
+  // para saber de qué color es un evento.
+  const laboratorioDelCurso = sql<string | null>`(
+    select c.laboratory_id from courses c where c.id = ${calendarEvents.courseId})`;
   const rows = await db
-    .select()
+    .select({
+      ...getTableColumns(calendarEvents),
+      courseName: sql<string | null>`(
+        select c.name from courses c where c.id = ${calendarEvents.courseId})`,
+      courseLaboratoryId: laboratorioDelCurso,
+      laboratoryName: sql<string | null>`(
+        select l.name from laboratories l
+         where l.id = coalesce(${calendarEvents.laboratoryId}, ${laboratorioDelCurso}))`,
+    })
     .from(calendarEvents)
     .where(scope)
     .orderBy(asc(calendarEvents.startsAt))

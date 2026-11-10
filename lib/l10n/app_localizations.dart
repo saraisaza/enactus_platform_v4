@@ -3020,12 +3020,6 @@ abstract class AppLocalizations {
   /// **'Emitido el {fecha}'**
   String certificadoEmitidoEl(Object fecha);
 
-  /// No description provided for @dashboardSinProyecto.
-  ///
-  /// In es, this message translates to:
-  /// **'Aún no tiene proyecto asignado'**
-  String get dashboardSinProyecto;
-
   /// No description provided for @dashboardTodoPorEmpezar.
   ///
   /// In es, this message translates to:
@@ -3143,19 +3137,19 @@ abstract class AppLocalizations {
   /// No description provided for @calendarioSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.'**
+  /// **'Los próximos eventos y entregas aparecerán en el calendario.'**
   String get calendarioSubtitulo;
 
   /// No description provided for @calendarioProximos.
   ///
   /// In es, this message translates to:
-  /// **'Próximos eventos'**
+  /// **'Próximos eventos y entregas'**
   String get calendarioProximos;
 
   /// No description provided for @calendarioSinProximos.
   ///
   /// In es, this message translates to:
-  /// **'No tiene próximos eventos.'**
+  /// **'No tiene próximos eventos ni entregas.'**
   String get calendarioSinProximos;
 
   /// No description provided for @calendarioAgendaDespejada.
@@ -3209,7 +3203,7 @@ abstract class AppLocalizations {
   /// No description provided for @cursosSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.'**
+  /// **'Cursos especializados para cada línea de trabajo que puede tener una empresa.'**
   String get cursosSubtitulo;
 
   /// No description provided for @cursosBuscar.
@@ -3289,12 +3283,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Hola, {nombre}'**
   String dashboardHola(Object nombre);
-
-  /// No description provided for @dashboardProyecto.
-  ///
-  /// In es, this message translates to:
-  /// **'Proyecto {proyecto}'**
-  String dashboardProyecto(Object proyecto);
 
   /// No description provided for @dashboardCursosActivos.
   ///
@@ -10250,12 +10238,6 @@ abstract class AppLocalizations {
   /// **'Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.'**
   String get empresaCertificadosVacio;
 
-  /// No description provided for @empresaCalendarioSubtitulo.
-  ///
-  /// In es, this message translates to:
-  /// **'Los eventos de sus capacitaciones y de su empresa.'**
-  String get empresaCalendarioSubtitulo;
-
   /// No description provided for @empresaPerfilCursosActivos.
   ///
   /// In es, this message translates to:
@@ -11149,6 +11131,138 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación.'**
   String get empresaCalendarioSinCursosPropios;
+
+  /// No description provided for @dashboardSemanaSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene entregas de cursos para esta semana.'**
+  String get dashboardSemanaSinEntregas;
+
+  /// No description provided for @dashboardSemanaCursosYEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiene {cursos, plural, =1{1 curso} other{{cursos} cursos}} para esta semana y {entregas, plural, =1{1 entregable} other{{entregas} entregables}}.'**
+  String dashboardSemanaCursosYEntregas(int cursos, int entregas);
+
+  /// No description provided for @dashboardSemanaSoloEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiene {entregas, plural, =1{1 entregable de cursos} other{{entregas} entregables de cursos}} para esta semana.'**
+  String dashboardSemanaSoloEntregas(int entregas);
+
+  /// No description provided for @dashboardSemanaLabsSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'{laboratorios, plural, =1{Tiene 1 laboratorio asignado} other{Tiene {laboratorios} laboratorios asignados}}, sin entregas esta semana.'**
+  String dashboardSemanaLabsSinEntregas(int laboratorios);
+
+  /// No description provided for @dashboardSemanaLabsConEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'{laboratorios, plural, =1{Tiene 1 laboratorio asignado} other{Tiene {laboratorios} laboratorios asignados}} y {entregas, plural, =1{1 entrega de laboratorio} other{{entregas} entregas de laboratorio}} esta semana.'**
+  String dashboardSemanaLabsConEntregas(int laboratorios, int entregas);
+
+  /// No description provided for @empresaDashboardSemanaSinEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'No tiene entregas de capacitaciones para esta semana.'**
+  String get empresaDashboardSemanaSinEntregas;
+
+  /// No description provided for @empresaDashboardSemanaCursosYEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiene {cursos, plural, =1{1 capacitación} other{{cursos} capacitaciones}} para esta semana y {entregas, plural, =1{1 entregable} other{{entregas} entregables}}.'**
+  String empresaDashboardSemanaCursosYEntregas(int cursos, int entregas);
+
+  /// No description provided for @empresaDashboardSemanaSoloEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiene {entregas, plural, =1{1 entregable de capacitaciones} other{{entregas} entregables de capacitaciones}} para esta semana.'**
+  String empresaDashboardSemanaSoloEntregas(int entregas);
+
+  /// No description provided for @dashboardFaseEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'SU FASE EN CURSO'**
+  String get dashboardFaseEnCurso;
+
+  /// No description provided for @dashboardIrALaFase.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a la fase'**
+  String get dashboardIrALaFase;
+
+  /// No description provided for @dashboardEntregaPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega: {titulo}'**
+  String dashboardEntregaPendiente(Object titulo);
+
+  /// No description provided for @dashboardVenceEl.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence el {fecha}'**
+  String dashboardVenceEl(Object fecha);
+
+  /// No description provided for @calendarioEntregas.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas'**
+  String get calendarioEntregas;
+
+  /// No description provided for @calendarioEntregaDeCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega de curso'**
+  String get calendarioEntregaDeCurso;
+
+  /// No description provided for @empresaCalendarioEntregaDeCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega de capacitación'**
+  String get empresaCalendarioEntregaDeCurso;
+
+  /// No description provided for @calendarioEntregaDeLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega de laboratorio'**
+  String get calendarioEntregaDeLaboratorio;
+
+  /// No description provided for @calendarioFechaDeFase.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha límite de fase'**
+  String get calendarioFechaDeFase;
+
+  /// No description provided for @calendarioEntregaHecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregada'**
+  String get calendarioEntregaHecha;
+
+  /// No description provided for @calendarioVenceEsteDia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vence este día'**
+  String get calendarioVenceEsteDia;
+
+  /// No description provided for @calendarioIrAlCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir al curso'**
+  String get calendarioIrAlCurso;
+
+  /// No description provided for @empresaCalendarioIrAlCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir a la capacitación'**
+  String get empresaCalendarioIrAlCurso;
+
+  /// No description provided for @calendarioIrAlLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Ir al laboratorio'**
+  String get calendarioIrAlLaboratorio;
 }
 
 class _AppLocalizationsDelegate

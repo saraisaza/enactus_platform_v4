@@ -2395,6 +2395,13 @@ class CalendarEvent {
   /// Solo [CalendarEventType.organizacion]: de qué organización es.
   final String? clientId;
 
+  /// El nombre de su curso y el de su laboratorio, y el laboratorio de su
+  /// curso si el evento es de un curso de laboratorio. Vienen del servidor
+  /// solo para mostrar: no se mandan al guardar.
+  final String? courseName;
+  final String? laboratoryName;
+  final String? courseLaboratoryId;
+
   const CalendarEvent({
     required this.id,
     this.title = '',
@@ -2406,7 +2413,19 @@ class CalendarEvent {
     this.courseId,
     this.laboratoryId,
     this.clientId,
+    this.courseName,
+    this.laboratoryName,
+    this.courseLaboratoryId,
   });
+
+  /// El laboratorio que le da color: el suyo o, si es de un curso, el del
+  /// curso. `null` si no es de ningún laboratorio.
+  String? get laboratorioDeColor {
+    final propio = laboratoryId;
+    if (propio != null && propio.isNotEmpty) return propio;
+    final delCurso = courseLaboratoryId;
+    return (delCurso != null && delCurso.isNotEmpty) ? delCurso : null;
+  }
 
   factory CalendarEvent.fromJson(Map<String, dynamic> j) => CalendarEvent(
         id: j['id'] as String,
@@ -2419,6 +2438,9 @@ class CalendarEvent {
         courseId: j['courseId'] as String?,
         laboratoryId: j['laboratoryId'] as String?,
         clientId: j['clientId'] as String?,
+        courseName: j['courseName'] as String?,
+        laboratoryName: j['laboratoryName'] as String?,
+        courseLaboratoryId: j['courseLaboratoryId'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -2440,6 +2462,96 @@ class CalendarEvent {
 
   static String? _idONulo(String? id) =>
       (id == null || id.isEmpty) ? null : id;
+}
+
+/// De qué es una entrega con fecha.
+enum TipoDeEntrega {
+  /// Una actividad de un curso, con la fecha límite que le puso el LXD.
+  actividadDeCurso,
+
+  /// Una fase de la Ruta de un laboratorio, con la fecha que le puso el Admin.
+  faseDeLaboratorio,
+
+  /// Una entrega propia de un módulo de la Ruta.
+  actividadDeLaboratorio;
+
+  static TipoDeEntrega fromJson(String? raw) => switch (raw) {
+        'lab_phase' => TipoDeEntrega.faseDeLaboratorio,
+        'lab_activity' => TipoDeEntrega.actividadDeLaboratorio,
+        _ => TipoDeEntrega.actividadDeCurso,
+      };
+}
+
+/// Una entrega con fecha de quien tiene la sesión: lo que el calendario
+/// recuerda y lo que el inicio cuenta como «entregas de esta semana».
+///
+/// No es un evento: nadie la agenda. Sale de la fecha límite que ya tiene
+/// cada actividad y cada fase (`GET /calendar-events/entregas`).
+class Entrega {
+  final TipoDeEntrega tipo;
+
+  /// El id de la lección (actividad) o de la fase.
+  final String id;
+  final String title;
+
+  /// El día en que vence, a medianoche de acá: es una fecha, sin hora.
+  final DateTime dueDate;
+
+  /// Ya la entregó, o ya completó la fase.
+  final bool done;
+  final String? courseId;
+  final String? courseName;
+  final String? laboratoryId;
+  final String? laboratoryName;
+
+  /// Solo en lo que es de un laboratorio: el número de la fase.
+  final int? phaseOrder;
+
+  const Entrega({
+    required this.tipo,
+    required this.id,
+    required this.title,
+    required this.dueDate,
+    this.done = false,
+    this.courseId,
+    this.courseName,
+    this.laboratoryId,
+    this.laboratoryName,
+    this.phaseOrder,
+  });
+
+  /// De la Ruta de un laboratorio (una fase o una entrega propia), y no de
+  /// un curso. Un curso de laboratorio sigue siendo un curso.
+  bool get esDeLaboratorio => tipo != TipoDeEntrega.actividadDeCurso;
+
+  /// Si vence entre [desde] y [hasta], los dos días incluidos.
+  bool venceEntre(DateTime desde, DateTime hasta) {
+    final dia = DateTime(dueDate.year, dueDate.month, dueDate.day);
+    return !dia.isBefore(DateTime(desde.year, desde.month, desde.day)) &&
+        !dia.isAfter(DateTime(hasta.year, hasta.month, hasta.day));
+  }
+
+  /// `null` si la fecha no se entiende: una entrega sin día no se puede
+  /// poner en un calendario, así que no se muestra.
+  static Entrega? fromJson(Map<String, dynamic> j) {
+    // `AAAA-MM-DD` sin zona se lee como un día de acá, que es lo que es: si
+    // pasara por UTC, en Colombia la entrega caería la víspera.
+    final dia = DateTime.tryParse((j['dueDate'] as String?) ?? '');
+    final id = j['id'] as String?;
+    if (dia == null || id == null) return null;
+    return Entrega(
+      tipo: TipoDeEntrega.fromJson(j['kind'] as String?),
+      id: id,
+      title: (j['title'] as String?) ?? '',
+      dueDate: DateTime(dia.year, dia.month, dia.day),
+      done: (j['done'] as bool?) ?? false,
+      courseId: j['courseId'] as String?,
+      courseName: j['courseName'] as String?,
+      laboratoryId: j['laboratoryId'] as String?,
+      laboratoryName: j['laboratoryName'] as String?,
+      phaseOrder: (j['phaseOrder'] as num?)?.toInt(),
+    );
+  }
 }
 
 /// Laboratorio tal como lo ve la portada pública: nombre y descripción, nada

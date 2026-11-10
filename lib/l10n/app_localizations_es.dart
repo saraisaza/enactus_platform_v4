@@ -1695,9 +1695,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get dashboardSinProyecto => 'Aún no tiene proyecto asignado';
-
-  @override
   String get dashboardTodoPorEmpezar => 'Todo por empezar';
 
   @override
@@ -1760,13 +1757,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get calendarioSubtitulo =>
-      'Los eventos de sus cursos, de sus laboratorios, de su organización y de su Ruta de Impacto.';
+      'Los próximos eventos y entregas aparecerán en el calendario.';
 
   @override
-  String get calendarioProximos => 'Próximos eventos';
+  String get calendarioProximos => 'Próximos eventos y entregas';
 
   @override
-  String get calendarioSinProximos => 'No tiene próximos eventos.';
+  String get calendarioSinProximos => 'No tiene próximos eventos ni entregas.';
 
   @override
   String get calendarioAgendaDespejada => 'Agenda despejada';
@@ -1799,7 +1796,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cursosSubtitulo =>
-      'Cursos de laboratorio asignados por su administrador, más la ruta de preparación de su equipo para National Expo.';
+      'Cursos especializados para cada línea de trabajo que puede tener una empresa.';
 
   @override
   String get cursosBuscar => 'Buscar curso o laboratorio';
@@ -1862,11 +1859,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String dashboardHola(Object nombre) {
     return 'Hola, $nombre';
-  }
-
-  @override
-  String dashboardProyecto(Object proyecto) {
-    return 'Proyecto $proyecto';
   }
 
   @override
@@ -6087,10 +6079,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no tiene certificados.\nComplete sus capacitaciones para obtenerlos.';
 
   @override
-  String get empresaCalendarioSubtitulo =>
-      'Los eventos de sus capacitaciones y de su empresa.';
-
-  @override
   String get empresaPerfilCursosActivos => 'Capacitaciones activas';
 
   @override
@@ -6604,4 +6592,142 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get empresaCalendarioSinCursosPropios =>
       'Todavía no tiene capacitaciones. Cree una antes de agendar un evento de la capacitación.';
+
+  @override
+  String get dashboardSemanaSinEntregas =>
+      'No tiene entregas de cursos para esta semana.';
+
+  @override
+  String dashboardSemanaCursosYEntregas(int cursos, int entregas) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cursos,
+      locale: localeName,
+      other: '$cursos cursos',
+      one: '1 curso',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entregas,
+      locale: localeName,
+      other: '$entregas entregables',
+      one: '1 entregable',
+    );
+    return 'Tiene $_temp0 para esta semana y $_temp1.';
+  }
+
+  @override
+  String dashboardSemanaSoloEntregas(int entregas) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entregas,
+      locale: localeName,
+      other: '$entregas entregables de cursos',
+      one: '1 entregable de cursos',
+    );
+    return 'Tiene $_temp0 para esta semana.';
+  }
+
+  @override
+  String dashboardSemanaLabsSinEntregas(int laboratorios) {
+    String _temp0 = intl.Intl.pluralLogic(
+      laboratorios,
+      locale: localeName,
+      other: 'Tiene $laboratorios laboratorios asignados',
+      one: 'Tiene 1 laboratorio asignado',
+    );
+    return '$_temp0, sin entregas esta semana.';
+  }
+
+  @override
+  String dashboardSemanaLabsConEntregas(int laboratorios, int entregas) {
+    String _temp0 = intl.Intl.pluralLogic(
+      laboratorios,
+      locale: localeName,
+      other: 'Tiene $laboratorios laboratorios asignados',
+      one: 'Tiene 1 laboratorio asignado',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entregas,
+      locale: localeName,
+      other: '$entregas entregas de laboratorio',
+      one: '1 entrega de laboratorio',
+    );
+    return '$_temp0 y $_temp1 esta semana.';
+  }
+
+  @override
+  String get empresaDashboardSemanaSinEntregas =>
+      'No tiene entregas de capacitaciones para esta semana.';
+
+  @override
+  String empresaDashboardSemanaCursosYEntregas(int cursos, int entregas) {
+    String _temp0 = intl.Intl.pluralLogic(
+      cursos,
+      locale: localeName,
+      other: '$cursos capacitaciones',
+      one: '1 capacitación',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      entregas,
+      locale: localeName,
+      other: '$entregas entregables',
+      one: '1 entregable',
+    );
+    return 'Tiene $_temp0 para esta semana y $_temp1.';
+  }
+
+  @override
+  String empresaDashboardSemanaSoloEntregas(int entregas) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entregas,
+      locale: localeName,
+      other: '$entregas entregables de capacitaciones',
+      one: '1 entregable de capacitaciones',
+    );
+    return 'Tiene $_temp0 para esta semana.';
+  }
+
+  @override
+  String get dashboardFaseEnCurso => 'SU FASE EN CURSO';
+
+  @override
+  String get dashboardIrALaFase => 'Ir a la fase';
+
+  @override
+  String dashboardEntregaPendiente(Object titulo) {
+    return 'Entrega: $titulo';
+  }
+
+  @override
+  String dashboardVenceEl(Object fecha) {
+    return 'Vence el $fecha';
+  }
+
+  @override
+  String get calendarioEntregas => 'Entregas';
+
+  @override
+  String get calendarioEntregaDeCurso => 'Entrega de curso';
+
+  @override
+  String get empresaCalendarioEntregaDeCurso => 'Entrega de capacitación';
+
+  @override
+  String get calendarioEntregaDeLaboratorio => 'Entrega de laboratorio';
+
+  @override
+  String get calendarioFechaDeFase => 'Fecha límite de fase';
+
+  @override
+  String get calendarioEntregaHecha => 'Entregada';
+
+  @override
+  String get calendarioVenceEsteDia => 'Vence este día';
+
+  @override
+  String get calendarioIrAlCurso => 'Ir al curso';
+
+  @override
+  String get empresaCalendarioIrAlCurso => 'Ir a la capacitación';
+
+  @override
+  String get calendarioIrAlLaboratorio => 'Ir al laboratorio';
 }

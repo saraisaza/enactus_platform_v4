@@ -2813,6 +2813,10 @@ paths:
         (`organizacion`, con `clientId`), toda la gente de ese cliente; de la
         Ruta (`ruta_impacto`), todo el mundo Enactus. El admin ve todo.
         Empresa y Donante no tienen calendario.
+
+        Cada evento trae además `courseName`, `laboratoryName` y
+        `courseLaboratoryId` (el laboratorio de su curso, si lo tiene): con
+        eso la pantalla lo pinta con el color de su laboratorio.
       responses: { '200': { description: Página de eventos } }
     post:
       tags: [content]

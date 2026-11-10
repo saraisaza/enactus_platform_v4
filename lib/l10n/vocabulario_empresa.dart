@@ -133,7 +133,21 @@ mixin VocabularioDeEmpresa on AppLocalizations {
   String get certificadosVacio => empresaCertificadosVacio;
 
   @override
-  String get calendarioSubtitulo => empresaCalendarioSubtitulo;
+  String get dashboardSemanaSinEntregas => empresaDashboardSemanaSinEntregas;
+
+  @override
+  String dashboardSemanaCursosYEntregas(int cursos, int entregas) =>
+      empresaDashboardSemanaCursosYEntregas(cursos, entregas);
+
+  @override
+  String dashboardSemanaSoloEntregas(int entregas) =>
+      empresaDashboardSemanaSoloEntregas(entregas);
+
+  @override
+  String get calendarioEntregaDeCurso => empresaCalendarioEntregaDeCurso;
+
+  @override
+  String get calendarioIrAlCurso => empresaCalendarioIrAlCurso;
 
   @override
   String get perfilCursosActivos => empresaPerfilCursosActivos;

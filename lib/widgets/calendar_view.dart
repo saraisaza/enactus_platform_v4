@@ -22,6 +22,71 @@ Color calendarEventColor(CalendarEventType t) => switch (t) {
       CalendarEventType.organizacion => const Color(0xFFF472B6), // rosa
     };
 
+/// El color de UN evento.
+///
+/// Lo que es de un laboratorio —su evento, su mentoría, el evento de un curso
+/// de ese laboratorio— lleva el color del laboratorio: el mismo de sus
+/// tarjetas en Mis Cursos y en la Ruta ([labColorFor]). Antes todos los
+/// eventos de laboratorio iban del mismo verde lima, fueran del laboratorio
+/// que fueran. Lo que no es de ningún laboratorio sigue con el color de su
+/// tipo.
+Color colorDeEvento(CalendarEvent e) {
+  final laboratorio = e.laboratorioDeColor;
+  return laboratorio == null
+      ? calendarEventColor(e.type)
+      : labColorFor(laboratorio);
+}
+
+/// Las entregas que no son de ningún laboratorio (las de una capacitación de
+/// empresa o de un curso de Open Learning).
+const colorDeEntregaSinLaboratorio = Color(0xFFFB923C); // naranja
+
+/// El color de una entrega: el de su laboratorio, si lo tiene.
+Color colorDeEntrega(Entrega e) {
+  final laboratorio = e.laboratoryId;
+  return laboratorio == null || laboratorio.isEmpty
+      ? colorDeEntregaSinLaboratorio
+      : labColorFor(laboratorio);
+}
+
+/// Una línea de la leyenda: un color y lo que significa.
+typedef LineaDeLeyenda = ({Color color, String texto});
+
+/// La leyenda de lo que hay en el calendario, y solo de lo que hay: cada
+/// laboratorio con su color y su nombre, y cada tipo de evento que no es de
+/// un laboratorio. [entregas] suma los laboratorios de las entregas.
+List<LineaDeLeyenda> leyendaDelCalendario(List<CalendarEvent> eventos,
+    [List<Entrega> entregas = const []]) {
+  // Por nombre de laboratorio, en el orden en que aparecen.
+  final laboratorios = <String, String>{};
+  final tipos = <CalendarEventType>{};
+  for (final e in eventos) {
+    final laboratorio = e.laboratorioDeColor;
+    if (laboratorio == null) {
+      tipos.add(e.type);
+    } else {
+      final nombre = e.laboratoryName;
+      laboratorios[laboratorio] = (nombre == null || nombre.isEmpty)
+          ? (laboratorios[laboratorio] ?? tr.eventoLaboratorio)
+          : nombre;
+    }
+  }
+  for (final e in entregas) {
+    final laboratorio = e.laboratoryId;
+    if (laboratorio == null || laboratorio.isEmpty) continue;
+    final nombre = e.laboratoryName;
+    laboratorios[laboratorio] = (nombre == null || nombre.isEmpty)
+        ? (laboratorios[laboratorio] ?? tr.eventoLaboratorio)
+        : nombre;
+  }
+  return [
+    for (final l in laboratorios.entries)
+      (color: labColorFor(l.key), texto: l.value),
+    for (final t in CalendarEventType.values.where(tipos.contains))
+      (color: calendarEventColor(t), texto: calendarEventTypeLabel(t)),
+  ];
+}
+
 IconData calendarEventIcon(CalendarEventType t) => switch (t) {
       CalendarEventType.openLearningSync => Icons.school_outlined,
       CalendarEventType.rutaImpacto => Icons.groups_outlined,
@@ -234,17 +299,17 @@ class _CalendarViewState extends State<CalendarView> {
     );
   }
 
-  /// Solo los tipos que hay en el calendario: una leyenda de cinco colores
-  /// para dos tipos de evento no ayuda a nadie.
+  /// Solo lo que hay en el calendario: una leyenda de cinco colores para dos
+  /// tipos de evento no ayuda a nadie. Cada laboratorio va con su color.
   Widget _leyenda() {
-    final tipos = {for (final e in widget.events) e.type};
-    if (tipos.isEmpty) return const SizedBox.shrink();
+    final lineas = leyendaDelCalendario(widget.events);
+    if (lineas.isEmpty) return const SizedBox.shrink();
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 16,
       runSpacing: 6,
       children: [
-        for (final t in CalendarEventType.values.where(tipos.contains))
+        for (final linea in lineas)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -252,13 +317,13 @@ class _CalendarViewState extends State<CalendarView> {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: calendarEventColor(t),
+                  color: linea.color,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
               const SizedBox(width: 6),
               Flexible(
-                child: Text(calendarEventTypeLabel(t),
+                child: Text(linea.texto,
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 11.5)),
               ),
@@ -378,7 +443,7 @@ class _CalendarViewState extends State<CalendarView> {
                         height: 6,
                         margin: const EdgeInsets.symmetric(horizontal: 1.5),
                         decoration: BoxDecoration(
-                            color: calendarEventColor(e.type),
+                            color: colorDeEvento(e),
                             shape: BoxShape.circle),
                       ),
                   ],
@@ -609,22 +674,25 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = colorDeEvento(evento);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 3),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: calendarEventColor(evento.type),
+        color: color,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(_tituloDe(evento),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
               fontSize: 10.5,
               height: 1.25,
               fontWeight: FontWeight.w600,
-              color: AppColors.tintaOscura)),
+              // El color ya no es uno de cinco conocidos: la tinta se elige
+              // según el fondo.
+              color: inkSobre(color))),
     );
   }
 }
@@ -636,7 +704,7 @@ class _BloqueDeSemana extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = calendarEventColor(evento.type);
+    final color = colorDeEvento(evento);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 6),
@@ -676,7 +744,7 @@ class _EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = calendarEventColor(event.type);
+    final color = colorDeEvento(event);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),

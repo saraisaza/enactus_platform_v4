@@ -3,23 +3,87 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/textos.dart';
 import '../../models/models.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
+import '../../utils/constants.dart';
 import '../../utils/formatos.dart';
 import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
     show
         VistaCalendario,
-        calendarEventColor,
         calendarEventIcon,
         calendarEventTypeLabel,
-        estiloSelectorDeVista;
+        colorDeEntrega,
+        colorDeEvento,
+        estiloSelectorDeVista,
+        leyendaDelCalendario;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
 import '../../widgets/visor_pdf.dart';
+import 'course_detail_view.dart';
 
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// Lo que el calendario pone en un día: un evento que alguien agendó o una
+/// entrega con fecha.
+///
+/// Los dos van en el mismo lugar, pero no son lo mismo: el evento tiene hora
+/// y reunión; la entrega tiene un día, y lleva al curso o al laboratorio
+/// donde se entrega.
+class _Item {
+  final CalendarEvent? evento;
+  final Entrega? entrega;
+  const _Item.evento(CalendarEvent this.evento) : entrega = null;
+  const _Item.entrega(Entrega this.entrega) : evento = null;
+
+  DateTime get cuando => evento?.startsAt ?? entrega!.dueDate;
+
+  /// Una entrega ya hecha: sigue en su día, pero ya no es algo por venir.
+  bool get hecha => entrega?.done ?? false;
+
+  /// El del laboratorio, si es de uno: el mismo de sus tarjetas.
+  Color get color =>
+      evento != null ? colorDeEvento(evento!) : colorDeEntrega(entrega!);
+
+  IconData get icono => evento != null
+      ? calendarEventIcon(evento!.type)
+      : (hecha ? Icons.task_alt : Icons.flag_outlined);
+
+  /// «Curso», «Laboratorio»… o de qué es la entrega.
+  String get etiqueta {
+    final e = evento;
+    if (e != null) return calendarEventTypeLabel(e.type);
+    return switch (entrega!.tipo) {
+      TipoDeEntrega.actividadDeCurso => tr.calendarioEntregaDeCurso,
+      TipoDeEntrega.faseDeLaboratorio => tr.calendarioFechaDeFase,
+      TipoDeEntrega.actividadDeLaboratorio => tr.calendarioEntregaDeLaboratorio,
+    };
+  }
+
+  String get titulo {
+    final e = evento;
+    if (e != null) return e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title;
+    final entrega = this.entrega!;
+    return entrega.title.isEmpty
+        ? tr.rutaFaseNumero(entrega.phaseOrder ?? 1)
+        : entrega.title;
+  }
+
+  /// De dónde es la entrega: su curso, o su laboratorio y su fase.
+  String get origen {
+    final entrega = this.entrega;
+    if (entrega == null) return '';
+    if (!entrega.esDeLaboratorio) return entrega.courseName ?? '';
+    return [
+      if (entrega.laboratoryName != null) entrega.laboratoryName!,
+      if (entrega.tipo == TipoDeEntrega.actividadDeLaboratorio &&
+          entrega.phaseOrder != null)
+        tr.rutaFaseNumero(entrega.phaseOrder!),
+    ].join(' · ');
+  }
+}
 
 /// Calendario del estudiante — rediseño de alta fidelidad según
 /// `design_handoff_portal_estudiante/README.md` (pantalla 2): grilla
@@ -29,6 +93,11 @@ bool _sameDay(DateTime a, DateTime b) =>
 /// algo derivado de `availability`. Vista de solo lectura: la gestión
 /// (crear/editar/eliminar) sigue viviendo en [CalendarView], usado por
 /// Admin/LXD/Mentor con su propio layout de una sola columna, sin tocar.
+///
+/// Además de los eventos muestra las **entregas con fecha**
+/// (`DataProvider.entregas`): la fecha límite de cada actividad de sus cursos
+/// y de cada fase de sus laboratorios, como recordatorio. Y todo lo que es de
+/// un laboratorio va con el color de ese laboratorio.
 class StudentCalendarView extends StatefulWidget {
   const StudentCalendarView({super.key});
 
@@ -109,12 +178,20 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
     // para el mundo Enactus, `mentoria` va por laboratorio y
     // `open_learning_sync` por curso). Antes ese filtro lo hacía el cliente
     // con `calendarEventsFor(student)` sobre todos los eventos de Hive.
-    final monthEvents =
-        events.where((e) => e.startsAt.year == _visibleMonth.year && e.startsAt.month == _visibleMonth.month).toList();
+    //
+    // Las entregas llegan aparte y pueden tardar o fallar: el calendario no
+    // las espera, aparecen cuando llegan.
+    final entregas = data.entregas.valueOrNull ?? const <Entrega>[];
+    final items = [
+      for (final e in events) _Item.evento(e),
+      for (final e in entregas) _Item.entrega(e),
+    ];
+    final monthItems =
+        items.where((i) => i.cuando.year == _visibleMonth.year && i.cuando.month == _visibleMonth.month).toList();
     final today = DateTime.now();
     final todayStart = DateTime(today.year, today.month, today.day);
-    final upcoming = events.where((e) => !e.startsAt.isBefore(todayStart)).toList()
-      ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+    final upcoming = items.where((i) => !i.cuando.isBefore(todayStart) && !i.hecha).toList()
+      ..sort((a, b) => a.cuando.compareTo(b.cuando));
 
     return ContentScreenShell(
       eyebrow: mesAnio(_visibleMonth),
@@ -125,10 +202,9 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
         spacing: 18,
         runSpacing: 8,
         children: [
-          // Solo los tipos que hay: una leyenda de cinco colores para dos
-          // tipos de evento no ayuda.
-          for (final t in CalendarEventType.values
-              .where({for (final e in events) e.type}.contains))
+          // Solo lo que hay: una leyenda de cinco colores para dos tipos de
+          // evento no ayuda. Cada laboratorio, con su color y su nombre.
+          for (final linea in leyendaDelCalendario(events, entregas))
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -136,11 +212,25 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                      color: calendarEventColor(t), borderRadius: BorderRadius.circular(3)),
+                      color: linea.color, borderRadius: BorderRadius.circular(3)),
                 ),
                 const SizedBox(width: 8),
                 Flexible(
-                  child: Text(calendarEventTypeLabel(t),
+                  child: Text(linea.texto,
+                      style: TextStyle(fontSize: 12.5, color: colors.text2)),
+                ),
+              ],
+            ),
+          // Las entregas no se distinguen por color —llevan el de su
+          // laboratorio— sino por la banderita.
+          if (entregas.isNotEmpty)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.flag_outlined, size: 14, color: colors.text2),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(tr.calendarioEntregas,
                       style: TextStyle(fontSize: 12.5, color: colors.text2)),
                 ),
               ],
@@ -220,9 +310,9 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
               ),
               const SizedBox(height: 14),
               if (_vista == VistaCalendario.mes)
-                _MonthGrid(visibleMonth: _visibleMonth, events: monthEvents, colors: colors)
+                _MonthGrid(visibleMonth: _visibleMonth, items: monthItems, colors: colors)
               else
-                _WeekGrid(semana: _semana, events: events, colors: colors),
+                _WeekGrid(semana: _semana, items: items, colors: colors),
             ],
           ),
         );
@@ -246,14 +336,14 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                 Text(tr.calendarioSinProximos,
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
               else
-                for (final e in upcoming) _UpcomingRow(event: e, colors: colors),
+                for (final i in upcoming) _UpcomingRow(item: i, colors: colors),
             ],
           ),
         );
 
-        // Solo sin ningún evento: si se mostrara al llegar a un mes vacío, se
-        // irían con él las flechas y no habría cómo volver.
-        if (events.isEmpty) {
+        // Solo sin ningún evento ni entrega: si se mostrara al llegar a un mes
+        // vacío, se irían con él las flechas y no habría cómo volver.
+        if (items.isEmpty) {
           return EmptyState(
             icon: Icons.event_busy_outlined,
             title: tr.calendarioAgendaDespejada,
@@ -285,17 +375,17 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
 DateTime _lunes(DateTime d) =>
     DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
 
+List<_Item> _delDia(List<_Item> items, DateTime day) =>
+    items.where((i) => _sameDay(i.cuando, day)).toList()
+      ..sort((a, b) => a.cuando.compareTo(b.cuando));
+
 /// La semana: siete columnas en una pantalla ancha, una lista de días en el
 /// teléfono. Tocar un evento abre su detalle, como en el mes.
 class _WeekGrid extends StatelessWidget {
   final DateTime semana;
-  final List<CalendarEvent> events;
+  final List<_Item> items;
   final ContentColors colors;
-  const _WeekGrid({required this.semana, required this.events, required this.colors});
-
-  List<CalendarEvent> _eventsOn(DateTime day) =>
-      events.where((e) => _sameDay(e.startsAt, day)).toList()
-        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+  const _WeekGrid({required this.semana, required this.items, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -322,12 +412,12 @@ class _WeekGrid extends StatelessWidget {
     });
   }
 
-  Widget _bloque(BuildContext context, CalendarEvent e) {
-    final color = calendarEventColor(e.type);
+  Widget _bloque(BuildContext context, _Item item) {
+    final color = item.color;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => showEventsDialog(context, [e], colors),
+        onTap: () => _mostrarDia(context, [item], colors),
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 6),
@@ -340,10 +430,30 @@ class _WeekGrid extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(hora(e.startsAt),
-                  style: TextStyle(
-                      fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.text2)),
-              Text(e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title,
+              // Un evento dice su hora; una entrega no tiene: dice que lo es.
+              if (item.evento != null)
+                Text(hora(item.cuando),
+                    style: TextStyle(
+                        fontSize: 10.5, fontWeight: FontWeight.w700, color: colors.text2))
+              else
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(item.icono, size: 12, color: colors.text2),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                          item.hecha ? tr.calendarioEntregaHecha : tr.rutaEntrega,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: colors.text2)),
+                    ),
+                  ],
+                ),
+              Text(item.titulo,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, height: 1.3, color: colors.text)),
@@ -377,7 +487,7 @@ class _WeekGrid extends StatelessWidget {
                   fontSize: 20, fontWeight: AppWeights.display,
                   color: esHoy ? colors.goldInk : colors.text)),
           const SizedBox(height: 8),
-          for (final e in _eventsOn(dia)) _bloque(context, e),
+          for (final i in _delDia(items, dia)) _bloque(context, i),
         ],
       ),
     );
@@ -385,7 +495,7 @@ class _WeekGrid extends StatelessWidget {
 
   Widget _fila(BuildContext context, DateTime dia, DateTime hoy) {
     final esHoy = _sameDay(dia, hoy);
-    final eventos = _eventsOn(dia);
+    final delDia = _delDia(items, dia);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
@@ -412,13 +522,13 @@ class _WeekGrid extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: eventos.isEmpty
+            child: delDia.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(tr.calendarioSinEventos,
                         style: TextStyle(fontSize: 12.5, color: colors.text3)),
                   )
-                : Column(children: [for (final e in eventos) _bloque(context, e)]),
+                : Column(children: [for (final i in delDia) _bloque(context, i)]),
           ),
         ],
       ),
@@ -428,13 +538,9 @@ class _WeekGrid extends StatelessWidget {
 
 class _MonthGrid extends StatelessWidget {
   final DateTime visibleMonth;
-  final List<CalendarEvent> events;
+  final List<_Item> items;
   final ContentColors colors;
-  const _MonthGrid({required this.visibleMonth, required this.events, required this.colors});
-
-  List<CalendarEvent> _eventsOn(DateTime day) =>
-      events.where((e) => _sameDay(e.startsAt, day)).toList()
-        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+  const _MonthGrid({required this.visibleMonth, required this.items, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -476,7 +582,7 @@ class _MonthGrid extends StatelessWidget {
                           day: gridStart.add(Duration(days: row * 7 + col)),
                           visibleMonth: visibleMonth,
                           today: today,
-                          events: _eventsOn(gridStart.add(Duration(days: row * 7 + col))),
+                          items: _delDia(items, gridStart.add(Duration(days: row * 7 + col))),
                           colors: colors)),
                 ],
               ],
@@ -491,14 +597,58 @@ class _DayCell extends StatelessWidget {
   final DateTime day;
   final DateTime visibleMonth;
   final DateTime today;
-  final List<CalendarEvent> events;
+  final List<_Item> items;
   final ContentColors colors;
   const _DayCell(
       {required this.day,
       required this.visibleMonth,
       required this.today,
-      required this.events,
+      required this.items,
       required this.colors});
+
+  /// Un evento va relleno con su color. Una entrega va delineada y con su
+  /// banderita: en el mismo día se distingue de un vistazo qué es una reunión
+  /// y qué es algo por entregar.
+  Widget _marca(_Item item) {
+    final color = item.color;
+    if (item.evento != null) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
+        child: Text(item.titulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            // La tinta se elige según el fondo: sobre el ámbar de un
+            // laboratorio el blanco no se lee.
+            style: TextStyle(fontSize: 10.5, height: 1.3, color: inkSobre(color))),
+      );
+    }
+    return Container(
+      key: ValueKey('entrega-${item.entrega!.id}'),
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          Icon(item.icono, size: 11, color: colors.text),
+          const SizedBox(width: 3),
+          Expanded(
+            child: Text(item.titulo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 10.5, height: 1.3, color: colors.text)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -532,34 +682,22 @@ class _DayCell extends StatelessWidget {
                     color: isToday ? colors.bg : colors.text3)),
           ),
           const SizedBox(height: 4),
-          for (final e in events.take(2))
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(top: 3),
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-              decoration: BoxDecoration(
-                  color: calendarEventColor(e.type), borderRadius: BorderRadius.circular(6)),
-              child: Text(
-                  e.title.isEmpty ? calendarEventTypeLabel(e.type) : e.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10.5, height: 1.3, color: Colors.white)),
-            ),
-          if (events.length > 2)
+          for (final i in items.take(2)) _marca(i),
+          if (items.length > 2)
             Padding(
               padding: const EdgeInsets.only(top: 3),
-              child: Text('+${events.length - 2}',
+              child: Text('+${items.length - 2}',
                   style: TextStyle(fontSize: 10.5, color: colors.text3)),
             ),
         ],
       ),
     );
 
-    if (events.isEmpty) return cell;
+    if (items.isEmpty) return cell;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => showEventsDialog(context, events, colors),
+        onTap: () => _mostrarDia(context, items, colors),
         child: cell,
       ),
     );
@@ -567,19 +705,25 @@ class _DayCell extends StatelessWidget {
 }
 
 class _UpcomingRow extends StatelessWidget {
-  final CalendarEvent event;
+  final _Item item;
   final ContentColors colors;
-  const _UpcomingRow({required this.event, required this.colors});
+  const _UpcomingRow({required this.item, required this.colors});
 
   @override
   Widget build(BuildContext context) {
-    final color = calendarEventColor(event.type);
+    final color = item.color;
+    final evento = item.evento;
+    // Del evento, su hora y sus invitados. De la entrega, qué es y de dónde.
+    final detalle = evento != null
+        ? '${hora(evento.startsAt)}'
+            '${evento.guests.isEmpty ? '' : ' · ${evento.guests}'}'
+        : [item.etiqueta, if (item.origen.isNotEmpty) item.origen].join(' · ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: HoverBuilder(
         cursor: SystemMouseCursors.click,
         builder: (context, hover) => GestureDetector(
-          onTap: () => showEventsDialog(context, [event], colors),
+          onTap: () => _mostrarDia(context, [item], colors),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -590,10 +734,10 @@ class _UpcomingRow extends StatelessWidget {
                     color: colors.surface2, borderRadius: BorderRadius.circular(11)),
                 child: Column(
                   children: [
-                    Text('${event.startsAt.day}',
+                    Text('${item.cuando.day}',
                         style: displayHeading(
                             fontSize: 22, fontWeight: AppWeights.display, color: color)),
-                    Text(diaSemanaCorto(event.startsAt).toUpperCase(),
+                    Text(diaSemanaCorto(item.cuando).toUpperCase(),
                         style: TextStyle(
                             fontSize: 10.5, letterSpacing: 10.5 * 0.1, color: colors.text3)),
                   ],
@@ -605,15 +749,23 @@ class _UpcomingRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(event.title.isEmpty ? calendarEventTypeLabel(event.type) : event.title,
+                    Text(item.titulo,
                         style: TextStyle(
                             fontSize: 13.5,
                             color: hover ? colors.goldInk : colors.text)),
                     const SizedBox(height: 2),
-                    Text(
-                        '${hora(event.startsAt)}'
-                        '${event.guests.isEmpty ? '' : ' · ${event.guests}'}',
-                        style: TextStyle(fontSize: 12, color: colors.text3)),
+                    Row(
+                      children: [
+                        if (evento == null) ...[
+                          Icon(item.icono, size: 13, color: colors.text3),
+                          const SizedBox(width: 4),
+                        ],
+                        Expanded(
+                          child: Text(detalle,
+                              style: TextStyle(fontSize: 12, color: colors.text3)),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -626,12 +778,13 @@ class _UpcomingRow extends StatelessWidget {
   }
 }
 
-/// Detalle de uno o varios eventos del mismo día: hora, descripción,
+/// Detalle de lo que hay en un día. De un evento: hora, descripción,
 /// invitados y el botón para unirse a la reunión — sin esto, un evento en
 /// el calendario del estudiante era solo un chip de color sin forma de
-/// ver el link ni el resto de la información.
-Future<void> showEventsDialog(
-    BuildContext context, List<CalendarEvent> events, ContentColors colors) {
+/// ver el link ni el resto de la información. De una entrega: de qué curso o
+/// laboratorio es, si ya la hizo, y el botón que lleva a entregarla.
+Future<void> _mostrarDia(
+    BuildContext context, List<_Item> items, ContentColors colors) {
   return showDialog<void>(
     context: context,
     builder: (ctx) => Dialog(
@@ -648,10 +801,11 @@ Future<void> showEventsDialog(
             children: [
               Row(
                 children: [
-                  Text(diaSemanaLargo(events.first.startsAt),
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700, color: colors.text)),
-                  const Spacer(),
+                  Expanded(
+                    child: Text(diaSemanaLargo(items.first.cuando),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700, color: colors.text)),
+                  ),
                   IconButton(
                     icon: Icon(Icons.close, size: 20, color: colors.text3),
                     onPressed: () => Navigator.pop(ctx),
@@ -662,7 +816,13 @@ Future<void> showEventsDialog(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [for (final e in events) _EventDetailTile(event: e, colors: colors)],
+                    children: [
+                      for (final i in items)
+                        if (i.evento != null)
+                          _EventDetailTile(event: i.evento!, colors: colors)
+                        else
+                          _EntregaDetailTile(item: i, colors: colors),
+                    ],
                   ),
                 ),
               ),
@@ -681,8 +841,14 @@ class _EventDetailTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = calendarEventColor(event.type);
+    final color = colorDeEvento(event);
     final hasLink = event.meetLink.trim().isNotEmpty;
+    // De qué curso o laboratorio es, si el servidor lo dijo.
+    final origen = [
+      calendarEventTypeLabel(event.type),
+      if (event.courseName?.isNotEmpty ?? false) event.courseName!,
+      if (event.laboratoryName?.isNotEmpty ?? false) event.laboratoryName!,
+    ].join(' · ');
     return Container(
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.all(16),
@@ -708,8 +874,11 @@ class _EventDetailTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(calendarEventTypeLabel(event.type),
-              style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w600)),
+          // En el color del texto y no en el del laboratorio: el ámbar de un
+          // laboratorio no se lee como letra sobre el fondo claro.
+          Text(origen,
+              style: TextStyle(
+                  color: colors.text2, fontSize: 11.5, fontWeight: FontWeight.w600)),
           if (event.description.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(event.description,
@@ -729,6 +898,85 @@ class _EventDetailTile extends StatelessWidget {
             // navegador dentro de eduXaction.
             onPressed: hasLink ? () => abrirReunion(context, event.meetLink) : null,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Una entrega en el detalle del día: qué hay que entregar, de dónde es, si
+/// ya está hecha, y el botón que lleva al curso o al laboratorio.
+class _EntregaDetailTile extends StatelessWidget {
+  final _Item item;
+  final ContentColors colors;
+  const _EntregaDetailTile({required this.item, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final entrega = item.entrega!;
+    final color = item.color;
+    final cursoId = entrega.esDeLaboratorio ? null : entrega.courseId;
+    final labId = entrega.esDeLaboratorio ? entrega.laboratoryId : null;
+    final estado = entrega.done
+        ? (entrega.tipo == TipoDeEntrega.faseDeLaboratorio
+            ? tr.leccionCompletada
+            : tr.calendarioEntregaHecha)
+        : tr.calificacionPendiente;
+
+    // El diálogo se cierra antes de navegar: si quedara abierto, al volver
+    // del curso seguiría ahí, tapando el calendario.
+    void ir() {
+      final navegador = Navigator.of(context);
+      final rol = context.read<AuthProvider>().currentUser?.role;
+      navegador.pop();
+      if (cursoId != null) {
+        navegador.push(MaterialPageRoute(
+            settings: RouteSettings(name: '${AppRoutes.courses}/$cursoId'),
+            builder: (_) => CourseDetailView(courseId: cursoId)));
+      } else if (labId != null && rol != null) {
+        navegador.pushNamed('${AppRoutes.forRole(rol)}/lab/$labId');
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface2,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(left: BorderSide(color: color, width: 3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(item.icono, color: colors.text, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(item.titulo,
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: colors.text)),
+              ),
+              Text(estado, style: TextStyle(color: colors.text3, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text([item.etiqueta, if (item.origen.isNotEmpty) item.origen].join(' · '),
+              style: TextStyle(
+                  color: colors.text2, fontSize: 11.5, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Text(tr.calendarioVenceEsteDia,
+              style: TextStyle(fontSize: 12.5, height: 1.4, color: colors.text2)),
+          if (cursoId != null || labId != null) ...[
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.arrow_forward, size: 16),
+              label: Text(
+                  cursoId != null ? tr.calendarioIrAlCurso : tr.calendarioIrAlLaboratorio),
+              onPressed: ir,
+            ),
+          ],
         ],
       ),
     );

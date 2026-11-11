@@ -288,9 +288,10 @@ void main() {
   group('el calendario del estudiante', () {
     Future<void> abrirCalendario(WidgetTester tester,
         {required List<Map<String, Object?>> entregas,
-        List<Map<String, Object?>> eventos = const []}) async {
+        List<Map<String, Object?>> eventos = const [],
+        Size tamano = const Size(1400, 1100)}) async {
       conSesionGuardada();
-      fijarTamano(tester, const Size(1400, 1100));
+      fijarTamano(tester, tamano);
       await montar(tester, appDe(Roles.student, conApi: (api) {
         api.routes['/calendar-events/entregas'] = {'data': entregas};
         api.routes['/calendar-events'] = {
@@ -334,6 +335,25 @@ void main() {
           findsWidgets);
       expect(find.text(tr.calificacionPendiente), findsOneWidget);
       expect(find.text(tr.calendarioIrAlCurso), findsOneWidget);
+    });
+
+    testWidgets('en el teléfono la entrega cabe en su día', (tester) async {
+      // En el teléfono cada día del mes mide lo que una letra: la banderita y
+      // el título de la entrega se salían de la celda.
+      final errores = <FlutterErrorDetails>[];
+      final anterior = FlutterError.onError;
+      FlutterError.onError = errores.add;
+      addTearDown(() => FlutterError.onError = anterior);
+
+      await abrirCalendario(tester,
+          entregas: [_entregaDeCurso(otroDia)], tamano: const Size(360, 1800));
+      await tester.tap(find.text(tr.calendarioVistaSemana));
+      await tester.pump();
+      FlutterError.onError = anterior;
+      expect(errores, isEmpty,
+          reason: errores.map((e) => e.exceptionAsString()).join('\n'));
+      expect(find.byKey(const ValueKey('entrega-a1')), findsNothing,
+          reason: 'quedó en la vista de semana');
     });
 
     testWidgets('lo que viene: la entrega pendiente sí, la ya entregada no',

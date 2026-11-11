@@ -635,18 +635,24 @@ class _DayCell extends StatelessWidget {
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Row(
-        children: [
-          Icon(item.icono, size: 11, color: colors.text),
-          const SizedBox(width: 3),
-          Expanded(
-            child: Text(item.titulo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 10.5, height: 1.3, color: colors.text)),
-          ),
-        ],
-      ),
+      child: LayoutBuilder(builder: (context, c) {
+        // En el teléfono la celda mide lo que una letra: ni la banderita ni
+        // el título caben. Queda el cuadro delineado, que ya la distingue de
+        // un evento (relleno); el título se lee al tocar el día.
+        if (c.maxWidth < 40) return const SizedBox(height: 14);
+        return Row(
+          children: [
+            Icon(item.icono, size: 11, color: colors.text),
+            const SizedBox(width: 3),
+            Expanded(
+              child: Text(item.titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10.5, height: 1.3, color: colors.text)),
+            ),
+          ],
+        );
+      }),
     );
   }
 

@@ -436,7 +436,7 @@
   "portadaExpoTexto": "Santa Marta, July 2026 — our teams on their way to the eduXaction World Cup in São Paulo",
   "portadaExpoPie": "eduXaction Colombia delegation · National Expo 2026",
   "portadaEntrar": "Enter the platform",
-  "tabDashboard": "Dashboard",
+  "tabDashboard": "Home",
   "tabInicioCorto": "Home",
   "tabCalendario": "Calendar",
   "tabMisCursos": "My Courses",
@@ -933,7 +933,7 @@
   "calificarNota": "Grade (0.0 - 5.0)",
   "calificarRetroalimentacion": "Feedback",
   "certificadoEmitido": "Certificate {codigo} issued 🏆",
-  "certificacionesSubtitulo": "The certificate is issued when a laboratory's full Impact Path is completed (there is no longer a per-course certificate)",
+  "certificacionesSubtitulo": "Here you issue the certificate for a laboratory's full Impact Path. Certificates for a certifying course are issued automatically when it is finished.",
   "certificacionesSinPermiso": "Your Admin has not given you permission to grade in eduXaction: you cannot issue certificates yet",
   "certificacionesEmitidos": "Certificates issued",
   "certificacionesVacio": "No certificates have been issued yet.",
@@ -1150,7 +1150,7 @@
   "tabContenidoCorto": "Content",
   "tabDatosRespaldos": "Data and backups",
   "tabRespaldosCorto": "Backups",
-  "adminDashboardGeneral": "General Dashboard",
+  "adminDashboardGeneral": "Overview",
   "adminDashboardSubtitulo": "Overall status of the platform",
   "adminImpactoFormativo": "eduXaction training impact",
   "adminUsuariosPorRol": "Users by role",
@@ -1926,5 +1926,10 @@
   "subirVistaPreviaTitulo": "Upload this file?",
   "subirVistaPreviaSubir": "Upload",
   "certificadosVerTodos": "See my certificates ({n})",
-  "certificadosUltimo": "Most recent"
+  "certificadosUltimo": "Most recent",
+  "menuGrupoPersonas": "People",
+  "menuGrupoProyectos": "Projects and teams",
+  "menuGrupoFormacion": "Learning",
+  "menuGrupoComunicacion": "Communication",
+  "menuGrupoSistema": "System"
 }

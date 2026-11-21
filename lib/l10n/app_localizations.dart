@@ -2717,7 +2717,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabDashboard.
   ///
   /// In es, this message translates to:
-  /// **'Dashboard'**
+  /// **'Inicio'**
   String get tabDashboard;
 
   /// No description provided for @tabInicioCorto.
@@ -5669,7 +5669,7 @@ abstract class AppLocalizations {
   /// No description provided for @certificacionesSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)'**
+  /// **'Aquí se emite el certificado de la Ruta de Impacto completa de un laboratorio. Los de un curso que certifica se emiten solos, al terminarlo.'**
   String get certificacionesSubtitulo;
 
   /// No description provided for @certificacionesSinPermiso.
@@ -6971,7 +6971,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminDashboardGeneral.
   ///
   /// In es, this message translates to:
-  /// **'Dashboard General'**
+  /// **'Panel general'**
   String get adminDashboardGeneral;
 
   /// No description provided for @adminDashboardSubtitulo.
@@ -11641,6 +11641,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'El más reciente'**
   String get certificadosUltimo;
+
+  /// No description provided for @menuGrupoPersonas.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas'**
+  String get menuGrupoPersonas;
+
+  /// No description provided for @menuGrupoProyectos.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyectos y equipos'**
+  String get menuGrupoProyectos;
+
+  /// No description provided for @menuGrupoFormacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Formación'**
+  String get menuGrupoFormacion;
+
+  /// No description provided for @menuGrupoComunicacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Comunicación'**
+  String get menuGrupoComunicacion;
+
+  /// No description provided for @menuGrupoSistema.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get menuGrupoSistema;
 }
 
 class _AppLocalizationsDelegate

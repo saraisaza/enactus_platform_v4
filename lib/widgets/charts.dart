@@ -105,11 +105,16 @@ class SimpleBarChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 36,
-              getTitlesWidget: (v, _) => Text(
-                valueFormat?.call(v) ?? v.toStringAsFixed(0),
-                style:
-                    TextStyle(color: AppColors.textMuted, fontSize: 11),
-              ),
+              // El tope del eje (p. ej. 7,2) no lleva rótulo propio: redondeado
+              // salía «7» encima del 7 de la escala, uno sobre otro.
+              getTitlesWidget: (v, meta) => v == meta.max &&
+                      v % meta.appliedInterval != 0
+                  ? const SizedBox.shrink()
+                  : Text(
+                      valueFormat?.call(v) ?? v.toStringAsFixed(0),
+                      style: TextStyle(
+                          color: AppColors.textMuted, fontSize: 11),
+                    ),
             ),
           ),
           bottomTitles: AxisTitles(

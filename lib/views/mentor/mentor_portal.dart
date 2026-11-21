@@ -223,14 +223,12 @@ class _StudentRow extends StatelessWidget {
                     style: const TextStyle(fontSize: 13),
                     overflow: TextOverflow.ellipsis),
               ),
+              // La barra ya trae su porcentaje: antes salía dos veces
+              // («0% 0%»).
               SizedBox(
-                width: 90,
+                width: 140,
                 child: ThinProgressBar(value: avance),
               ),
-              const SizedBox(width: 8),
-              Text('${(avance * 100).round()}%',
-                  style: TextStyle(
-                      fontSize: 12, color: AppColors.textMuted)),
             ],
           ),
         ),

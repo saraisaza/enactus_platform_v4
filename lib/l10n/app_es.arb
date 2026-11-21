@@ -749,7 +749,7 @@
   "portadaExpoTexto": "Santa Marta, julio 2026 — nuestros equipos rumbo al eduXaction World Cup en São Paulo",
   "portadaExpoPie": "Delegación eduXaction Colombia · National Expo 2026",
   "portadaEntrar": "Entrar a la plataforma",
-  "tabDashboard": "Dashboard",
+  "tabDashboard": "Inicio",
   "tabInicioCorto": "Inicio",
   "tabCalendario": "Calendario",
   "tabMisCursos": "Mis Cursos",
@@ -1763,7 +1763,7 @@
       "codigo": {}
     }
   },
-  "certificacionesSubtitulo": "El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)",
+  "certificacionesSubtitulo": "Aquí se emite el certificado de la Ruta de Impacto completa de un laboratorio. Los de un curso que certifica se emiten solos, al terminarlo.",
   "certificacionesSinPermiso": "Su Admin no le ha dado permiso de calificar en eduXaction: no puede emitir certificados todavía",
   "certificacionesEmitidos": "Certificados emitidos",
   "certificacionesVacio": "Aún no se han emitido certificados.",
@@ -2120,7 +2120,7 @@
   "tabContenidoCorto": "Contenido",
   "tabDatosRespaldos": "Datos y respaldos",
   "tabRespaldosCorto": "Respaldos",
-  "adminDashboardGeneral": "Dashboard General",
+  "adminDashboardGeneral": "Panel general",
   "adminDashboardSubtitulo": "Estado global de la plataforma",
   "adminImpactoFormativo": "Impacto formativo eduXaction",
   "adminUsuariosPorRol": "Usuarios por rol",
@@ -3531,5 +3531,10 @@
       "n": {"type": "int"}
     }
   },
-  "certificadosUltimo": "El más reciente"
+  "certificadosUltimo": "El más reciente",
+  "menuGrupoPersonas": "Personas",
+  "menuGrupoProyectos": "Proyectos y equipos",
+  "menuGrupoFormacion": "Formación",
+  "menuGrupoComunicacion": "Comunicación",
+  "menuGrupoSistema": "Sistema"
 }

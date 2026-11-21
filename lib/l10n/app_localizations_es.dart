@@ -1522,7 +1522,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get portadaEntrar => 'Entrar a la plataforma';
 
   @override
-  String get tabDashboard => 'Dashboard';
+  String get tabDashboard => 'Inicio';
 
   @override
   String get tabInicioCorto => 'Inicio';
@@ -3338,7 +3338,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get certificacionesSubtitulo =>
-      'El certificado se emite al completar la Ruta de Impacto completa de un laboratorio (ya no hay certificado por curso)';
+      'Aquí se emite el certificado de la Ruta de Impacto completa de un laboratorio. Los de un curso que certifica se emiten solos, al terminarlo.';
 
   @override
   String get certificacionesSinPermiso =>
@@ -4096,7 +4096,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabRespaldosCorto => 'Respaldos';
 
   @override
-  String get adminDashboardGeneral => 'Dashboard General';
+  String get adminDashboardGeneral => 'Panel general';
 
   @override
   String get adminDashboardSubtitulo => 'Estado global de la plataforma';
@@ -6945,4 +6945,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get certificadosUltimo => 'El más reciente';
+
+  @override
+  String get menuGrupoPersonas => 'Personas';
+
+  @override
+  String get menuGrupoProyectos => 'Proyectos y equipos';
+
+  @override
+  String get menuGrupoFormacion => 'Formación';
+
+  @override
+  String get menuGrupoComunicacion => 'Comunicación';
+
+  @override
+  String get menuGrupoSistema => 'Sistema';
 }

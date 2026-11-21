@@ -35,6 +35,12 @@ class PortalTab {
   /// La barra lateral de la web no cambia.
   final bool destacada;
 
+  /// El subtítulo bajo el que va en el menú lateral («Personas»,
+  /// «Formación»…). Las pestañas seguidas con el mismo grupo van juntas: un
+  /// menú de doce opciones en fila era demasiado para leer de un vistazo
+  /// (ley de Miller: de a pocas y agrupadas).
+  final String? grupo;
+
   const PortalTab({
     this.id,
     required this.label,
@@ -42,6 +48,7 @@ class PortalTab {
     required this.builder,
     this.shortLabel,
     this.destacada = false,
+    this.grupo,
   });
 }
 
@@ -305,13 +312,17 @@ class _PortalShellState extends State<PortalShell> {
             child: ListView(
               padding: EdgeInsets.symmetric(vertical: plegable ? 4 : 12),
               children: [
-                for (var i = 0; i < widget.tabs.length; i++)
+                for (var i = 0; i < widget.tabs.length; i++) ...[
+                  if (_empiezaGrupo(i))
+                    _TituloDeGrupo(
+                        texto: widget.tabs[i].grupo!, angosto: angosta),
                   _SidebarItem(
                     tab: widget.tabs[i],
                     selected: i == _selected,
                     compact: angosta,
                     onTap: () => _selectTab(i),
                   ),
+                ],
               ],
             ),
           ),
@@ -325,6 +336,12 @@ class _PortalShellState extends State<PortalShell> {
         ],
       ),
     );
+  }
+
+  /// Si la pestaña [i] abre un grupo nuevo del menú.
+  bool _empiezaGrupo(int i) {
+    final grupo = widget.tabs[i].grupo;
+    return grupo != null && (i == 0 || widget.tabs[i - 1].grupo != grupo);
   }
 
   void _selectTab(int i) {
@@ -359,7 +376,9 @@ class _PortalShellState extends State<PortalShell> {
                   ),
                 ),
               ),
-              for (var i = 0; i < widget.tabs.length; i++)
+              for (var i = 0; i < widget.tabs.length; i++) ...[
+                if (_empiezaGrupo(i))
+                  _TituloDeGrupo(texto: widget.tabs[i].grupo!, angosto: false),
                 _SidebarItem(
                   tab: widget.tabs[i],
                   selected: i == _selected,
@@ -369,12 +388,43 @@ class _PortalShellState extends State<PortalShell> {
                     _selectTab(i);
                   },
                 ),
+              ],
               const SizedBox(height: 12),
               Divider(height: 1, color: AppColors.border),
               const SizedBox(height: 8),
               _SidebarItem.cerrarSesion(compact: false),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// El subtítulo de un grupo del menú lateral. Con el menú plegado, solo una
+/// rayita que separa los grupos.
+class _TituloDeGrupo extends StatelessWidget {
+  final String texto;
+  final bool angosto;
+  const _TituloDeGrupo({required this.texto, required this.angosto});
+
+  @override
+  Widget build(BuildContext context) {
+    if (angosto) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        child: Divider(height: 1, color: AppColors.border),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 12, 16, 4),
+      child: Text(
+        texto.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10.5,
+          letterSpacing: 1.3,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textMuted,
         ),
       ),
     );
@@ -438,11 +488,13 @@ class _SidebarItemState extends State<_SidebarItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          // vertical:14 (no 12) para que el área táctil real — el padding
-          // queda dentro del BoxDecoration, que sí es lo que hit-testea —
-          // alcance el mínimo de 48dp: 14+22+14=50 en modo ícono,
-          // 14+20+14=48 en modo ícono+texto.
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          // Solo íconos (tableta, con el dedo): vertical 14, para que el
+          // área táctil real —el padding queda dentro del BoxDecoration, que
+          // es lo que hit-testea— llegue a 48 dp (14+22+14=50). Con rótulo
+          // (computador, con mouse): 11, así el menú del admin, con sus
+          // subtítulos de grupo, cabe entero en un portátil sin desplazarse.
+          padding: EdgeInsets.symmetric(
+              horizontal: 12, vertical: widget.compact ? 14 : 11),
           decoration: BoxDecoration(
             color: active
                 ? (deCliente
@@ -476,11 +528,13 @@ class _SidebarItemState extends State<_SidebarItem> {
                             Icon(widget.tab.icon, color: color, size: 20),
                             const SizedBox(width: 12),
                             Expanded(
+                              // Hasta dos líneas: «Directorio de Proyect…»
+                              // cortado no decía adónde llevaba.
                               child: Text(
                                 widget.tab.label,
                                 overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                softWrap: false,
+                                maxLines: 2,
+                                softWrap: true,
                                 style: TextStyle(
                                   color: color,
                                   fontSize: 13.5,

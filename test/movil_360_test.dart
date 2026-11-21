@@ -83,6 +83,11 @@ Future<void> _irA(WidgetTester tester, String rotulo) async {
             .descendant(
                 of: find.byType(Drawer), matching: find.byType(Scrollable))
             .first);
+    // Entera a la vista, no solo asomada: con los subtítulos de grupo del
+    // menú, el rótulo podía quedar a medias en el borde y el toque caía en
+    // la opción de al lado.
+    await tester.ensureVisible(enCajon.first);
+    await _frames(tester, 2);
     await tester.tap(enCajon.first);
   }
   await _frames(tester);

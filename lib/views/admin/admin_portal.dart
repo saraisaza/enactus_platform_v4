@@ -48,46 +48,56 @@ class AdminPortal extends StatelessWidget {
             builder: (_) => const AdminCalendar()),
         PortalTab(
             label: tr.tabUsuarios,
+            grupo: tr.menuGrupoPersonas,
             destacada: true,
             icon: Icons.manage_accounts_outlined,
             builder: (_) => AdminUsers(isSuperAdmin: isSuperAdmin)),
         PortalTab(
             label: tr.tabClientes,
+            grupo: tr.menuGrupoPersonas,
             icon: Icons.storefront_outlined,
             builder: (_) => const AdminClients()),
         PortalTab(
             label: tr.tabProyectosCorto,
+            grupo: tr.menuGrupoProyectos,
             icon: Icons.lightbulb_outline,
             builder: (_) => const AdminProjects()),
         PortalTab(
             label: tr.tabEquipos,
+            grupo: tr.menuGrupoProyectos,
             icon: Icons.groups_outlined,
             builder: (_) => const AdminGroups()),
         PortalTab(
             label: tr.tabLaboratorios,
+            grupo: tr.menuGrupoFormacion,
             icon: Icons.science_outlined,
             builder: (_) => const AdminLabs()),
         PortalTab(
             label: tr.tabCursosCorto,
+            grupo: tr.menuGrupoFormacion,
             icon: Icons.video_library_outlined,
             builder: (_) => const AdminCourses()),
         PortalTab(
             label: tr.tabEvidenciasDonantes,
+            grupo: tr.menuGrupoComunicacion,
             shortLabel: tr.tabEvidenciasCorto,
             icon: Icons.volunteer_activism_outlined,
             builder: (_) => const AdminEvidences()),
         PortalTab(
             label: tr.tabForo,
+            grupo: tr.menuGrupoComunicacion,
             destacada: true,
             icon: Icons.forum_outlined,
             builder: (_) => const ForumView()),
         PortalTab(
             label: tr.tabContenidoPagina,
+            grupo: tr.menuGrupoComunicacion,
             shortLabel: tr.tabContenidoCorto,
             icon: Icons.web_outlined,
             builder: (_) => const AdminSiteContent()),
         PortalTab(
             label: tr.tabDatosRespaldos,
+            grupo: tr.menuGrupoSistema,
             shortLabel: tr.tabRespaldosCorto,
             icon: Icons.storage_outlined,
             builder: (_) => const AdminBackup()),

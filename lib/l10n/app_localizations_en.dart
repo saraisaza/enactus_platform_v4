@@ -1523,7 +1523,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get portadaEntrar => 'Enter the platform';
 
   @override
-  String get tabDashboard => 'Dashboard';
+  String get tabDashboard => 'Home';
 
   @override
   String get tabInicioCorto => 'Home';
@@ -3361,7 +3361,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get certificacionesSubtitulo =>
-      'The certificate is issued when a laboratory\'s full Impact Path is completed (there is no longer a per-course certificate)';
+      'Here you issue the certificate for a laboratory\'s full Impact Path. Certificates for a certifying course are issued automatically when it is finished.';
 
   @override
   String get certificacionesSinPermiso =>
@@ -4122,7 +4122,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabRespaldosCorto => 'Backups';
 
   @override
-  String get adminDashboardGeneral => 'General Dashboard';
+  String get adminDashboardGeneral => 'Overview';
 
   @override
   String get adminDashboardSubtitulo => 'Overall status of the platform';
@@ -6961,4 +6961,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get certificadosUltimo => 'Most recent';
+
+  @override
+  String get menuGrupoPersonas => 'People';
+
+  @override
+  String get menuGrupoProyectos => 'Projects and teams';
+
+  @override
+  String get menuGrupoFormacion => 'Learning';
+
+  @override
+  String get menuGrupoComunicacion => 'Communication';
+
+  @override
+  String get menuGrupoSistema => 'System';
 }

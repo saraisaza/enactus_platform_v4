@@ -18,6 +18,7 @@ import 'colores_encabezado.dart';
 import 'logo_de_cliente.dart';
 import 'common.dart';
 import 'cuenta.dart';
+import 'interruptor_tema.dart';
 import 'selector_idioma.dart';
 
 /// Header con logo, buscador global, campana de notificaciones y avatar
@@ -33,12 +34,26 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   /// el único que arma un `Drawer` de navegación compact).
   final bool showMenuButton;
 
-  const AppHeader({super.key, this.portalTitle, this.showMenuButton = false});
+  /// Una flecha «Atrás» a la izquierda del logo, para las pantallas de
+  /// detalle que no tienen la suya (recomendaciones del 20 de noviembre).
+  /// Solo aparece si hay a dónde volver.
+  final bool conAtras;
+
+  const AppHeader(
+      {super.key,
+      this.portalTitle,
+      this.showMenuButton = false,
+      this.conAtras = false});
 
   static const _flagBarHeight = 4.0;
 
   @override
-  Size get preferredSize => const Size.fromHeight(160 + _flagBarHeight);
+  Size get preferredSize => const Size.fromHeight(alto + _flagBarHeight);
+
+  /// Alto del encabezado en escritorio y tableta. Era 160: la mitad, a pedido
+  /// de las recomendaciones del 20 de noviembre — ocupaba un cuarto de una
+  /// pantalla de portátil antes de mostrar nada.
+  static const alto = 80.0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +70,11 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     // oscuro (el que pedía placa), para que el logo vaya directo sobre el
     // fondo; si no, oscuro con el tono de su marca.
     final colores = !conLogoDeCliente
-        ? ColoresEncabezado.oscuro
+        ? ColoresEncabezado.delTema
         : user!.client!.logoLightPlate
             ? ColoresEncabezado.claroDeMarca
-            : ColoresEncabezado.oscuro.conFondo(AppColors.barraLateral);
+            : ColoresEncabezado.oscuro
+                .conFondo(Marca.instancia.paleta.superficieDeMarca);
     final deCliente = Marca.instancia.paleta.esDeCliente;
     // «Portal Estudiante», al lado del logo: solo donde hay lugar. Con el
     // logo de un cliente, solo en pantallas anchas: el logo va primero.
@@ -119,80 +135,156 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       children: [
         const ColombiaFlagBar(height: _flagBarHeight),
         Container(
-          height: compact ? 64 : 160,
+          height: compact ? 64 : alto,
           padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 20),
           decoration: BoxDecoration(
             color: colores.fondo,
             border: Border(bottom: BorderSide(color: colores.borde)),
           ),
-          child: Row(
-            children: [
-              if (showMenuButton && compact)
-                IconButton(
-                  icon: const Icon(Icons.menu),
-                  color: colores.texto,
-                  tooltip: tr.comunMenu,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                ),
-              // El logotipo va en `Flexible`: su alto baja en medium y, si aun
-              // así no cabe, se achica. Suelto a 135px de alto medía más de 300
-              // de ancho, y con el menú de cuenta al otro extremo esta fila
-              // desbordaba en cualquier ventana por debajo de ~1100px — en
-              // TODOS los portales, porque todos heredan este encabezado.
-              //
-              // Con un cliente con logo, el suyo va al lado del nuestro (ver
-              // [_LogosDelEncabezado]).
-              //
-              // Sin logo de cliente, el espacio libre se reparte con el
-              // `Spacer` como siempre. Con logo de cliente, la zona de logos
-              // y la etiqueta del portal toman TODO el espacio libre: repartido
-              // a medias, el del cliente nunca cabía.
-              if (!conLogoDeCliente) ...[
-                Flexible(child: logos),
-                ?etiquetaDelPortal,
-                const Spacer(),
-              ] else
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(child: logos),
-                      ?etiquetaDelPortal,
-                      // Un respiro antes del selector de idioma.
-                      SizedBox(width: compact ? 4 : 12),
-                    ],
-                  ),
-                ),
-              // En todos los portales y detalles, con o sin sesión. En el
-              // teléfono y en medium solo dice "ES"/"EN": el nombre completo
-              // aparece al abrirlo.
-              SelectorIdioma(compacto: !roomy),
-              SizedBox(width: compact ? 4 : 12),
-              if (user != null) ...[
-                if (roomy) ...[
-                  const _GlobalSearch(),
-                  const SizedBox(width: 12),
-                ] else
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    color: colores.textoSecundario,
-                    tooltip: tr.comunBuscar,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const _CompactSearchScreen(),
-                      ),
-                    ),
-                  ),
-                _NotificationBell(userId: user.id),
-                SizedBox(width: compact ? 4 : 10),
-                _AvatarMenu(user: user),
-              ],
-            ],
-          ),
+          child: _fila(context,
+              compact: compact,
+              roomy: roomy,
+              colores: colores,
+              user: user,
+              conLogoDeCliente: conLogoDeCliente,
+              logos: logos,
+              etiquetaDelPortal: etiquetaDelPortal),
         ),
       ],
     ),
     ),
     ),
+    );
+  }
+}
+
+extension on AppHeader {
+  /// La fila del encabezado.
+  ///
+  /// En el teléfono, sin logo de cliente, el logo COMPLETO va al centro y los
+  /// controles se reparten a los lados —tema e idioma a la izquierda,
+  /// notificaciones y cuenta a la derecha— (recomendaciones del 20 de
+  /// noviembre: antes iba solo la «X», arrinconada). En pantallas anchas,
+  /// como siempre: logo a la izquierda, controles a la derecha.
+  Widget _fila(
+    BuildContext context, {
+    required bool compact,
+    required bool roomy,
+    required ColoresEncabezado colores,
+    required AppUser? user,
+    required bool conLogoDeCliente,
+    required Widget logos,
+    required Widget? etiquetaDelPortal,
+  }) {
+    final atras = conAtras && Navigator.of(context).canPop()
+        ? IconButton(
+            key: const ValueKey('encabezado-atras'),
+            icon: const Icon(Icons.arrow_back),
+            color: colores.texto,
+            tooltip: tr.comunVolver,
+            onPressed: () => Navigator.of(context).maybePop(),
+          )
+        : null;
+    final menu = showMenuButton && compact
+        ? IconButton(
+            icon: const Icon(Icons.menu),
+            color: colores.texto,
+            tooltip: tr.comunMenu,
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          )
+        : null;
+    // En todos los portales y detalles, con o sin sesión. En el teléfono y en
+    // medium el idioma solo dice "ES"/"EN": el nombre completo aparece al
+    // abrirlo.
+    final ajustes = <Widget>[
+      // Claro u oscuro: siempre visible, con o sin sesión.
+      const InterruptorTema(),
+      SizedBox(width: compact ? 2 : 8),
+      SelectorIdioma(compacto: !roomy),
+    ];
+    final cuenta = <Widget>[
+      if (user != null) ...[
+        // Quien estudia no tiene buscador general: solo encontraba sus
+        // propios cursos, que ya están a un clic en el menú.
+        if (Roles.isStudentLike(user.role))
+          const SizedBox.shrink()
+        else if (roomy) ...[
+          const _GlobalSearch(),
+          const SizedBox(width: 12),
+        ] else
+          IconButton(
+            icon: const Icon(Icons.search),
+            color: colores.textoSecundario,
+            tooltip: tr.comunBuscar,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const _CompactSearchScreen(),
+              ),
+            ),
+          ),
+        _NotificationBell(userId: user.id),
+        SizedBox(width: compact ? 4 : 10),
+        _AvatarMenu(user: user),
+      ],
+    ];
+
+    if (compact && !conLogoDeCliente) {
+      // Los dos lados del mismo ancho: así el logo queda justo al centro.
+      // `FittedBox`: si en un teléfono muy angosto no caben, se achican en
+      // vez de desbordar.
+      return Row(
+        children: [
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [?atras, ?menu, ...ajustes],
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          logos,
+          const SizedBox(width: 6),
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(mainAxisSize: MainAxisSize.min, children: cuenta),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        ?atras,
+        ?menu,
+        // El logotipo va en `Flexible`: su alto baja en medium y, si aun así
+        // no cabe, se achica. Con un cliente con logo, el suyo va al lado del
+        // nuestro (ver [_LogosDelEncabezado]) y la zona de logos toma TODO el
+        // espacio libre: repartido a medias, el del cliente nunca cabía.
+        if (!conLogoDeCliente) ...[
+          Flexible(child: logos),
+          ?etiquetaDelPortal,
+          const Spacer(),
+        ] else
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(child: logos),
+                ?etiquetaDelPortal,
+                // Un respiro antes del selector de idioma.
+                SizedBox(width: compact ? 4 : 12),
+              ],
+            ),
+          ),
+        ...ajustes,
+        SizedBox(width: compact ? 4 : 12),
+        ...cuenta,
+      ],
     );
   }
 }
@@ -226,17 +318,17 @@ class _LogosDelEncabezado extends StatelessWidget {
   /// El alto que se le pasa a [AnimatedLogo]. El ancho que ocupa se midió:
   /// el logotipo completo mide 2.25 veces este número; el compacto es un
   /// cuadrado.
-  double get _altoNuestro => compacto ? 34 : (amplio ? 135 : 72);
+  double get _altoNuestro => compacto ? 34 : (amplio ? 56 : 44);
 
   /// Con la marca de un cliente, el de eduXaction va chico: el protagonista
   /// es el del cliente. (32 es el mínimo de la regla de marca para la X.)
-  double get _altoNuestroChico => compacto ? 32 : (amplio ? 44 : 36);
+  double get _altoNuestroChico => compacto ? 32 : (amplio ? 40 : 34);
   double get _anchoNuestroChico => compacto ? 32 : _altoNuestroChico * 2.25;
 
   // En escritorio y tableta, dos veces un 25 % más chico que la primera
   // versión, a pedido de Sara: se veía demasiado grande. En el teléfono ya
   // era chico.
-  double get _altoCliente => compacto ? 34 : (amplio ? 45 : 27);
+  double get _altoCliente => compacto ? 34 : (amplio ? 44 : 27);
   double get _anchoMaxCliente => compacto ? 150 : (amplio ? 270 : 146);
 
   void _ir(BuildContext context) =>
@@ -254,13 +346,18 @@ class _LogosDelEncabezado extends StatelessWidget {
           onTap: () => _ir(context),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-            child: const Align(
+            child: Align(
               alignment: Alignment.centerLeft,
               widthFactor: 1,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: AnimatedLogo(height: 34, compact: true),
+                // El logo completo, no solo la «X»: en el teléfono va al
+                // centro del encabezado y hay lugar.
+                child: AnimatedLogo(
+                    height: 30,
+                    compact: false,
+                    onLight: ColoresEncabezado.of(context).claro),
               ),
             ),
           ),
@@ -271,7 +368,10 @@ class _LogosDelEncabezado extends StatelessWidget {
       fit: BoxFit.scaleDown,
       alignment: Alignment.centerLeft,
       child: AnimatedLogo(
-          height: _altoNuestro, compact: false, onTap: () => _ir(context)),
+          height: _altoNuestro,
+          compact: false,
+          onLight: ColoresEncabezado.of(context).claro,
+          onTap: () => _ir(context)),
     );
   }
 
@@ -540,7 +640,7 @@ class _GlobalSearchState extends State<_GlobalSearch> {
                     ),
                     subtitle: Text(
                       '${hit.type} · ${hit.sub}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11.5,
                         color: AppColors.textMuted,
                       ),
@@ -595,7 +695,7 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
           controller: _ctrl,
           focusNode: _focus,
           autofocus: true,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: tr.busquedaPista,
             hintStyle: TextStyle(color: AppColors.textMuted),
@@ -622,7 +722,7 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
               padding: const EdgeInsets.all(8),
               itemCount: hits.length,
               separatorBuilder: (_, _) =>
-                  const Divider(height: 1, color: AppColors.border),
+                  Divider(height: 1, color: AppColors.border),
               itemBuilder: (context, i) {
                 final hit = hits[i];
                 return ListTile(
@@ -630,14 +730,14 @@ class _CompactSearchScreenState extends State<_CompactSearchScreen> {
                   leading: Icon(hit.icon, color: AppColors.gold),
                   title: Text(
                     hit.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
                     '${hit.type} · ${hit.sub}',
-                    style: const TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: AppColors.textMuted),
                   ),
                   onTap: () => _showSearchHitDetail(context, hit),
                 );
@@ -664,7 +764,7 @@ class _AvatarMenu extends StatelessWidget {
       color: AppColors.surfaceAlt,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: AppColors.border),
       ),
       itemBuilder: (context) => [
         PopupMenuItem(
@@ -674,14 +774,14 @@ class _AvatarMenu extends StatelessWidget {
             children: [
               Text(
                 user.name,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
                 '${Roles.label(user.role)} · ${user.email}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 12,
                 ),
@@ -762,12 +862,7 @@ class _AvatarMenu extends StatelessWidget {
           case 'delete':
             mostrarEliminarCuenta(context);
           case 'logout':
-            // Se espera a que termine: cerrar sesión ahora incluye avisarle al
-            // servidor para que revoque el refresh token. Navegar antes
-            // dejaría la sesión viva del otro lado.
-            final navigator = Navigator.of(context);
-            await context.read<AuthProvider>().logout();
-            navigator.pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false);
+            await cerrarSesion(context);
         }
       },
       child: HoverableAvatar(user: user),
@@ -1009,7 +1104,7 @@ class _NotificationBell extends StatelessWidget {
       pageBuilder: (context, _, _) => Align(
         alignment: Alignment.topRight,
         child: Padding(
-          padding: const EdgeInsets.only(top: 114, right: 20),
+          padding: const EdgeInsets.only(top: AppHeader.alto + 10, right: 20),
           child: Material(
             color: AppColors.surfaceAlt,
             borderRadius: BorderRadius.circular(14),
@@ -1071,7 +1166,7 @@ class _NotificationListBody extends StatelessWidget {
             ),
             subtitle: Text(
               '${n.cuerpoVisible}\n${fechaHora(n.createdAt)}',
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             isThreeLine: true,
           );

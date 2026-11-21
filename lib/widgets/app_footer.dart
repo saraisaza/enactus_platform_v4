@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
+import '../utils/tema.dart';
 import 'animated_logo.dart';
 import 'common.dart';
 import 'social_button.dart';
@@ -48,11 +49,17 @@ class AppFooter extends StatelessWidget {
           label: 'LinkedIn',
           url: SocialLinks.linkedin,
         ),
+        const SizedBox(width: 10),
+        construirBotonSocial(
+          icono: _iconoWhatsApp,
+          label: 'WhatsApp ${SocialLinks.whatsappVisible}',
+          url: SocialLinks.whatsapp,
+        ),
       ],
     );
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -65,9 +72,16 @@ class AppFooter extends StatelessWidget {
           // Borde tricolor de la bandera de Colombia, izquierda a derecha
           const ColombiaFlagBar(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(28, 18, 4, 18),
-            child: Wrap(
-              alignment: WrapAlignment.spaceBetween,
+            padding: EdgeInsets.fromLTRB(
+                _apilar(context) ? 16 : 28, 18, _apilar(context) ? 16 : 28, 18),
+            child: SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
+              alignment: _apilar(context)
+                  ? WrapAlignment.center
+                  : WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               runSpacing: 14,
               children: [
@@ -85,15 +99,21 @@ class AppFooter extends StatelessWidget {
                 // toda ventana de escritorio angosta —en los ocho portales, y
                 // por 559px— porque los dos textos exigen su ancho natural y
                 // dentro de un `Wrap` nadie los obliga a encoger.
+                // En el teléfono, todo centrado y con el logo completo, no
+                // solo la «X» (recomendaciones del 20 de noviembre).
                 _apilar(context)
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    ? SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AnimatedLogo(height: 64, compact: true),
+                          AnimatedLogo(
+                              height: 44, compact: false, onLight: !Tema.oscuro),
                           SizedBox(height: 12),
                           Text(
                             InstitutionalInfo.footerText,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 13,
@@ -103,22 +123,24 @@ class AppFooter extends StatelessWidget {
                           SizedBox(height: 3),
                           Text(
                             tr.pieLema,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 12,
                             ),
                           ),
                         ],
+                      ),
                       )
                     : Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const AnimatedLogo(height: 95),
+                          AnimatedLogo(height: 95, onLight: !Tema.oscuro),
                           const SizedBox(width: 18),
                           Container(
                             width: 1,
                             height: 75,
-                            color: Colors.white.withValues(alpha: 0.12),
+                            color: AppColors.velo(0.12),
                           ),
                           const SizedBox(width: 18),
                           // Acotado: sin techo, estos dos textos piden su
@@ -150,18 +172,11 @@ class AppFooter extends StatelessWidget {
                           ),
                         ],
                       ),
-                // El corrimiento de 100px es un ajuste visual deliberado en
-                // escritorio; dentro de este mismo Wrap, en compact las dos
-                // filas se apilan y ese corrimiento saca los íconos del
-                // viewport — se aplica solo fuera de compact.
-                _apilar(context)
-                    ? socialButtons
-                    : Transform.translate(
-                        offset: const Offset(100, 0),
-                        child: socialButtons,
-                      ),
+                // Las redes, al borde derecho: el `Wrap` va a todo el ancho.
+                // (Antes no lo iba y se las corría 100 px a mano.)
+                socialButtons,
               ],
-            ),
+            )),
           ),
           // Fila inferior de copyright
           Container(
@@ -169,15 +184,22 @@ class AppFooter extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                top: BorderSide(color: AppColors.velo(0.08)),
               ),
             ),
-            child: Wrap(
-              alignment: WrapAlignment.spaceBetween,
+            child: SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
+              alignment: _apilar(context)
+                  ? WrapAlignment.center
+                  : WrapAlignment.spaceBetween,
+              runSpacing: 4,
               children: [
                 Text(
                   tr.pieDerechos(DateTime.now().year),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 11,
                   ),
@@ -187,7 +209,7 @@ class AppFooter extends StatelessWidget {
                   style: TextStyle(color: AppColors.textMuted, fontSize: 11),
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),
@@ -198,6 +220,7 @@ class AppFooter extends StatelessWidget {
 /// Botón de red social: al pasar el cursor se vuelve dorado, escala y brilla.
 Widget _iconoFacebook(Color c) => Icon(Icons.facebook, size: 18, color: c);
 Widget _iconoInstagram(Color c) => InstagramIcon(color: c);
+Widget _iconoWhatsApp(Color c) => WhatsAppIcon(color: c);
 Widget _iconoLinkedIn(Color c) => LinkedInIcon(color: c);
 
 /// ¿Hay que apilar el pie en vez de ponerlo en una fila?

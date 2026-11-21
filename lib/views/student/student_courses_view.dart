@@ -111,27 +111,17 @@ class _StudentCoursesViewState extends State<StudentCoursesView> {
             colors: colors,
           );
         }
-        return LayoutBuilder(builder: (context, constraints) {
-          const minCard = 392.0;
-          const gap = 20.0;
-          final columns =
-              math.max(1, ((constraints.maxWidth + gap) / (minCard + gap)).floor());
-          final cardWidth = (constraints.maxWidth - gap * (columns - 1)) / columns;
-          return Wrap(
-            spacing: gap,
-            runSpacing: gap,
-            children: [
-              for (var i = 0; i < courses.length; i++)
-                SizedBox(
-                  width: cardWidth,
-                  child: Entrance(
-                    delayMs: 55 * i,
-                    child: _CourseCard(course: courses[i], colors: colors),
-                  ),
-                ),
-            ],
-          );
-        });
+        // Todas las tarjetas de una fila del mismo alto.
+        return RejillaDeTarjetas(
+          anchoMinimo: 392,
+          children: [
+            for (var i = 0; i < courses.length; i++)
+              Entrance(
+                delayMs: 55 * i,
+                child: _CourseCard(course: courses[i], colors: colors),
+              ),
+          ],
+        );
       },
     );
   }
@@ -200,10 +190,18 @@ class _CourseCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             boxShadow: hover ? colors.shadow : const [],
           ),
+          // Arriba la portada y la descripción; abajo el avance y el botón.
+          // En la grilla todas las tarjetas de una fila miden lo mismo
+          // ([RejillaDeTarjetas]): `spaceBetween` lleva el pie al fondo, y
+          // los botones de una fila quedan alineados.
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+             Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
                 decoration: BoxDecoration(color: accent),
@@ -252,7 +250,7 @@ class _CourseCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 18, 22, 20),
+                padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -275,7 +273,17 @@ class _CourseCard extends StatelessWidget {
                           _MetaChip(icon: Icons.workspace_premium, label: tr.cursoCertificado, colors: colors),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                  ],
+                ),
+              ),
+              ],
+             ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 14, 22, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(tr.cursoProgresoDetalle(done, totalLessons, (progress * 100).round()),
                         style: TextStyle(fontSize: 12, color: colors.text3)),
                     const SizedBox(height: 6),

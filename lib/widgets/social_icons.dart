@@ -80,3 +80,55 @@ class LinkedInIcon extends StatelessWidget {
     );
   }
 }
+
+/// Logo de WhatsApp: el globo de conversación redondo, con la cola abajo a
+/// la izquierda, y el auricular adentro. Dibujado, como [InstagramIcon]:
+/// Material no trae el ícono de la marca.
+class WhatsAppIcon extends StatelessWidget {
+  final double size;
+  final Color color;
+  const WhatsAppIcon({super.key, this.size = 18, required this.color});
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+        dimension: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+                size: Size.square(size), painter: _WhatsAppPainter(color)),
+            Icon(Icons.phone, size: size * 0.46, color: color),
+          ],
+        ),
+      );
+}
+
+class _WhatsAppPainter extends CustomPainter {
+  final Color color;
+  _WhatsAppPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final d = size.width;
+    final trazo = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = d * 0.09
+      ..strokeJoin = StrokeJoin.round;
+    final centro = Offset(d * 0.53, d * 0.47);
+    final radio = d * 0.38;
+    // El círculo abierto donde nace la cola.
+    final circulo = Rect.fromCircle(center: centro, radius: radio);
+    const inicio = 2.35; // ~135°, abajo a la izquierda
+    const barrido = 5.9;
+    final globo = Path()..addArc(circulo, inicio + 0.38, barrido);
+    // La cola, hacia la esquina de abajo a la izquierda.
+    globo
+      ..lineTo(d * 0.1, d * 0.92)
+      ..lineTo(centro.dx + radio * 0.73 * -1, centro.dy + radio * 0.69);
+    canvas.drawPath(globo, trazo);
+  }
+
+  @override
+  bool shouldRepaint(_WhatsAppPainter viejo) => viejo.color != color;
+}

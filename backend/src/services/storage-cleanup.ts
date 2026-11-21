@@ -5,6 +5,7 @@ import {
   certificateTemplates,
   clients,
   courses,
+  diasEnPapelera,
   lessons,
   storagePendingDeletes,
 } from '../db/schema';
@@ -38,9 +39,17 @@ export async function drainStorageDeletes(
   if (!storage.configured()) return resultado;
 
   try {
+    // Lo de una fila que está en la papelera se guarda [diasEnPapelera]
+    // días: si se recupera la lección, que su video siga ahí. Esas keys se
+    // saltan (quedan en la cola para más adelante) y no tapan a las demás.
     const pendientes = await db
       .select({ key: storagePendingDeletes.key })
       .from(storagePendingDeletes)
+      .where(
+        sql`not exists (select 1 from papelera p
+                         where p.borrado_en > now() - ${sql.raw(`interval '${diasEnPapelera} days'`)}
+                           and p.datos::text like '%' || ${storagePendingDeletes.key} || '%')`,
+      )
       .orderBy(asc(storagePendingDeletes.createdAt))
       .limit(limit);
     if (pendientes.length === 0) return resultado;

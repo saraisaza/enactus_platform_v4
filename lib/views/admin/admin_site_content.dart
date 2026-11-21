@@ -207,7 +207,7 @@ class _FormState extends State<_Form> {
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(tr.contenidoEnInglesAyuda,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12.5, color: AppColors.textMuted)),
           const SizedBox(height: 10),
           _campo(_bannerEn, tr.contenidoBannerEn),
@@ -364,7 +364,7 @@ class _Galeria extends StatelessWidget {
                                 .round(),
                             errorBuilder: (_, _, _) => Container(
                                   color: AppColors.surfaceAlt,
-                                  child: const Icon(Icons.broken_image_outlined,
+                                  child: Icon(Icons.broken_image_outlined,
                                       color: AppColors.textMuted),
                                 )),
                       ),
@@ -374,7 +374,9 @@ class _Galeria extends StatelessWidget {
                       right: -8,
                       // El círculo visible mide 24; el área táctil, 48. Crece
                       // hacia adentro de la miniatura, no hacia la vecina.
-                      child: GestureDetector(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
                         onTap: !enabled
                             ? null
                             : () async {
@@ -399,6 +401,7 @@ class _Galeria extends StatelessWidget {
                             ),
                           ),
                         ),
+                      ),
                       ),
                     ),
                   ],

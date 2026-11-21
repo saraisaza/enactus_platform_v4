@@ -120,9 +120,9 @@ void main() {
     await _pasos(tester);
 
     await tester.enterText(
-        find.widgetWithText(TextField, 'Nombre completo'), 'Estudiante Nueva');
+        find.widgetWithText(TextField, 'Nombre completo *'), 'Estudiante Nueva');
     await tester.enterText(
-        find.widgetWithText(TextField, 'Correo electrónico'), 'nueva@prueba.co');
+        find.widgetWithText(TextField, 'Correo electrónico *'), 'nueva@prueba.co');
     await tester.enterText(
         find.widgetWithText(TextField, 'Contraseña'), 'Clave123');
 

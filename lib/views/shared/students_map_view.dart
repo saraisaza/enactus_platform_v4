@@ -14,6 +14,7 @@ import '../../utils/colombia_cities.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/colombia_map.dart';
 import '../../widgets/common.dart';
+import '../../utils/tema.dart';
 
 /// Mapa de Estudiantes (`design_handoff_mapa_estudiantes/README.md`):
 /// dónde están los estudiantes registrados en la red, compartido por los
@@ -29,7 +30,7 @@ class StudentsMapView extends StatefulWidget {
 }
 
 class _StudentsMapViewState extends State<StudentsMapView> {
-  bool _isDark = true;
+  bool get _isDark => Tema.oscuro;
   // "Los que patrocino" por defecto: en el portal de un aliado es su
   // información más relevante (dónde están SUS estudiantes), no la red
   // completa — ver README, "Alcance del aliado".
@@ -139,7 +140,11 @@ class _StudentsMapViewState extends State<StudentsMapView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Wrap(
+                  SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.end,
                     spacing: 32,
@@ -205,9 +210,13 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                         }),
                       ),
                     ],
-                  ),
+                  )),
                   const SizedBox(height: 26),
-                  Wrap(
+                  SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     spacing: 12,
@@ -215,10 +224,8 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                     children: [
                       _ScopeSegment(
                           scope: _scope, colors: colors, onChanged: (v) => setState(() => _scope = v)),
-                      _ThemeGhostButton(
-                          isDark: _isDark, colors: colors, onTap: () => setState(() => _isDark = !_isDark)),
                     ],
-                  ),
+                  )),
                   const SizedBox(height: 26),
                   LayoutBuilder(builder: (context, c) {
                     final mapCard = Container(
@@ -267,7 +274,11 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.only(top: 22),
                     decoration: BoxDecoration(border: Border(top: BorderSide(color: colors.border))),
-                    child: Wrap(
+                    child: SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
                       alignment: WrapAlignment.spaceBetween,
                       runSpacing: 8,
                       spacing: 24,
@@ -290,7 +301,7 @@ class _StudentsMapViewState extends State<StudentsMapView> {
                         Text(tr.mapaGeometria,
                             style: TextStyle(fontSize: 12.5, color: colors.text3)),
                       ],
-                    ),
+                    )),
                   ),
                 ],
               ),
@@ -475,41 +486,6 @@ class _ScopeSegment extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(child: seg('mine', tr.mapaLosQuePatrocino)),
       ]),
-    );
-  }
-}
-
-class _ThemeGhostButton extends StatelessWidget {
-  final bool isDark;
-  final ContentColors colors;
-  final VoidCallback onTap;
-  const _ThemeGhostButton({required this.isDark, required this.colors, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: hover ? colors.goldInk : colors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                  size: 18, color: hover ? colors.goldInk : colors.text2),
-              const SizedBox(width: 9),
-              Text(tr.mapaTema, style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -272,7 +272,9 @@ void main() {
       expect(fake.requested.where((r) => r == 'POST /progress/lessons/$_lectura/complete'),
           hasLength(1));
       expect(find.text('¡Lección completada!'), findsOneWidget);
-      await tester.tap(find.byTooltip('Cerrar'));
+      // La X del visor, no la del aviso de «¡Lección completada!».
+      await tester.tap(find.descendant(
+          of: find.byType(Dialog), matching: find.byTooltip('Cerrar')));
       await _esperar(tester);
       expect(_indicador('Lectura en imagen', Icons.check_circle), findsOneWidget);
       // Que termine la animación de «¡Lección completada!».
@@ -686,6 +688,50 @@ void main() {
           findsNothing);
       expect(find.text('Enviar'), findsOneWidget,
           reason: 'la entrega ya le tocaba: se abre el formulario');
+    });
+  });
+
+  group('los módulos plegables (recomendaciones del 20 de noviembre)', () {
+    testWidgets('los terminados se juntan abajo, cerrados', (tester) async {
+      // Las dos lecciones del primer módulo, hechas: ese módulo terminó.
+      final fake = _api(_progreso([_video, _quiz], _lectura));
+      await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+      expect(find.text('MÓDULOS COMPLETADOS (1)'), findsOneWidget);
+      expect(find.text('Conformar equipo'), findsNothing,
+          reason: 'lo hecho no estorba');
+      expect(find.text('Lectura en imagen'), findsOneWidget,
+          reason: 'lo que sigue, a la vista');
+
+      await tester.tap(find.text('MÓDULOS COMPLETADOS (1)'));
+      await _esperar(tester);
+      await tester.tap(find.byKey(const ValueKey('modulo-m1')));
+      await _esperar(tester);
+      expect(find.text('Conformar equipo'), findsOneWidget);
+    });
+
+    testWidgets('«Plegar todos» los cierra y «Desplegar todos» los abre',
+        (tester) async {
+      final fake = _api(_progreso([], _video));
+      await _montar(tester, fake, const CourseDetailView(courseId: 'beta'));
+      expect(find.text('Conformar equipo'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('modulos-todos')));
+      await _esperar(tester);
+      expect(find.text('Conformar equipo'), findsNothing);
+      expect(find.text('Lectura en imagen'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('modulos-todos')));
+      await _esperar(tester);
+      expect(find.text('Conformar equipo'), findsOneWidget);
+      expect(find.text('Lectura en imagen'), findsOneWidget);
+    });
+
+    testWidgets('quien administra ve el curso en vista previa, sin avance',
+        (tester) async {
+      final fake = _api(_progreso([], _video));
+      await _montar(tester, fake,
+          const CourseDetailView(courseId: 'beta', vistaPrevia: true));
+      expect(find.textContaining('Vista previa'), findsOneWidget);
+      expect(fake.requested.where((r) => r.contains('course-progress')),
+          isEmpty, reason: 'no pide avance propio');
     });
   });
 }

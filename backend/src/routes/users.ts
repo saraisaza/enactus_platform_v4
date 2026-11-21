@@ -245,7 +245,28 @@ userRoutes.get('/', async (c) => {
   }
   if (query.companyId) filters.push(eq(users.companyId, query.companyId));
   if (query.clientId) filters.push(eq(users.clientId, query.clientId));
-  if (query.q) filters.push(ilike(users.name, `%${query.q}%`));
+  if (query.q) {
+    // Por nombre siempre. Por correo, cédula o teléfono solo quien puede ver
+    // esos datos (`canSeeContactDetails`): para el resto, que una búsqueda
+    // por cédula encuentre a alguien ya diría de quién es esa cédula.
+    //
+    // La cédula y el teléfono se comparan solo por sus dígitos: «300 195
+    // 6582», «3001956582» y «+57 300-195-6582» son el mismo número.
+    const texto = `%${query.q}%`;
+    const digitos = query.q.replace(/\D/g, '');
+    const porContacto = canSeeContactDetails(user)
+      ? [
+          ilike(users.email, texto),
+          ...(digitos.length >= 3
+            ? [
+                sql`regexp_replace(${users.cedula}, '[^0-9]', '', 'g') like ${`%${digitos}%`}`,
+                sql`regexp_replace(${users.phone}, '[^0-9]', '', 'g') like ${`%${digitos}%`}`,
+              ]
+            : []),
+        ]
+      : [];
+    filters.push(or(ilike(users.name, texto), ...porContacto)!);
+  }
 
   const where = and(...filters);
   const db = c.get('db');

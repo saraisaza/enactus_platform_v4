@@ -194,7 +194,7 @@ class VideoCoverFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -268,18 +268,18 @@ class LessonVideoFailure extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.videocam_off_outlined,
+              Icon(Icons.videocam_off_outlined,
                   size: 40, color: AppColors.textMuted),
               const SizedBox(height: 10),
               Text(title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               Text(detail,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 12.5)),
               const SizedBox(height: 14),
               Wrap(

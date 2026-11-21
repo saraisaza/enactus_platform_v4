@@ -33,7 +33,7 @@ class BrandLoader extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             message!,
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
           ),
         ],
       ],
@@ -289,7 +289,7 @@ class ErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               error.message,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
           ),
           if (onRetry != null)

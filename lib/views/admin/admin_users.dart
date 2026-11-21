@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../l10n/textos.dart';
@@ -39,6 +41,37 @@ class _AdminUsersState extends State<AdminUsers> {
   /// `null` = de cualquier cliente.
   String? _clientFilter;
 
+  /// De a 25 por página, con los botones «1 2 3…» al pie
+  /// (recomendaciones del 20 de noviembre): antes se pedían las primeras
+  /// 100 y la 101 no aparecía nunca.
+  static const _porPagina = 25;
+  int _pagina = 1;
+
+  /// Lo escrito en el buscador, y lo que se busca: se espera a que la
+  /// persona deje de escribir para no pedir una página por letra.
+  final _busqueda = TextEditingController();
+  String _q = '';
+  Timer? _espera;
+
+  @override
+  void dispose() {
+    _espera?.cancel();
+    _busqueda.dispose();
+    super.dispose();
+  }
+
+  void _alEscribir(String texto) {
+    _espera?.cancel();
+    _espera = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) {
+        setState(() {
+          _q = texto.trim();
+          _pagina = 1;
+        });
+      }
+    });
+  }
+
   List<String> get _creatableRoles => [
         if (widget.isSuperAdmin) Roles.admin,
         Roles.student,
@@ -54,9 +87,12 @@ class _AdminUsersState extends State<AdminUsers> {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
-    final lista = data.users(
+    final lista = data.paginaDePersonas(
         role: _roleFilter == _todos ? null : _roleFilter,
-        clientId: _clientFilter);
+        clientId: _clientFilter,
+        q: _q,
+        pagina: _pagina,
+        porPagina: _porPagina);
     final clientes = data.clients.valueOrNull ?? const <Client>[];
 
     return TabBody(
@@ -73,39 +109,86 @@ class _AdminUsersState extends State<AdminUsers> {
       ],
       children: [
         const _ColaDeEliminacion(),
+        // Buscador y filtros en una fila. El rol pasó de once fichas a un
+        // desplegable: once opciones a la vista eran demasiadas (ley de
+        // Miller, recomendaciones del 20 de noviembre).
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 12,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            for (final r in [_todos, ...Roles.all])
-              ChoiceChip(
-                label: Text(r == _todos ? tr.comunTodos : Roles.label(r)),
-                selected: _roleFilter == r,
-                selectedColor: AppColors.gold.withValues(alpha: 0.25),
-                onSelected: (_) => setState(() => _roleFilter = r),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480, minWidth: 260),
+              child: TextField(
+                key: const ValueKey('usuarios-buscar'),
+                controller: _busqueda,
+                onChanged: _alEscribir,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  labelText: tr.usuariosBuscar,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _busqueda.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: tr.comunLimpiarBusqueda,
+                          icon: const Icon(Icons.close, size: 18),
+                          onPressed: () {
+                            _busqueda.clear();
+                            _alEscribir('');
+                          },
+                        ),
+                ),
+              ),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 240, minWidth: 200),
+              child: DropdownButtonFormField<String>(
+                key: const ValueKey('usuarios-rol'),
+                initialValue: _roleFilter,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: tr.usuariosFiltroRol,
+                  prefixIcon: const Icon(Icons.badge_outlined, size: 20),
+                ),
+                items: [
+                  for (final r in [_todos, ...Roles.all])
+                    DropdownMenuItem(
+                        value: r,
+                        child: Text(
+                            r == _todos ? tr.comunTodos : Roles.label(r))),
+                ],
+                onChanged: (v) => setState(() {
+                  _roleFilter = v ?? _todos;
+                  _pagina = 1;
+                }),
+              ),
+            ),
+            if (clientes.isNotEmpty)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 280, minWidth: 200),
+                child: DropdownButtonFormField<String?>(
+                  initialValue: _clientFilter,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: tr.usuariosFiltroCliente,
+                    prefixIcon: const Icon(Icons.business_outlined, size: 20),
+                  ),
+                  items: [
+                    DropdownMenuItem<String?>(
+                        value: null, child: Text(tr.usuariosTodosLosClientes)),
+                    for (final c in clientes)
+                      DropdownMenuItem<String?>(
+                          value: c.id,
+                          child: Text(c.name, overflow: TextOverflow.ellipsis)),
+                  ],
+                  onChanged: (v) => setState(() {
+                    _clientFilter = v;
+                    _pagina = 1;
+                  }),
+                ),
               ),
           ],
         ),
-        if (clientes.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 320),
-            child: DropdownButtonFormField<String?>(
-              initialValue: _clientFilter,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: tr.usuariosFiltroCliente),
-              items: [
-                DropdownMenuItem<String?>(
-                    value: null, child: Text(tr.usuariosTodosLosClientes)),
-                for (final c in clientes)
-                  DropdownMenuItem<String?>(
-                      value: c.id,
-                      child: Text(c.name, overflow: TextOverflow.ellipsis)),
-              ],
-              onChanged: (v) => setState(() => _clientFilter = v),
-            ),
-          ),
-        ],
         const SizedBox(height: 16),
         lista.when(
           loading: () => const CardListSkeleton(count: 5, height: 64),
@@ -114,15 +197,38 @@ class _AdminUsersState extends State<AdminUsers> {
             // a tocar el mismo getter.
             setState(() {});
           }),
-          data: (users) => users.isEmpty
-              ? EmptyState(
+          data: (pagina) {
+            if (pagina.data.isEmpty) {
+              return EmptyState(
                   icon: Icons.people_outline,
-                  message: tr.usuariosSinRol)
-              : _UsersList(
-                  users: users,
+                  message: _q.isEmpty
+                      ? tr.usuariosSinRol
+                      : tr.comunSinResultados);
+            }
+            final desde = (pagina.page - 1) * _porPagina + 1;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  tr.usuariosResultados(
+                      desde, desde + pagina.data.length - 1, pagina.total),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                ),
+                const SizedBox(height: 8),
+                _UsersList(
+                  users: pagina.data,
                   isSuperAdmin: widget.isSuperAdmin,
                   onEdit: _abrirFormulario,
                 ),
+                const SizedBox(height: 14),
+                Paginador(
+                  pagina: pagina.page,
+                  totalPaginas: pagina.totalPages,
+                  alCambiar: (p) => setState(() => _pagina = p),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -210,7 +316,7 @@ class _FilaDeSolicitudState extends State<_FilaDeSolicitud> {
     setState(() => _borrando = true);
     try {
       await context.read<DataProvider>().purgeUser(s.id);
-      if (mounted) showAppSnack(context, tr.usuariosDatosBorrados);
+      if (mounted) showSuccessCheck(context, tr.usuariosDatosBorrados);
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
@@ -420,7 +526,7 @@ class _UserCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w700),
                         overflow: TextOverflow.ellipsis),
                     Text(user.email,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: AppColors.textMuted),
                         overflow: TextOverflow.ellipsis),
                   ],
@@ -440,7 +546,7 @@ class _UserCard extends StatelessWidget {
           if (detalle.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(detalle,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12.5, color: AppColors.textSecondary)),
           ],
           const SizedBox(height: 4),
@@ -842,7 +948,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 child: Row(
@@ -860,7 +966,11 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       title: Text(titulo, style: const TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: SingleChildScrollView(child: _form()),
+        child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
+          child: _form()),
       ),
       actions: acciones,
     );
@@ -882,7 +992,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _role,
-            decoration: InputDecoration(labelText: tr.usuariosRol),
+            decoration: InputDecoration(
+                labelText: tr.usuariosRol,
+                prefixIcon: const Icon(Icons.badge_outlined, size: 20)),
             items: [
               for (final r in widget.creatableRoles)
                 DropdownMenuItem(value: r, child: Text(Roles.label(r))),
@@ -895,13 +1007,15 @@ class _UserFormDialogState extends State<_UserFormDialog> {
             child: Text(
               tr.usuariosRolFijo(Roles.label(_role)),
               style:
-                  const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
           ),
         const SizedBox(height: 12),
-        _campo(_name, tr.usuariosNombreCompleto),
+        _campo(_name, obligatorio(tr.usuariosNombreCompleto),
+            icono: Icons.person_outline),
         const SizedBox(height: 12),
-        _campo(_email, tr.ingresoCorreo),
+        _campo(_email, obligatorio(tr.ingresoCorreo),
+            icono: Icons.mail_outline, teclado: TextInputType.emailAddress),
         const SizedBox(height: 12),
         TextField(
           controller: _password,
@@ -909,16 +1023,18 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           obscureText: true,
           decoration: InputDecoration(
             labelText: _isNew ? tr.ingresoContrasena : tr.usuariosContrasenaNueva,
+            prefixIcon: const Icon(Icons.lock_outline, size: 20),
             helperText: _isNew
                 ? tr.usuariosMinimoSeis
                 : tr.usuariosDejeEnBlanco,
           ),
         ),
         const SizedBox(height: 12),
-        _campo(_phone, tr.perfilTelefonoEtiqueta),
+        _campo(_phone, tr.perfilTelefonoEtiqueta,
+            icono: Icons.phone_outlined, teclado: TextInputType.phone),
         if (!esEstudiante) ...[
           const SizedBox(height: 12),
-          _campo(_city, tr.perfilCiudad),
+          _campo(_city, tr.perfilCiudad, icono: Icons.location_city_outlined),
         ],
         if (esEstudiante) ..._camposEstudiante(),
         if (_role == Roles.lxd) ..._camposLxd(data),
@@ -938,20 +1054,30 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         ],
         if (_role == Roles.company) ...[
           const SizedBox(height: 12),
-          _campo(_companyName, tr.usuariosNombreEmpresa),
+          _campo(_companyName, tr.usuariosNombreEmpresa,
+              icono: Icons.business_outlined),
         ],
         if (_role == Roles.donor) ...[
           const SizedBox(height: 12),
-          _campo(_impactCode, tr.usuariosCodigoImpacto),
+          _campo(_impactCode, tr.usuariosCodigoImpacto,
+              icono: Icons.qr_code_2_outlined),
         ],
       ],
     );
   }
 
-  Widget _campo(TextEditingController controller, String label) => TextField(
+  /// Un campo de texto del formulario, con su ícono a la izquierda: se
+  /// reconoce qué pide antes de leer la etiqueta.
+  Widget _campo(TextEditingController controller, String label,
+          {IconData? icono, TextInputType? teclado}) =>
+      TextField(
         controller: controller,
         enabled: !_saving,
-        decoration: InputDecoration(labelText: label),
+        keyboardType: teclado,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icono == null ? null : Icon(icono, size: 20),
+        ),
       );
 
   List<Widget> _camposEstudiante() => [
@@ -959,7 +1085,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         DropdownButtonFormField<String>(
           isExpanded: true,
           decoration:
-              InputDecoration(labelText: tr.usuariosTipoEstudiante),
+              InputDecoration(
+                  labelText: tr.usuariosTipoEstudiante,
+                  prefixIcon: const Icon(Icons.school_outlined, size: 20)),
           initialValue: _tipoCuenta,
           items: [
             for (final t in StudentType.all)
@@ -977,14 +1105,15 @@ class _UserFormDialogState extends State<_UserFormDialog> {
             StudentType.openLearning => tr.usuariosSoloCursos,
             _ => tr.usuariosVeLabs,
           },
-          style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
         ),
         if (_tipoCuenta == _tipoEmpresa) ...[
           const SizedBox(height: 12),
           _selectorDeEmpresa(opcional: false),
         ],
         const SizedBox(height: 12),
-        _campo(_cedula, tr.perfilCedula),
+        _campo(_cedula, tr.perfilCedula,
+            icono: Icons.credit_card_outlined, teclado: TextInputType.number),
         const SizedBox(height: 12),
         UniversityPicker(
           value: _universityId,
@@ -1003,6 +1132,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           isExpanded: true,
           decoration: InputDecoration(
             labelText: tr.perfilCiudad,
+            prefixIcon: const Icon(Icons.location_city_outlined, size: 20),
             helperText: tr.usuariosCiudadAyuda,
           ),
           items: [
@@ -1016,7 +1146,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           onChanged: _saving ? null : (v) => setState(() => _studentCity = v),
         ),
         const SizedBox(height: 12),
-        _campo(_career, tr.perfilCarrera),
+        _campo(_career, tr.perfilCarrera, icono: Icons.menu_book_outlined),
       ];
 
   List<Widget> _camposLxd(DataProvider data) => [
@@ -1073,7 +1203,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   List<Widget> _camposSupervisor() => [
         const SizedBox(height: 12),
         Text(tr.usuariosSupervisorAyuda,
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
         const SizedBox(height: 12),
         _selectorDeEmpresa(opcional: false),
         SwitchListTile(

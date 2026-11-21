@@ -155,6 +155,13 @@
       "when": 1792264237329,
       "tag": "0021_calendario_por_alcance",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795236311048,
+      "tag": "0022_papelera",
+      "breakpoints": true
     }
   ]
 }

@@ -107,7 +107,7 @@ class _CampoDeColorState extends State<CampoDeColor> {
                 border: Border.all(color: AppColors.border, width: 2),
               ),
               child: valor == null
-                  ? const Icon(Icons.palette_outlined,
+                  ? Icon(Icons.palette_outlined,
                       color: AppColors.textMuted, size: 22)
                   : null,
             ),

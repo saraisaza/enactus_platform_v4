@@ -52,6 +52,7 @@ class LxdPortal extends StatelessWidget {
               icon: Icons.lightbulb_outline,
               builder: (_) => const _LxdProjects()),
         PortalTab(
+            id: PortalShell.pestanaCalendario,
             label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
@@ -276,7 +277,7 @@ class _StudentCard extends StatelessWidget {
           // Enactus.
           if (_debajoDelNombre(student) case final linea?)
             Text(linea,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(height: 8),
           Wrap(
@@ -391,7 +392,7 @@ class _ProjectRow extends StatelessWidget {
                 Text(
                     '${team.groupName} · $students '
                     '${students == 1 ? 'estudiante suyo' : 'estudiantes suyos'}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textMuted, fontSize: 12.5)),
               ],
             ),
@@ -606,6 +607,9 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,7 +619,7 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                 autofocus: true,
                 enabled: !_creating,
                 decoration:
-                    InputDecoration(labelText: tr.lxdNombreDelCurso),
+                    InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso)),
               ),
               const SizedBox(height: 14),
               if (empresa != null)
@@ -712,7 +716,7 @@ class _CourseAdminCard extends StatelessWidget {
                         fontWeight: FontWeight.w700, fontSize: 16)),
                 if (course.subtitle.isNotEmpty)
                   Text(course.subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12.5)),
               ],
             );
@@ -756,7 +760,7 @@ class _CourseAdminCard extends StatelessWidget {
             Text(course.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
           const SizedBox(height: 10),
@@ -800,7 +804,7 @@ class _CourseAdminCard extends StatelessWidget {
                       course.linkedModule == null
                           ? tr.lxdSinVincular
                           : tr.lxdVinculadoA(course.linkedModule!),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12)),
                 ),
               ],
@@ -871,7 +875,7 @@ class _CourseAdminCard extends StatelessWidget {
           Icon(icon, size: 14, color: AppColors.gold),
           const SizedBox(width: 5),
           Text(text,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textSecondary, fontSize: 12.5)),
         ],
       );
@@ -974,7 +978,7 @@ class _SubmissionRow extends StatelessWidget {
                         if (s.courseName != null) s.courseName!,
                         fechaCorta(s.submittedAt),
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textMuted, fontSize: 12),
                     ),
                   ],
@@ -1031,7 +1035,7 @@ class _SubmissionRow extends StatelessWidget {
             Text(s.comment,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
           for (final file in s.files) SubmissionAttachmentRow(file: file),
@@ -1137,11 +1141,15 @@ class _GradeDialogState extends State<_GradeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(tr.calificarTitulo(widget.submission.taskName),
-          style: const TextStyle(fontSize: 18)),
+      // Con «Atrás» a la izquierda del título.
+      title: TituloConAtras(
+          titulo: tr.calificarTitulo(widget.submission.taskName)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1521,7 +1529,7 @@ class _LxdProfile extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w700)),
               Text(lxd.email,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted, fontSize: 13)),
               _row(tr.perfilCiudad, lxd.city),
               const Divider(height: 32),
@@ -1559,7 +1567,7 @@ class _LxdProfile extends StatelessWidget {
             SizedBox(
                 width: 160,
                 child: Text(label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textMuted, fontSize: 13))),
             Expanded(
                 child: Text(value.isEmpty ? '—' : value,

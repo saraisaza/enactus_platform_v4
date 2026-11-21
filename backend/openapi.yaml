@@ -371,7 +371,7 @@ paths:
         - { name: groupId, in: query, schema: { type: string, format: uuid } }
         - { name: companyId, in: query, schema: { type: string, format: uuid } }
         - { name: clientId, in: query, schema: { type: string, format: uuid }, description: 'Las cuentas de un cliente' }
-        - { name: q, in: query, schema: { type: string }, description: 'Busca por nombre' }
+        - { name: q, in: query, schema: { type: string }, description: 'Busca por nombre; quien puede ver los datos de contacto, también por correo, cédula o teléfono (por sus dígitos)' }
         - name: include
           in: query
           schema: { type: string }
@@ -2784,6 +2784,21 @@ paths:
       responses:
         '204': { description: Borrada }
         '409': { description: Ya calificada o comentada }
+
+  /submissions/{id}/files/{fileId}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - { name: fileId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [submissions]
+      summary: Quitar un archivo de la entrega
+      description: >
+        Mismas reglas que borrar la entrega: es de quien la hizo y solo
+        mientras no esté calificada ni comentada. No deja una entrega vacía.
+      responses:
+        '204': { description: Archivo quitado }
+        '404': { description: El archivo no es de esa entrega }
+        '409': { description: Ya calificada o comentada, o era lo único de la entrega }
 
   /evidences:
     get:

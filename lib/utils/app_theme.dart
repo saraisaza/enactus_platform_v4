@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'marca.dart';
+import 'tema.dart';
 
 /// Sistema de color de la plataforma.
 ///
@@ -27,7 +28,9 @@ class AppColors {
   /// no puede ir dentro de una expresión `const`. Los valores de eduXaction
   /// viven en `PaletaMarca.eduXaction`; los certificados PDF son la única
   /// copia aparte, porque `PdfColor` no acepta un `Color`.
-  static Color get gold => Marca.instancia.paleta.tintaSobreOscuro;
+  static Color get gold => Tema.oscuro
+      ? Marca.instancia.paleta.tintaSobreOscuro
+      : Marca.instancia.paleta.tintaSobreClaro;
 
   /// El primario exacto, para FONDOS con [ink] encima. Ver [gold].
   static Color get relleno => Marca.instancia.paleta.primario;
@@ -36,8 +39,9 @@ class AppColors {
   static Color get goldBright => Marca.instancia.paleta.primarioBrillante;
 
   /// Hover de [gold]: el texto de un botón con borde bajo el mouse.
-  static Color get acentoHover =>
-      Marca.instancia.paleta.tintaSobreOscuroBrillante;
+  static Color get acentoHover => Tema.oscuro
+      ? Marca.instancia.paleta.tintaSobreOscuroBrillante
+      : Marca.instancia.paleta.tintaSobreClaro;
 
   /// El secundario: la opción activa del menú, insignias y barras de
   /// progreso. Como fondo o barra; como texto, [secundarioTinta].
@@ -45,14 +49,17 @@ class AppColors {
 
   /// La barra lateral: el gris de siempre, o el oscuro con el tono de la
   /// marca de un cliente.
-  static Color get barraLateral => Marca.instancia.paleta.superficieDeMarca;
+  static Color get barraLateral => Tema.oscuro
+      ? Marca.instancia.paleta.superficieDeMarca
+      : const Color(0xFFFFFFFF);
 
   /// La tinta sobre el secundario usado como relleno.
   static Color get sobreSecundario => Marca.instancia.paleta.sobreSecundario;
 
   /// [secundario] como texto o ícono sobre las superficies oscuras.
-  static Color get secundarioTinta =>
-      Marca.instancia.paleta.secundarioSobreOscuro;
+  static Color get secundarioTinta => Tema.oscuro
+      ? Marca.instancia.paleta.secundarioSobreOscuro
+      : Marca.instancia.paleta.secundarioSobreClaro;
 
   /// El ámbar de eduXaction, FIJO: lo que tiene que seguir siendo ámbar con
   /// la marca de cualquier cliente. Hoy, el logo animado — el logo de
@@ -63,12 +70,16 @@ class AppColors {
   /// (#453027 / #573D31 / #392720), que era el otro origen del aire de
   /// Halloween junto con el naranja: el acento cálido se conserva, el
   /// entorno pasa a gris.
-  static const slate = Color(0xFF26262A); // barras laterales, tarjetas secundarias
-  static const slateLight = Color(0xFF2C2B30);
+  static Color get slate => Tema.oscuro
+      ? const Color(0xFF26262A)
+      : const Color(0xFFEDEBE7); // barras laterales, tarjetas secundarias
+  static Color get slateLight =>
+      Tema.oscuro ? const Color(0xFF2C2B30) : const Color(0xFFE4E1DC);
 
   /// Variante oscurecida de [slate] para el segundo punto del degradado del
   /// footer.
-  static const slateDark = Color(0xFF17171A);
+  static Color get slateDark =>
+      Tema.oscuro ? const Color(0xFF17171A) : const Color(0xFFE4E1DC);
 
   /// "Tinta sobre acento": texto/íconos sobre fondos [gold]/[goldBright]
   /// (iniciales de avatar, banner, contador de notificaciones, botones).
@@ -86,7 +97,12 @@ class AppColors {
 
   // Superficies (tema oscuro) — página / tarjetas / paneles, identidad
   // eduXaction (ver `brand-tokens.css` del handoff de branding).
-  static const background = Color(0xFF35343A); // página
+  //
+  // Con el modo claro ([Tema]) son getters: los oscuros de siempre, o los
+  // neutros de [ContentColors.light], que ya usaban las pantallas del
+  // estudiante. Por eso no van dentro de una expresión `const`.
+  static Color get background =>
+      Tema.oscuro ? const Color(0xFF35343A) : const Color(0xFFF4F2EF); // página
 
   /// Negro al que van a parar los degradados (`--exa-bg-deep`).
   ///
@@ -95,18 +111,36 @@ class AppColors {
   /// "negro difuminado" que da profundidad sin volver la página negra.
   static const backgroundDeep = Color(0xFF0B0B0D);
 
-  static const surface = Color(0xFF17171A); // tarjetas y gráficos
-  static const surfaceAlt = Color(0xFF26262A); // paneles (campos, chips, diálogos)
-  static const border = Color(0x14FFFFFF); // rgba(255,255,255,.08)
+  static Color get surface => Tema.oscuro
+      ? const Color(0xFF17171A)
+      : const Color(0xFFFFFFFF); // tarjetas y gráficos
+  static Color get surfaceAlt => Tema.oscuro
+      ? const Color(0xFF26262A)
+      : const Color(0xFFF1EFEB); // paneles (campos, chips, diálogos)
+  static Color get border => Tema.oscuro
+      ? const Color(0x14FFFFFF) // rgba(255,255,255,.08)
+      : const Color(0xFFD8D4CE);
 
   // Texto
-  static const textPrimary = Color(0xFFF2F2F5);
-  static const textSecondary = Color(0xFFAEABB0);
+  static Color get textPrimary =>
+      Tema.oscuro ? const Color(0xFFF2F2F5) : const Color(0xFF1B1A1E);
+  static Color get textSecondary =>
+      Tema.oscuro ? const Color(0xFFAEABB0) : const Color(0xFF55535A);
 
   /// Tercer tono de texto. Antes era #8C817C, un gris CÁLIDO heredado de la
   /// paleta marrón: sobre el gris neutro nuevo se veía sucio. Ahora es el
   /// `--exa-text-3` del handoff, neutro como los otros dos.
-  static const textMuted = Color(0xFF8F8C92);
+  /// En claro, #6B676E: el #8C817C de [ContentColors.light] da 3.6:1 sobre
+  /// blanco y no pasa AA para texto chico.
+  static Color get textMuted =>
+      Tema.oscuro ? const Color(0xFF8F8C92) : const Color(0xFF6B676E);
+
+  /// Lo que se pinta encima del fondo para marcarlo al pasar el mouse: un
+  /// velo blanco sobre el oscuro, uno negro sobre el claro.
+  static Color velo(double alpha) => (Tema.oscuro
+          ? const Color(0xFFFFFFFF)
+          : const Color(0xFF000000))
+      .withValues(alpha: alpha);
 
   /// Partículas del hero de la landing. Ámbar, ámbar claro y dos neutros:
   /// sin el naranja saturado que las hacía leer como chispas.
@@ -401,7 +435,7 @@ class ContentColors {
     border: Color(0xFFD8D4CE),
     text: Color(0xFF1B1A1E),
     text2: Color(0xFF55535A),
-    text3: Color(0xFF8C817C),
+    text3: Color(0xFF6B676E),
     goldInk: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
     goldSoft: PaletaMarca.tintaOscura, // lo reemplaza [_conMarca]
     alertInk: Color(0xFFA8101C),
@@ -477,16 +511,30 @@ class AppWeights {
 }
 
 ThemeData buildAppTheme() {
-  final base = ThemeData.dark(useMaterial3: true);
-  final scheme = ColorScheme.dark(
-    primary: AppColors.relleno,
-    onPrimary: AppColors.ink,
-    secondary: AppColors.slateLight,
-    onSecondary: Colors.white,
-    surface: AppColors.surface,
-    onSurface: AppColors.textPrimary,
-    error: AppColors.statusCritical,
-  );
+  final oscuro = Tema.oscuro;
+  final base = oscuro
+      ? ThemeData.dark(useMaterial3: true)
+      : ThemeData.light(useMaterial3: true);
+  final scheme = oscuro
+      ? ColorScheme.dark(
+          primary: AppColors.relleno,
+          onPrimary: AppColors.ink,
+          secondary: AppColors.slateLight,
+          onSecondary: Colors.white,
+          surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
+          error: AppColors.statusCritical,
+        )
+      : ColorScheme.light(
+          primary: AppColors.relleno,
+          onPrimary: AppColors.ink,
+          secondary: AppColors.slateLight,
+          onSecondary: AppColors.textPrimary,
+          surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
+          surfaceContainerHighest: AppColors.surfaceAlt,
+          error: AppColors.statusCritical,
+        );
 
   return base.copyWith(
     colorScheme: scheme,
@@ -496,7 +544,7 @@ ThemeData buildAppTheme() {
     // demás) — ver _buildTextTheme más abajo.
     textTheme: _buildTextTheme(base.textTheme),
     primaryTextTheme: _buildTextTheme(base.primaryTextTheme),
-    cardTheme: const CardThemeData(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -505,7 +553,7 @@ ThemeData buildAppTheme() {
       ),
       margin: EdgeInsets.zero,
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
@@ -578,7 +626,7 @@ ThemeData buildAppTheme() {
           BoxShadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 4)),
         ],
       ),
-      textStyle: const TextStyle(
+      textStyle: TextStyle(
           fontFamily: AppFonts.ui,
           color: AppColors.textPrimary,
           fontSize: 12.5,
@@ -593,23 +641,23 @@ ThemeData buildAppTheme() {
       fillColor: AppColors.surfaceAlt,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorderWith(AppColors.border),
       focusedBorder: OutlineInputBorderWith(AppColors.gold),
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
           fontFamily: AppFonts.ui, color: AppColors.textSecondary),
-      hintStyle: const TextStyle(
+      hintStyle: TextStyle(
           fontFamily: AppFonts.ui, color: AppColors.textMuted),
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
-    dialogTheme: const DialogThemeData(
+    dividerTheme: DividerThemeData(color: AppColors.border, thickness: 1),
+    dialogTheme: DialogThemeData(
       backgroundColor: AppColors.surfaceAlt,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(14)),
       ),
     ),
-    listTileTheme: const ListTileThemeData(iconColor: AppColors.textSecondary),
+    listTileTheme: ListTileThemeData(iconColor: AppColors.textSecondary),
     dataTableTheme: DataTableThemeData(
       headingTextStyle: TextStyle(
           fontFamily: AppFonts.ui,
@@ -620,7 +668,7 @@ ThemeData buildAppTheme() {
       // activan a mano acá para que las columnas numéricas de las 3
       // DataTable de la app (Usuarios, dashboard LXD, seguimiento de
       // curso) alineen bien.
-      dataTextStyle: const TextStyle(
+      dataTextStyle: TextStyle(
           fontFamily: AppFonts.ui,
           color: AppColors.textPrimary,
           fontSize: 13,
@@ -633,7 +681,7 @@ ThemeData buildAppTheme() {
       unselectedLabelColor: AppColors.textMuted,
       indicatorColor: AppColors.gold,
     ),
-    snackBarTheme: const SnackBarThemeData(
+    snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.slate,
       contentTextStyle: TextStyle(
           fontFamily: AppFonts.ui, color: AppColors.textPrimary),
@@ -641,8 +689,8 @@ ThemeData buildAppTheme() {
     ),
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: AppColors.surfaceAlt,
-      side: const BorderSide(color: AppColors.border),
-      labelStyle: const TextStyle(
+      side: BorderSide(color: AppColors.border),
+      labelStyle: TextStyle(
           fontFamily: AppFonts.ui,
           color: AppColors.textPrimary,
           fontSize: 12),

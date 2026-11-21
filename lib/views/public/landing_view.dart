@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/link.dart';
 
 import '../../l10n/textos.dart';
 import '../../models/models.dart';
@@ -11,11 +12,13 @@ import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/constants.dart';
 import '../../utils/responsive.dart';
+import '../../utils/tema.dart';
 import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/common.dart';
 import '../../widgets/contact_dialog.dart';
 import '../../widgets/selector_idioma.dart';
+import '../../widgets/social_icons.dart';
 
 /// Página principal pública: qué es eduXaction —una plataforma de formación
 /// para empresas que integra a todos los roles del aprendizaje—, cómo
@@ -31,9 +34,15 @@ class LandingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
+    // Siempre en oscuro: está diseñada sobre negro (degradados, partículas,
+    // fotos), y en claro se deshace. La preferencia de la persona no cambia.
+    return SiempreOscuro(child: _contenido(context, data));
+  }
+
+  Widget _contenido(BuildContext context, DataProvider data) {
     // La portada es pública: este es el único dato que se pide sin sesión.
     return data.siteContent.when(
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         backgroundColor: AppColors.background,
         body: Center(child: BrandLoader()),
       ),
@@ -57,7 +66,7 @@ class LandingView extends StatelessWidget {
           Container(
             height: isCompact ? 64 : 160,
             padding: EdgeInsets.symmetric(horizontal: isCompact ? 16 : 24),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.background,
               border: Border(bottom: BorderSide(color: AppColors.border)),
             ),
@@ -181,7 +190,7 @@ class _Encabezado extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 640),
             child: Text(texto!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
                     height: 1.6)),
@@ -220,7 +229,7 @@ class _HeroState extends State<_Hero> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -356,7 +365,7 @@ class _TextoDelHero extends StatelessWidget {
                     // vez de salirse de la pantalla.
                     Flexible(
                       child: Text(texto,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 13, color: AppColors.textSecondary)),
                     ),
                   ],
@@ -614,13 +623,13 @@ class _Aviso extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary)),
               if (detalle != null)
                 Text(detalle!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 11.5, color: AppColors.textSecondary)),
             ],
           ),
@@ -675,28 +684,21 @@ class _Roles extends StatelessWidget {
   }
 }
 
-/// Reparte [hijos] en columnas de al menos [minimo] de ancho, todas iguales.
+/// Reparte [hijos] en columnas de al menos [minimo] de ancho, todas iguales
+/// de ancho y, en cada fila, del mismo alto ([RejillaDeTarjetas]): antes una
+/// tarjeta con un texto más largo quedaba más alta que sus vecinas.
 class _Rejilla extends StatelessWidget {
   final double minimo;
   final List<Widget> hijos;
   const _Rejilla({required this.minimo, required this.hijos});
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      const separacion = 16.0;
-      final columnas = math.max(
-          1, math.min(hijos.length, (c.maxWidth + separacion) ~/ (minimo + separacion)));
-      final ancho = (c.maxWidth - separacion * (columnas - 1)) / columnas;
-      return Wrap(
-        spacing: separacion,
-        runSpacing: separacion,
-        children: [
-          for (final h in hijos) SizedBox(width: ancho, child: h),
-        ],
+  Widget build(BuildContext context) => RejillaDeTarjetas(
+        anchoMinimo: minimo,
+        separacion: 16,
+        maxColumnas: hijos.length,
+        children: hijos,
       );
-    });
-  }
 }
 
 class _Tarjeta extends StatelessWidget {
@@ -726,13 +728,13 @@ class _Tarjeta extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(titulo,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             Text(texto,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13.5,
                     color: AppColors.textSecondary,
                     height: 1.55)),
@@ -771,43 +773,38 @@ class _ComoFunciona extends StatelessWidget {
               for (final (i, (titulo, texto)) in pasos.indexed)
                 Entrance(
                   delayMs: 90 * i,
+                  // Centrado, como el encabezado de la sección: el número
+                  // arriba, al medio, y el texto debajo.
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.relleno,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text('${i + 1}',
-                                style: displayHeading(
-                                    fontSize: 20, color: AppColors.ink)),
-                          ),
-                          const SizedBox(width: 12),
-                          // La línea que une un paso con el siguiente.
-                          if (i < pasos.length - 1)
-                            Expanded(
-                              child: Container(
-                                  height: 1,
-                                  color: AppColors.gold.withValues(alpha: 0.3)),
-                            ),
-                        ],
+                      Container(
+                        width: 48,
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.relleno,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text('${i + 1}',
+                            style: displayHeading(
+                                fontSize: 20, color: AppColors.ink)),
                       ),
                       const SizedBox(height: 16),
                       Text(titulo.toUpperCase(),
+                          textAlign: TextAlign.center,
                           style: displayHeading(
                               fontSize: 22, color: AppColors.textPrimary)),
                       const SizedBox(height: 8),
-                      Text(texto,
-                          style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              height: 1.6)),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 340),
+                        child: Text(texto,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                height: 1.6)),
+                      ),
                     ],
                   ),
                 ),
@@ -845,7 +842,7 @@ class _Funciones extends StatelessWidget {
     // Su propia banda, del gris al negro: separa «lo que trae» del resto.
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -878,13 +875,13 @@ class _Funciones extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(titulo,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 15.5,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.textPrimary)),
                               const SizedBox(height: 6),
                               Text(texto,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 13.5,
                                       color: AppColors.textSecondary,
                                       height: 1.55)),
@@ -951,7 +948,7 @@ class _Clientes extends StatelessWidget {
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 760),
                   child: Text(tr.portadaEnactusTexto,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 15,
                           color: AppColors.textSecondary,
                           height: 1.6)),
@@ -1030,17 +1027,20 @@ class _Clientes extends StatelessWidget {
                     runSpacing: 14,
                     children: [
                       for (final url in content.galleryImages)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: SizedBox(
-                            width: 200,
-                            height: 140,
-                            // Ya vienen firmadas del servidor: la portada no
-                            // tiene sesión con la que pedir la firma.
-                            child: Image.network(url,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const ColoredBox(
-                                    color: AppColors.surfaceAlt)),
+                        FotoAmpliable(
+                          imagen: NetworkImage(url),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: SizedBox(
+                              width: 200,
+                              height: 140,
+                              // Ya vienen firmadas del servidor: la portada
+                              // no tiene sesión con la que pedir la firma.
+                              child: Image.network(url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => ColoredBox(
+                                      color: AppColors.surfaceAlt)),
+                            ),
                           ),
                         ),
                     ],
@@ -1095,16 +1095,37 @@ class _Cierre extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 520),
               child: Text(tr.portadaCierreTexto,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 15.5,
                       height: 1.6)),
             ),
             const SizedBox(height: 26),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.mail_outline, size: 18),
-              label: Text(tr.portadaAgendarDemo),
-              onPressed: () => showContactDialog(context),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.mail_outline, size: 18),
+                  label: Text(tr.portadaAgendarDemo),
+                  onPressed: () => showContactDialog(context),
+                ),
+                // `Link` dibuja un <a> de verdad en la web: un
+                // `window.open` desde un toque de Flutter puede quedar
+                // bloqueado sin aviso.
+                Link(
+                  uri: Uri.parse(SocialLinks.whatsapp),
+                  target: LinkTarget.blank,
+                  builder: (context, abrir) => OutlinedButton.icon(
+                    key: const ValueKey('portada-whatsapp'),
+                    icon: WhatsAppIcon(size: 18, color: AppColors.gold),
+                    label: Text(
+                        '${tr.contactoWhatsapp} · ${SocialLinks.whatsappVisible}'),
+                    onPressed: abrir,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1199,20 +1220,22 @@ class _ExpoPhoto extends StatelessWidget {
         ],
       ),
     );
+    // Al tocarla se abre a pantalla completa.
+    final tocable = FotoAmpliable(imagen: AssetImage(asset), child: image);
     if (fillWidth) {
       // Móvil: alto fijo, ancho completo hasta un máximo legible — el
       // recorte de BoxFit.cover ya resuelve la proporción.
       return Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: SizedBox(height: height, width: double.infinity, child: image),
+          child: SizedBox(height: height, width: double.infinity, child: tocable),
         ),
       );
     }
     // Escritorio: alto fijo, ancho derivado de la proporción real de la
     // foto — sin recorte, para que convivan una horizontal y dos
     // verticales en la misma fila sin casillas vacías.
-    return SizedBox(height: height, width: height * aspectRatio, child: image);
+    return SizedBox(height: height, width: height * aspectRatio, child: tocable);
   }
 }
 
@@ -1300,7 +1323,7 @@ class _AnimatedCounter extends StatelessWidget {
               child: Text(label,
                   textAlign: TextAlign.center,
                   maxLines: 2,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textSecondary, fontSize: 12.5)),
             ),
           ),

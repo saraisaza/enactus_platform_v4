@@ -19,6 +19,7 @@ import '../../widgets/file_upload_field.dart';
 import 'glossary_editor.dart';
 import 'lesson_editor.dart';
 import 'resultados_encuesta.dart';
+import '../../widgets/selector_ods.dart';
 
 /// Constructor de cursos: información general, categorización, contenido,
 /// certificado y restricciones.
@@ -329,7 +330,7 @@ class _GeneralSectionState extends State<_GeneralSection> {
             controller: _name,
             enabled: !_saving,
             decoration:
-                InputDecoration(labelText: tr.lxdNombreDelCurso)),
+                InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso))),
         const SizedBox(height: 12),
         TextField(
             controller: _subtitle,
@@ -584,6 +585,8 @@ class _CategorySection extends StatefulWidget {
 }
 
 class _CategorySectionState extends State<_CategorySection> {
+  /// El paso del asistente a la vista.
+  int _paso = 0;
   late CourseMetaDraft _meta;
   bool _saving = false;
   ApiException? _error;
@@ -626,73 +629,70 @@ class _CategorySectionState extends State<_CategorySection> {
     final deEmpresa = widget.course.clientId != null ||
         (context.watch<AuthProvider>().currentUser?.esDeEmpresa ?? false);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_error != null) ...[
-          ErrorBanner(_error!),
-          const SizedBox(height: 12),
-        ],
-        if (!deEmpresa) ...[
-        SectionTitle(tr.comunLaboratorio),
-        HoverCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(Icons.science_outlined, color: AppColors.gold),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(lab ?? tr.constructorSinLab),
-              ),
-            ],
-          ),
+    final laboratorio = <Widget>[
+      SectionTitle(tr.comunLaboratorio),
+      HoverCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(Icons.science_outlined, color: AppColors.gold),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(lab ?? tr.constructorSinLab),
+            ),
+          ],
         ),
-        _chips(
-          tr.constructorEtiquetas,
-          [for (final tag in courseTags) (tag, tag)],
-          _meta.tags,
-        ),
-        // Competencias y ODS salen de la base, no de una lista copiada acá:
-        // son claves ajenas y una etiqueta inventada la rechazaría el guardado.
-        data.catalogs.when(
+      ),
+      _chips(
+        tr.constructorEtiquetas,
+        [for (final tag in courseTags) (tag, tag)],
+        _meta.tags,
+      ),
+    ];
+    // Competencias y ODS salen de la base, no de una lista copiada acá: son
+    // claves ajenas y una etiqueta inventada la rechazaría el guardado.
+    Widget delCatalogo(Widget Function(Catalogs) armar) => data.catalogs.when(
           loading: () => const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: CardListSkeleton(count: 2, height: 70),
           ),
           error: (e) => ErrorBanner(e),
-          data: (catalogs) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _chips(
-                tr.constructorCompetencias,
-                [for (final c in catalogs.competencies) (c.code, c.name)],
-                _meta.competencies,
-              ),
-              _chips(
-                tr.constructorOdsRelacionados,
-                [
-                  for (final o in catalogs.ods)
-                    (o.code, tr.odsEtiqueta(o.number, o.title))
-                ],
-                _meta.ods,
-              ),
+          data: armar,
+        );
+    final competencias = <Widget>[
+      delCatalogo((catalogs) => _chips(
+            tr.constructorCompetencias,
+            [for (final c in catalogs.competencies) (c.code, c.name)],
+            _meta.competencies,
+          )),
+    ];
+    final ods = <Widget>[
+      SectionTitle(tr.constructorOdsRelacionados),
+      delCatalogo((catalogs) => SelectorDeOds(
+            opciones: [
+              for (final o in catalogs.ods)
+                (codigo: o.code, numero: o.number, titulo: o.title),
             ],
-          ),
-        ),
-        ],
-        _EditableList(
-          title: tr.constructorObjetivosCurso,
-          items: _meta.byCategory(null),
-          hint: tr.constructorObjetivosPista,
-          onAdd: (text) => _addObjective(null, text),
-          onRemove: _removeObjective,
-        ),
-        if (!deEmpresa) ...[
+            elegidos: _meta.ods.toSet(),
+            alCambiar: _saving
+                ? null
+                : (codigo, sel) => setState(() =>
+                    sel ? _meta.ods.add(codigo) : _meta.ods.remove(codigo)),
+          )),
+    ];
+    final objetivos = <Widget>[
+      _EditableList(
+        title: tr.constructorObjetivosCurso,
+        items: _meta.byCategory(null),
+        hint: tr.constructorObjetivosPista,
+        onAdd: (text) => _addObjective(null, text),
+        onRemove: _removeObjective,
+      ),
+      if (!deEmpresa) ...[
         SectionTitle(tr.constructorObjetivosRuta),
         Padding(
           padding: EdgeInsets.only(bottom: 8),
-          child: Text(
-              tr.constructorObjetivosRutaTexto,
+          child: Text(tr.constructorObjetivosRutaTexto,
               style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
         ),
         _EditableList(
@@ -702,60 +702,122 @@ class _CategorySectionState extends State<_CategorySection> {
           onAdd: (text) => _addObjective('entrepreneurship', text),
           onRemove: _removeObjective,
         ),
+      ],
+      _EditableList(
+        title: tr.constructorObjetivosEmpresariales,
+        items: _meta.byCategory('business'),
+        hint: tr.constructorObjetivosEmpresarialesPista,
+        onAdd: (text) => _addObjective('business', text),
+        onRemove: _removeObjective,
+      ),
+    ];
+    final resultados = <Widget>[
+      _StringList(
+        title: tr.constructorResultados,
+        items: _meta.learningOutcomes,
+        hint: tr.constructorResultadosPista,
+        onChanged: () => setState(() {}),
+      ),
+      SectionTitle(tr.constructorPrerrequisitos),
+      Text(
+        tr.constructorPrerrequisitosTexto,
+        style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+      ),
+      const SizedBox(height: 8),
+      data.courses.when(
+        loading: () => const CardListSkeleton(count: 1, height: 60),
+        error: (e) => ErrorBanner(e),
+        data: (courses) {
+          final others = courses
+              .where((x) => x.id != widget.course.id && !x.isRutaExpo)
+              .toList();
+          if (others.isEmpty) {
+            return Text(tr.constructorSinOtrosCursos,
+                style: TextStyle(color: AppColors.textMuted, fontSize: 12.5));
+          }
+          return Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final other in others)
+                FilterChip(
+                  label: Text(other.name, style: const TextStyle(fontSize: 12)),
+                  selected: _meta.prerequisiteCourseIds.contains(other.id),
+                  selectedColor: AppColors.gold.withValues(alpha: 0.25),
+                  onSelected: _saving
+                      ? null
+                      : (sel) => setState(() => sel
+                          ? _meta.prerequisiteCourseIds.add(other.id)
+                          : _meta.prerequisiteCourseIds.remove(other.id)),
+                ),
+            ],
+          );
+        },
+      ),
+    ];
+
+    // Paso a paso (recomendaciones del 20 de noviembre): antes era una sola
+    // página larguísima con todo junto. Una capacitación de empresa no lleva
+    // lo de Enactus (laboratorio, etiquetas, competencias, ODS): lo que ya
+    // tuviera guardado se conserva; solo no se muestra.
+    final pasos = <(String, IconData, List<Widget>)>[
+      if (!deEmpresa) ...[
+        (tr.categoriaPasoLaboratorio, Icons.science_outlined, laboratorio),
+        (tr.categoriaPasoCompetencias, Icons.psychology_outlined, competencias),
+        (tr.categoriaPasoOds, Icons.public, ods),
+      ],
+      (tr.categoriaPasoObjetivos, Icons.flag_outlined, objetivos),
+      (tr.categoriaPasoResultados, Icons.checklist, resultados),
+    ];
+    final paso = _paso.clamp(0, pasos.length - 1);
+    final ultimo = paso == pasos.length - 1;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_error != null) ...[
+          ErrorBanner(_error!),
+          const SizedBox(height: 12),
         ],
-        _EditableList(
-          title: tr.constructorObjetivosEmpresariales,
-          items: _meta.byCategory('business'),
-          hint: tr.constructorObjetivosEmpresarialesPista,
-          onAdd: (text) => _addObjective('business', text),
-          onRemove: _removeObjective,
-        ),
-        _StringList(
-          title: tr.constructorResultados,
-          items: _meta.learningOutcomes,
-          hint: tr.constructorResultadosPista,
-          onChanged: () => setState(() {}),
-        ),
-        SectionTitle(tr.constructorPrerrequisitos),
-        Text(
-          tr.constructorPrerrequisitosTexto,
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+        _IndicadorDePasos(
+          pasos: [for (final (titulo, icono, _) in pasos) (titulo, icono)],
+          actual: paso,
+          alElegir: (i) => setState(() => _paso = i),
         ),
         const SizedBox(height: 8),
-        data.courses.when(
-          loading: () => const CardListSkeleton(count: 1, height: 60),
-          error: (e) => ErrorBanner(e),
-          data: (courses) {
-            final others = courses
-                .where((x) => x.id != widget.course.id && !x.isRutaExpo)
-                .toList();
-            if (others.isEmpty) {
-              return Text(tr.constructorSinOtrosCursos,
-                  style:
-                      TextStyle(color: AppColors.textMuted, fontSize: 12.5));
-            }
-            return Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final other in others)
-                  FilterChip(
-                    label: Text(other.name,
-                        style: const TextStyle(fontSize: 12)),
-                    selected: _meta.prerequisiteCourseIds.contains(other.id),
-                    selectedColor: AppColors.gold.withValues(alpha: 0.25),
-                    onSelected: _saving
-                        ? null
-                        : (sel) => setState(() => sel
-                            ? _meta.prerequisiteCourseIds.add(other.id)
-                            : _meta.prerequisiteCourseIds.remove(other.id)),
-                  ),
-              ],
-            );
-          },
+        Text(tr.asistentePaso(paso + 1, pasos.length),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+        KeyedSubtree(
+          key: ValueKey('paso-$paso'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: pasos[paso].$3,
+          ),
         ),
-        const SizedBox(height: 20),
-        _SaveButton(saving: _saving, onPressed: _save),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            if (paso > 0)
+              OutlinedButton.icon(
+                key: const ValueKey('paso-anterior'),
+                icon: const Icon(Icons.arrow_back, size: 18),
+                label: Text(tr.asistenteAnterior),
+                onPressed: () => setState(() => _paso = paso - 1),
+              ),
+            if (!ultimo)
+              ElevatedButton.icon(
+                key: const ValueKey('paso-siguiente'),
+                icon: const Icon(Icons.arrow_forward, size: 18),
+                label: Text(tr.asistenteSiguiente),
+                onPressed: () => setState(() => _paso = paso + 1),
+              ),
+            // Guardar se puede en cualquier paso: quien solo vino a cambiar
+            // una etiqueta no tiene por qué recorrerlos todos.
+            _SaveButton(saving: _saving, onPressed: _save),
+          ],
+        ),
       ],
     );
   }
@@ -795,6 +857,96 @@ class _CategorySectionState extends State<_CategorySection> {
         ),
       ],
     );
+  }
+}
+
+/// Los pasos del asistente: un círculo numerado por paso (con su ícono y su
+/// nombre en pantallas anchas), unidos por una línea. Los ya recorridos
+/// llevan check; se puede saltar a cualquiera tocándolo.
+class _IndicadorDePasos extends StatelessWidget {
+  final List<(String, IconData)> pasos;
+  final int actual;
+  final ValueChanged<int> alElegir;
+
+  const _IndicadorDePasos(
+      {required this.pasos, required this.actual, required this.alElegir});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, caja) {
+      final conNombre = caja.maxWidth / pasos.length >= 120;
+      return Row(
+        children: [
+          for (var i = 0; i < pasos.length; i++) ...[
+            if (i > 0)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: i <= actual
+                      ? AppColors.gold
+                      : AppColors.border,
+                ),
+              ),
+            Tooltip(
+              message: pasos[i].$1,
+              child: InkWell(
+                key: ValueKey('ir-al-paso-$i'),
+                borderRadius: BorderRadius.circular(24),
+                onTap: () => alElegir(i),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: i == actual
+                              ? AppColors.relleno
+                              : i < actual
+                                  ? AppColors.gold.withValues(alpha: 0.18)
+                                  : AppColors.surfaceAlt,
+                          border: Border.all(
+                              color: i <= actual
+                                  ? AppColors.gold
+                                  : AppColors.border),
+                        ),
+                        child: Icon(
+                            i < actual ? Icons.check : pasos[i].$2,
+                            size: 18,
+                            color: i == actual
+                                ? AppColors.ink
+                                : i < actual
+                                    ? AppColors.gold
+                                    : AppColors.textMuted),
+                      ),
+                      if (conNombre) ...[
+                        const SizedBox(height: 6),
+                        Text(pasos[i].$1,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: i == actual
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: i == actual
+                                    ? AppColors.textPrimary
+                                    : AppColors.textMuted)),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    });
   }
 }
 
@@ -840,7 +992,11 @@ class _BuilderSectionState extends State<_BuilderSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
+        // A todo el ancho: sin esto «Nuevo módulo» quedaba pegado al título
+        // en vez de a la derecha.
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 12,
@@ -860,6 +1016,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
                     },
             ),
           ],
+        ),
         ),
         Text(
           tr.constructorArrastre,
@@ -919,7 +1076,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
               children: [
                 ReorderableDragStartListener(
                   index: mi,
-                  child: const MouseRegion(
+                  child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
                     child: Padding(
                       padding: EdgeInsets.all(8),
@@ -1032,7 +1189,7 @@ class _BuilderSectionState extends State<_BuilderSection> {
         children: [
           ReorderableDragStartListener(
             index: li,
-            child: const MouseRegion(
+            child: MouseRegion(
               cursor: SystemMouseCursors.grab,
               child: Padding(
                 padding: EdgeInsets.all(8),

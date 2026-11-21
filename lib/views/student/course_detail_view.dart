@@ -38,13 +38,23 @@ import '../../widgets/visor_pdf.dart';
 class CourseDetailView extends StatelessWidget {
   final String courseId;
   final String? studentId;
-  const CourseDetailView({super.key, required this.courseId, this.studentId});
+
+  /// Para quien administra: el curso como lo ve un estudiante, sin entrar a
+  /// editarlo y sin avance propio que pedir ni guardar.
+  final bool vistaPrevia;
+
+  const CourseDetailView(
+      {super.key,
+      required this.courseId,
+      this.studentId,
+      this.vistaPrevia = false});
 
   @override
   Widget build(BuildContext context) {
     final data = context.watch<DataProvider>();
     final viewer = context.watch<AuthProvider>().currentUser;
-    final readOnly = studentId != null && studentId != viewer?.id;
+    final readOnly =
+        vistaPrevia || (studentId != null && studentId != viewer?.id);
 
     return Scaffold(
       body: Column(
@@ -53,7 +63,9 @@ class CourseDetailView extends StatelessWidget {
           Expanded(
             child: combine2(
               data.courseById(courseId),
-              data.courseProgress(courseId, studentId: studentId),
+              vistaPrevia
+                  ? AsyncValue.data(CourseProgress.empty(courseId))
+                  : data.courseProgress(courseId, studentId: studentId),
             ).when(
               loading: () => const Center(child: BrandLoader()),
               error: (e) => ErrorState(e, onRetry: () async {
@@ -68,6 +80,7 @@ class CourseDetailView extends StatelessWidget {
                   progress: progress,
                   studentId: studentId,
                   readOnly: readOnly,
+                  vistaPrevia: vistaPrevia,
                 );
               },
             ),
@@ -83,12 +96,14 @@ class _CourseBody extends StatelessWidget {
   final CourseProgress progress;
   final String? studentId;
   final bool readOnly;
+  final bool vistaPrevia;
 
   const _CourseBody({
     required this.course,
     required this.progress,
     required this.studentId,
     required this.readOnly,
+    this.vistaPrevia = false,
   });
 
   @override
@@ -141,7 +156,7 @@ class _CourseBody extends StatelessWidget {
                                   color: AppColors.gold)),
                           if (course.subtitle.isNotEmpty)
                             Text(course.subtitle,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 14)),
                         ],
@@ -162,7 +177,7 @@ class _CourseBody extends StatelessWidget {
                           course.fullDescription.isNotEmpty
                               ? course.fullDescription
                               : course.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 14,
                               height: 1.5)),
@@ -226,7 +241,9 @@ class _CourseBody extends StatelessWidget {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                                tr.cursoSoloLectura,
+                                vistaPrevia
+                                    ? tr.cursoVistaPreviaTexto
+                                    : tr.cursoSoloLectura,
                                 style: TextStyle(
                                     fontSize: 12.5,
                                     color: AppColors.textMuted)),
@@ -250,8 +267,19 @@ class _CourseBody extends StatelessWidget {
                       icon: Icons.menu_book_outlined,
                       message: tr.cursoSinContenido)
                 else
-                  for (final module in course.modules) ...[
-                    SectionTitle(module.title),
+                  // Plegables: los terminados, juntos y cerrados al pie; los
+                  // demás, abiertos. Y un botón para plegarlos o
+                  // desplegarlos todos (recomendaciones del 20 de noviembre).
+                  _ModulosPlegables(
+                    modulos: course.modules,
+                    conDetalle: progress.hasLessonDetail,
+                    completo: (m) =>
+                        m.lessons.isNotEmpty &&
+                        m.lessons.every((l) => progress.isLessonComplete(l.id)),
+                    hechas: (m) => m.lessons
+                        .where((l) => progress.isLessonComplete(l.id))
+                        .length,
+                    contenido: (module) => [
                     for (final lesson in module.lessons)
                       // El texto de la lección y su glosario se despliegan
                       // debajo de la tarjeta; tocar la lección sigue abriendo
@@ -303,6 +331,7 @@ class _CourseBody extends StatelessWidget {
                         puedeRepasar: puedeRepasar,
                       ),
                   ],
+                  ),
                 // El glosario acompaña al curso: si no carga, el curso se
                 // sigue viendo entero y acá se ofrece reintentar.
                 if (glosarioAsync.errorOrNull case final error?)
@@ -349,10 +378,231 @@ class _CourseBody extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                    TextStyle(color: AppColors.textMuted, fontSize: 12)),
           ),
         ],
       );
+}
+
+// ---------------------------------------------------------------------------
+// Módulos plegables
+// ---------------------------------------------------------------------------
+
+/// Los módulos del curso, cada uno plegable.
+///
+/// Los que no están terminados van abiertos, en su orden. Los terminados se
+/// juntan al final en «Módulos completados (N)», cerrado: lo hecho no
+/// estorba para encontrar lo que sigue. Arriba, «Plegar todos» /
+/// «Desplegar todos».
+class _ModulosPlegables extends StatefulWidget {
+  final List<CourseModule> modulos;
+  final bool Function(CourseModule) completo;
+  final int Function(CourseModule) hechas;
+  final List<Widget> Function(CourseModule) contenido;
+
+  /// Si el avance ya trae qué lecciones están hechas.
+  final bool conDetalle;
+
+  const _ModulosPlegables({
+    required this.modulos,
+    required this.completo,
+    required this.hechas,
+    required this.contenido,
+    required this.conDetalle,
+  });
+
+  @override
+  State<_ModulosPlegables> createState() => _ModulosPlegablesState();
+}
+
+class _ModulosPlegablesState extends State<_ModulosPlegables> {
+  /// Los que la persona cerró (de los pendientes) o abrió (de los hechos).
+  final _cerrados = <String>{};
+  final _abiertos = <String>{};
+  bool _verCompletados = false;
+
+  /// Los que ya estaban terminados al abrir el curso. Solo esos se juntan
+  /// abajo: uno que se termina mientras la persona está acá se queda donde
+  /// estaba —que desaparezca de golpe al completar la última lección
+  /// confunde—, y pasa al grupo la próxima vez que se abra el curso.
+  ///
+  /// Se fija la primera vez que el avance trae el detalle por lección: antes
+  /// de eso (el resumen que llega con la lista de cursos) no se sabe qué
+  /// terminó.
+  Set<String>? _terminadosAlAbrir;
+
+  bool _agrupado(CourseModule m) =>
+      _terminadosAlAbrir?.contains(m.id) ?? widget.completo(m);
+
+  bool _estaAbierto(CourseModule m) => _agrupado(m)
+      ? _abiertos.contains(m.id)
+      : !_cerrados.contains(m.id);
+
+  void _todos(bool abrir) => setState(() {
+        _cerrados.clear();
+        _abiertos.clear();
+        if (abrir) {
+          _abiertos.addAll(widget.modulos.map((m) => m.id));
+          _verCompletados = true;
+        } else {
+          _cerrados.addAll(widget.modulos.map((m) => m.id));
+          _verCompletados = false;
+        }
+      });
+
+  void _alternar(CourseModule m) => setState(() {
+        final abierto = _estaAbierto(m);
+        if (_agrupado(m)) {
+          abierto ? _abiertos.remove(m.id) : _abiertos.add(m.id);
+        } else {
+          abierto ? _cerrados.add(m.id) : _cerrados.remove(m.id);
+        }
+      });
+
+  @override
+  Widget build(BuildContext context) {
+    if (_terminadosAlAbrir == null && widget.conDetalle) {
+      _terminadosAlAbrir = {
+        for (final m in widget.modulos)
+          if (widget.completo(m)) m.id
+      };
+    }
+    final pendientes = [
+      for (final m in widget.modulos)
+        if (!_agrupado(m)) m
+    ];
+    final terminados = [
+      for (final m in widget.modulos)
+        if (_agrupado(m)) m
+    ];
+    final algunoAbierto = widget.modulos.any(_estaAbierto);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            key: const ValueKey('modulos-todos'),
+            onPressed: () => _todos(!algunoAbierto),
+            icon: Icon(
+                algunoAbierto ? Icons.unfold_less : Icons.unfold_more,
+                size: 18),
+            label: Text(algunoAbierto
+                ? tr.cursoPlegarTodos
+                : tr.cursoDesplegarTodos),
+          ),
+        ),
+        for (final m in pendientes) ..._modulo(m),
+        if (terminados.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _Cabecera(
+            key: const ValueKey('modulos-completados'),
+            titulo: tr.cursoModulosCompletados(terminados.length),
+            icono: Icons.task_alt,
+            abierto: _verCompletados,
+            alTocar: () =>
+                setState(() => _verCompletados = !_verCompletados),
+            destacada: true,
+          ),
+          if (_verCompletados)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [for (final m in terminados) ..._modulo(m)],
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _modulo(CourseModule m) {
+    final abierto = _estaAbierto(m);
+    return [
+      const SizedBox(height: 10),
+      _Cabecera(
+        key: ValueKey('modulo-${m.id}'),
+        titulo: m.title,
+        detalle: tr.cursoModuloLecciones(widget.hechas(m), m.lessons.length),
+        icono: widget.completo(m) ? Icons.check_circle : null,
+        abierto: abierto,
+        alTocar: () => _alternar(m),
+      ),
+      if (abierto) ...[
+        const SizedBox(height: 8),
+        ...widget.contenido(m),
+      ],
+    ];
+  }
+}
+
+/// El encabezado de un módulo (o de «Módulos completados»): se toca para
+/// abrirlo o cerrarlo.
+class _Cabecera extends StatelessWidget {
+  final String titulo;
+  final String? detalle;
+  final IconData? icono;
+  final bool abierto;
+  final bool destacada;
+  final VoidCallback alTocar;
+
+  const _Cabecera({
+    super.key,
+    required this.titulo,
+    required this.abierto,
+    required this.alTocar,
+    this.detalle,
+    this.icono,
+    this.destacada = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      expanded: abierto,
+      child: Material(
+        color: destacada ? AppColors.surfaceAlt : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: alTocar,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              children: [
+                AnimatedRotation(
+                  turns: abierto ? 0.25 : 0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Icon(Icons.chevron_right,
+                      color: AppColors.textSecondary),
+                ),
+                const SizedBox(width: 6),
+                if (icono != null) ...[
+                  Icon(icono, size: 20, color: AppColors.statusGood),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    titulo.toUpperCase(),
+                    style: displayHeading(
+                        fontSize: destacada ? 18 : 22,
+                        color: AppColors.textPrimary,
+                        height: 1.05),
+                  ),
+                ),
+                if (detalle != null)
+                  Text(detalle!,
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -474,7 +724,7 @@ class _LessonTile extends StatelessWidget {
                     Text(lesson.title,
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                     Text(_subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.textMuted, fontSize: 12)),
                     // Lo visto, como la barrita roja de YouTube bajo la
                     // miniatura: se entiende sin leer el porcentaje.
@@ -1226,11 +1476,34 @@ class _ActivityDialog extends StatelessWidget {
         activity.deadline == null ? null : DateTime.tryParse(activity.deadline!);
     final overdue = deadline != null && DateTime.now().isAfter(deadline);
 
+    // «Subir entrega» al frente del título: es lo que se viene a hacer acá,
+    // no tiene que esperar al pie del diálogo.
+    final subir = ElevatedButton.icon(
+      key: const ValueKey('subir-entrega'),
+      icon: const Icon(Icons.upload_file, size: 16),
+      label: Text(mine.isEmpty ? tr.actividadEntregar : tr.actividadNuevaEntrega),
+      onPressed: () {
+        Navigator.pop(context);
+        showSubmitActivityDialog(context, course, lesson, activity);
+      },
+    );
     return AlertDialog(
-      title: Text(lesson.title, style: const TextStyle(fontSize: 18)),
+      title: Wrap(
+        spacing: 12,
+        runSpacing: 10,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: WrapAlignment.spaceBetween,
+        children: [
+          Text(lesson.title, style: const TextStyle(fontSize: 18)),
+          subir,
+        ],
+      ),
       content: SizedBox(
         width: 520,
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1241,7 +1514,7 @@ class _ActivityDialog extends StatelessWidget {
                 const SizedBox(height: 12),
               ],
               Text(tr.actividadSeCompletaAprobada,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted, fontSize: 12.5, height: 1.4)),
               const SizedBox(height: 12),
               Wrap(
@@ -1287,7 +1560,7 @@ class _ActivityDialog extends StatelessWidget {
                             child: Text(item.criterion,
                                 style: const TextStyle(fontSize: 13))),
                         Text('${item.points} pts',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.textMuted, fontSize: 12)),
                       ],
                     ),
@@ -1306,7 +1579,7 @@ class _ActivityDialog extends StatelessWidget {
                             Expanded(
                               child: Text(
                                   fechaHora(submission.submittedAt),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 12)),
                             ),
@@ -1344,14 +1617,6 @@ class _ActivityDialog extends StatelessWidget {
         TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(tr.comunCerrar)),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.upload_file, size: 16),
-          label: Text(mine.isEmpty ? tr.actividadEntregar : tr.actividadNuevaEntrega),
-          onPressed: () {
-            Navigator.pop(context);
-            showSubmitActivityDialog(context, course, lesson, activity);
-          },
-        ),
       ],
     );
   }
@@ -1534,7 +1799,13 @@ class _SubmissionsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _SubmissionCard(
-                key: _tarjetaDeEntrega(submission.id), submission: submission),
+                key: _tarjetaDeEntrega(submission.id),
+                submission: submission,
+                // La propia, mientras nadie la haya calificado ni comentado:
+                // se le pueden quitar archivos o borrarla.
+                editable: !readOnly &&
+                    !submission.isGraded &&
+                    submission.feedback.isEmpty),
           ),
         if (!readOnly) ...[
           const SizedBox(height: 8),
@@ -1554,7 +1825,35 @@ class _SubmissionsSection extends StatelessWidget {
 
 class _SubmissionCard extends StatelessWidget {
   final Submission submission;
-  const _SubmissionCard({super.key, required this.submission});
+  final bool editable;
+  const _SubmissionCard(
+      {super.key, required this.submission, this.editable = false});
+
+  Future<void> _quitarArchivo(BuildContext context, SubmissionFile file) async {
+    final data = context.read<DataProvider>();
+    final ok = await confirmDialog(context,
+        tr.entregaQuitarArchivoPregunta(file.fileName), tr.entregaQuitarArchivoTexto);
+    if (!ok || !context.mounted) return;
+    try {
+      await data.deleteSubmissionFile(submission.id, file.id);
+      if (context.mounted) showSuccessCheck(context, tr.entregaArchivoQuitado);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
+  Future<void> _borrar(BuildContext context) async {
+    final data = context.read<DataProvider>();
+    final ok = await confirmDialog(
+        context, tr.entregaBorrarPregunta, tr.entregaBorrarTexto);
+    if (!ok || !context.mounted) return;
+    try {
+      await data.deleteSubmission(submission.id);
+      if (context.mounted) showSuccessCheck(context, tr.entregaBorrada);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1589,19 +1888,37 @@ class _SubmissionCard extends StatelessWidget {
             Text(submission.comment,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
           for (final file in submission.files)
-            SubmissionAttachmentRow(file: file),
+            SubmissionAttachmentRow(
+              file: file,
+              alQuitar: editable ? () => _quitarArchivo(context, file) : null,
+            ),
           if (submission.feedback.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(tr.actividadRetroalimentacion(submission.feedback),
                 style: TextStyle(color: AppColors.gold, fontSize: 13)),
           ],
-          Text(fechaCorta(submission.submittedAt),
-              style: const TextStyle(
-                  color: AppColors.textMuted, fontSize: 11)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(fechaCorta(submission.submittedAt),
+                    style: TextStyle(
+                        color: AppColors.textMuted, fontSize: 11)),
+              ),
+              if (editable)
+                TextButton.icon(
+                  key: ValueKey('borrar-entrega-${submission.id}'),
+                  style: TextButton.styleFrom(
+                      foregroundColor: AppColors.statusCritical),
+                  icon: const Icon(Icons.delete_outline, size: 16),
+                  label: Text(tr.entregaBorrar),
+                  onPressed: () => _borrar(context),
+                ),
+            ],
+          ),
         ],
       ),
     );
@@ -1681,7 +1998,7 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   enabled: !_sending,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
-                      labelText: tr.actividadNombreTarea)),
+                      labelText: obligatorio(tr.actividadNombreTarea))),
               const SizedBox(height: 12),
               TextField(
                   controller: _comment,

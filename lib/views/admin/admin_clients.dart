@@ -108,14 +108,14 @@ class _TarjetaDeCliente extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(cliente.name,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 16,
                 fontWeight: AppWeights.uiSemibold,
                 color: AppColors.textPrimary)),
         const SizedBox(height: 2),
         // Cuántas cuentas afecta editarlo o desactivarlo.
         Text(tr.clientesCuentas(cliente.accountCount),
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12.5, color: AppColors.textSecondary)),
         const SizedBox(height: 6),
         Wrap(
@@ -236,7 +236,7 @@ class _CajaDeLogo extends StatelessWidget {
       child: url == null
           ? Text(tr.clientesSinLogo,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12))
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12))
           : LogoDeCliente(
               imagen: imagenDeLogo(url!),
               nombre: nombre,
@@ -272,7 +272,7 @@ class _Muestra extends StatelessWidget {
         // ancho. A 360 dp con letra grande, la etiqueta entera no cabía.
         Flexible(
           child: Text('$etiqueta ${hexDe(color)}',
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                   fontFeatures: [FontFeature.tabularFigures()])),
@@ -411,7 +411,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
       }
       if (!mounted) return;
       Navigator.pop(context);
-      showAppSnack(context, tr.clientesGuardado(nombre));
+      showSuccessCheck(context, tr.clientesGuardado(nombre));
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -451,18 +451,18 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
           enabled: !_guardando,
           onChanged: (_) => _marcar(() => _errorNombre = null),
           decoration: InputDecoration(
-            labelText: tr.clientesNombre,
+            labelText: obligatorio(tr.clientesNombre),
             errorText: _errorNombre,
           ),
         ),
         const SizedBox(height: 18),
         Text(tr.clientesLogo,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: AppWeights.uiSemibold)),
         const SizedBox(height: 4),
         Text(tr.clientesLogoAyuda,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -540,7 +540,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
         if (_progreso != null) ...[
           const SizedBox(height: 12),
           Text(tr.clientesSubiendoLogo,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 4),
           LinearProgressIndicator(value: _progreso),
         ],
@@ -552,7 +552,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(tr.clientesVistaPrevia,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: AppWeights.uiSemibold)),
         const SizedBox(height: 8),
@@ -565,7 +565,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
         ),
         const SizedBox(height: 14),
         Text(tr.clientesLegibilidad,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: AppWeights.uiSemibold)),
         const SizedBox(height: 8),
@@ -618,7 +618,7 @@ class _Nota extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(texto,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 12.5)),
           ),
         ],

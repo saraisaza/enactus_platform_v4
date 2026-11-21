@@ -48,6 +48,7 @@ class MentorPortal extends StatelessWidget {
             icon: Icons.lightbulb_outline,
             builder: (_) => const ProjectsDirectoryView()),
         PortalTab(
+            id: PortalShell.pestanaCalendario,
             label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
@@ -228,7 +229,7 @@ class _StudentRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text('${(avance * 100).round()}%',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppColors.textMuted)),
             ],
           ),
@@ -394,7 +395,7 @@ class _SubmissionCard extends StatelessWidget {
                           submission.courseName!,
                         fechaCorta(submission.submittedAt),
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -416,7 +417,7 @@ class _SubmissionCard extends StatelessWidget {
           if (submission.comment.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(submission.comment,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis),
@@ -551,7 +552,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
             enabled: !_saving,
             maxLines: 5,
             decoration:
-                InputDecoration(labelText: tr.mentorSuRetro),
+                InputDecoration(labelText: obligatorio(tr.mentorSuRetro)),
           ),
         ],
       ),
@@ -592,7 +593,7 @@ class _MentorProfile extends StatelessWidget {
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700)),
                         Text(user.email,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 13, color: AppColors.textMuted)),
                       ],
                     ),
@@ -634,7 +635,7 @@ class _ProfileRow extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, c) {
           final etiqueta = Text(label,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12.5, color: AppColors.textMuted));
           final valor = Text(value, style: const TextStyle(fontSize: 13.5));
 

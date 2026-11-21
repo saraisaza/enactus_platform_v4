@@ -13,7 +13,8 @@ import '../utils/constants.dart';
 import '../utils/responsive.dart';
 import 'app_footer.dart';
 import 'app_header.dart';
-import 'common.dart';
+import 'cuenta.dart';
+import '../utils/tema.dart';
 
 /// Ítem del menú lateral de un portal.
 class PortalTab {
@@ -70,6 +71,22 @@ class PortalShell extends StatefulWidget {
 
   @override
   State<PortalShell> createState() => _PortalShellState();
+
+  /// Abre la pestaña [id] del portal que contiene a [context], como si se
+  /// la hubiera elegido en el menú. Para los accesos directos dentro del
+  /// contenido («Ver calendario» en el inicio). Devuelve `false` si no hay
+  /// portal o no tiene esa pestaña.
+  static bool irAPestana(BuildContext context, String id) {
+    final estado = context.findAncestorStateOfType<_PortalShellState>();
+    if (estado == null) return false;
+    final i = estado.widget.tabs.indexWhere((t) => t.id == id);
+    if (i < 0) return false;
+    estado._selectTab(i);
+    return true;
+  }
+
+  /// [PortalTab.id] del calendario, igual en todos los portales.
+  static const pestanaCalendario = 'calendario';
 }
 
 class _PortalShellState extends State<PortalShell> {
@@ -181,23 +198,10 @@ class _PortalShellState extends State<PortalShell> {
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Barra lateral
-                      Container(
-                        width: wide ? 230 : 64,
-                        color: AppColors.barraLateral,
-                        child: ListView(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          children: [
-                            for (var i = 0; i < widget.tabs.length; i++)
-                              _SidebarItem(
-                                tab: widget.tabs[i],
-                                selected: i == _selected,
-                                compact: !wide,
-                                onTap: () => _selectTab(i),
-                              ),
-                          ],
-                        ),
-                      ),
+                      // Barra lateral. En pantallas anchas se puede plegar a
+                      // solo íconos para darle el espacio al contenido; la
+                      // elección dura toda la sesión, en todos los portales.
+                      _barraLateral(angosta: !wide || _plegado, plegable: wide),
                       Expanded(child: content),
                     ],
                   ),
@@ -260,6 +264,69 @@ class _PortalShellState extends State<PortalShell> {
     );
   }
 
+  /// Si la persona plegó el menú lateral. Estático: se conserva al pasar de
+  /// una pantalla a otra (cada detalle arma su propio [PortalShell]).
+  static bool _menuPlegado = false;
+  bool get _plegado => _menuPlegado;
+
+  Widget _barraLateral({required bool angosta, required bool plegable}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      width: angosta ? 64 : 230,
+      decoration: BoxDecoration(
+        color: AppColors.barraLateral,
+        // En claro, el menú es blanco como las tarjetas: una línea lo separa
+        // del fondo de la página.
+        border: Border(right: BorderSide(color: AppColors.border)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (plegable)
+            Align(
+              alignment: angosta ? Alignment.center : Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: IconButton(
+                  key: const Key('plegar-menu'),
+                  tooltip: angosta ? tr.portalDesplegarMenu : tr.portalPlegarMenu,
+                  color: AppColors.textSecondary,
+                  hoverColor: AppColors.velo(0.06),
+                  icon: Icon(angosta
+                      ? Icons.keyboard_double_arrow_right_rounded
+                      : Icons.keyboard_double_arrow_left_rounded),
+                  onPressed: () =>
+                      setState(() => _menuPlegado = !_menuPlegado),
+                ),
+              ),
+            ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.symmetric(vertical: plegable ? 4 : 12),
+              children: [
+                for (var i = 0; i < widget.tabs.length; i++)
+                  _SidebarItem(
+                    tab: widget.tabs[i],
+                    selected: i == _selected,
+                    compact: angosta,
+                    onTap: () => _selectTab(i),
+                  ),
+              ],
+            ),
+          ),
+          // «Cerrar sesión» al pie del menú, donde se busca. Sigue también en
+          // el menú de la cuenta.
+          Divider(height: 1, color: AppColors.border),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: _SidebarItem.cerrarSesion(compact: angosta),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _selectTab(int i) {
     setState(() {
       _selected = i;
@@ -302,6 +369,10 @@ class _PortalShellState extends State<PortalShell> {
                     _selectTab(i);
                   },
                 ),
+              const SizedBox(height: 12),
+              Divider(height: 1, color: AppColors.border),
+              const SizedBox(height: 8),
+              _SidebarItem.cerrarSesion(compact: false),
             ],
           ),
         ),
@@ -314,13 +385,29 @@ class _SidebarItem extends StatefulWidget {
   final PortalTab tab;
   final bool selected;
   final bool compact;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// En rojo: «Cerrar sesión».
+  final bool peligro;
+
   const _SidebarItem({
     required this.tab,
     required this.selected,
     required this.compact,
     required this.onTap,
-  });
+  }) : peligro = false;
+
+  /// «Cerrar sesión», al pie del menú lateral y del cajón del teléfono.
+  _SidebarItem.cerrarSesion({required this.compact})
+      : tab = PortalTab(
+          id: 'cerrar-sesion',
+          label: tr.comunCerrarSesion,
+          icon: Icons.logout_rounded,
+          builder: (_) => const SizedBox.shrink(),
+        ),
+        selected = false,
+        onTap = null,
+        peligro = true;
 
   @override
   State<_SidebarItem> createState() => _SidebarItemState();
@@ -336,15 +423,18 @@ class _SidebarItemState extends State<_SidebarItem> {
     // cliente, en pleno —relleno del secundario, borde del primario—: es lo
     // que más se ve de su identidad mientras se navega.
     final deCliente = Marca.instancia.paleta.esDeCliente;
-    final color = active
-        ? (deCliente ? AppColors.sobreSecundario : AppColors.secundarioTinta)
-        : (_hover ? AppColors.textPrimary : AppColors.textSecondary);
+    final color = widget.peligro
+        ? AppColors.statusCritical
+        : active
+            ? (deCliente ? AppColors.sobreSecundario : AppColors.secundarioTinta)
+            : (_hover ? AppColors.textPrimary : AppColors.textSecondary);
 
     return MouseRegion(
+      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
-        onTap: widget.onTap,
+        onTap: widget.onTap ?? () => cerrarSesion(context),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -358,7 +448,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                 ? (deCliente
                     ? AppColors.secundario
                     : AppColors.secundario.withValues(alpha: 0.12))
-                : (_hover ? Colors.white.withValues(alpha: 0.05) : null),
+                : (_hover ? AppColors.velo(0.05) : null),
             borderRadius: BorderRadius.circular(8),
             border: Border(
               left: BorderSide(
@@ -376,24 +466,32 @@ class _SidebarItemState extends State<_SidebarItem> {
                   message: widget.tab.label,
                   child: Icon(widget.tab.icon, color: color, size: 22),
                 )
-              : Row(
-                  children: [
-                    Icon(widget.tab.icon, color: color, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.tab.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 13.5,
-                          fontWeight: active
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+              // Mientras el menú se despliega el ancho crece de a poco: el
+              // rótulo aparece solo cuando ya cabe al lado del ícono.
+              : LayoutBuilder(
+                  builder: (context, caja) => caja.maxWidth < 72
+                      ? Icon(widget.tab.icon, color: color, size: 20)
+                      : Row(
+                          children: [
+                            Icon(widget.tab.icon, color: color, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                widget.tab.label,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  color: color,
+                                  fontSize: 13.5,
+                                  fontWeight: active
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
-                  ],
                 ),
         ),
       ),
@@ -417,11 +515,16 @@ class TabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // En el teléfono, título, bajada y botones centrados
+    // (recomendaciones del 20 de noviembre).
+    final centrar = context.isCompact;
     final titleBlock = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          centrar ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         Text(
           title.toUpperCase(),
+          textAlign: centrar ? TextAlign.center : TextAlign.start,
           style: displayHeading(
             fontSize: 30,
             fontWeight: AppWeights.display,
@@ -433,7 +536,8 @@ class TabBody extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               subtitle!,
-              style: const TextStyle(
+              textAlign: centrar ? TextAlign.center : TextAlign.start,
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
               ),
@@ -446,14 +550,23 @@ class TabBody extends StatelessWidget {
     // palabras a la mitad — se apilan en vez de compartir fila. Sin
     // acciones no hay nada que lo apriete, así que ahí se conserva el
     // mismo Row de siempre en cualquier ancho.
-    final header = context.isCompact && actions.isNotEmpty
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              titleBlock,
-              const SizedBox(height: 16),
-              Wrap(spacing: 8, runSpacing: 8, children: actions),
-            ],
+    final header = centrar
+        ? SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                titleBlock,
+                if (actions.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: actions),
+                ],
+              ],
+            ),
           )
         : Row(
             children: [
@@ -540,7 +653,7 @@ class ContentScreenShell extends StatefulWidget {
 
 class _ContentScreenShellState extends State<ContentScreenShell>
     with SingleTickerProviderStateMixin {
-  bool _isDark = true;
+  bool get _isDark => Tema.oscuro;
   final _searchCtrl = TextEditingController();
   late final AnimationController _glow = AnimationController(
     vsync: this,
@@ -577,15 +690,20 @@ class _ContentScreenShellState extends State<ContentScreenShell>
             child: Padding(
               padding: EdgeInsets.fromLTRB(
                 context.isCompact ? 16 : 40,
-                34,
+                24,
                 context.isCompact ? 16 : 40,
                 60,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildControlsRow(colors),
-                  const SizedBox(height: 22),
+                  // El botón de tema se fue al encabezado: esta fila solo
+                  // existe si hay buscador. Sin él, el título sube y no queda
+                  // una franja vacía arriba.
+                  if (_hayBuscador) ...[
+                    _buildControlsRow(colors),
+                    const SizedBox(height: 22),
+                  ],
                   _buildHeader(colors),
                   const SizedBox(height: 26),
                   widget.bodyBuilder(context, colors, _isDark),
@@ -603,6 +721,11 @@ class _ContentScreenShellState extends State<ContentScreenShell>
     );
   }
 
+  /// Un buscador que no filtra nada solo ocupa espacio: se muestra
+  /// únicamente si busca de verdad.
+  bool get _hayBuscador =>
+      widget.searchHint != null && widget.onSearchChanged != null;
+
   Widget _buildControlsRow(ContentColors colors) {
     // `mainAxisAlignment.end` en vez de un `Spacer`, y el buscador en
     // `Flexible`: con `Spacer` el hueco se come todo el espacio libre y el
@@ -614,8 +737,7 @@ class _ContentScreenShellState extends State<ContentScreenShell>
         // En el teléfono, un buscador que no filtra nada solo ocupa espacio
         // y abre el teclado en vano: se muestra únicamente si busca. En
         // escritorio se conserva por consistencia del diseño de la cabecera.
-        if (widget.searchHint != null &&
-            (widget.onSearchChanged != null || !context.isCompact)) ...[
+        if (_hayBuscador) ...[
           Flexible(
             child: ConstrainedBox(
               // Antes 320px fijos: con el relleno lateral no entraba en un
@@ -663,21 +785,29 @@ class _ContentScreenShellState extends State<ContentScreenShell>
               ),
             ),
           ),
-          const SizedBox(width: 12),
         ],
-        _ContentThemeToggleButton(
-          isDark: _isDark,
-          colors: colors,
-          onTap: () => setState(() => _isDark = !_isDark),
-        ),
       ],
     );
   }
 
   Widget _buildHeader(ContentColors colors) {
+    // A todo el ancho: sin esto el `Wrap` medía lo que su contenido y lo de
+    // la derecha (el anillo de avance del inicio) quedaba en el medio, con
+    // un hueco muerto a su derecha.
+    return SizedBox(
+      width: double.infinity,
+      child: _cabecera(colors),
+    );
+  }
+
+  Widget _cabecera(ContentColors colors) {
+    // En el teléfono, todo centrado (recomendaciones del 20 de noviembre).
+    final centrar = context.isCompact;
     return Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      crossAxisAlignment: WrapCrossAlignment.end,
+      alignment:
+          centrar ? WrapAlignment.center : WrapAlignment.spaceBetween,
+      crossAxisAlignment:
+          centrar ? WrapCrossAlignment.center : WrapCrossAlignment.end,
       spacing: 32,
       runSpacing: 20,
       children: [
@@ -686,7 +816,9 @@ class _ContentScreenShellState extends State<ContentScreenShell>
           // rescatar ningún padre — es el desbordamiento garantizado.
           constraints: const BoxConstraints(maxWidth: 620),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: centrar
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
@@ -743,6 +875,7 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                 final size = context.isCompact ? 38.0 : 58.0;
                 return Text(
                   widget.title.toUpperCase(),
+                  textAlign: centrar ? TextAlign.center : TextAlign.start,
                   style: displayHeading(
                     fontSize: size,
                     color: colors.goldInk,
@@ -755,6 +888,7 @@ class _ContentScreenShellState extends State<ContentScreenShell>
                 const SizedBox(height: 12),
                 Text(
                   widget.subtitle!,
+                  textAlign: centrar ? TextAlign.center : TextAlign.start,
                   style: TextStyle(
                     fontSize: 15.5,
                     color: colors.text2,
@@ -768,43 +902,6 @@ class _ContentScreenShellState extends State<ContentScreenShell>
         if (widget.trailingBuilder != null)
           widget.trailingBuilder!(context, colors, _isDark),
       ],
-    );
-  }
-}
-
-class _ContentThemeToggleButton extends StatelessWidget {
-  final bool isDark;
-  final ContentColors colors;
-  final VoidCallback onTap;
-  const _ContentThemeToggleButton({
-    required this.isDark,
-    required this.colors,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: hover ? AppColors.gold : colors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Icon(
-            isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-            size: 21,
-            color: hover ? AppColors.gold : colors.text2,
-          ),
-        ),
-      ),
     );
   }
 }

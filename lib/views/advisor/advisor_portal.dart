@@ -39,6 +39,7 @@ class AdvisorPortal extends StatelessWidget {
             icon: Icons.dashboard_outlined,
             builder: (_) => const _AdvisorDashboard()),
         PortalTab(
+            id: PortalShell.pestanaCalendario,
             label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
@@ -293,7 +294,7 @@ class _StudentCard extends StatelessWidget {
                         StudentType.label(student.studentType),
                         if (student.team != null) student.team!.projectName,
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -311,7 +312,7 @@ class _StudentCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   tr.asesorCursosFraccion(avance?.coursesDone ?? 0, avance?.coursesTotal ?? 0),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppColors.textMuted),
                 ),
               ),
@@ -387,7 +388,7 @@ class _AdvisorProjects extends StatelessWidget {
                                             fontWeight: FontWeight.w700),
                                         overflow: TextOverflow.ellipsis),
                                     Text(p.stageLabel,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 12.5,
                                             color: AppColors.textMuted)),
                                   ],

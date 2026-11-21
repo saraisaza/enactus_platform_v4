@@ -253,7 +253,7 @@
   "comunBuscar": "Buscar",
   "busquedaTipoCurso": "Curso",
   "busquedaTipoProyecto": "Proyecto",
-  "busquedaEtapa": "Etapa: {etapa}",
+  "busquedaEtapa": "Fase: {etapa}",
   "@busquedaEtapa": {
     "placeholders": {
       "etapa": {}
@@ -315,14 +315,14 @@
   },
   "portalMas": "Más",
   "portalMasOpciones": "Más opciones",
-  "etapaDeTotal": "Etapa {actual} de {total}",
+  "etapaDeTotal": "Fase {actual} de {total}",
   "@etapaDeTotal": {
     "placeholders": {
       "actual": {},
       "total": {}
     }
   },
-  "etapaFinal": "Etapa final",
+  "etapaFinal": "Fase final",
   "etapaSigue": "Sigue: {etapa}",
   "@etapaSigue": {
     "placeholders": {
@@ -769,8 +769,8 @@
     }
   },
   "certificadosMisTitulo": "Mis Certificados",
-  "certificadosMisSubtitulo": "Certificados emitidos por sus LXD al completar una Ruta de Impacto",
-  "certificadosVacio": "Aún no tiene certificados.\nComplete sus cursos para obtenerlos.",
+  "certificadosMisSubtitulo": "Sus certificados de cursos y de Ruta de Impacto, del más reciente al más antiguo.",
+  "certificadosVacio": "Aún no tiene certificados.\nLos obtiene al terminar un curso que certifica o una Ruta de Impacto.",
   "certificadoRutaDe": "Ruta de Impacto · {laboratorio}",
   "@certificadoRutaDe": {
     "placeholders": {
@@ -801,7 +801,7 @@
   "perfilEditar": "Editar perfil",
   "perfilSinProyecto": "Aún no tiene proyecto asignado.",
   "perfilMiProyecto": "MI PROYECTO",
-  "certificadosVacioRuta": "Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.",
+  "certificadosVacioRuta": "Aún no tiene certificados. Los obtiene al terminar un curso que certifica o una Ruta de Impacto.",
   "certificadosFaltaPoco": "Le falta poco para su primer certificado: \"{nombre}\".",
   "@certificadosFaltaPoco": {
     "placeholders": {
@@ -1303,7 +1303,7 @@
   "foroTitulo": "Foro de la Comunidad",
   "foroNoAbre": "No pudimos abrir el foro.",
   "foroCargando": "Cargando publicaciones…",
-  "foroSubtitulo": "Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.",
+  "foroSubtitulo": "Puede preguntar y enriquecerse en este espacio abierto, y participar con temas relacionados con emprendimiento, innovación, sostenibilidad y tecnología.",
   "foroBuscar": "Buscar autor, organización o contenido",
   "foroNadie": "Nadie ha escrito aún",
   "foroVacio": "El foro está vacío. Puede ser la primera persona en abrir la conversación de la comunidad.",
@@ -1429,13 +1429,13 @@
   },
   "reporteTipoRespuesta": "RESPUESTA",
   "proyectosComunidad": "Comunidad eduXaction Colombia",
-  "proyectosSubtitulo": "Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.",
+  "proyectosSubtitulo": "Todos los proyectos activos de la red. Filtre por fase, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.",
   "proyectosBuscar": "Buscar proyecto, comunidad u ODS",
-  "proyectosTodasEtapas": "Todas las etapas",
+  "proyectosTodasEtapas": "Todas las fases",
   "proyectosVacio": "Aún no hay proyectos aquí",
   "proyectosVacioTexto": "Todavía no se ha publicado ningún proyecto en la comunidad. Cuando su equipo registre el suyo, aparecerá aquí para toda la red.",
-  "proyectosSinCoincidencias": "Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.",
-  "proyectosVerTodasEtapas": "Ver todas las etapas",
+  "proyectosSinCoincidencias": "Ningún proyecto coincide con este filtro. Pruebe con otra fase o limpie la búsqueda.",
+  "proyectosVerTodasEtapas": "Ver todas las fases",
   "proyectosProponer": "Proponer un proyecto",
   "proyectosSinEquipo": "Sin equipo asignado todavía.",
   "proyectosFechaNoRegistrada": "Fecha no registrada",
@@ -1655,7 +1655,7 @@
   "lxdFiltrarNombre": "Filtrar por nombre o institución",
   "lxdSinEstudiantes": "No hay estudiantes inscritos en sus cursos.",
   "comunEstudiante": "Estudiante",
-  "comunEtapa": "Etapa",
+  "comunEtapa": "Fase",
   "lxdNecesidad": "Necesidad",
   "comunInstitucion": "Institución",
   "comunProgreso": "Progreso",
@@ -2128,7 +2128,7 @@
   "adminAsesores": "Asesores",
   "adminEmpresas": "Aliadas",
   "adminDonantes": "Donantes",
-  "adminProyectosPorEtapa": "Proyectos por etapa",
+  "adminProyectosPorEtapa": "Proyectos por fase",
   "adminConfigureMetricas": "Configure competencias, ODS y horas en los cursos (constructor del LXD) para ver métricas de impacto formativo.",
   "adminHorasCompetencia": "Horas de formación por competencia",
   "adminSinDatosAun": "Sin datos aún",
@@ -2275,7 +2275,7 @@
   },
   "usuariosPlazoVencido": "plazo vencido",
   "usuariosNinguno": "ninguno",
-  "gestionProyectosSubtitulo": "Cada proyecto define problema, solución, comunidad, ODS, etapa e indicadores",
+  "gestionProyectosSubtitulo": "Cada proyecto define problema, solución, comunidad, ODS, fase e indicadores",
   "gestionNuevoProyecto": "Nuevo proyecto",
   "gestionSinProyectos": "No hay proyectos.",
   "gestionEliminarProyecto": "Eliminar proyecto",
@@ -2300,7 +2300,7 @@
   "gestionProblema": "Problema que resuelve",
   "gestionSolucion": "Solución propuesta",
   "gestionComunidad": "Comunidad beneficiada",
-  "gestionEtapaActual": "Etapa actual",
+  "gestionEtapaActual": "Fase actual",
   "gestionHabilitarExpo": "Habilitar RUTA NATIONAL EXPO",
   "gestionHabilitarExpoTexto": "Abre la checklist de preparación para el equipo.",
   "gestionEquiposSubtitulo": "Cada equipo trabaja un proyecto desde una universidad, con su asesor académico",
@@ -3414,5 +3414,122 @@
   "calendarioVenceEsteDia": "Vence este día",
   "calendarioIrAlCurso": "Ir al curso",
   "empresaCalendarioIrAlCurso": "Ir a la capacitación",
-  "calendarioIrAlLaboratorio": "Ir al laboratorio"
+  "calendarioIrAlLaboratorio": "Ir al laboratorio",
+  "temaPasarAClaro": "Cambiar a modo claro",
+  "temaPasarAOscuro": "Cambiar a modo oscuro",
+  "portalPlegarMenu": "Plegar el menú",
+  "portalDesplegarMenu": "Desplegar el menú",
+  "comunVerMasN": "Ver más ({n})",
+  "@comunVerMasN": {
+    "placeholders": {
+      "n": {"type": "int"}
+    }
+  },
+  "comunVerMenos": "Ver menos",
+  "dashboardVerCalendario": "Ver calendario",
+  "contactoWhatsapp": "Escríbanos por WhatsApp",
+  "comunAmpliarFoto": "Ver la foto en grande",
+  "calendarioAbrirEnlace": "Abrir enlace",
+  "calendarioEnlaceEsReunion": "Se mostrará el botón «Unirse a la reunión».",
+  "calendarioEnlaceEsOtro": "Se mostrará el botón «Abrir enlace».",
+  "calendarioEnlaceInvalido": "Ese enlace no es válido. Cópielo completo, por ejemplo https://meet.google.com/abc-defg-hij",
+  "cursoModulosCompletados": "Módulos completados ({n})",
+  "@cursoModulosCompletados": {
+    "placeholders": {
+      "n": {"type": "int"}
+    }
+  },
+  "cursoPlegarTodos": "Plegar todos",
+  "cursoDesplegarTodos": "Desplegar todos",
+  "cursoModuloLecciones": "{hechas} de {total} lecciones",
+  "@cursoModuloLecciones": {
+    "placeholders": {
+      "hechas": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "entregaQuitarArchivo": "Quitar este archivo",
+  "entregaQuitarArchivoPregunta": "¿Quitar «{archivo}» de la entrega?",
+  "@entregaQuitarArchivoPregunta": {
+    "placeholders": {
+      "archivo": {}
+    }
+  },
+  "entregaQuitarArchivoTexto": "Quien la revise ya no lo verá. Puede volver a entregar el archivo correcto.",
+  "entregaArchivoQuitado": "Archivo quitado",
+  "entregaBorrar": "Borrar entrega",
+  "entregaBorrarPregunta": "¿Borrar esta entrega?",
+  "entregaBorrarTexto": "Se borra con sus archivos. Puede volver a entregar cuando quiera.",
+  "entregaBorrada": "Entrega borrada",
+  "cursoVistaPrevia": "Vista previa",
+  "cursoVistaPreviaTexto": "Vista previa: así ve el curso un estudiante. Puede abrir las lecciones; no se guarda ningún avance.",
+  "asistentePaso": "Paso {n} de {total}",
+  "@asistentePaso": {
+    "placeholders": {
+      "n": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "asistenteAnterior": "Anterior",
+  "asistenteSiguiente": "Siguiente",
+  "categoriaPasoLaboratorio": "Laboratorio y etiquetas",
+  "categoriaPasoCompetencias": "Competencias",
+  "categoriaPasoOds": "ODS",
+  "categoriaPasoObjetivos": "Objetivos",
+  "categoriaPasoResultados": "Resultados y prerrequisitos",
+  "usuariosBuscar": "Buscar por nombre, correo, cédula o teléfono",
+  "usuariosFiltroRol": "Rol",
+  "usuariosResultados": "{desde}–{hasta} de {total}",
+  "@usuariosResultados": {
+    "placeholders": {
+      "desde": {"type": "int"},
+      "hasta": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "comunPaginaAnterior": "Página anterior",
+  "comunPaginaSiguiente": "Página siguiente",
+  "comunPaginaN": "Página {n}",
+  "@comunPaginaN": {
+    "placeholders": {
+      "n": {"type": "int"}
+    }
+  },
+  "perfilFotoVistaPrevia": "Así se verá su foto",
+  "perfilFotoVistaPreviaTexto": "Se ajustó al círculo tomando el centro de la imagen.",
+  "perfilFotoOtra": "Elegir otra",
+  "perfilFotoUsar": "Usar esta foto",
+  "reporteTitulo": "Reporte de la plataforma",
+  "reporteCifras": "Cifras generales",
+  "reporteIndicador": "Indicador",
+  "reporteCantidad": "Cantidad",
+  "reporteHorasPorCompetencia": "Horas de formación por competencia",
+  "reporteHoras": "Horas",
+  "reporteCoberturaOds": "Cobertura de ODS",
+  "reporteAvance": "Avance",
+  "reporteHorasPatrocinadas": "Horas patrocinadas por empresa",
+  "reporteArchivo": "reporte-eduxaction-{fecha}.pdf",
+  "@reporteArchivo": {
+    "placeholders": {
+      "fecha": {}
+    }
+  },
+  "reporteDescargar": "Descargar reporte (PDF)",
+  "reporteDescargarGrafica": "Descargar esta gráfica (PNG)",
+  "reporteGraficaDescargada": "Gráfica descargada",
+  "reporteGraficaArchivo": "{nombre}.png",
+  "@reporteGraficaArchivo": {
+    "placeholders": {
+      "nombre": {}
+    }
+  },
+  "subirVistaPreviaTitulo": "¿Subir este archivo?",
+  "subirVistaPreviaSubir": "Subir",
+  "certificadosVerTodos": "Ver mis certificados ({n})",
+  "@certificadosVerTodos": {
+    "placeholders": {
+      "n": {"type": "int"}
+    }
+  },
+  "certificadosUltimo": "El más reciente"
 }

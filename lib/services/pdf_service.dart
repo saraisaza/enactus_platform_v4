@@ -195,6 +195,26 @@ class PdfService {
     );
   }
 
+  static final Map<String, Future<Uint8List?>> _miniaturas = {};
+
+  /// La primera página del certificado, chica, para verlo en la lista sin
+  /// abrirlo (recomendaciones del 20 de noviembre). `null` si no se pudo
+  /// dibujar: la lista muestra la medalla de siempre.
+  ///
+  /// Se guarda por certificado: armar el PDF pide el molde a la red, y una
+  /// lista que se redibuja no debería pedirlo cada vez.
+  static Future<Uint8List?> miniatura(DataProvider data, Certificate cert) =>
+      _miniaturas[cert.id] ??= () async {
+        try {
+          final pdf = await (await _conSuMolde(data, cert)).save();
+          await for (final pagina
+              in Printing.raster(pdf, pages: const [0], dpi: 36)) {
+            return await pagina.toPng();
+          }
+        } catch (_) {}
+        return null;
+      }();
+
   /// Abre la vista previa de impresión del certificado
   /// (en web abre el diálogo de impresión del navegador).
   static Future<void> preview(DataProvider data, Certificate cert) async {

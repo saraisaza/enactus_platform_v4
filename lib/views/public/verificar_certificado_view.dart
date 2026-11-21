@@ -120,12 +120,12 @@ class _Valido extends StatelessWidget {
               SizedBox(
                 width: 124,
                 child: Text(rotulo,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13, color: AppColors.textMuted)),
               ),
               Expanded(
                 child: Text(valor,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14, color: AppColors.textPrimary)),
               ),
             ],
@@ -143,7 +143,7 @@ class _Valido extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(tr.verificarValido,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 18,
                         fontWeight: AppWeights.uiSemibold,
                         color: AppColors.textPrimary)),
@@ -161,7 +161,7 @@ class _Valido extends StatelessWidget {
             cert.esDeCurso
                 ? tr.verificarCompletoCurso(cert.titulo)
                 : tr.verificarCompletoRuta(cert.titulo),
-            style: const TextStyle(fontSize: 15, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 8),
           if (cert.hours > 0) dato(tr.verificarHoras, '${cert.hours}'),
@@ -184,14 +184,14 @@ class _NoEncontrado extends StatelessWidget {
         const SizedBox(height: 12),
         Text(tr.verificarNoEncontrado,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 18,
                 fontWeight: AppWeights.uiSemibold,
                 color: AppColors.textPrimary)),
         const SizedBox(height: 8),
         Text(tr.verificarNoEncontradoTexto,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
+            style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
         const SizedBox(height: 20),
         ElevatedButton.icon(
           icon: const Icon(Icons.home_outlined, size: 18),

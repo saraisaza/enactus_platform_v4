@@ -165,7 +165,7 @@ class _StudentCard extends StatelessWidget {
                     if (student.university.isNotEmpty) student.university,
                     if (student.team != null) student.team!.projectName,
                   ].join(' · '),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12.5, color: AppColors.textMuted),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -242,12 +242,12 @@ class _EvidenceCard extends StatelessWidget {
           if (evidence.description.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(evidence.description,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary)),
           ],
           const SizedBox(height: 8),
           Text(fechaCorta(evidence.evidenceDate),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, color: AppColors.textMuted)),
           if (evidence.s3Key != null) ...[
             const SizedBox(height: 10),

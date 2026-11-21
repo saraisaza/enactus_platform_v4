@@ -182,7 +182,7 @@ class _BackupCardState extends State<_BackupCard> {
                 : widget.esSuperAdmin
                 ? tr.respaldoReemplaza
                 : tr.respaldoSoloSuper,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
           ),
           if (_error != null) ...[
             const SizedBox(height: 10),

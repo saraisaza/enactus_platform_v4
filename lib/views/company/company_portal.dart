@@ -224,7 +224,7 @@ class _CompanyLabs extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis),
                                     if (lab.description.isNotEmpty)
                                       Text(lab.description,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               fontSize: 12.5,
                                               color: AppColors.textMuted),
                                           maxLines: 2,
@@ -402,7 +402,7 @@ class _PersonCard extends StatelessWidget {
                         if (user.university.isNotEmpty) user.university,
                         if (user.team != null) user.team!.projectName,
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -417,7 +417,7 @@ class _PersonCard extends StatelessWidget {
                   width: 90, child: ThinProgressBar(value: avance?.ratio ?? 0))
               : (user.reviewsCount != null
                   ? Text(tr.empresaEntregasRevisadas(user.reviewsCount!),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12, color: AppColors.textMuted))
                   : const SizedBox.shrink());
 
@@ -540,7 +540,9 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.usuariosNombreCompleto),
+            decoration: InputDecoration(
+                labelText: obligatorio(tr.usuariosNombreCompleto),
+                prefixIcon: const Icon(Icons.person_outline, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -550,7 +552,9 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
             autofillHints: const [AutofillHints.email],
             enabled: !_saving,
             decoration:
-                InputDecoration(labelText: tr.ingresoCorreo),
+                InputDecoration(
+                    labelText: obligatorio(tr.ingresoCorreo),
+                    prefixIcon: const Icon(Icons.mail_outline, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -559,6 +563,7 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
             obscureText: true,
             decoration: InputDecoration(
               labelText: tr.ingresoContrasena,
+              prefixIcon: const Icon(Icons.lock_outline, size: 20),
               helperText: tr.empresaContrasenaAyuda,
             ),
           ),
@@ -566,7 +571,9 @@ class _TeamMemberDialogState extends State<_TeamMemberDialog> {
           TextField(
             controller: _position,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.empresaCargoOpcional),
+            decoration: InputDecoration(
+                labelText: tr.empresaCargoOpcional,
+                prefixIcon: const Icon(Icons.work_outline, size: 20)),
           ),
         ],
       ),

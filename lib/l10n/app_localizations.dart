@@ -1133,7 +1133,7 @@ abstract class AppLocalizations {
   /// No description provided for @busquedaEtapa.
   ///
   /// In es, this message translates to:
-  /// **'Etapa: {etapa}'**
+  /// **'Fase: {etapa}'**
   String busquedaEtapa(Object etapa);
 
   /// No description provided for @comunCerrar.
@@ -1385,13 +1385,13 @@ abstract class AppLocalizations {
   /// No description provided for @etapaDeTotal.
   ///
   /// In es, this message translates to:
-  /// **'Etapa {actual} de {total}'**
+  /// **'Fase {actual} de {total}'**
   String etapaDeTotal(Object actual, Object total);
 
   /// No description provided for @etapaFinal.
   ///
   /// In es, this message translates to:
-  /// **'Etapa final'**
+  /// **'Fase final'**
   String get etapaFinal;
 
   /// No description provided for @etapaSigue.
@@ -2807,13 +2807,13 @@ abstract class AppLocalizations {
   /// No description provided for @certificadosMisSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Certificados emitidos por sus LXD al completar una Ruta de Impacto'**
+  /// **'Sus certificados de cursos y de Ruta de Impacto, del más reciente al más antiguo.'**
   String get certificadosMisSubtitulo;
 
   /// No description provided for @certificadosVacio.
   ///
   /// In es, this message translates to:
-  /// **'Aún no tiene certificados.\nComplete sus cursos para obtenerlos.'**
+  /// **'Aún no tiene certificados.\nLos obtiene al terminar un curso que certifica o una Ruta de Impacto.'**
   String get certificadosVacio;
 
   /// No description provided for @certificadoRutaDe.
@@ -2939,7 +2939,7 @@ abstract class AppLocalizations {
   /// No description provided for @certificadosVacioRuta.
   ///
   /// In es, this message translates to:
-  /// **'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.'**
+  /// **'Aún no tiene certificados. Los obtiene al terminar un curso que certifica o una Ruta de Impacto.'**
   String get certificadosVacioRuta;
 
   /// No description provided for @certificadosFaltaPoco.
@@ -4259,7 +4259,7 @@ abstract class AppLocalizations {
   /// No description provided for @foroSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.'**
+  /// **'Puede preguntar y enriquecerse en este espacio abierto, y participar con temas relacionados con emprendimiento, innovación, sostenibilidad y tecnología.'**
   String get foroSubtitulo;
 
   /// No description provided for @foroBuscar.
@@ -4661,7 +4661,7 @@ abstract class AppLocalizations {
   /// No description provided for @proyectosSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.'**
+  /// **'Todos los proyectos activos de la red. Filtre por fase, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.'**
   String get proyectosSubtitulo;
 
   /// No description provided for @proyectosBuscar.
@@ -4673,7 +4673,7 @@ abstract class AppLocalizations {
   /// No description provided for @proyectosTodasEtapas.
   ///
   /// In es, this message translates to:
-  /// **'Todas las etapas'**
+  /// **'Todas las fases'**
   String get proyectosTodasEtapas;
 
   /// No description provided for @proyectosVacio.
@@ -4691,13 +4691,13 @@ abstract class AppLocalizations {
   /// No description provided for @proyectosSinCoincidencias.
   ///
   /// In es, this message translates to:
-  /// **'Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.'**
+  /// **'Ningún proyecto coincide con este filtro. Pruebe con otra fase o limpie la búsqueda.'**
   String get proyectosSinCoincidencias;
 
   /// No description provided for @proyectosVerTodasEtapas.
   ///
   /// In es, this message translates to:
-  /// **'Ver todas las etapas'**
+  /// **'Ver todas las fases'**
   String get proyectosVerTodasEtapas;
 
   /// No description provided for @proyectosProponer.
@@ -5351,7 +5351,7 @@ abstract class AppLocalizations {
   /// No description provided for @comunEtapa.
   ///
   /// In es, this message translates to:
-  /// **'Etapa'**
+  /// **'Fase'**
   String get comunEtapa;
 
   /// No description provided for @lxdNecesidad.
@@ -7019,7 +7019,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminProyectosPorEtapa.
   ///
   /// In es, this message translates to:
-  /// **'Proyectos por etapa'**
+  /// **'Proyectos por fase'**
   String get adminProyectosPorEtapa;
 
   /// No description provided for @adminConfigureMetricas.
@@ -7451,7 +7451,7 @@ abstract class AppLocalizations {
   /// No description provided for @gestionProyectosSubtitulo.
   ///
   /// In es, this message translates to:
-  /// **'Cada proyecto define problema, solución, comunidad, ODS, etapa e indicadores'**
+  /// **'Cada proyecto define problema, solución, comunidad, ODS, fase e indicadores'**
   String get gestionProyectosSubtitulo;
 
   /// No description provided for @gestionNuevoProyecto.
@@ -7529,7 +7529,7 @@ abstract class AppLocalizations {
   /// No description provided for @gestionEtapaActual.
   ///
   /// In es, this message translates to:
-  /// **'Etapa actual'**
+  /// **'Fase actual'**
   String get gestionEtapaActual;
 
   /// No description provided for @gestionHabilitarExpo.
@@ -11263,6 +11263,384 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ir al laboratorio'**
   String get calendarioIrAlLaboratorio;
+
+  /// No description provided for @temaPasarAClaro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar a modo claro'**
+  String get temaPasarAClaro;
+
+  /// No description provided for @temaPasarAOscuro.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar a modo oscuro'**
+  String get temaPasarAOscuro;
+
+  /// No description provided for @portalPlegarMenu.
+  ///
+  /// In es, this message translates to:
+  /// **'Plegar el menú'**
+  String get portalPlegarMenu;
+
+  /// No description provided for @portalDesplegarMenu.
+  ///
+  /// In es, this message translates to:
+  /// **'Desplegar el menú'**
+  String get portalDesplegarMenu;
+
+  /// No description provided for @comunVerMasN.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más ({n})'**
+  String comunVerMasN(int n);
+
+  /// No description provided for @comunVerMenos.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver menos'**
+  String get comunVerMenos;
+
+  /// No description provided for @dashboardVerCalendario.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver calendario'**
+  String get dashboardVerCalendario;
+
+  /// No description provided for @contactoWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'Escríbanos por WhatsApp'**
+  String get contactoWhatsapp;
+
+  /// No description provided for @comunAmpliarFoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver la foto en grande'**
+  String get comunAmpliarFoto;
+
+  /// No description provided for @calendarioAbrirEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir enlace'**
+  String get calendarioAbrirEnlace;
+
+  /// No description provided for @calendarioEnlaceEsReunion.
+  ///
+  /// In es, this message translates to:
+  /// **'Se mostrará el botón «Unirse a la reunión».'**
+  String get calendarioEnlaceEsReunion;
+
+  /// No description provided for @calendarioEnlaceEsOtro.
+  ///
+  /// In es, this message translates to:
+  /// **'Se mostrará el botón «Abrir enlace».'**
+  String get calendarioEnlaceEsOtro;
+
+  /// No description provided for @calendarioEnlaceInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese enlace no es válido. Cópielo completo, por ejemplo https://meet.google.com/abc-defg-hij'**
+  String get calendarioEnlaceInvalido;
+
+  /// No description provided for @cursoModulosCompletados.
+  ///
+  /// In es, this message translates to:
+  /// **'Módulos completados ({n})'**
+  String cursoModulosCompletados(int n);
+
+  /// No description provided for @cursoPlegarTodos.
+  ///
+  /// In es, this message translates to:
+  /// **'Plegar todos'**
+  String get cursoPlegarTodos;
+
+  /// No description provided for @cursoDesplegarTodos.
+  ///
+  /// In es, this message translates to:
+  /// **'Desplegar todos'**
+  String get cursoDesplegarTodos;
+
+  /// No description provided for @cursoModuloLecciones.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechas} de {total} lecciones'**
+  String cursoModuloLecciones(int hechas, int total);
+
+  /// No description provided for @entregaQuitarArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar este archivo'**
+  String get entregaQuitarArchivo;
+
+  /// No description provided for @entregaQuitarArchivoPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quitar «{archivo}» de la entrega?'**
+  String entregaQuitarArchivoPregunta(Object archivo);
+
+  /// No description provided for @entregaQuitarArchivoTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Quien la revise ya no lo verá. Puede volver a entregar el archivo correcto.'**
+  String get entregaQuitarArchivoTexto;
+
+  /// No description provided for @entregaArchivoQuitado.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo quitado'**
+  String get entregaArchivoQuitado;
+
+  /// No description provided for @entregaBorrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar entrega'**
+  String get entregaBorrar;
+
+  /// No description provided for @entregaBorrarPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar esta entrega?'**
+  String get entregaBorrarPregunta;
+
+  /// No description provided for @entregaBorrarTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borra con sus archivos. Puede volver a entregar cuando quiera.'**
+  String get entregaBorrarTexto;
+
+  /// No description provided for @entregaBorrada.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrega borrada'**
+  String get entregaBorrada;
+
+  /// No description provided for @cursoVistaPrevia.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa'**
+  String get cursoVistaPrevia;
+
+  /// No description provided for @cursoVistaPreviaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa: así ve el curso un estudiante. Puede abrir las lecciones; no se guarda ningún avance.'**
+  String get cursoVistaPreviaTexto;
+
+  /// No description provided for @asistentePaso.
+  ///
+  /// In es, this message translates to:
+  /// **'Paso {n} de {total}'**
+  String asistentePaso(int n, int total);
+
+  /// No description provided for @asistenteAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Anterior'**
+  String get asistenteAnterior;
+
+  /// No description provided for @asistenteSiguiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiente'**
+  String get asistenteSiguiente;
+
+  /// No description provided for @categoriaPasoLaboratorio.
+  ///
+  /// In es, this message translates to:
+  /// **'Laboratorio y etiquetas'**
+  String get categoriaPasoLaboratorio;
+
+  /// No description provided for @categoriaPasoCompetencias.
+  ///
+  /// In es, this message translates to:
+  /// **'Competencias'**
+  String get categoriaPasoCompetencias;
+
+  /// No description provided for @categoriaPasoOds.
+  ///
+  /// In es, this message translates to:
+  /// **'ODS'**
+  String get categoriaPasoOds;
+
+  /// No description provided for @categoriaPasoObjetivos.
+  ///
+  /// In es, this message translates to:
+  /// **'Objetivos'**
+  String get categoriaPasoObjetivos;
+
+  /// No description provided for @categoriaPasoResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultados y prerrequisitos'**
+  String get categoriaPasoResultados;
+
+  /// No description provided for @usuariosBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre, correo, cédula o teléfono'**
+  String get usuariosBuscar;
+
+  /// No description provided for @usuariosFiltroRol.
+  ///
+  /// In es, this message translates to:
+  /// **'Rol'**
+  String get usuariosFiltroRol;
+
+  /// No description provided for @usuariosResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'{desde}–{hasta} de {total}'**
+  String usuariosResultados(int desde, int hasta, int total);
+
+  /// No description provided for @comunPaginaAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'Página anterior'**
+  String get comunPaginaAnterior;
+
+  /// No description provided for @comunPaginaSiguiente.
+  ///
+  /// In es, this message translates to:
+  /// **'Página siguiente'**
+  String get comunPaginaSiguiente;
+
+  /// No description provided for @comunPaginaN.
+  ///
+  /// In es, this message translates to:
+  /// **'Página {n}'**
+  String comunPaginaN(int n);
+
+  /// No description provided for @perfilFotoVistaPrevia.
+  ///
+  /// In es, this message translates to:
+  /// **'Así se verá su foto'**
+  String get perfilFotoVistaPrevia;
+
+  /// No description provided for @perfilFotoVistaPreviaTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'Se ajustó al círculo tomando el centro de la imagen.'**
+  String get perfilFotoVistaPreviaTexto;
+
+  /// No description provided for @perfilFotoOtra.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir otra'**
+  String get perfilFotoOtra;
+
+  /// No description provided for @perfilFotoUsar.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar esta foto'**
+  String get perfilFotoUsar;
+
+  /// No description provided for @reporteTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Reporte de la plataforma'**
+  String get reporteTitulo;
+
+  /// No description provided for @reporteCifras.
+  ///
+  /// In es, this message translates to:
+  /// **'Cifras generales'**
+  String get reporteCifras;
+
+  /// No description provided for @reporteIndicador.
+  ///
+  /// In es, this message translates to:
+  /// **'Indicador'**
+  String get reporteIndicador;
+
+  /// No description provided for @reporteCantidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Cantidad'**
+  String get reporteCantidad;
+
+  /// No description provided for @reporteHorasPorCompetencia.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas de formación por competencia'**
+  String get reporteHorasPorCompetencia;
+
+  /// No description provided for @reporteHoras.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas'**
+  String get reporteHoras;
+
+  /// No description provided for @reporteCoberturaOds.
+  ///
+  /// In es, this message translates to:
+  /// **'Cobertura de ODS'**
+  String get reporteCoberturaOds;
+
+  /// No description provided for @reporteAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance'**
+  String get reporteAvance;
+
+  /// No description provided for @reporteHorasPatrocinadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Horas patrocinadas por empresa'**
+  String get reporteHorasPatrocinadas;
+
+  /// No description provided for @reporteArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'reporte-eduxaction-{fecha}.pdf'**
+  String reporteArchivo(Object fecha);
+
+  /// No description provided for @reporteDescargar.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar reporte (PDF)'**
+  String get reporteDescargar;
+
+  /// No description provided for @reporteDescargarGrafica.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar esta gráfica (PNG)'**
+  String get reporteDescargarGrafica;
+
+  /// No description provided for @reporteGraficaDescargada.
+  ///
+  /// In es, this message translates to:
+  /// **'Gráfica descargada'**
+  String get reporteGraficaDescargada;
+
+  /// No description provided for @reporteGraficaArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre}.png'**
+  String reporteGraficaArchivo(Object nombre);
+
+  /// No description provided for @subirVistaPreviaTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Subir este archivo?'**
+  String get subirVistaPreviaTitulo;
+
+  /// No description provided for @subirVistaPreviaSubir.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir'**
+  String get subirVistaPreviaSubir;
+
+  /// No description provided for @certificadosVerTodos.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver mis certificados ({n})'**
+  String certificadosVerTodos(int n);
+
+  /// No description provided for @certificadosUltimo.
+  ///
+  /// In es, this message translates to:
+  /// **'El más reciente'**
+  String get certificadosUltimo;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -16,6 +15,7 @@ import '../../widgets/app_header.dart';
 import '../../widgets/async_states.dart';
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
+import '../../utils/tema.dart';
 
 /// Directorio de todos los proyectos Enactus de la plataforma, sin
 /// importar laboratorio, universidad o equipo — para que estudiantes y
@@ -134,20 +134,12 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
   }
 
   Widget _buildGrid(ContentColors colors, List<Project> projects) {
-    return LayoutBuilder(builder: (context, constraints) {
-      const minCard = 348.0;
-      const gap = 20.0;
-      final columns =
-          math.max(1, ((constraints.maxWidth + gap) / (minCard + gap)).floor());
-      final cardWidth = (constraints.maxWidth - gap * (columns - 1)) / columns;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
+    // Todas las tarjetas de una fila del mismo alto.
+    return RejillaDeTarjetas(
+        anchoMinimo: 348,
         children: [
           for (var i = 0; i < projects.length; i++)
-            SizedBox(
-              width: cardWidth,
-              child: Entrance(
+            Entrance(
                 delayMs: 55 * i,
                 child: _ProjectCard(
                   project: projects[i],
@@ -162,10 +154,8 @@ class _ProjectsDirectoryViewState extends State<ProjectsDirectoryView> {
                   ),
                 ),
               ),
-            ),
         ],
       );
-    });
   }
 
   Widget _buildEmptyState(ContentColors colors, bool noProjectsAtAll) {
@@ -589,13 +579,13 @@ class ProjectSummaryCard extends StatelessWidget {
                   Text(project.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
                 ],
                 if (relevantStudentCount != null) ...[
                   const SizedBox(height: 6),
                   Text(
                       tr.proyectosEstudiantesAlcance(relevantStudentCount!),
-                      style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                 ],
               ],
             ),
@@ -630,7 +620,7 @@ class ProjectDetailView extends StatefulWidget {
 }
 
 class _ProjectDetailViewState extends State<ProjectDetailView> {
-  bool _isDark = true;
+  bool get _isDark => Tema.oscuro;
   ContentColors get _colors => _isDark ? ContentColors.dark : ContentColors.light;
 
   @override
@@ -696,12 +686,6 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
                                   icon: const Icon(Icons.arrow_back),
                                   color: colors.goldInk,
                                   onPressed: () => Navigator.pop(context),
-                                ),
-                                const Spacer(),
-                                _ThemeToggleButton(
-                                  isDark: _isDark,
-                                  colors: colors,
-                                  onTap: () => setState(() => _isDark = !_isDark),
                                 ),
                               ],
                             ),
@@ -797,42 +781,6 @@ class _ProjectDetailViewState extends State<ProjectDetailView> {
     );
   }
 }
-
-class _ThemeToggleButton extends StatelessWidget {
-  final bool isDark;
-  final ContentColors colors;
-  final VoidCallback onTap;
-  const _ThemeToggleButton({required this.isDark, required this.colors, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: hover ? colors.surface2 : colors.surface,
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                  size: 16, color: colors.text2),
-              const SizedBox(width: 6),
-              Text(isDark ? tr.temaClaro : tr.temaOscuro,
-                  style: TextStyle(fontSize: 12.5, color: colors.text2)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 
 /// Un equipo del proyecto: nombre, universidad, asesor académico e
 /// integrantes con su rol.

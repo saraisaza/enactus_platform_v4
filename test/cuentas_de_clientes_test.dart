@@ -191,8 +191,8 @@ void main() {
         (tester) async {
       final api = await abrirFormulario(tester);
       await tester.enterText(
-          find.widgetWithText(TextField, tr.usuariosNombreCompleto), 'Ana');
-      await tester.enterText(find.widgetWithText(TextField, tr.ingresoCorreo),
+          find.widgetWithText(TextField, '${tr.usuariosNombreCompleto} *'), 'Ana');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.ingresoCorreo} *'),
           'ana@bancoandino.co');
       await tester.enterText(
           find.widgetWithText(TextField, tr.ingresoContrasena), 'Clave123');

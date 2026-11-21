@@ -520,6 +520,65 @@ submissionRoutes.delete('/:id', async (c) => {
   return c.body(null, 204);
 });
 
+/**
+ * Quitar UN archivo de una entrega (recomendaciones del 20 de noviembre):
+ * antes, quien se equivocaba de archivo solo podía borrar la entrega entera.
+ *
+ * Las mismas reglas que borrar la entrega: es de quien la hizo y solo
+ * mientras nadie la haya calificado ni comentado —después, el archivo es lo
+ * que se revisó—. Un admin puede siempre.
+ *
+ * Se borra el vínculo, no el objeto de S3: igual que al borrar la entrega
+ * (que es lógico), el archivo queda por si hubiera que recuperarlo.
+ *
+ * Una entrega no puede quedar vacía: si era su único archivo y no tiene
+ * comentario, se pide borrar la entrega entera.
+ */
+submissionRoutes.delete('/:id/files/:fileId', async (c) => {
+  const user = currentUser(c);
+  const db = c.get('db');
+  const submission = await loadSubmission(db, c.req.param('id'));
+
+  const esAdmin = user.role === 'admin' || user.role === 'superadmin';
+  if (!esAdmin) {
+    if (submission.studentId !== user.id) {
+      throw forbidden('Solo puede borrar archivos de sus propias entregas.');
+    }
+    if (submission.gradedAt || submission.feedback.length > 0) {
+      throw conflict(
+        'No puede quitar archivos de una entrega que ya fue calificada o comentada.',
+      );
+    }
+  }
+
+  const archivos = await db
+    .select({ id: submissionFiles.id })
+    .from(submissionFiles)
+    .where(eq(submissionFiles.submissionId, submission.id));
+  if (!archivos.some((a) => a.id === c.req.param('fileId'))) {
+    throw notFound('No se encontró ese archivo en la entrega.');
+  }
+  if (archivos.length === 1 && submission.comment.trim().length === 0) {
+    throw conflict(
+      'Es el único archivo de la entrega: bórrela entera y vuelva a entregar.',
+    );
+  }
+
+  await db
+    .delete(submissionFiles)
+    .where(
+      and(
+        eq(submissionFiles.id, c.req.param('fileId')),
+        eq(submissionFiles.submissionId, submission.id),
+      ),
+    );
+  await db
+    .update(submissions)
+    .set({ updatedAt: new Date() })
+    .where(eq(submissions.id, submission.id));
+  return c.body(null, 204);
+});
+
 // ---------------------------------------------------------------------------
 
 type Db = AppEnv['Variables']['db'];

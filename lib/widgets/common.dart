@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import '../l10n/textos.dart';
 import '../utils/app_theme.dart';
+import '../utils/tema.dart';
 import '../utils/marca.dart';
 import '../utils/responsive.dart';
 
@@ -266,37 +268,55 @@ class StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tile = HoverCard(
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.gold.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: AppColors.gold, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _AnimatedValue(value: value),
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.textMuted)),
-                if (trend != null)
-                  Text(trend!,
-                      style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.statusGood,
-                          fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ],
+    final icono = Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.gold.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
       ),
+      child: Icon(icon, color: AppColors.gold, size: 22),
+    );
+    List<Widget> textos(TextAlign alineado) => [
+          _AnimatedValue(value: value),
+          Text(label,
+              textAlign: alineado,
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+          if (trend != null)
+            Text(trend!,
+                textAlign: alineado,
+                style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.statusGood,
+                    fontWeight: FontWeight.w600)),
+        ];
+    final tile = HoverCard(
+      child: LayoutBuilder(builder: (context, caja) {
+        // Angosta (dos por fila en un teléfono): el ícono arriba y todo
+        // centrado. Al lado del ícono, «Universidades» no cabía y se partía
+        // en «Universidad / es».
+        if (caja.maxWidth < 170) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              icono,
+              const SizedBox(height: 8),
+              ...textos(TextAlign.center),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            icono,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: textos(TextAlign.start),
+              ),
+            ),
+          ],
+        );
+      }),
     );
     return detail == null ? tile : Tooltip(message: detail!, child: tile);
   }
@@ -386,7 +406,7 @@ class ThinProgressBar extends StatelessWidget {
     );
     final porcentaje = Text('${(value * 100).round()}%',
         textAlign: TextAlign.right,
-        style: const TextStyle(
+        style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600));
@@ -460,7 +480,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 12),
               Text(message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted, fontSize: 14)),
             ],
           ),
@@ -687,6 +707,12 @@ class PhaseBadge extends StatelessWidget {
   }
 }
 
+/// La etiqueta de un campo que hay que llenar para poder guardar: con un
+/// asterisco al final, la convención que todos reconocen. Solo para los
+/// campos que el formulario de verdad exige — un asterisco en un campo
+/// opcional enseña a ignorarlos.
+String obligatorio(String etiqueta) => '$etiqueta *';
+
 void showAppSnack(BuildContext context, String message, {bool error = false}) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     content: Row(children: [
@@ -699,13 +725,23 @@ void showAppSnack(BuildContext context, String message, {bool error = false}) {
 }
 
 /// El aviso de que algo salió bien: entregar una actividad, guardar,
-/// publicar, calificar. Una tarjeta centrada con el check, el título, una
-/// explicación opcional ([detalle]) y los botones: «Continuar» lo cierra y,
-/// si hay [accion], un botón secundario la ejecuta (p. ej. «Ver entrega»).
+/// publicar, calificar, subir un archivo.
 ///
-/// Se cierra con «Continuar», con Esc o tocando fuera. Va en la capa de más
-/// arriba, así que sobrevive a que quien lo pidió cierre su diálogo justo
-/// antes —que es lo que hacen casi todos—. Uno nuevo reemplaza al anterior.
+/// Una notificación tipo «toast» que entra barriendo desde la derecha, en la
+/// esquina superior derecha, con el check, el título, una explicación
+/// opcional ([detalle]) y, si hay [accion], un botón que la ejecuta (p. ej.
+/// «Ver entrega»). Una barra al pie se va vaciando mientras el aviso sigue
+/// a la vista; al terminar, sale barriendo hacia la derecha.
+///
+/// No tapa la pantalla ni hay que cerrarlo para seguir: antes era una
+/// tarjeta en el centro, con velo, que pedía «Continuar» cada vez que se
+/// guardaba algo (recomendaciones del 20 de noviembre). Se cierra solo, con
+/// la X, o pasándole el dedo hacia un lado. Mientras el mouse está encima
+/// no se va.
+///
+/// Va en la capa de más arriba, así que sobrevive a que quien lo pidió
+/// cierre su diálogo justo antes —que es lo que hacen casi todos—. Uno nuevo
+/// reemplaza al anterior.
 void showSuccessCheck(
   BuildContext context,
   String message, {
@@ -735,30 +771,31 @@ void showSuccessCheck(
 OverlayEntry? _avisoAbierto;
 
 /// Los colores del aviso: el verde es el de «salió bien», no el acento de la
-/// marca, así que no cambia con el cliente.
+/// marca, así que no cambia con el cliente. La tarjeta sigue al modo claro u
+/// oscuro.
 abstract final class _ColoresDelAviso {
-  static const velo = Color(0x80000000);
-  static const tarjeta = Color(0xFF232327);
-  static const borde = Color(0xFF34343A);
-  static const fondoDelCheck = Color(0x2940BE6E);
-  static const check = Color(0xFF4CC97A);
-  static const titulo = Color(0xFFECECF1);
-  static const detalle = Color(0xFFA3A3AD);
-  static const bordeSecundario = Color(0xFF3A3A41);
-  static const textoSecundario = Color(0xFFD6D6DC);
-  static const fondoSecundarioEncima = Color(0xFF2D2D33);
-  static const primario = Color(0xFF3FB26C);
-  static const primarioEncima = Color(0xFF4FC27C);
-  static const textoPrimario = Color(0xFF0F1A13);
+  static const check = Color(0xFF3FB26C);
+  static Color get fondoDelCheck => check.withValues(alpha: 0.16);
+  static Color get tarjeta => Tema.oscuro
+      ? const Color(0xFF232327)
+      : const Color(0xFFFFFFFF);
+  static Color get borde => Tema.oscuro
+      ? const Color(0xFF34343A)
+      : const Color(0xFFD8D4CE);
+  static Color get titulo => AppColors.textPrimary;
+  static Color get detalle => AppColors.textSecondary;
 }
 
-/// La tarjeta de [showSuccessCheck], con su velo.
+/// La tarjeta de [showSuccessCheck].
 class AvisoDeExito extends StatefulWidget {
   final String titulo;
   final String? detalle;
   final String? accion;
   final VoidCallback? alAccion;
   final VoidCallback alCerrar;
+
+  /// Cuánto queda a la vista. Con una acción, más: hay algo que decidir.
+  final Duration? duracion;
 
   const AvisoDeExito({
     super.key,
@@ -767,6 +804,7 @@ class AvisoDeExito extends StatefulWidget {
     this.detalle,
     this.accion,
     this.alAccion,
+    this.duracion,
   });
 
   @override
@@ -774,24 +812,39 @@ class AvisoDeExito extends StatefulWidget {
 }
 
 class _AvisoDeExitoState extends State<AvisoDeExito>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _entrada = AnimationController(
+    with TickerProviderStateMixin {
+  /// La entrada y la salida: el barrido desde la derecha.
+  late final AnimationController _barrido = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 160),
+    duration: const Duration(milliseconds: 320),
+    reverseDuration: const Duration(milliseconds: 220),
   )..forward();
-  late final Animation<double> _curva =
-      CurvedAnimation(parent: _entrada, curve: Curves.easeOut);
+
+  /// El tiempo a la vista: la barra del pie.
+  late final AnimationController _tiempo = AnimationController(
+    vsync: this,
+    duration: widget.duracion ??
+        Duration(seconds: widget.accion != null ? 8 : 5),
+  )
+    ..addStatusListener((estado) {
+      if (estado == AnimationStatus.completed) _cerrar();
+    })
+    ..forward();
+
   bool _cerrado = false;
 
   @override
   void dispose() {
-    _entrada.dispose();
+    _barrido.dispose();
+    _tiempo.dispose();
     super.dispose();
   }
 
-  void _cerrar() {
+  Future<void> _cerrar() async {
     if (_cerrado) return;
     _cerrado = true;
+    _tiempo.stop();
+    if (mounted) await _barrido.reverse();
     widget.alCerrar();
   }
 
@@ -802,207 +855,175 @@ class _AvisoDeExitoState extends State<AvisoDeExito>
 
   @override
   Widget build(BuildContext context) {
-    final ancho = MediaQuery.sizeOf(context).width;
+    final medidas = MediaQuery.of(context);
+    final ancho = medidas.size.width;
     final accion = widget.accion;
+    // Debajo del encabezado en el computador; arriba de todo en el
+    // teléfono, dentro del área segura.
+    final arriba = medidas.padding.top + (ancho < 600 ? 12.0 : 96.0);
+    final curva = CurvedAnimation(
+      parent: _barrido,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
     // `Material` debajo de todo: sin él, el texto que se dibuja en esta capa
     // no hereda estilo y Flutter lo marca con el subrayado amarillo doble.
-    return Material(
-      type: MaterialType.transparency,
-      child: Shortcuts(
-        shortcuts: const {
-          SingleActivator(LogicalKeyboardKey.escape): DismissIntent(),
-        },
-        child: Actions(
-          actions: {
-            DismissIntent: CallbackAction<DismissIntent>(onInvoke: (_) {
-              _cerrar();
-              return null;
-            }),
-          },
-          // El foco no sale del aviso mientras está abierto.
-          child: FocusScope(
-            autofocus: true,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: FadeTransition(
-                    opacity: _curva,
-                    child: GestureDetector(
-                      key: const ValueKey('aviso-velo'),
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _cerrar,
-                      child: const ColoredBox(color: _ColoresDelAviso.velo),
+    return Positioned(
+      top: arriba,
+      right: 16,
+      child: Material(
+        type: MaterialType.transparency,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(1.15, 0), end: Offset.zero)
+              .animate(curva),
+          child: FadeTransition(
+            opacity: curva,
+            child: MouseRegion(
+              // Mientras se lee con el mouse encima, no se va.
+              onEnter: (_) => _tiempo.stop(),
+              onExit: (_) {
+                if (!_cerrado) _tiempo.forward();
+              },
+              child: Dismissible(
+                key: const ValueKey('aviso-deslizable'),
+                onDismissed: (_) {
+                  _cerrado = true;
+                  _tiempo.stop();
+                  widget.alCerrar();
+                },
+                child: Semantics(
+                  // Se anuncia sin mover el foco: es una confirmación, no
+                  // una pregunta.
+                  liveRegion: true,
+                  container: true,
+                  label: widget.titulo,
+                  child: Container(
+                    key: const ValueKey('aviso-de-exito'),
+                    width: 360,
+                    constraints: BoxConstraints(maxWidth: ancho - 32),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: _ColoresDelAviso.tarjeta,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _ColoresDelAviso.borde),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x40000000),
+                          blurRadius: 28,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                Center(
-                  child: FadeTransition(
-                    opacity: _curva,
-                    child: ScaleTransition(
-                      scale: Tween(begin: 0.96, end: 1.0).animate(_curva),
-                      child: Semantics(
-                        // role="dialog" y aria-modal: el lector de pantalla
-                        // entra al aviso y lo nombra por su título.
-                        scopesRoute: true,
-                        namesRoute: true,
-                        explicitChildNodes: true,
-                        label: widget.titulo,
-                        child: Container(
-                          key: const ValueKey('aviso-de-exito'),
-                          width: 320,
-                          constraints: BoxConstraints(maxWidth: ancho - 32),
-                          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-                          decoration: BoxDecoration(
-                            color: _ColoresDelAviso.tarjeta,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: _ColoresDelAviso.borde),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x66000000),
-                                blurRadius: 40,
-                                offset: Offset(0, 16),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 14, 6, 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: 48,
-                                height: 48,
-                                decoration: const BoxDecoration(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
                                   color: _ColoresDelAviso.fondoDelCheck,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(Icons.check_rounded,
-                                    color: _ColoresDelAviso.check, size: 24),
+                                    color: _ColoresDelAviso.check, size: 20),
                               ),
-                              const SizedBox(height: 14),
-                              Text(
-                                widget.titulo,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w600,
-                                  color: _ColoresDelAviso.titulo,
-                                  decoration: TextDecoration.none,
-                                ),
-                              ),
-                              if (widget.detalle != null) ...[
-                                const SizedBox(height: 14),
-                                Text(
-                                  widget.detalle!,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    height: 1.45,
-                                    color: _ColoresDelAviso.detalle,
-                                    decoration: TextDecoration.none,
-                                  ),
-                                ),
-                              ],
-                              // 14 de separación más 6 de margen arriba.
-                              const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  if (accion != null) ...[
-                                    Expanded(
-                                      child: _BotonDelAviso(
-                                        texto: accion,
-                                        primario: false,
-                                        alTocar: _accion,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.titulo,
+                                        style: TextStyle(
+                                          fontFamily: AppFonts.ui,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: _ColoresDelAviso.titulo,
+                                          decoration: TextDecoration.none,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                  ],
-                                  Expanded(
-                                    child: _BotonDelAviso(
-                                      texto: tr.comunContinuar,
-                                      primario: true,
-                                      autofocus: true,
-                                      alTocar: _cerrar,
-                                    ),
+                                      if (widget.detalle != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          widget.detalle!,
+                                          style: TextStyle(
+                                            fontFamily: AppFonts.ui,
+                                            fontSize: 13,
+                                            height: 1.4,
+                                            color: _ColoresDelAviso.detalle,
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                      ],
+                                      if (accion != null) ...[
+                                        const SizedBox(height: 8),
+                                        TextButton(
+                                          onPressed: _accion,
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                _ColoresDelAviso.check,
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 8),
+                                            minimumSize: const Size(0, 36),
+                                            textStyle: const TextStyle(
+                                              fontFamily: AppFonts.ui,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13.5,
+                                            ),
+                                          ),
+                                          child: Text(accion),
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                ],
+                                ),
+                              ),
+                              IconButton(
+                                key: const ValueKey('aviso-cerrar'),
+                                tooltip: tr.comunCerrar,
+                                iconSize: 18,
+                                color: _ColoresDelAviso.detalle,
+                                onPressed: _cerrar,
+                                icon: const Icon(Icons.close_rounded),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                        // El tiempo que le queda: una barra que se vacía.
+                        AnimatedBuilder(
+                          animation: _tiempo,
+                          builder: (_, _) => Align(
+                            alignment: Alignment.centerLeft,
+                            child: FractionallySizedBox(
+                              widthFactor: 1 - _tiempo.value,
+                              child: Container(
+                                height: 3,
+                                color: _ColoresDelAviso.check,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-/// «Continuar» (primario) o la acción secundaria del aviso.
-class _BotonDelAviso extends StatelessWidget {
-  final String texto;
-  final bool primario;
-  final bool autofocus;
-  final VoidCallback alTocar;
-
-  const _BotonDelAviso({
-    required this.texto,
-    required this.primario,
-    required this.alTocar,
-    this.autofocus = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final forma =
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
-    return TextButton(
-      autofocus: autofocus,
-      onPressed: alTocar,
-      style: ButtonStyle(
-        padding: const WidgetStatePropertyAll(EdgeInsets.all(10)),
-        minimumSize: const WidgetStatePropertyAll(Size(0, 40)),
-        shape: WidgetStatePropertyAll(forma),
-        // Con teclado, el foco se ve como un contorno; con el mouse o el
-        // dedo no, para que «Continuar» no parezca siempre resaltado.
-        side: WidgetStateProperty.resolveWith((estados) {
-          if (estados.contains(WidgetState.focused) &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional) {
-            return const BorderSide(color: _ColoresDelAviso.titulo, width: 2);
-          }
-          return primario
-              ? BorderSide.none
-              : const BorderSide(color: _ColoresDelAviso.bordeSecundario);
-        }),
-        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        backgroundColor: WidgetStateProperty.resolveWith((estados) {
-          final encima = estados.contains(WidgetState.hovered) ||
-              estados.contains(WidgetState.pressed);
-          if (primario) {
-            return encima
-                ? _ColoresDelAviso.primarioEncima
-                : _ColoresDelAviso.primario;
-          }
-          return encima
-              ? _ColoresDelAviso.fondoSecundarioEncima
-              : Colors.transparent;
-        }),
-        foregroundColor: WidgetStatePropertyAll(primario
-            ? _ColoresDelAviso.textoPrimario
-            : _ColoresDelAviso.textoSecundario),
-        // `fontFamily` explícita, como en el tema: el `textStyle` de un
-        // `ButtonStyle` reemplaza el estilo entero, letra incluida.
-        textStyle: WidgetStatePropertyAll(TextStyle(
-          fontFamily: AppFonts.ui,
-          fontSize: 14,
-          fontWeight: primario ? FontWeight.w500 : FontWeight.w400,
-        )),
-      ),
-      child: Text(texto, textAlign: TextAlign.center),
     );
   }
 }
@@ -1081,7 +1102,7 @@ Future<T?> showAdaptiveFormDialog<T>({
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.background,
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
@@ -1111,7 +1132,11 @@ Future<T?> showAdaptiveFormDialog<T>({
       title: Text(title, style: const TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
-        child: SingleChildScrollView(child: contentBuilder(dialogContext)),
+        child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
+          child: contentBuilder(dialogContext)),
       ),
       actions: actionsBuilder(dialogContext),
     ),
@@ -1277,8 +1302,8 @@ class AdaptiveFormShell extends StatelessWidget {
                 backgroundColor: AppColors.background,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: tr.comunCerrar,
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: tr.comunVolver,
                   onPressed: saving ? null : () => _salir(context),
                 ),
                 title: Text(title, style: const TextStyle(fontSize: 17)),
@@ -1296,7 +1321,7 @@ class AdaptiveFormShell extends StatelessWidget {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 // `Wrap` y no `Row`: con un rótulo largo («Eliminar mi
@@ -1320,10 +1345,20 @@ class AdaptiveFormShell extends StatelessWidget {
       );
     } else {
       contenido = AlertDialog(
-        title: Text(title, style: const TextStyle(fontSize: 18)),
+        // Con «Atrás» a la izquierda del título, como en el teléfono
+        // (recomendaciones del 20 de noviembre).
+        title: TituloConAtras(
+            titulo: title,
+            alVolver: () {
+              if (!saving) _salir(context);
+            }),
         content: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxWidth),
-          child: SingleChildScrollView(child: child),
+          child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
+          child: child),
         ),
         actions: acciones,
       );
@@ -1385,7 +1420,7 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
               Text(
                 tr.escritorioTexto(widget.herramienta),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary, fontSize: 14, height: 1.45),
               ),
               const SizedBox(height: 22),
@@ -1397,6 +1432,427 @@ class _AvisoEscritorioState extends State<AvisoEscritorio> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// La grilla de tarjetas de toda la plataforma: columnas del mismo ancho y,
+/// en cada fila, todas las tarjetas del MISMO alto.
+///
+/// Antes cada pantalla armaba su `Wrap` y cada tarjeta medía lo que pedía su
+/// contenido: un curso con un título de dos líneas quedaba más alto que su
+/// vecino y la fila parecía un rompecabezas (recomendaciones del 20 de
+/// noviembre). Acá las columnas salen del ancho disponible y de
+/// [anchoMinimo], y cada fila se mide en dos pasadas: primero cada tarjeta
+/// con su alto natural, después todas con el de la más alta.
+///
+/// En la segunda pasada cada tarjeta recibe un alto fijo. Para llevar algo
+/// al pie (un botón, el docente) sirve `MainAxisAlignment.spaceBetween` en
+/// su `Column`; `Spacer` y `Expanded` no, porque en la primera pasada no hay
+/// alto que repartir.
+class RejillaDeTarjetas extends StatelessWidget {
+  final List<Widget> children;
+
+  /// El ancho mínimo de una tarjeta: define cuántas columnas caben.
+  final double anchoMinimo;
+
+  final double separacion;
+
+  /// Tope de columnas, para listas que se ven mal muy angostas.
+  final int? maxColumnas;
+
+  const RejillaDeTarjetas({
+    super.key,
+    required this.children,
+    this.anchoMinimo = 340,
+    this.separacion = 20,
+    this.maxColumnas,
+  });
+
+  /// Cuántas columnas caben en [ancho].
+  static int columnasPara(double ancho,
+      {double anchoMinimo = 340, double separacion = 20, int? maxColumnas}) {
+    var n = math.max(1, ((ancho + separacion) / (anchoMinimo + separacion)).floor());
+    if (maxColumnas != null) n = math.min(n, maxColumnas);
+    return n;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, caja) {
+      final columnas = columnasPara(caja.maxWidth,
+          anchoMinimo: anchoMinimo,
+          separacion: separacion,
+          maxColumnas: maxColumnas);
+      final filas = <Widget>[];
+      for (var i = 0; i < children.length; i += columnas) {
+        if (filas.isNotEmpty) filas.add(SizedBox(height: separacion));
+        filas.add(FilaPareja(
+          columnas: columnas,
+          separacion: separacion,
+          children: children.sublist(
+              i, math.min(i + columnas, children.length)),
+        ));
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: filas,
+      );
+    });
+  }
+}
+
+/// Una fila de [RejillaDeTarjetas]: [columnas] casillas del mismo ancho, y
+/// todos los hijos con el alto del más alto. Si hay menos hijos que
+/// columnas, las casillas sobrantes quedan vacías (la última fila no estira
+/// sus tarjetas a lo ancho).
+class FilaPareja extends MultiChildRenderObjectWidget {
+  final int columnas;
+  final double separacion;
+
+  const FilaPareja({
+    super.key,
+    required this.columnas,
+    required this.separacion,
+    required super.children,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      RenderFilaPareja(columnas, separacion);
+
+  @override
+  void updateRenderObject(
+      BuildContext context, RenderFilaPareja renderObject) {
+    renderObject
+      ..columnas = columnas
+      ..separacion = separacion;
+  }
+}
+
+class _DatosDeFila extends ContainerBoxParentData<RenderBox> {}
+
+class RenderFilaPareja extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _DatosDeFila>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _DatosDeFila> {
+  RenderFilaPareja(this._columnas, this._separacion);
+
+  int _columnas;
+  set columnas(int v) {
+    if (v == _columnas) return;
+    _columnas = v;
+    markNeedsLayout();
+  }
+
+  double _separacion;
+  set separacion(double v) {
+    if (v == _separacion) return;
+    _separacion = v;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _DatosDeFila) child.parentData = _DatosDeFila();
+  }
+
+  @override
+  void performLayout() {
+    final ancho = constraints.maxWidth;
+    final casilla = (ancho - _separacion * (_columnas - 1)) / _columnas;
+    // Primera pasada: el alto natural de cada una.
+    var alto = 0.0;
+    var hijo = firstChild;
+    while (hijo != null) {
+      hijo.layout(BoxConstraints(minWidth: casilla, maxWidth: casilla),
+          parentUsesSize: true);
+      alto = math.max(alto, hijo.size.height);
+      hijo = childAfter(hijo);
+    }
+    // Segunda pasada: todas con el alto de la más alta.
+    var x = 0.0;
+    hijo = firstChild;
+    while (hijo != null) {
+      hijo.layout(BoxConstraints.tight(Size(casilla, alto)));
+      (hijo.parentData! as _DatosDeFila).offset = Offset(x, 0);
+      x += casilla + _separacion;
+      hijo = childAfter(hijo);
+    }
+    size = constraints.constrain(Size(ancho, alto));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+}
+
+/// Cuántos elementos muestra una lista antes de pedir «Ver más»: la ley de
+/// Miller (7 ± 2), que las recomendaciones del 20 de noviembre fijaron en 9.
+const kLimiteDeMiller = 9;
+
+/// Una lista que muestra a lo sumo [limite] elementos y, si hay más, un
+/// botón «Ver más (N)» que despliega el resto (y «Ver menos» para volver).
+///
+/// Para listas de cosas por hacer o por mirar, donde ver 30 de golpe no
+/// ayuda a nadie a decidir.
+class ListaConVerMas extends StatefulWidget {
+  final List<Widget> children;
+  final int limite;
+
+  /// El color del botón; por defecto el acento.
+  final Color? color;
+
+  const ListaConVerMas({
+    super.key,
+    required this.children,
+    this.limite = kLimiteDeMiller,
+    this.color,
+  });
+
+  @override
+  State<ListaConVerMas> createState() => _ListaConVerMasState();
+}
+
+class _ListaConVerMasState extends State<ListaConVerMas> {
+  bool _todo = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.children.length;
+    final sobran = total - widget.limite;
+    final visibles =
+        _todo || sobran <= 0 ? widget.children : widget.children.take(widget.limite);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ...visibles,
+        if (sobran > 0)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey('ver-mas'),
+              style: TextButton.styleFrom(
+                  foregroundColor: widget.color ?? AppColors.gold),
+              onPressed: () => setState(() => _todo = !_todo),
+              icon: Icon(_todo ? Icons.expand_less : Icons.expand_more, size: 18),
+              label: Text(_todo ? tr.comunVerMenos : tr.comunVerMasN(sobran)),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Una foto que, al tocarla, se abre a pantalla completa sobre un fondo
+/// negro: se puede acercar con dos dedos o la rueda, y se cierra con la X,
+/// con Esc o tocando fuera de la foto.
+class FotoAmpliable extends StatelessWidget {
+  final ImageProvider imagen;
+  final Widget child;
+
+  /// Lo que dice el lector de pantalla del botón.
+  final String? descripcion;
+
+  const FotoAmpliable({
+    super.key,
+    required this.imagen,
+    required this.child,
+    this.descripcion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: descripcion ?? tr.comunAmpliarFoto,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.zoomIn,
+        child: GestureDetector(
+          onTap: () => mostrarFotoCompleta(context, imagen),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// Abre [imagen] a pantalla completa. Ver [FotoAmpliable].
+Future<void> mostrarFotoCompleta(BuildContext context, ImageProvider imagen) {
+  return showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: tr.comunCerrar,
+    barrierColor: Colors.black.withValues(alpha: 0.92),
+    transitionDuration: const Duration(milliseconds: 180),
+    transitionBuilder: (_, anim, _, child) =>
+        FadeTransition(opacity: anim, child: child),
+    pageBuilder: (ctx, _, _) => SafeArea(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              // Tocar el fondo cierra; tocar la foto no.
+              onTap: () => Navigator.of(ctx).pop(),
+              child: const ColoredBox(color: Colors.transparent),
+            ),
+          ),
+          Center(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Image(
+                  key: const ValueKey('foto-completa'),
+                  image: imagen,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: IconButton.filled(
+              tooltip: tr.comunCerrar,
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.14),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(),
+              icon: const Icon(Icons.close_rounded),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Botones de página: «‹ 1 2 3 … 9 ›». Muestra la primera, la última y las
+/// vecinas de la actual; lo demás, con «…».
+class Paginador extends StatelessWidget {
+  final int pagina;
+  final int totalPaginas;
+  final ValueChanged<int> alCambiar;
+
+  const Paginador({
+    super.key,
+    required this.pagina,
+    required this.totalPaginas,
+    required this.alCambiar,
+  });
+
+  /// Las páginas a mostrar; `null` es un «…».
+  static List<int?> paginasVisibles(int actual, int total) {
+    if (total <= 7) return [for (var i = 1; i <= total; i++) i];
+    final cerca = {1, total, actual - 1, actual, actual + 1}
+        .where((p) => p >= 1 && p <= total)
+        .toList()
+      ..sort();
+    final salida = <int?>[];
+    for (final p in cerca) {
+      if (salida.isNotEmpty && p - (salida.last ?? p) > 1) salida.add(null);
+      salida.add(p);
+    }
+    return salida;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (totalPaginas <= 1) return const SizedBox.shrink();
+    Widget boton(int p) {
+      final actual = p == pagina;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: Semantics(
+          button: true,
+          selected: actual,
+          label: tr.comunPaginaN(p),
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: TextButton(
+              key: ValueKey('pagina-$p'),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                backgroundColor: actual ? AppColors.relleno : null,
+                foregroundColor: actual ? AppColors.ink : AppColors.textPrimary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: actual ? null : () => alCambiar(p),
+              child: Text('$p',
+                  style: TextStyle(
+                      fontWeight: actual ? FontWeight.w800 : FontWeight.w500,
+                      color: actual ? AppColors.ink : null)),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 6,
+      children: [
+        IconButton(
+          tooltip: tr.comunPaginaAnterior,
+          onPressed: pagina > 1 ? () => alCambiar(pagina - 1) : null,
+          icon: const Icon(Icons.chevron_left),
+        ),
+        for (final p in paginasVisibles(pagina, totalPaginas))
+          p == null
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text('…', style: TextStyle(color: AppColors.textMuted)),
+                )
+              : boton(p),
+        IconButton(
+          tooltip: tr.comunPaginaSiguiente,
+          onPressed:
+              pagina < totalPaginas ? () => alCambiar(pagina + 1) : null,
+          icon: const Icon(Icons.chevron_right),
+        ),
+      ],
+    );
+  }
+}
+
+/// El título de un diálogo con la flecha «Atrás» a su izquierda.
+class TituloConAtras extends StatelessWidget {
+  final String titulo;
+
+  /// Por defecto, cierra el diálogo.
+  final VoidCallback? alVolver;
+
+  const TituloConAtras({
+    super.key,
+    required this.titulo,
+    this.alVolver,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          key: const ValueKey('dialogo-atras'),
+          tooltip: tr.comunVolver,
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.arrow_back, size: 20),
+          onPressed: alVolver ?? () => Navigator.of(context).maybePop(),
+        ),
+        const SizedBox(width: 4),
+        Expanded(child: Text(titulo, style: const TextStyle(fontSize: 18))),
+      ],
     );
   }
 }

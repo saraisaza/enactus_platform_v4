@@ -135,7 +135,7 @@ void main() {
       final api = _api();
       await _montar(tester, api);
 
-      await tester.enterText(_campo(tr.clientesNombre), 'Banco Norte');
+      await tester.enterText(_campo('${tr.clientesNombre} *'), 'Banco Norte');
       await tester.enterText(_campo(tr.clientesColorPrimario), '1a73e8');
       await tester.pump();
 

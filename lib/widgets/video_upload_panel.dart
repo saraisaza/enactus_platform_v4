@@ -159,7 +159,7 @@ class _ZonaDeSoltar extends StatelessWidget {
                           ? tr.subidaReemplazar
                           : tr.subidaArrastre,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary),
                 ),
@@ -237,7 +237,7 @@ class _Problema extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(message,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textPrimary, height: 1.4)),
               ),
             ],
@@ -315,7 +315,7 @@ class _Elegido extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   TextSpan(
                       text: '  $datos',
-                      style: const TextStyle(color: AppColors.textMuted)),
+                      style: TextStyle(color: AppColors.textMuted)),
                 ]),
                 style: const TextStyle(fontSize: 13),
                 overflow: TextOverflow.ellipsis,
@@ -367,7 +367,7 @@ class _Portada extends StatelessWidget {
                     : cover != null
                         ? tr.subidaPortadaDelVideo
                         : tr.subidaSinPortada,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12.5, color: AppColors.textSecondary),
               ),
             ),
@@ -423,7 +423,7 @@ class _VideoActual extends StatelessWidget {
           tr.subidaVideoActual(
                   lesson.videoOriginalName ?? tr.subidaArchivoSubido) +
               (datos.isEmpty ? '' : ' · $datos'),
-          style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
         ),
         const SizedBox(height: 6),
         UploadedLessonPlayer(
@@ -544,7 +544,7 @@ class _Subida extends StatelessWidget {
             const SizedBox(height: 6),
             Text(detalle,
                 style:
-                    const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    TextStyle(fontSize: 12, color: AppColors.textMuted)),
           ],
           const SizedBox(height: 4),
           Text(
@@ -586,7 +586,7 @@ class _Aviso extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12.5, color: AppColors.textPrimary, height: 1.4)),
           ),
         ],

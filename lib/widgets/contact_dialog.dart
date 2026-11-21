@@ -78,7 +78,9 @@ class _ContactDialogState extends State<_ContactDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _name,
-                decoration: InputDecoration(labelText: tr.comunNombre),
+                decoration: InputDecoration(
+                    labelText: obligatorio(tr.comunNombre),
+                    prefixIcon: const Icon(Icons.person_outline, size: 20)),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? tr.comunRequerido : null,
               ),
@@ -88,8 +90,9 @@ class _ContactDialogState extends State<_ContactDialog> {
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
                 autofillHints: const [AutofillHints.email],
-                decoration:
-                    InputDecoration(labelText: tr.ingresoCorreo),
+                decoration: InputDecoration(
+                    labelText: obligatorio(tr.ingresoCorreo),
+                    prefixIcon: const Icon(Icons.mail_outline, size: 20)),
                 validator: (v) {
                   final value = v?.trim() ?? '';
                   if (value.isEmpty) return tr.comunRequerido;
@@ -102,14 +105,16 @@ class _ContactDialogState extends State<_ContactDialog> {
               const SizedBox(height: 14),
               TextFormField(
                 controller: _company,
-                decoration: InputDecoration(labelText: tr.contactoEmpresa),
+                decoration: InputDecoration(
+                    labelText: tr.contactoEmpresa,
+                    prefixIcon: const Icon(Icons.business_outlined, size: 20)),
               ),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _message,
                 maxLines: 4,
                 decoration: InputDecoration(
-                    labelText: tr.contactoMensaje,
+                    labelText: obligatorio(tr.contactoMensaje),
                     hintText:
                         tr.contactoMensajePista),
                 validator: (v) =>

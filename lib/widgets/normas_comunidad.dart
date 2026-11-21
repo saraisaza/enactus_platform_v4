@@ -36,6 +36,9 @@ Future<bool> mostrarNormasDeLaComunidad(
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

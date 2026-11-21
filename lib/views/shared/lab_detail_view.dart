@@ -104,7 +104,7 @@ class _LabBody extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 56, top: 6),
                         child: Text(lab.description,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 14,
                                 height: 1.5,
                                 color: AppColors.textSecondary)),
@@ -230,7 +230,7 @@ class _PhaseCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(title,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary)),
@@ -243,14 +243,14 @@ class _PhaseCard extends StatelessWidget {
           if (phase.description.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(phase.description,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary)),
           ],
           if (phase.deadlineDate != null) ...[
             const SizedBox(height: 6),
             Text(
                 tr.labFechaLimite(fechaCorta(phase.deadlineDate!)),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12, color: AppColors.textMuted)),
           ],
           if (phase.modules.isEmpty)
@@ -262,7 +262,7 @@ class _PhaseCard extends StatelessWidget {
             )
           else ...[
             const SizedBox(height: 10),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: AppColors.border),
             const SizedBox(height: 10),
             for (final module in phase.modules)
               _ModuleRow(module: module, data: data),

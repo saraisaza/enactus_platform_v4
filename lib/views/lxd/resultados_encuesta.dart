@@ -87,7 +87,7 @@ class _ResultadosDeEncuestaViewState extends State<ResultadosDeEncuestaView> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+            Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
             const SizedBox(width: 6),
             Expanded(child: Text(tr.encuestaAnonima, style: tenue)),
           ],

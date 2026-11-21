@@ -8,6 +8,7 @@ import '../providers/data_provider.dart';
 import '../services/api_errors.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatos.dart';
+import 'vista_previa_archivo.dart';
 
 /// Un archivo ya subido a S3, listo para adjuntarse a lo que corresponda.
 ///
@@ -137,6 +138,12 @@ class _FileUploadFieldState extends State<FileUploadField> {
     }
     final bytes = file.bytes ?? await file.xFile.readAsBytes();
     if (!mounted) return;
+    // Antes de subir, lo que se eligió: así se nota a tiempo si era otro.
+    if (!await confirmarAntesDeSubir(context,
+            nombre: file.name, bytes: bytes, contentType: contentType) ||
+        !mounted) {
+      return;
+    }
 
     setState(() {
       _uploading = true;
@@ -197,7 +204,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
               onPressed: full || busy ? null : _pick,
             ),
             Text('${widget.files.length}/${widget.maxFiles}',
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textMuted, fontSize: 12)),
           ],
         ),
@@ -213,7 +220,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
               _progress == 0
                   ? tr.archivoPreparando
                   : tr.archivoSubiendo((_progress * 100).round()),
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textMuted, fontSize: 11.5)),
         ],
         for (final file in widget.files)
@@ -230,7 +237,7 @@ class _FileUploadFieldState extends State<FileUploadField> {
                       style: const TextStyle(fontSize: 12)),
                 ),
                 Text(_humanSize(file.sizeBytes),
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textMuted, fontSize: 11)),
                 IconButton(
                   icon: const Icon(Icons.close, size: 14),

@@ -582,7 +582,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String busquedaEtapa(Object etapa) {
-    return 'Etapa: $etapa';
+    return 'Fase: $etapa';
   }
 
   @override
@@ -724,11 +724,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String etapaDeTotal(Object actual, Object total) {
-    return 'Etapa $actual de $total';
+    return 'Fase $actual de $total';
   }
 
   @override
-  String get etapaFinal => 'Etapa final';
+  String get etapaFinal => 'Fase final';
 
   @override
   String etapaSigue(Object etapa) {
@@ -1570,11 +1570,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get certificadosMisSubtitulo =>
-      'Certificados emitidos por sus LXD al completar una Ruta de Impacto';
+      'Sus certificados de cursos y de Ruta de Impacto, del más reciente al más antiguo.';
 
   @override
   String get certificadosVacio =>
-      'Aún no tiene certificados.\nComplete sus cursos para obtenerlos.';
+      'Aún no tiene certificados.\nLos obtiene al terminar un curso que certifica o una Ruta de Impacto.';
 
   @override
   String certificadoRutaDe(Object laboratorio) {
@@ -1642,7 +1642,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get certificadosVacioRuta =>
-      'Aún no tiene certificados. Complete una Ruta de Impacto para obtener el primero.';
+      'Aún no tiene certificados. Los obtiene al terminar un curso que certifica o una Ruta de Impacto.';
 
   @override
   String certificadosFaltaPoco(Object nombre) {
@@ -2477,7 +2477,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get foroSubtitulo =>
-      'Pregunte, comparta avances y encuentre a quién ya resolvió lo que usted está resolviendo. Escriben estudiantes, mentores y LXD de toda la red.';
+      'Puede preguntar y enriquecerse en este espacio abierto, y participar con temas relacionados con emprendimiento, innovación, sostenibilidad y tecnología.';
 
   @override
   String get foroBuscar => 'Buscar autor, organización o contenido';
@@ -2734,13 +2734,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get proyectosSubtitulo =>
-      'Todos los proyectos activos de la red. Filtre por etapa, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.';
+      'Todos los proyectos activos de la red. Filtre por fase, explore los ODS que atienden y descubra qué está construyendo el resto de los equipos.';
 
   @override
   String get proyectosBuscar => 'Buscar proyecto, comunidad u ODS';
 
   @override
-  String get proyectosTodasEtapas => 'Todas las etapas';
+  String get proyectosTodasEtapas => 'Todas las fases';
 
   @override
   String get proyectosVacio => 'Aún no hay proyectos aquí';
@@ -2751,10 +2751,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get proyectosSinCoincidencias =>
-      'Ningún proyecto coincide con este filtro. Pruebe con otra etapa o limpie la búsqueda.';
+      'Ningún proyecto coincide con este filtro. Pruebe con otra fase o limpie la búsqueda.';
 
   @override
-  String get proyectosVerTodasEtapas => 'Ver todas las etapas';
+  String get proyectosVerTodasEtapas => 'Ver todas las fases';
 
   @override
   String get proyectosProponer => 'Proponer un proyecto';
@@ -3147,7 +3147,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get comunEstudiante => 'Estudiante';
 
   @override
-  String get comunEtapa => 'Etapa';
+  String get comunEtapa => 'Fase';
 
   @override
   String get lxdNecesidad => 'Necesidad';
@@ -4120,7 +4120,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminDonantes => 'Donantes';
 
   @override
-  String get adminProyectosPorEtapa => 'Proyectos por etapa';
+  String get adminProyectosPorEtapa => 'Proyectos por fase';
 
   @override
   String get adminConfigureMetricas =>
@@ -4397,7 +4397,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gestionProyectosSubtitulo =>
-      'Cada proyecto define problema, solución, comunidad, ODS, etapa e indicadores';
+      'Cada proyecto define problema, solución, comunidad, ODS, fase e indicadores';
 
   @override
   String get gestionNuevoProyecto => 'Nuevo proyecto';
@@ -4448,7 +4448,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gestionComunidad => 'Comunidad beneficiada';
 
   @override
-  String get gestionEtapaActual => 'Etapa actual';
+  String get gestionEtapaActual => 'Fase actual';
 
   @override
   String get gestionHabilitarExpo => 'Habilitar RUTA NATIONAL EXPO';
@@ -6730,4 +6730,219 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get calendarioIrAlLaboratorio => 'Ir al laboratorio';
+
+  @override
+  String get temaPasarAClaro => 'Cambiar a modo claro';
+
+  @override
+  String get temaPasarAOscuro => 'Cambiar a modo oscuro';
+
+  @override
+  String get portalPlegarMenu => 'Plegar el menú';
+
+  @override
+  String get portalDesplegarMenu => 'Desplegar el menú';
+
+  @override
+  String comunVerMasN(int n) {
+    return 'Ver más ($n)';
+  }
+
+  @override
+  String get comunVerMenos => 'Ver menos';
+
+  @override
+  String get dashboardVerCalendario => 'Ver calendario';
+
+  @override
+  String get contactoWhatsapp => 'Escríbanos por WhatsApp';
+
+  @override
+  String get comunAmpliarFoto => 'Ver la foto en grande';
+
+  @override
+  String get calendarioAbrirEnlace => 'Abrir enlace';
+
+  @override
+  String get calendarioEnlaceEsReunion =>
+      'Se mostrará el botón «Unirse a la reunión».';
+
+  @override
+  String get calendarioEnlaceEsOtro => 'Se mostrará el botón «Abrir enlace».';
+
+  @override
+  String get calendarioEnlaceInvalido =>
+      'Ese enlace no es válido. Cópielo completo, por ejemplo https://meet.google.com/abc-defg-hij';
+
+  @override
+  String cursoModulosCompletados(int n) {
+    return 'Módulos completados ($n)';
+  }
+
+  @override
+  String get cursoPlegarTodos => 'Plegar todos';
+
+  @override
+  String get cursoDesplegarTodos => 'Desplegar todos';
+
+  @override
+  String cursoModuloLecciones(int hechas, int total) {
+    return '$hechas de $total lecciones';
+  }
+
+  @override
+  String get entregaQuitarArchivo => 'Quitar este archivo';
+
+  @override
+  String entregaQuitarArchivoPregunta(Object archivo) {
+    return '¿Quitar «$archivo» de la entrega?';
+  }
+
+  @override
+  String get entregaQuitarArchivoTexto =>
+      'Quien la revise ya no lo verá. Puede volver a entregar el archivo correcto.';
+
+  @override
+  String get entregaArchivoQuitado => 'Archivo quitado';
+
+  @override
+  String get entregaBorrar => 'Borrar entrega';
+
+  @override
+  String get entregaBorrarPregunta => '¿Borrar esta entrega?';
+
+  @override
+  String get entregaBorrarTexto =>
+      'Se borra con sus archivos. Puede volver a entregar cuando quiera.';
+
+  @override
+  String get entregaBorrada => 'Entrega borrada';
+
+  @override
+  String get cursoVistaPrevia => 'Vista previa';
+
+  @override
+  String get cursoVistaPreviaTexto =>
+      'Vista previa: así ve el curso un estudiante. Puede abrir las lecciones; no se guarda ningún avance.';
+
+  @override
+  String asistentePaso(int n, int total) {
+    return 'Paso $n de $total';
+  }
+
+  @override
+  String get asistenteAnterior => 'Anterior';
+
+  @override
+  String get asistenteSiguiente => 'Siguiente';
+
+  @override
+  String get categoriaPasoLaboratorio => 'Laboratorio y etiquetas';
+
+  @override
+  String get categoriaPasoCompetencias => 'Competencias';
+
+  @override
+  String get categoriaPasoOds => 'ODS';
+
+  @override
+  String get categoriaPasoObjetivos => 'Objetivos';
+
+  @override
+  String get categoriaPasoResultados => 'Resultados y prerrequisitos';
+
+  @override
+  String get usuariosBuscar => 'Buscar por nombre, correo, cédula o teléfono';
+
+  @override
+  String get usuariosFiltroRol => 'Rol';
+
+  @override
+  String usuariosResultados(int desde, int hasta, int total) {
+    return '$desde–$hasta de $total';
+  }
+
+  @override
+  String get comunPaginaAnterior => 'Página anterior';
+
+  @override
+  String get comunPaginaSiguiente => 'Página siguiente';
+
+  @override
+  String comunPaginaN(int n) {
+    return 'Página $n';
+  }
+
+  @override
+  String get perfilFotoVistaPrevia => 'Así se verá su foto';
+
+  @override
+  String get perfilFotoVistaPreviaTexto =>
+      'Se ajustó al círculo tomando el centro de la imagen.';
+
+  @override
+  String get perfilFotoOtra => 'Elegir otra';
+
+  @override
+  String get perfilFotoUsar => 'Usar esta foto';
+
+  @override
+  String get reporteTitulo => 'Reporte de la plataforma';
+
+  @override
+  String get reporteCifras => 'Cifras generales';
+
+  @override
+  String get reporteIndicador => 'Indicador';
+
+  @override
+  String get reporteCantidad => 'Cantidad';
+
+  @override
+  String get reporteHorasPorCompetencia => 'Horas de formación por competencia';
+
+  @override
+  String get reporteHoras => 'Horas';
+
+  @override
+  String get reporteCoberturaOds => 'Cobertura de ODS';
+
+  @override
+  String get reporteAvance => 'Avance';
+
+  @override
+  String get reporteHorasPatrocinadas => 'Horas patrocinadas por empresa';
+
+  @override
+  String reporteArchivo(Object fecha) {
+    return 'reporte-eduxaction-$fecha.pdf';
+  }
+
+  @override
+  String get reporteDescargar => 'Descargar reporte (PDF)';
+
+  @override
+  String get reporteDescargarGrafica => 'Descargar esta gráfica (PNG)';
+
+  @override
+  String get reporteGraficaDescargada => 'Gráfica descargada';
+
+  @override
+  String reporteGraficaArchivo(Object nombre) {
+    return '$nombre.png';
+  }
+
+  @override
+  String get subirVistaPreviaTitulo => '¿Subir este archivo?';
+
+  @override
+  String get subirVistaPreviaSubir => 'Subir';
+
+  @override
+  String certificadosVerTodos(int n) {
+    return 'Ver mis certificados ($n)';
+  }
+
+  @override
+  String get certificadosUltimo => 'El más reciente';
 }

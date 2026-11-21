@@ -419,7 +419,7 @@ class _Footer extends StatelessWidget {
       children: [
         if (description.isNotEmpty) ...[
           Text(description,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13.5,
                   height: 1.45)),
@@ -534,7 +534,7 @@ class _Panel extends StatelessWidget {
           const SizedBox(height: 12),
           Text(title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Padding(
@@ -544,7 +544,7 @@ class _Panel extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                    TextStyle(color: AppColors.textMuted, fontSize: 12)),
           ),
           if (action != null) ...[
             const SizedBox(height: 16),

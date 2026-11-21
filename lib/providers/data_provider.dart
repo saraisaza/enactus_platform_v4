@@ -167,6 +167,7 @@ class DataProvider extends ChangeNotifier {
     // El repaso viaja dentro del glosario y es de la cuenta con sesión.
     _glossaryByCourse.clear();
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     _userById.clear();
     _courseStudents.clear();
     _courseStats.clear();
@@ -1196,6 +1197,41 @@ class DataProvider extends ChangeNotifier {
     return _usersByQuery[key] ?? current;
   }
 
+  final Map<String, AsyncValue<Page<AppUser>>> _paginasDePersonas = {};
+
+  /// Una página de personas, para la tabla de Usuarios del admin: con
+  /// búsqueda ([q]: nombre y, para quien puede verlos, correo, cédula o
+  /// teléfono) y de a [porPagina].
+  ///
+  /// Aparte de [users] porque esa trae hasta 100 de una vez para los
+  /// selectores, y esta trae una página con su total.
+  AsyncValue<Page<AppUser>> paginaDePersonas({
+    String? role,
+    String? clientId,
+    String? q,
+    int pagina = 1,
+    int porPagina = 25,
+  }) {
+    final query = <String, dynamic>{
+      'page': pagina,
+      'pageSize': porPagina,
+      'role': ?role,
+      'clientId': ?clientId,
+      if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+    };
+    final key = query.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final current =
+        _paginasDePersonas[key] ?? const AsyncValue<Page<AppUser>>.idle();
+    _lazy(current, (v) => _paginasDePersonas[key] = v, () async {
+      final json = await api.get('/users', query: query);
+      return Page.fromJson(
+        Map<String, dynamic>.from(json as Map),
+        AppUser.fromJson,
+      );
+    });
+    return _paginasDePersonas[key] ?? current;
+  }
+
   final Map<String, AsyncValue<AppUser>> _userById = {};
 
   AsyncValue<AppUser> userById(String id) {
@@ -1216,6 +1252,7 @@ class DataProvider extends ChangeNotifier {
     final json = await api.post('/users', body: fields);
     final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     notifyListeners();
     return user;
   }
@@ -1225,6 +1262,7 @@ class DataProvider extends ChangeNotifier {
     final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
     _userById[id] = AsyncValue.data(user);
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     notifyListeners();
     return user;
   }
@@ -1233,6 +1271,7 @@ class DataProvider extends ChangeNotifier {
     await api.delete('/users/$id');
     _userById.remove(id);
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     notifyListeners();
   }
 
@@ -1260,6 +1299,7 @@ class DataProvider extends ChangeNotifier {
     await api.post('/users/$id/purge');
     _userById.remove(id);
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     await _refresh((v) => _deletionRequests = v, _fetchDeletionRequests,
         _deletionRequests.valueOrNull);
   }
@@ -1293,6 +1333,7 @@ class DataProvider extends ChangeNotifier {
       'ids': laboratoryIds,
     });
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     _userById.remove(studentId);
     await reloadLaboratories();
     notifyListeners();
@@ -1313,6 +1354,7 @@ class DataProvider extends ChangeNotifier {
       'ids': courseIds,
     });
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     _userById.remove(studentId);
     notifyListeners();
     final mapa = Map<String, dynamic>.from(json as Map);
@@ -1338,6 +1380,7 @@ class DataProvider extends ChangeNotifier {
     final user = AppUser.fromJson(Map<String, dynamic>.from(json as Map));
     _userById[id] = AsyncValue.data(user);
     _usersByQuery.clear();
+    _paginasDePersonas.clear();
     notifyListeners();
     return user;
   }
@@ -2034,6 +2077,19 @@ class DataProvider extends ChangeNotifier {
         .post('/submissions/$submissionId/review', body: {'feedback': feedback});
     await reloadSubmissions();
     return Submission.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  /// Borra una entrega propia (lógico): solo mientras no esté calificada ni
+  /// comentada. Lo decide el servidor.
+  Future<void> deleteSubmission(String submissionId) async {
+    await api.delete('/submissions/$submissionId');
+    await reloadSubmissions();
+  }
+
+  /// Quita UN archivo de una entrega propia, con las mismas reglas.
+  Future<void> deleteSubmissionFile(String submissionId, String fileId) async {
+    await api.delete('/submissions/$submissionId/files/$fileId');
+    await reloadSubmissions();
   }
 
   // -------------------------------------------------------------------------

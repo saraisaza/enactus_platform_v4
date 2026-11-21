@@ -10,6 +10,7 @@ import 'providers/data_provider.dart';
 import 'services/api_service.dart';
 import 'utils/url_strategy.dart';
 import 'utils/app_theme.dart';
+import 'utils/tema.dart';
 import 'utils/constants.dart';
 import 'utils/marca.dart';
 import 'utils/orientacion.dart';
@@ -47,6 +48,8 @@ Future<void> main() async {
   // al de la interfaz. (Antes había una veintena de `DateFormat` sin `'es'`
   // que mostraban "30 Sep 2026" en medio de una interfaz en español.)
   await Idioma.instancia.cargar();
+  // Claro u oscuro, lo que la persona eligió en el encabezado.
+  await Tema.instancia.cargar();
 
   // Una versión de tienda móvil compilada sin `--dart-define=API_BASE_URL`
   // apuntaría a `http://localhost:3000`: abriría vacía, sin explicar por qué,
@@ -196,7 +199,8 @@ class _EnactusAppState extends State<EnactusApp> {
       // marca, con el tema nuevo: botones, pestañas y campos toman el acento
       // del cliente.
       child: ListenableBuilder(
-        listenable: Listenable.merge([Idioma.instancia, Marca.instancia]),
+        listenable: Listenable.merge(
+            [Idioma.instancia, Marca.instancia, Tema.instancia]),
         builder: (context, _) => MaterialApp(
         title: 'eduXaction Colombia',
         debugShowCheckedModeBanner: false,
@@ -208,7 +212,9 @@ class _EnactusAppState extends State<EnactusApp> {
         // pantallas (el encabezado y el video también lo fijan). Sin esto,
         // en un iPhone en modo claro salían oscuras sobre fondo oscuro.
         builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SystemUiOverlayStyle.light,
+          value: Tema.oscuro
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark,
           child: child ?? const SizedBox.shrink(),
         ),
         home: initialRoute == null ? const _Bootstrap() : null,
@@ -412,7 +418,7 @@ class _RoleGuard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     if (auth.isRestoring) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(child: BrandLoader()),
       );
@@ -434,7 +440,7 @@ class _AuthGuard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     if (auth.isRestoring) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.background,
         body: Center(child: BrandLoader()),
       );

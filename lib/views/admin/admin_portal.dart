@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +21,7 @@ import 'admin_clients.dart';
 import 'admin_management.dart';
 import 'admin_site_content.dart';
 import 'admin_users.dart';
+import '../../services/reporte_admin.dart';
 
 /// Portal de administración. [isSuperAdmin] habilita lo exclusivo del Super
 /// Admin: crear cuentas de administrador y restaurar respaldos.
@@ -37,6 +41,7 @@ class AdminPortal extends StatelessWidget {
             icon: Icons.dashboard_outlined,
             builder: (_) => const AdminDashboard()),
         PortalTab(
+            id: PortalShell.pestanaCalendario,
             label: tr.tabCalendario,
             destacada: true,
             icon: Icons.calendar_month_outlined,
@@ -102,8 +107,73 @@ class AdminPortal extends StatelessWidget {
 /// porque el navegador tenía la base entera; contra una API paginada de a 100
 /// ese conteo dejaría de crecer al llegar a cien y mostraría un número que
 /// parece bien y está mal.
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
+
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  /// Las gráficas, para tomarlas como imagen en el reporte.
+  final _porRol = GlobalKey();
+  final _porFase = GlobalKey();
+  bool _armando = false;
+
+  List<(String, int)> _proyectosPorFase(List<Project> proyectos) => [
+        for (final fase in ProjectStage.all)
+          if (proyectos.any((p) => p.stage == fase))
+            (
+              ProjectStage.label(fase),
+              proyectos.where((p) => p.stage == fase).length
+            ),
+      ];
+
+  /// El reporte en PDF: cifras, las dos gráficas tal como se ven y las
+  /// tablas de impacto (recomendaciones del 20 de noviembre).
+  Future<void> _descargarReporte(DataProvider data) async {
+    final metricas = data.impactMetrics.valueOrNull;
+    final proyectos = data.projects.valueOrNull;
+    if (metricas == null || proyectos == null) return;
+    setState(() => _armando = true);
+    try {
+      final graficas = <String, Uint8List>{};
+      for (final (titulo, llave) in [
+        (tr.adminUsuariosPorRol, _porRol),
+        (tr.adminProyectosPorEtapa, _porFase),
+      ]) {
+        final png = await ReporteAdmin.capturar(llave);
+        if (png != null) graficas[titulo] = png;
+      }
+      final pdf = await ReporteAdmin.armar(
+        metricas: metricas,
+        graficas: graficas,
+        proyectosPorFase: _proyectosPorFase(proyectos),
+      );
+      await ReporteAdmin.descargar(pdf);
+    } catch (e) {
+      if (mounted) showAppSnack(context, '$e', error: true);
+    } finally {
+      if (mounted) setState(() => _armando = false);
+    }
+  }
+
+  /// Una gráfica sola, en PNG.
+  Future<void> _descargarGrafica(String titulo, GlobalKey llave) async {
+    final png = await ReporteAdmin.capturar(llave);
+    if (png == null || !mounted) return;
+    final ruta = await FilePicker.saveFile(
+      dialogTitle: tr.reporteDescargarGrafica,
+      fileName: tr.reporteGraficaArchivo(
+          titulo.toLowerCase().replaceAll(RegExp(r'[^a-z0-9áéíóúñ]+'), '-')),
+      type: FileType.custom,
+      allowedExtensions: ['png'],
+      bytes: png,
+    );
+    if (ruta != null && mounted) {
+      showSuccessCheck(context, tr.reporteGraficaDescargada);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +182,23 @@ class AdminDashboard extends StatelessWidget {
     return TabBody(
       title: tr.adminDashboardGeneral,
       subtitle: tr.adminDashboardSubtitulo,
+      actions: [
+        ElevatedButton.icon(
+          key: const ValueKey('descargar-reporte'),
+          icon: _armando
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : const Icon(Icons.picture_as_pdf_outlined, size: 18),
+          label: Text(tr.reporteDescargar),
+          onPressed: _armando ||
+                  data.impactMetrics.valueOrNull == null ||
+                  data.projects.valueOrNull == null
+              ? null
+              : () => _descargarReporte(data),
+        ),
+      ],
       children: [
         combine2(data.impactMetrics, data.projects).when(
           loading: () => const CardListSkeleton(count: 3, height: 110),
@@ -125,7 +212,13 @@ class AdminDashboard extends StatelessWidget {
               children: [
                 _Kpis(counts: metrics.counts),
                 const SizedBox(height: 16),
-                _Charts(counts: metrics.counts, projects: projects),
+                _Charts(
+                  counts: metrics.counts,
+                  projects: projects,
+                  llavePorRol: _porRol,
+                  llavePorFase: _porFase,
+                  alDescargar: _descargarGrafica,
+                ),
                 SectionTitle(tr.adminImpactoFormativo),
                 _ImpactMetricsPanel(metrics: metrics),
               ],
@@ -190,8 +283,17 @@ class _Kpis extends StatelessWidget {
 class _Charts extends StatelessWidget {
   final PlatformCounts counts;
   final List<Project> projects;
+  final GlobalKey llavePorRol;
+  final GlobalKey llavePorFase;
+  final void Function(String titulo, GlobalKey llave) alDescargar;
 
-  const _Charts({required this.counts, required this.projects});
+  const _Charts({
+    required this.counts,
+    required this.projects,
+    required this.llavePorRol,
+    required this.llavePorFase,
+    required this.alDescargar,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -200,6 +302,8 @@ class _Charts extends StatelessWidget {
         final wide = c.maxWidth > 900;
         final byRole = ChartCard(
           title: tr.adminUsuariosPorRol,
+          llaveDeCaptura: llavePorRol,
+          alDescargar: () => alDescargar(tr.adminUsuariosPorRol, llavePorRol),
           child: SimpleBarChart(
             maxY: [
               counts.allStudents,
@@ -225,6 +329,9 @@ class _Charts extends StatelessWidget {
         // vacío sin que nada falle.
         final byStage = ChartCard(
           title: tr.adminProyectosPorEtapa,
+          llaveDeCaptura: llavePorFase,
+          alDescargar: () =>
+              alDescargar(tr.adminProyectosPorEtapa, llavePorFase),
           child: DonutChart(
             data: [
               for (final stage in ProjectStage.all)
@@ -385,7 +492,7 @@ class _OdsCard extends StatelessWidget {
                     SizedBox(
                       width: 60,
                       child: Text(tr.odsNumero(o.number),
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppColors.textSecondary)),
                     ),
                     Expanded(
@@ -400,7 +507,7 @@ class _OdsCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text('${o.completed}/${o.total}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11, color: AppColors.textMuted)),
                   ],
                 ),

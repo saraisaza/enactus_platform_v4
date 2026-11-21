@@ -214,7 +214,7 @@ class _Explicacion extends StatelessWidget {
           Expanded(
             child: Text(
               texto,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, color: AppColors.textMuted, height: 1.45),
             ),
           ),
@@ -405,7 +405,7 @@ class _Vacio extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(texto,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 12.5, color: AppColors.textMuted)),
       );
 }

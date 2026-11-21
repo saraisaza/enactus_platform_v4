@@ -1,13 +1,12 @@
 // El aviso de que algo salió bien («Actividad entregada», «Guardado»…).
 //
-// Antes era un recuadro que se iba solo, con el check dos veces (el ícono y
-// un «✓» al final del texto), el título grande y con el subrayado amarillo
-// doble que Flutter le pone al texto dibujado sin `Material` debajo. Ahora es
-// una tarjeta centrada, de 320 de ancho, con «Continuar» y, cuando hay a dónde
-// ir, una acción secundaria («Ver entrega»).
+// Primero fue un recuadro con el check dos veces y el subrayado amarillo
+// doble; después, una tarjeta centrada con velo que pedía «Continuar». Desde
+// las recomendaciones del 20 de noviembre es un «toast»: entra barriendo
+// desde la derecha en la esquina superior derecha, no tapa nada, se va solo
+// y, cuando hay a dónde ir, ofrece una acción («Ver entrega»).
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +43,9 @@ Future<void> _abrir(
     ),
   ));
   await tester.tap(find.text('entregar'));
-  await tester.pumpAndSettle();
+  // No `pumpAndSettle`: el aviso cuenta su tiempo y se iría antes de mirarlo.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
 }
 
 final _tarjeta = find.byKey(const ValueKey('aviso-de-exito'));
@@ -65,7 +66,6 @@ void main() {
     // línea amarilla doble de advertencia.
     final titulo = tester.widget<Text>(find.text('Actividad entregada'));
     expect(titulo.style?.decoration, TextDecoration.none);
-    expect(titulo.style?.fontSize, 19);
     expect(titulo.style?.fontWeight, FontWeight.w600);
     final estilo = DefaultTextStyle.of(
             tester.element(find.text('Actividad entregada')))
@@ -86,10 +86,33 @@ void main() {
     }
   });
 
-  testWidgets('320 de ancho en el computador; en el teléfono, con margen',
+  testWidgets('arriba a la derecha, sin velo que tape la pantalla',
       (tester) async {
     await _abrir(tester);
-    expect(tester.getSize(_tarjeta).width, 320);
+    final caja = tester.getRect(_tarjeta);
+    expect(caja.width, 360);
+    expect(caja.right, 1200 - 16);
+    expect(caja.top, lessThan(150));
+    // Lo de abajo se sigue pudiendo tocar mientras el aviso está a la vista.
+    var tocado = 0;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () {
+              tocado++;
+              showSuccessCheck(context, 'Guardado');
+            },
+            child: const Text('guardar'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('guardar'));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('guardar'));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tocado, 2);
   });
 
   testWidgets('en una pantalla angosta deja 16 a cada lado', (tester) async {
@@ -97,34 +120,45 @@ void main() {
     expect(tester.getSize(_tarjeta).width, 300 - 32);
   });
 
-  testWidgets('«Continuar» lo cierra, y empieza con el foco', (tester) async {
-    await _abrir(tester);
-    final continuar = find.widgetWithText(TextButton, tr.comunContinuar);
-    expect(Focus.of(tester.element(find.text(tr.comunContinuar))).hasFocus,
-        isTrue);
-    await tester.tap(continuar);
-    await tester.pumpAndSettle();
-    expect(_tarjeta, findsNothing);
+  testWidgets('entra barriendo desde la derecha', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 900);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showSuccessCheck(context, 'Guardado'),
+            child: const Text('guardar'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('guardar'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    final aMitad = tester.getRect(_tarjeta).left;
+    await tester.pump(const Duration(milliseconds: 400));
+    final quieto = tester.getRect(_tarjeta).left;
+    expect(aMitad, greaterThan(quieto));
   });
 
-  testWidgets('Esc lo cierra', (tester) async {
+  testWidgets('se va solo a los pocos segundos', (tester) async {
     await _abrir(tester);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pumpAndSettle();
-    expect(_tarjeta, findsNothing);
-  });
-
-  testWidgets('tocar fuera lo cierra; tocar la tarjeta, no', (tester) async {
-    await _abrir(tester);
-    await tester.tap(find.text('Actividad entregada'));
-    await tester.pumpAndSettle();
     expect(_tarjeta, findsOneWidget);
-    await tester.tapAt(const Offset(20, 20));
+    await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();
     expect(_tarjeta, findsNothing);
   });
 
-  testWidgets('la acción secundaria hace lo suyo y cierra', (tester) async {
+  testWidgets('la X lo cierra', (tester) async {
+    await _abrir(tester);
+    await tester.tap(find.byKey(const ValueKey('aviso-cerrar')));
+    await tester.pumpAndSettle();
+    expect(_tarjeta, findsNothing);
+  });
+
+  testWidgets('la acción hace lo suyo y cierra', (tester) async {
     var vista = false;
     await _abrir(tester,
         accion: tr.actividadVerEntrega, alAccion: () => vista = true);
@@ -134,35 +168,31 @@ void main() {
     expect(_tarjeta, findsNothing);
   });
 
-  testWidgets('sin acción, solo «Continuar»', (tester) async {
-    await _abrir(tester);
-    expect(find.byType(TextButton), findsNWidgets(2),
-        reason: '«entregar», debajo, y «Continuar»');
-  });
-
-  testWidgets('para el lector de pantalla es un diálogo con nombre',
+  testWidgets('el lector de pantalla lo anuncia sin moverle el foco',
       (tester) async {
     final semantica = tester.ensureSemantics();
     await _abrir(tester);
-    expect(
-      tester.getSemantics(_tarjeta),
-      matchesSemantics(
-        label: 'Actividad entregada',
-        scopesRoute: true,
-        namesRoute: true,
-      ),
-    );
+    final nodo = tester.getSemantics(find.byWidgetPredicate(
+        (w) => w is Semantics && (w.properties.liveRegion ?? false)));
+    expect(nodo.label, startsWith('Actividad entregada'));
+    expect(nodo.getSemanticsData().flagsCollection.isLiveRegion,
+        isTrue);
+    expect(nodo.getSemanticsData().flagsCollection.scopesRoute,
+        isFalse,
+        reason: 'no es un diálogo: no se lleva el foco');
     semantica.dispose();
   });
 
   testWidgets('uno nuevo reemplaza al anterior', (tester) async {
     await _abrir(tester);
     showSuccessCheck(tester.element(find.text('entregar')), 'Guardado');
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(_tarjeta, findsOneWidget);
     expect(find.text('Guardado'), findsOneWidget);
     expect(find.text('Actividad entregada'), findsNothing);
   });
+
 
   group('la entrega libre de un curso', () {
     const curso = 'dddddddd-0000-4000-8000-0000000000c1';
@@ -255,18 +285,23 @@ void main() {
       await tester.tap(find.text(tr.actividadEntregaLibre));
       await tester.pumpAndSettle();
       await tester.enterText(
-          find.widgetWithText(TextField, tr.actividadNombreTarea), 'Mi propuesta');
+          find.widgetWithText(TextField, '${tr.actividadNombreTarea} *'), 'Mi propuesta');
       // El servidor ya la tiene: la lista que vuelve a pedirse la trae.
       fake.routes['/submissions'] = pagina([laEntrega()]);
       await tester.tap(find.text(tr.comunEnviar));
-      await tester.pumpAndSettle();
+      // Sin `pumpAndSettle`: el aviso se iría solo antes de mirarlo.
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
 
       expect(find.text(tr.actividadEntregaEnviada), findsOneWidget);
       expect(find.text(tr.entregaRecibidaDetalle), findsOneWidget);
 
       // Se vuelve arriba, como si la persona hubiera seguido mirando.
       await tester.ensureVisible(find.text('Lección 0.0'));
-      await tester.pumpAndSettle();
+      for (var i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
       expect(find.text('Mi propuesta'), findsOneWidget);
       expect(tester.getRect(find.text('Mi propuesta')).top, greaterThan(700),
           reason: 'la tarjeta quedó fuera de la vista');

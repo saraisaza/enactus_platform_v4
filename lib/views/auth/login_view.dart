@@ -11,6 +11,7 @@ import '../../widgets/animated_logo.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/cuenta.dart';
 import '../../widgets/selector_idioma.dart';
+import '../../utils/tema.dart';
 
 /// Login único: identifica el rol del usuario y lo lleva a su portal.
 class LoginView extends StatefulWidget {
@@ -60,7 +61,11 @@ class _LoginViewState extends State<LoginView> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      // Como la portada, siempre en oscuro: es la puerta de la marca.
+      SiempreOscuro(child: _ingreso(context));
+
+  Widget _ingreso(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final enviando = auth.isLoggingIn;
     // Lo que falló al intentar entrar o, si nadie lo intentó todavía, por qué

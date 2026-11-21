@@ -53,7 +53,7 @@ class PendingPortalView extends StatelessWidget {
                     Text(
                       portalName.toUpperCase(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppFonts.display,
                         fontSize: 30,
                         color: AppColors.textPrimary,
@@ -93,13 +93,13 @@ class PendingPortalView extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.person_outline,
+                            Icon(Icons.person_outline,
                                 size: 18, color: AppColors.textMuted),
                             const SizedBox(width: 10),
                             Flexible(
                               child: Text(
                                 tr.pendienteSesionActiva(user.name, Roles.label(user.role)),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                   fontSize: 13,
                                 ),

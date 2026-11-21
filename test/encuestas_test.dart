@@ -124,7 +124,7 @@ void main() {
     testWidgets('calificar de 1 a 5 se guarda con sus etiquetas', (tester) async {
       final fake = await abrir(tester);
       await tester.enterText(
-          find.widgetWithText(TextField, tr.comunTitulo).first, 'Opinión del curso');
+          find.widgetWithText(TextField, '${tr.comunTitulo} *').first, 'Opinión del curso');
       await tester.tap(find.widgetWithText(ChoiceChip, tr.leccionTipoEncuesta));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(OutlinedButton, tr.leccionPregunta));

@@ -101,14 +101,14 @@ class _ResourceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 if (resource.description.isNotEmpty)
                   Text(resource.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis),
                 Text(
                   '${resource.isLink ? 'Enlace' : resource.fileExt.toUpperCase()}'
                   ' · ${fechaCorta(resource.createdAt)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11.5, color: AppColors.textMuted),
                 ),
               ],
@@ -254,7 +254,7 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.comunTitulo),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -295,7 +295,7 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
               autocorrect: false,
               enabled: !_saving,
               decoration: const InputDecoration(
-                  labelText: 'URL', hintText: 'https://…'),
+                  labelText: 'URL *', hintText: 'https://…'),
             ),
         ],
       ),

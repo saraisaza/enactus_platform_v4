@@ -349,7 +349,8 @@ class _EditorDeMoldeState extends State<EditorDeMolde> {
     return Scaffold(
       body: Column(
         children: [
-          AppHeader(portalTitle: tr.moldeTitulo(_nombreDelDueno)),
+          AppHeader(
+              portalTitle: tr.moldeTitulo(_nombreDelDueno), conAtras: true),
           Expanded(
             child: _cargando
                 ? const Center(child: BrandLoader())
@@ -427,7 +428,7 @@ class _EditorDeMoldeState extends State<EditorDeMolde> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(tr.moldeExplicacion(_nombreDelDueno),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 13.5, color: AppColors.textSecondary)),
               const SizedBox(height: 14),
               if (_error != null) ...[
@@ -479,14 +480,14 @@ class _SinMolde extends StatelessWidget {
           const SizedBox(height: 12),
           Text(tr.moldeSinMolde,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 16,
                   fontWeight: AppWeights.uiSemibold,
                   color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           Text(tr.moldeSinMoldeTexto,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -768,12 +769,12 @@ class _Panel extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(tr.moldeDatos,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: AppWeights.uiSemibold,
                 color: AppColors.textPrimary)),
         const SizedBox(height: 4),
         Text(tr.moldeDatosAyuda,
-            style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
         const SizedBox(height: 6),
         for (final campo in [
           ...MoldeDeCertificado.camposDeTexto,
@@ -791,7 +792,7 @@ class _Panel extends StatelessWidget {
         if (valor != null) ...[
           const Divider(height: 28),
           Text(_nombreDelCampo(seleccionado),
-              style: const TextStyle(
+              style: TextStyle(
                   fontWeight: AppWeights.uiSemibold,
                   color: AppColors.textPrimary)),
           const SizedBox(height: 8),
@@ -951,7 +952,7 @@ class _Deslizador extends StatelessWidget {
         SizedBox(
           width: 80,
           child: Text(etiqueta,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         ),
         Expanded(
           child: Slider(

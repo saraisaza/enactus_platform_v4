@@ -80,7 +80,7 @@ Future<void> _abrirEditor(WidgetTester tester, FakeApi fake,
 Finder get _campoVideo => find.byKey(const ValueKey('lesson-video-url'));
 
 Future<void> _escribir(WidgetTester tester, String titulo, String enlace) async {
-  await tester.enterText(find.widgetWithText(TextField, 'Título'), titulo);
+  await tester.enterText(find.widgetWithText(TextField, 'Título *'), titulo);
   await tester.enterText(_campoVideo, enlace);
   await tester.pump();
 }

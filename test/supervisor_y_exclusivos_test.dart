@@ -135,8 +135,8 @@ void main() {
 
       expect(find.text(tr.usuariosSupervisorAyuda), findsOneWidget);
       await tester.enterText(
-          find.widgetWithText(TextField, tr.usuariosNombreCompleto), 'Laura');
-      await tester.enterText(find.widgetWithText(TextField, tr.ingresoCorreo),
+          find.widgetWithText(TextField, '${tr.usuariosNombreCompleto} *'), 'Laura');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.ingresoCorreo} *'),
           'laura@bancoandino.co');
       await tester.enterText(
           find.widgetWithText(TextField, tr.ingresoContrasena), 'Clave123');
@@ -257,7 +257,7 @@ void main() {
       expect(find.text(tr.lxdLaboratorioOpcional), findsNothing);
 
       await tester.enterText(
-          find.widgetWithText(TextField, tr.lxdNombreDelCurso), 'Crédito');
+          find.widgetWithText(TextField, '${tr.lxdNombreDelCurso} *'), 'Crédito');
       await tester.tap(find.text(tr.lxdCrearAbrir));
       await _pasos(tester);
 

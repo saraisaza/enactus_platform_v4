@@ -16,6 +16,17 @@ import 'visor_pdf.dart';
 /// Lo que App Store y Google Play exigen encontrar en «Mi cuenta»: eliminar
 /// la cuenta, la política de privacidad y una forma de contactar al equipo.
 
+/// Cierra la sesión y vuelve a la portada.
+///
+/// Se espera a que termine: cerrar sesión incluye avisarle al servidor para
+/// que revoque el refresh token. Navegar antes dejaría la sesión viva del
+/// otro lado. Lo usan el menú de la cuenta y el pie del menú lateral.
+Future<void> cerrarSesion(BuildContext context) async {
+  final navigator = Navigator.of(context);
+  await context.read<AuthProvider>().logout();
+  navigator.pushNamedAndRemoveUntil(AppRoutes.landing, (_) => false);
+}
+
 /// Abre la política de privacidad en el navegador integrado.
 Future<void> abrirPoliticaDePrivacidad(BuildContext context) async {
   final messenger = ScaffoldMessenger.maybeOf(context);
@@ -188,7 +199,7 @@ class _Punto extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 7, right: 8),
             child: Icon(Icons.circle, size: 6, color: AppColors.textMuted),
           ),
@@ -215,6 +226,9 @@ Future<void> mostrarAcercaDe(BuildContext context) {
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,6 +259,11 @@ Future<void> mostrarAcercaDe(BuildContext context) {
                       icono: (c) => LinkedInIcon(color: c),
                       label: 'LinkedIn',
                       url: SocialLinks.linkedin,
+                    ),
+                    construirBotonSocial(
+                      icono: (c) => WhatsAppIcon(color: c),
+                      label: 'WhatsApp ${SocialLinks.whatsappVisible}',
+                      url: SocialLinks.whatsapp,
                     ),
                   ],
                 ),
@@ -281,7 +300,7 @@ Future<void> mostrarAcercaDe(BuildContext context) {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Text(
                   tr.cuentaDerechos(DateTime.now().year),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12, color: AppColors.textMuted, height: 1.5),
                 ),
               ),

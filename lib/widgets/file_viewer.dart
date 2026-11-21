@@ -156,7 +156,7 @@ class _FileViewerDialogState extends State<_FileViewerDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _Encabezado(nombre: nombre, url: url, tipo: tipo),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: AppColors.border),
             if (tipo == _Tipo.otro)
               _Aviso(
                 mensaje: tr.archivoNoVisible,
@@ -209,7 +209,7 @@ class _Encabezado extends StatelessWidget {
             child: Text(
               nombre,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.w600),
@@ -218,13 +218,13 @@ class _Encabezado extends StatelessWidget {
           if (tipo != _Tipo.otro)
             IconButton(
               tooltip: tr.comunDescargar,
-              icon: const Icon(Icons.download_outlined,
+              icon: Icon(Icons.download_outlined,
                   color: AppColors.textSecondary),
               onPressed: () => _abrirAfuera(context, url),
             ),
           IconButton(
             tooltip: tr.comunCerrar,
-            icon: const Icon(Icons.close, color: AppColors.textSecondary),
+            icon: Icon(Icons.close, color: AppColors.textSecondary),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -287,7 +287,7 @@ class _Aviso extends StatelessWidget {
         children: [
           Text(mensaje,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
           const SizedBox(height: 16),
           FilledButton.icon(

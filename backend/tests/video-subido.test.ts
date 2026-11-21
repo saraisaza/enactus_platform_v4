@@ -11,6 +11,7 @@ import {
 } from '../src/lib/media-storage';
 import { createUploadUrl } from '../src/lib/s3';
 import { resetRateLimits } from '../src/middleware/rate-limit';
+import { drainStorageDeletes } from '../src/services/storage-cleanup';
 import { auth, login, makeTestApp } from './helpers/app';
 import { seedId, seedTestDatabase } from './helpers/db';
 import { FakeMediaStorage } from './helpers/fake-storage';
@@ -25,6 +26,7 @@ import { FakeMediaStorage } from './helpers/fake-storage';
  */
 
 let app: ReturnType<typeof makeTestApp>['app'];
+let db: ReturnType<typeof makeTestApp>['db'];
 let sql: Sql;
 let s3: FakeMediaStorage;
 
@@ -128,6 +130,10 @@ async function leccionConVideo(conPortada = true) {
   return { id, video: abierta.key, portada };
 }
 
+/** Pasan los días de la papelera: lo que había en ella ya se puede borrar. */
+const vencerPapelera = () =>
+  sql`update papelera set borrado_en = now() - interval '31 days'`;
+
 const cola = async () =>
   (
     await sql<{ key: string; attempts: number }[]>`
@@ -137,6 +143,7 @@ const cola = async () =>
 beforeAll(async () => {
   const t = makeTestApp();
   app = t.app;
+  db = t.db;
   sql = t.sql;
   await seedTestDatabase();
   adminToken = (await login(app, 'admin@enactus.co', 'Admin123')).accessToken;
@@ -457,9 +464,18 @@ describe('archivos huérfanos', () => {
     expect(s3.borrados.sort()).toEqual([portada!, video].sort());
   });
 
-  it('borrar la lección borra sus archivos', async () => {
+  it('borrar la lección guarda sus archivos 30 días en la papelera; después se borran', async () => {
     const { id, video, portada } = await leccionConVideo();
     expect((await enviar('DELETE', `/lessons/${id}`, adminToken)).status).toBe(204);
+    // La fila entera queda en la papelera, y sus archivos esperan.
+    const [copia] = await sql<{ datos: { video_s3_key: string } }[]>`
+      select datos from papelera where tabla = 'lessons' and fila_id = ${id}`;
+    expect(copia!.datos.video_s3_key).toBe(video);
+    expect(s3.borrados).toEqual([]);
+    expect((await cola()).map((c) => c.key).sort()).toEqual([portada!, video].sort());
+
+    await vencerPapelera();
+    await drainStorageDeletes(db);
     expect(s3.borrados.sort()).toEqual([portada!, video].sort());
     expect(await cola()).toEqual([]);
   });
@@ -481,6 +497,15 @@ describe('archivos huérfanos', () => {
     expect((await completar(id, abierta)).status).toBe(200);
 
     expect((await enviar('DELETE', `/modules/${moduloId}`, adminToken)).status).toBe(204);
+    // El módulo y su lección, en la papelera: el trigger ve también la
+    // cascada.
+    const enPapelera = await sql<{ tabla: string }[]>`
+      select tabla from papelera where fila_id in (${moduloId}, ${id})`;
+    expect(enPapelera.map((f) => f.tabla).sort()).toEqual(['course_modules', 'lessons']);
+    expect(s3.borrados).toEqual([]);
+
+    await vencerPapelera();
+    await drainStorageDeletes(db);
     expect(s3.borrados).toEqual([abierta.key]);
   });
 
@@ -499,7 +524,8 @@ describe('archivos huérfanos', () => {
     const otra = await leccionConVideo(false);
     await enviar('DELETE', `/lessons/${otra.id}`, adminToken);
     expect(s3.borrados).toContain(video);
-    expect(await cola()).toEqual([]);
+    // Solo queda lo de la lección recién borrada: espera en la papelera.
+    expect((await cola()).map((c) => c.key)).toEqual([otra.video]);
   });
 
   it('una key que volvió a quedar en uso no se borra (restaurar un respaldo)', async () => {
@@ -512,7 +538,8 @@ describe('archivos huérfanos', () => {
     await enviar('DELETE', `/lessons/${otra.id}`, adminToken);
     expect(s3.borrados).not.toContain(video);
     expect(s3.objetos.has(video)).toBe(true);
-    expect(await cola()).toEqual([]);
+    // Solo queda lo de la lección recién borrada: espera en la papelera.
+    expect((await cola()).map((c) => c.key)).toEqual([otra.video]);
   });
 
   it('las keys del seed nunca se anotan: staging y producción comparten el bucket', async () => {

@@ -53,10 +53,12 @@ void main() {
 
   testWidgets('en una pantalla ancha va centrado y los días llenan el ancho',
       (tester) async {
-    await _mostrar(tester, const Size(1800, 1400), [_evento('Sesión', manana)]);
+    // Hasta 1600 de ancho: a pantalla completa en un computador
+    // (recomendaciones del 20 de noviembre; antes el tope era 1100).
+    await _mostrar(tester, const Size(2000, 1400), [_evento('Sesión', manana)]);
     final caja = tester.getRect(find.byKey(const ValueKey('calendario')));
-    expect(caja.width, 1100);
-    expect(caja.left, closeTo((1800 - 1100) / 2, 1));
+    expect(caja.width, 1600);
+    expect(caja.left, closeTo((2000 - 1600) / 2, 1));
     // Un día ocupa una séptima parte (menos la separación), no 92 px.
     final dia = tester.getSize(find.byKey(ValueKey(
         'dia-${hoy.year}-${hoy.month}-${hoy.day}')));
@@ -210,7 +212,7 @@ void main() {
     testWidgets('un evento del curso se guarda con su curso, y nada más',
         (tester) async {
       final fake = await abrir(tester);
-      await tester.enterText(find.widgetWithText(TextField, tr.comunTitulo), 'Taller');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.comunTitulo} *'), 'Taller');
       final cuerpo = await guardar(tester, fake);
       expect(cuerpo['type'], 'open_learning_sync');
       expect(cuerpo['courseId'], _curso);
@@ -221,7 +223,7 @@ void main() {
     testWidgets('toda la organización: dice quién lo verá y manda su id',
         (tester) async {
       final fake = await abrir(tester);
-      await tester.enterText(find.widgetWithText(TextField, tr.comunTitulo), 'Asamblea');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.comunTitulo} *'), 'Asamblea');
       await tester.tap(find.byKey(const ValueKey('destino-organizacion')));
       await tester.pump();
       expect(find.text(tr.calendarioQuienOrganizacion('Banco Andino')), findsOneWidget);
@@ -233,7 +235,7 @@ void main() {
 
     testWidgets('un laboratorio', (tester) async {
       final fake = await abrir(tester);
-      await tester.enterText(find.widgetWithText(TextField, tr.comunTitulo), 'Jornada');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.comunTitulo} *'), 'Jornada');
       await tester.tap(find.byKey(const ValueKey('destino-laboratorio')));
       await tester.pump();
       final cuerpo = await guardar(tester, fake);
@@ -243,7 +245,7 @@ void main() {
 
     testWidgets('sin organizaciones para elegir, no deja guardar', (tester) async {
       await abrir(tester, organizaciones: const []);
-      await tester.enterText(find.widgetWithText(TextField, tr.comunTitulo), 'Asamblea');
+      await tester.enterText(find.widgetWithText(TextField, '${tr.comunTitulo} *'), 'Asamblea');
       await tester.tap(find.byKey(const ValueKey('destino-organizacion')));
       await tester.pump();
       expect(find.text(tr.calendarioSinOrganizaciones), findsOneWidget);

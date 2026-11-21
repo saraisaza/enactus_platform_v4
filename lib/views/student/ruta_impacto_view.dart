@@ -30,6 +30,8 @@ import '../../widgets/lesson_visuals.dart';
 import '../shared/lab_detail_view.dart';
 import 'course_detail_view.dart';
 import '../../widgets/visor_pdf.dart';
+import '../../utils/tema.dart';
+import '../../widgets/calendar_view.dart' show enlaceNormalizado, esEnlaceDeReunion;
 
 /// Flujo completo de la Ruta de Impacto del estudiante:
 /// Laboratorios → Laboratorio (fases) → Fase (objetivos + módulos) →
@@ -146,30 +148,20 @@ class _LabsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      const minCard = 420.0;
-      const gap = 20.0;
-      final columns =
-          math.max(1, ((c.maxWidth + gap) / (minCard + gap)).floor());
-      final width = (c.maxWidth - gap * (columns - 1)) / columns;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: [
-          for (var i = 0; i < labs.length; i++)
-            SizedBox(
-              width: width,
-              child: Entrance(
-                  delayMs: 70 * i,
-                  child: _LabCard(
-                      lab: labs[i],
-                      progress: ruta.labById(labs[i].id),
-                      student: student,
-                      colors: colors)),
-            ),
-        ],
-      );
-    });
+    // Todas las tarjetas de una fila del mismo alto.
+    return RejillaDeTarjetas(
+      anchoMinimo: 420,
+      children: [
+        for (var i = 0; i < labs.length; i++)
+          Entrance(
+              delayMs: 70 * i,
+              child: _LabCard(
+                  lab: labs[i],
+                  progress: ruta.labById(labs[i].id),
+                  student: student,
+                  colors: colors)),
+      ],
+    );
   }
 }
 
@@ -455,21 +447,13 @@ class _OtherLabsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      const minCard = 268.0;
-      const gap = 14.0;
-      final columns =
-          math.max(1, ((c.maxWidth + gap) / (minCard + gap)).floor());
-      final width = (c.maxWidth - gap * (columns - 1)) / columns;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: [
-          for (final lab in labs)
-            SizedBox(width: width, child: _OtherLabCard(lab: lab, colors: colors)),
-        ],
-      );
-    });
+    return RejillaDeTarjetas(
+      anchoMinimo: 268,
+      separacion: 14,
+      children: [
+        for (final lab in labs) _OtherLabCard(lab: lab, colors: colors),
+      ],
+    );
   }
 }
 
@@ -559,7 +543,7 @@ class LabDetailBody extends StatefulWidget {
 }
 
 class _LabDetailBodyState extends State<LabDetailBody> {
-  bool _isDark = true;
+  bool get _isDark => Tema.oscuro;
   ContentColors get _colors => _isDark ? ContentColors.dark : ContentColors.light;
 
   // Siempre navega explícitamente en vez de intentar Navigator.pop(): en
@@ -636,11 +620,6 @@ class _LabDetailBodyState extends State<LabDetailBody> {
                 Row(
                   children: [
                     _BackButton(colors: colors, onTap: () => _goBack(student)),
-                    const Spacer(),
-                    _ContentThemeToggle(
-                        isDark: _isDark,
-                        colors: colors,
-                        onTap: () => setState(() => _isDark = !_isDark)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -677,13 +656,12 @@ class _LabDetailBodyState extends State<LabDetailBody> {
                   final lxdCard = _LabLxdCard(
                       lab: lab, lxd: lxd, accent: accent, colors: colors);
                   if (c.maxWidth > 760) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 150, child: coursesCard),
-                        const SizedBox(width: 20),
-                        Expanded(flex: 100, child: lxdCard),
-                      ],
+                    // Las dos del mismo alto: la del LXD, corta, dejaba un
+                    // hueco debajo.
+                    return FilaPareja(
+                      columnas: 2,
+                      separacion: 20,
+                      children: [coursesCard, lxdCard],
                     );
                   }
                   return Column(
@@ -730,36 +708,6 @@ class _BackButton extends StatelessWidget {
                   style: TextStyle(fontSize: 13, color: hover ? colors.goldInk : colors.text2)),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ContentThemeToggle extends StatelessWidget {
-  final bool isDark;
-  final ContentColors colors;
-  final VoidCallback onTap;
-  const _ContentThemeToggle({required this.isDark, required this.colors, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hover) => GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: hover ? AppColors.gold : colors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              size: 21, color: hover ? AppColors.gold : colors.text2),
         ),
       ),
     );
@@ -1224,8 +1172,12 @@ class _DetailCard extends StatelessWidget {
                 child: Icon(icon, size: 19, color: colors.goldInk),
               ),
               const SizedBox(width: 11),
-              Text(title.toUpperCase(),
-                  style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              // `Flexible`: en una columna angosta el título pasa a dos
+              // líneas en vez de salirse de la tarjeta.
+              Flexible(
+                child: Text(title.toUpperCase(),
+                    style: displayHeading(fontSize: 24, fontWeight: AppWeights.display, color: colors.text)),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1499,7 +1451,7 @@ class _ScheduleMentoriaButton extends StatelessWidget {
               Text(availability, style: const TextStyle(fontSize: 13.5, height: 1.5)),
               const SizedBox(height: 16),
               Text(tr.rutaEscribale(lab.name),
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
+                  style: TextStyle(fontSize: 12.5, color: AppColors.textMuted)),
             ],
           ),
         ),
@@ -1617,22 +1569,18 @@ class _RutaImpactoShortcutState extends State<RutaImpactoShortcut> {
                   colors: colors,
                 )
               else
-                LayoutBuilder(builder: (context, c) {
-                  final left = _PhasePath(lab: selected, colors: colors);
-                  final right = _ExpoCard(group: group, colors: colors);
-                  if (c.maxWidth > 800) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 160, child: left),
-                        const SizedBox(width: 22),
-                        Expanded(flex: 100, child: right),
-                      ],
-                    );
-                  }
-                  return Column(
-                      children: [left, const SizedBox(height: 22), right]);
-                }),
+                // Las fases a todo el ancho y la meta del año debajo, también
+                // a todo el ancho. Antes la meta iba en una columna a la
+                // derecha que terminaba mucho antes que las fases y dejaba
+                // un hueco muerto (recomendaciones del 20 de noviembre).
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _PhasePath(lab: selected, colors: colors),
+                    const SizedBox(height: 22),
+                    _ExpoCard(group: group, colors: colors),
+                  ],
+                ),
             ],
           );
         },
@@ -2127,8 +2075,24 @@ class _ExpoCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // En una pantalla ancha, la lista en columnas: a todo
+                      // el ancho, una sola columna larga dejaba media tarjeta
+                      // vacía.
+                      LayoutBuilder(builder: (context, caja) {
+                        final columnas = caja.maxWidth > 900
+                            ? 3
+                            : caja.maxWidth > 560
+                                ? 2
+                                : 1;
+                        final ancho =
+                            (caja.maxWidth - 16 * (columnas - 1)) / columnas;
+                        return Wrap(
+                          spacing: 16,
+                          children: [
                       for (final item in checklist)
-                        Padding(
+                        SizedBox(
+                          width: ancho,
+                          child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: Row(
                             children: [
@@ -2151,7 +2115,11 @@ class _ExpoCard extends StatelessWidget {
                               ),
                             ],
                           ),
+                          ),
                         ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
           ),
@@ -2347,7 +2315,7 @@ class _MeetingCard extends StatelessWidget {
                           TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   const SizedBox(height: 4),
                   Text(tr.rutaReunase(title),
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
                   // Sin enlace configurado el botón queda apagado y se dice
                   // por qué, en vez de abrir una pestaña en blanco.
@@ -2362,12 +2330,20 @@ class _MeetingCard extends StatelessWidget {
                 ],
               ),
             ),
+            // «Unirse a la reunión» si es Meet o Zoom; «Abrir enlace» si no.
             ElevatedButton.icon(
-              icon: const Icon(Icons.video_call, size: 18),
-              label: Text(tr.calendarioUnirse),
+              icon: Icon(
+                  link.isEmpty || esEnlaceDeReunion(link)
+                      ? Icons.video_call
+                      : Icons.open_in_new,
+                  size: 18),
+              label: Text(link.isEmpty || esEnlaceDeReunion(link)
+                  ? tr.calendarioUnirse
+                  : tr.calendarioAbrirEnlace),
               onPressed: link.isEmpty
                   ? null
-                  : () => abrirReunion(context, link),
+                  : () => abrirReunion(
+                      context, enlaceNormalizado(link)?.toString() ?? link),
             ),
           ],
         ),
@@ -2416,7 +2392,7 @@ class _ModuleCourseRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            Icon(Icons.chevron_right, color: AppColors.textMuted),
           ],
         ),
       ),
@@ -2521,7 +2497,7 @@ class _OwnLessonRow extends StatelessWidget {
                                     ? tr.rutaEntrega
                                     : '${tr.rutaEntrega} · ${tr.leccionSeCompletaEntrega}')
                                 : lessonTypeLabel(lesson.type),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.textMuted, fontSize: 12)),
                   ],
                 ),
@@ -2672,7 +2648,7 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(widget.lesson.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 13)),
                 ),
               TextField(

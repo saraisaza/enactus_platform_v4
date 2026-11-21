@@ -110,7 +110,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                     AnimatedRotation(
                       turns: _open ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
-                      child: const Icon(Icons.expand_more,
+                      child: Icon(Icons.expand_more,
                           size: 20, color: AppColors.textMuted),
                     ),
                   ],
@@ -231,7 +231,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                   Text(term.shortDefinition,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
@@ -253,7 +253,7 @@ class _ModuleGlossaryEditorState extends State<ModuleGlossaryEditor> {
                   ? tr.glosarioSinLeccion
                   : tr.glosarioApareceEn(term.lessonIds.length),
               child: Text('${term.lessonIds.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 11.5, color: AppColors.textMuted)),
             ),
           ),
@@ -521,7 +521,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(tr.glosarioModulo(widget.module.title),
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textMuted, fontSize: 12.5)),
             const SizedBox(height: 12),
             TextField(
@@ -533,7 +533,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               textInputAction: TextInputAction.next,
               onChanged: (_) => setState(() => _wordServerError = null),
               decoration: InputDecoration(
-                labelText: tr.glosarioPalabraCampo,
+                labelText: obligatorio(tr.glosarioPalabraCampo),
                 errorText: _wordError,
                 errorMaxLines: 2,
               ),
@@ -548,7 +548,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 500,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                labelText: tr.glosarioDefinicionCorta,
+                labelText: obligatorio(tr.glosarioDefinicionCorta),
                 errorText: _intentado && _definition.text.trim().isEmpty
                     ? tr.glosarioDefinicionObligatoria
                     : null,
@@ -683,7 +683,7 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
   Widget _titulo(String texto) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(texto,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary)),

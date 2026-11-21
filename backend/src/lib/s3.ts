@@ -148,6 +148,32 @@ const DOWNLOAD_URL_TTL_SECONDS = 3600; // 1 hora
  * autorización vive en `services/file-access.ts`, que resuelve la key contra la
  * tabla que la referencia. Firmar sin ese paso equivale a publicar el bucket.
  */
+/**
+ * El `Content-Disposition` con el que S3 entrega un archivo, a prueba de
+ * tildes.
+ *
+ * S3 solo acepta en ese encabezado caracteres de ISO-8859-1 y, si no, responde
+ * **400 InvalidArgument** («Header value cannot be represented using
+ * ISO-8859-1»): un archivo llamado «Presentación.pdf» o «Hoja de vida Muñoz.pdf»
+ * no se podía abrir (recomendaciones del 20 de noviembre, el «Error 400 al
+ * ver un archivo»). Se manda como dice RFC 6266: un `filename` solo ASCII —las
+ * tildes, quitadas— para navegadores viejos, y el nombre real en
+ * `filename*=UTF-8''…` con sus bytes codificados, que es puro ASCII.
+ */
+export function contentDisposition(fileName: string): string {
+  const limpio = fileName.replace(/["\\\r\n]/g, '').trim() || 'archivo';
+  const ascii =
+    limpio
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\x20-\x7e]/g, '_') || 'archivo';
+  const codificado = encodeURIComponent(limpio).replace(
+    /['()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+  return `inline; filename="${ascii}"; filename*=UTF-8''${codificado}`;
+}
+
 export async function createDownloadUrl(input: {
   key: string;
   /** Nombre con el que se descarga. Sin esto el navegador usa el uuid. */
@@ -165,9 +191,7 @@ export async function createDownloadUrl(input: {
     Bucket: env.S3_BUCKET,
     Key: input.key,
     ...(input.fileName
-      ? {
-          ResponseContentDisposition: `inline; filename="${input.fileName.replace(/"/g, '')}"`,
-        }
+      ? { ResponseContentDisposition: contentDisposition(input.fileName) }
       : {}),
   });
 

@@ -51,6 +51,7 @@ class SupervisorPortal extends StatelessWidget {
             icon: Icons.school_outlined,
             builder: (_) => const _SusCursos()),
         PortalTab(
+            id: PortalShell.pestanaCalendario,
             label: tr.tabCalendario,
             icon: Icons.calendar_month_outlined,
             builder: (_) => const _SuCalendario()),
@@ -146,13 +147,13 @@ class _Persona extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(persona.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontWeight: AppWeights.uiSemibold,
                         color: AppColors.textPrimary)),
                 const SizedBox(height: 6),
                 if (avance == null || avance.coursesTotal == 0)
                   Text(tr.supervisorSinCursos,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted))
                 else ...[
                   ThinProgressBar(value: avance.ratio),
@@ -160,7 +161,7 @@ class _Persona extends StatelessWidget {
                   Text(
                     tr.supervisorCursosTerminados(
                         avance.coursesDone, avance.coursesTotal),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
@@ -168,7 +169,7 @@ class _Persona extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right, color: AppColors.textMuted),
+          Icon(Icons.chevron_right, color: AppColors.textMuted),
         ],
       ),
     );
@@ -212,7 +213,7 @@ class _SusCursos extends StatelessWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(curso.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontWeight: AppWeights.uiSemibold,
                                         color: AppColors.textPrimary)),
                               ),
@@ -267,12 +268,12 @@ class _SusCertificados extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(c.studentName,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontWeight: AppWeights.uiSemibold,
                                             color: AppColors.textPrimary)),
                                     Text(
                                         '${c.titulo} · ${fechaCorta(c.issuedAt)}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 12.5,
                                             color: AppColors.textSecondary)),
                                   ],

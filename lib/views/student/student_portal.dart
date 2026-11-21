@@ -25,6 +25,8 @@ import 'ruta_impacto_view.dart' show LabDetailBody, LabsView, RutaImpactoShortcu
 import 'student_calendar_view.dart';
 import 'student_courses_view.dart';
 import 'student_dashboard_view.dart';
+import '../../widgets/recorte_de_foto.dart';
+import '../../utils/tema.dart';
 
 /// Portal del estudiante. Un estudiante Enactus ve Laboratorios y su Ruta
 /// de Impacto; uno de Open Learning solo ve y completa sus cursos
@@ -46,6 +48,9 @@ class StudentPortal extends StatelessWidget {
   /// [PortalTab.id] de la pestaña de laboratorios.
   static const tabLaboratorios = 'laboratorios';
 
+  /// [PortalTab.id] de «Certificados»: el perfil lleva a ella.
+  static const pestanaCertificados = 'certificados';
+
   @override
   Widget build(BuildContext context) {
     final student = context.watch<AuthProvider>().currentUser!;
@@ -59,6 +64,7 @@ class StudentPortal extends StatelessWidget {
           icon: Icons.dashboard_outlined,
           builder: (_) => const StudentDashboardView()),
       PortalTab(
+          id: PortalShell.pestanaCalendario,
           label: tr.tabCalendario,
           destacada: true,
           icon: Icons.calendar_month_outlined,
@@ -92,6 +98,7 @@ class StudentPortal extends StatelessWidget {
             builder: (_) => const ForumView()),
       ],
       PortalTab(
+          id: pestanaCertificados,
           label: tr.tabCertificados,
           icon: Icons.workspace_premium_outlined,
           builder: (_) => const _StudentCertificates()),
@@ -149,14 +156,47 @@ class _StudentCertificates extends StatelessWidget {
 
   Widget _certificateList(List<Certificate> certs) {
     if (certs.isEmpty) {
-      return EmptyState(
-          icon: Icons.workspace_premium_outlined,
-          message:
-              tr.certificadosVacio);
+      // Una empresa habla de capacitaciones, no de Rutas: su texto de
+      // siempre.
+      if (Idioma.instancia.deEmpresa) {
+        return EmptyState(
+            icon: Icons.workspace_premium_outlined,
+            message: tr.certificadosVacio);
+      }
+      // Lo que le falta para el primero: antes solo se veía en el perfil.
+      return _NoCertificatesYet(
+          colors: Tema.oscuro ? ContentColors.dark : ContentColors.light);
     }
+    // Del más reciente al más antiguo, agrupados por mes
+    // (recomendaciones del 20 de noviembre).
+    final ordenados = [...certs]
+      ..sort((a, b) => b.issuedAt.compareTo(a.issuedAt));
+    String mesDe(Certificate c) => mesAnio(c.issuedAt);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...certs.map((cert) => Padding(
+        for (var i = 0; i < ordenados.length; i++) ...[
+          if (i == 0 || mesDe(ordenados[i]) != mesDe(ordenados[i - 1]))
+            Padding(
+              padding: EdgeInsets.only(top: i == 0 ? 0 : 14, bottom: 8),
+              child: Text(
+                mesDe(ordenados[i]).toUpperCase(),
+                key: ValueKey('certificados-mes-$i'),
+                style: TextStyle(
+                    fontSize: 12,
+                    letterSpacing: 1.4,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted),
+              ),
+            ),
+          _tarjetaDeCertificado(ordenados[i]),
+        ],
+      ],
+    );
+  }
+
+  Widget _tarjetaDeCertificado(Certificate cert) {
+    return Builder(builder: (context) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: HoverBuilder(
                   builder: (context, hover) => AnimatedScale(
@@ -185,12 +225,9 @@ class _StudentCertificates extends StatelessWidget {
                       child: LayoutBuilder(builder: (context, caja) {
                         final datos = Row(
                           children: [
-                            AnimatedScale(
-                              scale: hover ? 1.2 : 1.0,
-                              duration: const Duration(milliseconds: 180),
-                              child: Icon(Icons.workspace_premium,
-                                  color: AppColors.gold, size: 34),
-                            ),
+                            // La vista previa: la primera página del
+                            // certificado, chica. Se toca para verlo entero.
+                            _MiniaturaDeCertificado(cert: cert),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
@@ -205,7 +242,7 @@ class _StudentCertificates extends StatelessWidget {
                                         fechaCorta(cert.issuedAt),
                                         cert.issuerName,
                                         cert.code),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppColors.textMuted,
                                         fontSize: 12),
                                   ),
@@ -258,8 +295,45 @@ class _StudentCertificates extends StatelessWidget {
                     ),
                   ),
                 ),
-              )),
-      ],
+              ));
+  }
+}
+
+/// La primera página de un certificado, del tamaño de una estampilla. Mientras
+/// se dibuja —o si no se puede— va la medalla.
+class _MiniaturaDeCertificado extends StatelessWidget {
+  final Certificate cert;
+  const _MiniaturaDeCertificado({required this.cert});
+
+  @override
+  Widget build(BuildContext context) {
+    final medalla = Icon(Icons.workspace_premium, color: AppColors.gold, size: 34);
+    return Semantics(
+      button: true,
+      label: tr.certificadoVerPdf,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => PdfService.ver(context, cert),
+          child: Container(
+            key: ValueKey('miniatura-${cert.id}'),
+            width: 92,
+            height: 66,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: FutureBuilder<Uint8List?>(
+              future: PdfService.miniatura(context.read<DataProvider>(), cert),
+              builder: (context, s) => s.data == null
+                  ? Center(child: medalla)
+                  : Image.memory(s.data!, fit: BoxFit.cover),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -350,14 +424,14 @@ class _StudentProfile extends StatelessWidget {
                 ],
                 colors: colors,
               );
+              // Las dos del mismo alto: lado a lado, una más corta que la
+              // otra hacía ver el perfil como un rompecabezas
+              // (recomendaciones del 20 de noviembre).
               if (c.maxWidth > 760) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: personal),
-                    const SizedBox(width: 20),
-                    Expanded(child: enactusLife),
-                  ],
+                return FilaPareja(
+                  columnas: 2,
+                  separacion: 20,
+                  children: [personal, enactusLife],
                 );
               }
               return Column(
@@ -370,14 +444,13 @@ class _StudentProfile extends StatelessWidget {
             LayoutBuilder(builder: (context, c) {
               final projectCard = _ProjectCard(project: project, colors: colors);
               final certCard = _CertificatesCard(colors: colors);
+              // Mismo ancho y mismo alto que la fila de arriba: las cuatro
+              // tarjetas forman una cuadrícula pareja.
               if (c.maxWidth > 760) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 130, child: projectCard),
-                    const SizedBox(width: 20),
-                    Expanded(flex: 100, child: certCard),
-                  ],
+                return FilaPareja(
+                  columnas: 2,
+                  separacion: 20,
+                  children: [projectCard, certCard],
                 );
               }
               return Column(
@@ -630,7 +703,7 @@ class _IdentityBand extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                const ColoredBox(color: AppColors.slate),
+                ColoredBox(color: AppColors.slate),
                 const CustomPaint(painter: StripePainter()),
                 if (_marcaDeAgua case final marca?)
                   Positioned(
@@ -649,8 +722,10 @@ class _IdentityBand extends StatelessWidget {
           Transform.translate(
             offset: Offset(0, compacto ? -34 : -44),
             child: Padding(
+              // Abajo, nada: el corrimiento hacia arriba ya deja 44 de aire
+              // (antes 28 más esos 44 dejaban la mitad de la tarjeta vacía).
               padding: EdgeInsets.fromLTRB(
-                  compacto ? 20 : 30, 0, compacto ? 20 : 30, 28),
+                  compacto ? 20 : 30, 0, compacto ? 20 : 30, compacto ? 4 : 0),
               child: compacto
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,7 +743,14 @@ class _IdentityBand extends StatelessWidget {
                       children: [
                         avatar,
                         const SizedBox(width: 24),
-                        Expanded(child: identidad),
+                        // El nombre empieza debajo de la franja, no encima:
+                        // montado sobre las rayas no se leía.
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 52),
+                            child: identidad,
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         botonEditar,
                       ],
@@ -944,7 +1026,10 @@ class _ProjectCard extends StatelessWidget {
                     spacing: 7,
                     runSpacing: 7,
                     children: [
-                      for (final o in project!.ods) _ProfileOdsTag(label: o, colors: colors),
+                      for (final o in project!.ods)
+                        // «ODS 6», no el código interno «ods_6».
+                        _ProfileOdsTag(
+                            label: tr.odsNumero(odsNumberFrom(o)), colors: colors),
                     ],
                   ),
                 ],
@@ -1022,15 +1107,39 @@ class _CertificatesCard extends StatelessWidget {
           data.certificates.when(
             loading: () => const CardListSkeleton(count: 2, height: 58),
             error: (e) => ErrorState(e, onRetry: data.reloadCertificates),
-            data: (certs) => certs.isEmpty
-                ? _NoCertificatesYet(colors: colors)
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final cert in certs)
-                        _CertificateRow(cert: cert, colors: colors),
-                    ],
+            // Un resumen, no la lista entera: la lista vive en la pestaña
+            // «Certificados» y antes se repetía acá completa
+            // (recomendaciones del 20 de noviembre, punto 33).
+            data: (certs) {
+              if (certs.isEmpty) return _NoCertificatesYet(colors: colors);
+              final reciente = ([...certs]
+                    ..sort((a, b) => b.issuedAt.compareTo(a.issuedAt)))
+                  .first;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(tr.certificadosUltimo.toUpperCase(),
+                      style: TextStyle(
+                          fontSize: 11,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: colors.text3)),
+                  const SizedBox(height: 6),
+                  _CertificateRow(cert: reciente, colors: colors),
+                  const SizedBox(height: 6),
+                  TextButton.icon(
+                    key: const ValueKey('perfil-ver-certificados'),
+                    style:
+                        TextButton.styleFrom(foregroundColor: colors.goldInk),
+                    icon: const Icon(Icons.arrow_forward, size: 18),
+                    label: Text(tr.certificadosVerTodos(certs.length)),
+                    onPressed: () => PortalShell.irAPestana(
+                        context, StudentPortal.pestanaCertificados),
                   ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -1215,8 +1324,22 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           tr.perfilFotoPesada));
       return;
     }
-    final bytes = file.bytes ?? await file.xFile.readAsBytes();
+    final original = file.bytes ?? await file.xFile.readAsBytes();
     if (!mounted) return;
+
+    // Recortada al cuadrado del centro, para que entre justa en el círculo,
+    // y mostrada antes de subirla (recomendaciones del 20 de noviembre).
+    Uint8List bytes;
+    try {
+      bytes = await recortarAlCuadrado(original);
+    } catch (_) {
+      // Un formato que el navegador no sabe decodificar: se sube tal cual,
+      // como antes, y el círculo la recorta al mostrarla.
+      bytes = original;
+    }
+    if (!mounted) return;
+    final recortada = !identical(bytes, original);
+    if (!await confirmarFotoDePerfil(context, bytes) || !mounted) return;
 
     setState(() {
       _uploading = true;
@@ -1226,8 +1349,11 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     try {
       final uploaded = await context.read<DataProvider>().uploadFile(
             purpose: 'avatar',
-            fileName: file.name,
-            contentType: _contentTypeOf(file.name),
+            fileName: recortada
+                ? '${file.name.split('.').first}.png'
+                : file.name,
+            contentType:
+                recortada ? 'image/png' : _contentTypeOf(file.name),
             bytes: bytes,
             onProgress: (p) {
               if (mounted) setState(() => _uploadProgress = p);
@@ -1319,7 +1445,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 child: Semantics(
                   button: true,
                   label: tr.perfilCambiarFoto,
-                  child: GestureDetector(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
                     onTap: busy ? null : _pickAvatar,
                     child: Stack(
                   children: [
@@ -1370,6 +1498,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   ],
                 ),
                   ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -1380,7 +1509,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 autofillHints: const [AutofillHints.telephoneNumber],
                 textInputAction: TextInputAction.next,
                 onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(labelText: tr.perfilTelefonoEtiqueta),
+                decoration: InputDecoration(
+                    labelText: tr.perfilTelefonoEtiqueta,
+                    prefixIcon: const Icon(Icons.phone_outlined, size: 20)),
               ),
               const SizedBox(height: 14),
               TextField(
@@ -1388,7 +1519,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 enabled: !busy,
                 textInputAction: TextInputAction.done,
                 onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(labelText: tr.perfilCarrera),
+                decoration: InputDecoration(
+                    labelText: tr.perfilCarrera,
+                    prefixIcon: const Icon(Icons.menu_book_outlined, size: 20)),
               ),
               const SizedBox(height: 6),
               Text(

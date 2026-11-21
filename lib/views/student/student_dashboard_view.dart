@@ -176,14 +176,17 @@ class _OverallProgress extends StatelessWidget {
             ? data.rutaProgress.valueOrNull?.laboratories.length
             : 0;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
+    // Sin tarjeta de fondo: el anillo va suelto sobre la página, al lado del
+    // saludo (recomendaciones del 20 de noviembre). Debajo, el acceso
+    // directo al calendario.
+    return Column(
+      // En el teléfono, centrado como el saludo.
+      crossAxisAlignment: context.isCompact
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+      Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           ProgressRing(
@@ -218,6 +221,20 @@ class _OverallProgress extends StatelessWidget {
           ),
         ],
       ),
+      const SizedBox(height: 14),
+      OutlinedButton.icon(
+        key: const ValueKey('inicio-ver-calendario'),
+        onPressed: () =>
+            PortalShell.irAPestana(context, PortalShell.pestanaCalendario),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.goldInk,
+          side: BorderSide(color: colors.goldInk),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        ),
+        icon: const Icon(Icons.calendar_month_outlined, size: 18),
+        label: Text(tr.dashboardVerCalendario),
+      ),
+      ],
     );
   }
 }
@@ -260,8 +277,6 @@ class _DashboardBody extends StatelessWidget {
               delayMs: 60,
               child: _PendingCard(
                   student: student, courses: courses, colors: colors)),
-          const SizedBox(height: 20),
-          Entrance(delayMs: 150, child: _RecentActivityCard(colors: colors)),
           if (project != null) ...[
             const SizedBox(height: 20),
             Entrance(
@@ -789,7 +804,7 @@ class _PendingCard extends StatelessWidget {
       ...mentoring,
       ...toContinue,
       ...teamTasks,
-    ].take(6).toList();
+    ];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
@@ -812,45 +827,19 @@ class _PendingCard extends StatelessWidget {
             Text(tr.dashboardAlDia,
                 style: TextStyle(fontSize: 13.5, color: colors.text3))
           else
-            for (final item in items)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: KeyboardHoverBuilder(
-                  onTap: item.onTap,
-                  builder: (context, hover) => Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 13),
-                    decoration: BoxDecoration(
-                      color: colors.surface2,
-                      borderRadius: BorderRadius.circular(11),
-                      border:
-                          Border(left: BorderSide(color: item.color, width: 3)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(item.icon, size: 19, color: item.color),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(item.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 13.5, color: colors.text)),
-                              Text(item.meta,
-                                  style: TextStyle(
-                                      fontSize: 12, color: colors.text3)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+            // Como alertas: cada una con el fondo teñido de su color —rojo lo
+            // vencido—, borde del mismo tono y el ícono en un círculo. A lo
+            // sumo nueve a la vista; el resto, tras «Ver más».
+            ListaConVerMas(
+              color: colors.goldInk,
+              children: [
+                for (final item in items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _Alerta(item: item, colors: colors),
                   ),
-                ),
-              ),
+              ],
+            ),
         ],
       ),
     );
@@ -906,129 +895,6 @@ void _showChecklistDialog(
   );
 }
 
-class _RecentActivityCard extends StatelessWidget {
-  final ContentColors colors;
-  const _RecentActivityCard({required this.colors});
-
-  @override
-  Widget build(BuildContext context) {
-    final data = context.watch<DataProvider>();
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(tr.dashboardActividadReciente.toUpperCase(),
-              style: displayHeading(
-                  fontSize: 24,
-                  fontWeight: AppWeights.display,
-                  color: colors.text)),
-          const SizedBox(height: 14),
-          // `/submissions` ya devuelve solo las propias cuando quien pregunta
-          // es un estudiante.
-          data.submissions.when(
-            loading: () => const CardSkeleton(height: 80),
-            error: (e) =>
-                ErrorState(e, onRetry: data.reloadSubmissions, compact: true),
-            data: (all) => _lastGraded(context, all),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _lastGraded(BuildContext context, List<Submission> all) {
-    final graded = all.where((s) => s.isGraded).toList()
-      ..sort((a, b) => b.gradedAt!.compareTo(a.gradedAt!));
-
-    if (graded.isEmpty) {
-      return Text(tr.dashboardSinCalificadas,
-          style: TextStyle(fontSize: 13.5, color: colors.text3));
-    }
-
-    final data = context.watch<DataProvider>();
-    final submission = graded.first;
-    final courseId = submission.courseId;
-    final course =
-        courseId == null ? null : data.courseById(courseId).valueOrNull;
-
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  color: colors.goldSoft,
-                  borderRadius: BorderRadius.circular(14)),
-              // La nota se muestra en SU escala: un 100 significa cosas
-              // distintas en `passfail` y en `points100`.
-              child: Text(submission.gradeLabel,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: colors.goldInk,
-                      height: 1.1)),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(submission.taskName,
-                      style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: colors.text)),
-                  Text(
-                      tr.dashboardCalificadoEl(
-                              fechaCorta(submission.gradedAt!)) +
-                          (course?.creatorName == null
-                              ? ''
-                              : ' · ${course!.creatorName}'),
-                      style: TextStyle(fontSize: 12, color: colors.text3)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (submission.feedback.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          Divider(height: 1, color: colors.border),
-          const SizedBox(height: 14),
-          Text('"${submission.feedback}"',
-              style:
-                  TextStyle(fontSize: 13, height: 1.55, color: colors.text2)),
-        ],
-      ],
-    );
-
-    if (course == null) return content;
-    return KeyboardHoverBuilder(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              settings:
-                  RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
-              builder: (_) => CourseDetailView(courseId: course.id))),
-      builder: (context, hover) => content,
-    );
-  }
-}
-
 class _ProjectCard extends StatelessWidget {
   final Project project;
   final ContentColors colors;
@@ -1081,6 +947,65 @@ class _ProjectCard extends StatelessWidget {
               Text(project.impactIndicators,
                   style: TextStyle(fontSize: 13, color: colors.text2)),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Un pendiente con formato de alerta.
+class _Alerta extends StatelessWidget {
+  final _PendingRow item;
+  final ContentColors colors;
+  const _Alerta({required this.item, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final tono = item.color;
+    return KeyboardHoverBuilder(
+      onTap: item.onTap,
+      builder: (context, hover) => AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+        decoration: BoxDecoration(
+          color: tono.withValues(alpha: hover ? 0.16 : 0.10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: tono.withValues(alpha: 0.45)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tono.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(item.icon, size: 18, color: tono),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                          color: colors.text)),
+                  const SizedBox(height: 2),
+                  Text(item.meta,
+                      style: TextStyle(fontSize: 12, color: colors.text2)),
+                ],
+              ),
+            ),
+            if (item.onTap != null)
+              Icon(Icons.chevron_right_rounded, size: 20, color: colors.text3),
           ],
         ),
       ),

@@ -215,7 +215,10 @@ class _ForumViewState extends State<ForumView> {
         final right = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _RulesCard(colors: colors, canModerate: canModerate),
+            _RulesCard(
+                colors: colors,
+                canModerate: canModerate,
+                verBloqueos: veBloqueos(me.role)),
             if (topTeams.isNotEmpty) ...[
               const SizedBox(height: 20),
               _TopTeamsCard(teams: topTeams, colors: colors),
@@ -338,7 +341,11 @@ class _Composer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                Wrap(
+                SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
                   alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 12,
@@ -376,7 +383,7 @@ class _Composer extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
+                )),
               ],
             ),
           ),
@@ -615,7 +622,10 @@ class _PostCardState extends State<_PostCard> {
       AsyncValue<ForumPost>? detalle) {
     final esMia = post.authorId == widget.me.id;
     final bloqueable = sePuedeBloquear(
-        autorId: post.authorId, autorRol: post.authorRole, miId: widget.me.id);
+        autorId: post.authorId,
+        autorRol: post.authorRole,
+        miId: widget.me.id,
+        miRol: widget.me.role);
     return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -964,7 +974,10 @@ class _ReplyTile extends StatelessWidget {
   Widget _menu(BuildContext context) {
     final esMia = reply.authorId == me.id;
     final bloqueable = sePuedeBloquear(
-        autorId: reply.authorId, autorRol: reply.authorRole, miId: me.id);
+        autorId: reply.authorId,
+        autorRol: reply.authorRole,
+        miId: me.id,
+        miRol: me.role);
     final puedeBorrar = esMia || canModerate;
     if (esMia && !puedeBorrar) return const SizedBox.shrink();
     return PopupMenuButton<String>(
@@ -1078,7 +1091,13 @@ class _ReplyTile extends StatelessWidget {
 class _RulesCard extends StatelessWidget {
   final ContentColors colors;
   final bool canModerate;
-  const _RulesCard({required this.colors, required this.canModerate});
+
+  /// Si se ofrece «Personas bloqueadas». Ver `veBloqueos`.
+  final bool verBloqueos;
+  const _RulesCard(
+      {required this.colors,
+      required this.canModerate,
+      this.verBloqueos = true});
 
   static List<(IconData, String)> get _rules => [
         (Icons.handshake_outlined, tr.foroRegla1),
@@ -1125,10 +1144,11 @@ class _RulesCard extends StatelessWidget {
                 onPressed: () => mostrarNormasDeLaComunidad(context),
                 child: Text(tr.foroNormasCompletas),
               ),
-              TextButton(
-                onPressed: () => mostrarPersonasBloqueadas(context),
-                child: Text(tr.foroPersonasBloqueadas),
-              ),
+              if (verBloqueos)
+                TextButton(
+                  onPressed: () => mostrarPersonasBloqueadas(context),
+                  child: Text(tr.foroPersonasBloqueadas),
+                ),
               if (canModerate)
                 TextButton(
                   onPressed: () => ForoReportesView.abrir(context),

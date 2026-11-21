@@ -266,7 +266,7 @@ class GlosarioDeLeccion extends StatelessWidget {
           TextoConGlosario(
             texto: leccion.description,
             terminos: glosario.terms,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.textSecondary, fontSize: 14, height: 1.6),
             onAbrir: (t) => mostrarTerminoDelGlosario(context,
                 termino: t, glosario: glosario),
@@ -352,7 +352,7 @@ class _GlosarioDelModuloState extends State<GlosarioDelModulo> {
                             if (widget.puedeRepasar && porRepasar > 0)
                               tr.glosarioPorRepasar(porRepasar),
                           ].join(' · '),
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.textMuted, fontSize: 12),
                         ),
                       ],
@@ -361,7 +361,7 @@ class _GlosarioDelModuloState extends State<GlosarioDelModulo> {
                   AnimatedRotation(
                     turns: _abierto ? 0.5 : 0,
                     duration: _animacion(context, _rapida),
-                    child: const Icon(Icons.expand_more,
+                    child: Icon(Icons.expand_more,
                         color: AppColors.textMuted),
                   ),
                 ],
@@ -705,7 +705,7 @@ class _GlosarioPanelState extends State<GlosarioPanel> {
       children: [
         Text(
           tr.glosarioAyudaRepaso(sabe, total, repasar),
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
         ),
         const SizedBox(height: 6),
         ThinProgressBar(
@@ -834,13 +834,13 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(t.word,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary)),
                           const SizedBox(height: 4),
                           Text(t.shortDefinition,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13.5,
                                   height: 1.45,
                                   color: AppColors.textSecondary)),
@@ -852,7 +852,7 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                       AnimatedRotation(
                         turns: widget.abierta ? 0.5 : 0,
                         duration: _animacion(context, _rapida),
-                        child: const Icon(Icons.expand_more,
+                        child: Icon(Icons.expand_more,
                             color: AppColors.textMuted),
                       ),
                   ],
@@ -875,7 +875,7 @@ class _TarjetaTerminoState extends State<TarjetaTermino> {
                         const SizedBox(height: 12),
                         if (t.explanation.isNotEmpty) ...[
                           Text(t.explanation,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13.5,
                                   height: 1.55,
                                   color: AppColors.textPrimary)),
@@ -946,7 +946,7 @@ class _Ejemplo extends StatelessWidget {
                   color: AppColors.gold)),
           const SizedBox(height: 4),
           Text(texto,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13.5, height: 1.5, color: AppColors.textPrimary)),
         ],
       ),
@@ -1133,7 +1133,7 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
               children: [
                 Text(t.word,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary)),
@@ -1152,7 +1152,7 @@ class _TarjetaRepasoState extends State<TarjetaRepaso>
         child: SingleChildScrollView(
           child: Text(t.shortDefinition,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 14.5, height: 1.5, color: AppColors.textPrimary)),
         ),
       );
@@ -1310,7 +1310,7 @@ class _Vacio extends StatelessWidget {
           const SizedBox(height: 8),
           Text(texto,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 13.5)),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13.5)),
           ?accion,
         ],
       ),

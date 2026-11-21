@@ -200,7 +200,8 @@ class _CalendarViewState extends State<CalendarView> {
     return Center(
       child: ConstrainedBox(
         key: const ValueKey('calendario'),
-        constraints: const BoxConstraints(maxWidth: 1100),
+        // Ancho completo en cualquier pantalla de computador (era 1100).
+        constraints: const BoxConstraints(maxWidth: 1600),
         child: LayoutBuilder(builder: (context, c) {
           final compacto = c.maxWidth < 640;
           return Column(
@@ -324,7 +325,7 @@ class _CalendarViewState extends State<CalendarView> {
               const SizedBox(width: 6),
               Flexible(
                 child: Text(linea.texto,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textMuted, fontSize: 11.5)),
               ),
             ],
@@ -339,7 +340,7 @@ class _CalendarViewState extends State<CalendarView> {
             Expanded(
               child: Text(w,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 11.5,
                       letterSpacing: 1.2,
@@ -451,12 +452,24 @@ class _CalendarViewState extends State<CalendarView> {
               const SizedBox(height: 4),
             ] else ...[
               const SizedBox(height: 4),
-              for (final e in eventos.take(2)) _Chip(evento: e),
+              // Cada evento es un botón: abre su tarjeta, con su enlace.
+              for (final e in eventos.take(2))
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      setState(() => _selectedDay = dia);
+                      _abrirEvento(e);
+                    },
+                    child: _Chip(evento: e),
+                  ),
+                ),
               if (eventos.length > 2)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text('+${eventos.length - 2}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 10.5, color: AppColors.textMuted)),
                 ),
             ],
@@ -496,8 +509,12 @@ class _CalendarViewState extends State<CalendarView> {
     return _Celda(
       key: ValueKey('dia-${dia.year}-${dia.month}-${dia.day}'),
       alTocar: () => setState(() => _selectedDay = dia),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 300),
+      // Tan alto como ancho (un cuadrado) y no una franja de 300: crece solo
+      // si el día tiene muchos eventos.
+      child: LayoutBuilder(builder: (context, caja) => Container(
+        constraints: BoxConstraints(
+            minHeight:
+                caja.maxWidth.isFinite ? caja.maxWidth.clamp(110, 220) : 140),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: elegido
@@ -516,7 +533,7 @@ class _CalendarViewState extends State<CalendarView> {
           children: [
             Text(diaSemanaCorto(dia).toUpperCase(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 11,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w700,
@@ -541,7 +558,7 @@ class _CalendarViewState extends State<CalendarView> {
             for (final e in eventos) _BloqueDeSemana(evento: e),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -576,7 +593,7 @@ class _CalendarViewState extends State<CalendarView> {
                 child: Column(
                   children: [
                     Text(diaSemanaCorto(dia).toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 10.5,
                             letterSpacing: 1,
                             color: AppColors.textMuted)),
@@ -593,7 +610,7 @@ class _CalendarViewState extends State<CalendarView> {
                     ? Padding(
                         padding: const EdgeInsets.only(top: 10),
                         child: Text(tr.calendarioSinEventos,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12.5, color: AppColors.textMuted)),
                       )
                     : Column(
@@ -603,6 +620,53 @@ class _CalendarViewState extends State<CalendarView> {
                       ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// La tarjeta de un evento, en un diálogo: lo mismo que se ve debajo al
+  /// elegir el día, sin tener que bajar a buscarla.
+  void _abrirEvento(CalendarEvent e) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(20),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    tooltip: tr.comunCerrar,
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ),
+                _EventCard(
+                  event: e,
+                  canManage: widget.canManage,
+                  onEdit: widget.onEditEvent == null
+                      ? null
+                      : (ev) {
+                          Navigator.pop(ctx);
+                          widget.onEditEvent!(ev);
+                        },
+                  onDelete: widget.onDeleteEvent == null
+                      ? null
+                      : (ev) async {
+                          Navigator.pop(ctx);
+                          await widget.onDeleteEvent!(ev);
+                        },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -723,7 +787,7 @@ class _BloqueDeSemana extends StatelessWidget {
           Text(_tituloDe(evento),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, height: 1.3, color: AppColors.textPrimary)),
         ],
       ),
@@ -769,7 +833,7 @@ class _EventCard extends StatelessWidget {
                         fontWeight: FontWeight.w700, fontSize: 14)),
               ),
               Text(hora(event.startsAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted, fontSize: 12)),
             ],
           ),
@@ -785,7 +849,7 @@ class _EventCard extends StatelessWidget {
           if (event.guests.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(event.guests,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                     fontStyle: FontStyle.italic)),
@@ -793,13 +857,7 @@ class _EventCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              ElevatedButton.icon(
-                icon: const Icon(Icons.videocam_outlined, size: 16),
-                label: Text(tr.calendarioUnirse),
-                onPressed: event.meetLink.trim().isEmpty
-                    ? null
-                    : () => abrirReunion(context, event.meetLink),
-              ),
+              BotonDeEnlace(enlace: event.meetLink),
               if (canManage) ...[
                 const Spacer(),
                 IconButton(
@@ -967,6 +1025,9 @@ Future<void> showCalendarEventDialog(
           content: SizedBox(
             width: 480,
             child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -974,7 +1035,7 @@ Future<void> showCalendarEventDialog(
                   if (error != null) ErrorBanner(error!),
                   TextField(
                     controller: title,
-                    decoration: InputDecoration(labelText: tr.comunTitulo),
+                    decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 16),
@@ -1052,7 +1113,7 @@ Future<void> showCalendarEventDialog(
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.visibility_outlined,
+                      Icon(Icons.visibility_outlined,
                           size: 15, color: AppColors.textMuted),
                       const SizedBox(width: 6),
                       Expanded(
@@ -1119,8 +1180,27 @@ Future<void> showCalendarEventDialog(
                     controller: meetLink,
                     keyboardType: TextInputType.url,
                     autocorrect: false,
+                    // Al pegarlo dice qué botón va a ver la gente.
+                    onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
-                        labelText: tr.calendarioLinkReunion),
+                      labelText: tr.calendarioLinkReunion,
+                      prefixIcon: Icon(
+                          esEnlaceDeReunion(meetLink.text)
+                              ? Icons.videocam_outlined
+                              : Icons.link,
+                          size: 20),
+                      helperText: meetLink.text.trim().isEmpty ||
+                              enlaceNormalizado(meetLink.text) == null
+                          ? null
+                          : esEnlaceDeReunion(meetLink.text)
+                              ? tr.calendarioEnlaceEsReunion
+                              : tr.calendarioEnlaceEsOtro,
+                      errorText: meetLink.text.trim().isNotEmpty &&
+                              enlaceNormalizado(meetLink.text) == null
+                          ? tr.calendarioEnlaceInvalido
+                          : null,
+                      errorMaxLines: 3,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   TextField(
@@ -1172,7 +1252,11 @@ Future<void> showCalendarEventDialog(
                 onPressed: guardando ? null : () => Navigator.pop(ctx),
                 child: Text(tr.comunCancelar)),
             ElevatedButton(
-              onPressed: guardando || title.text.trim().isEmpty || faltaDestino
+              onPressed: guardando ||
+                      title.text.trim().isEmpty ||
+                      faltaDestino ||
+                      (meetLink.text.trim().isNotEmpty &&
+                          enlaceNormalizado(meetLink.text) == null)
                   ? null
                   : () async {
                       // Solo el destino que el tipo lleva; lo demás, `null`
@@ -1184,7 +1268,10 @@ Future<void> showCalendarEventDialog(
                             description: description.text.trim(),
                             startsAt: cuando,
                             type: type,
-                            meetLink: meetLink.text.trim(),
+                            // Con https:// si lo pegaron sin él.
+                            meetLink: enlaceNormalizado(meetLink.text)
+                                    ?.toString() ??
+                                '',
                             guests: guests.text.trim(),
                             courseId: type == CalendarEventType.openLearningSync
                                 ? courseId
@@ -1233,4 +1320,55 @@ Future<void> showCalendarEventDialog(
       },
     ),
   );
+}
+
+/// El enlace de un evento con `https://` adelante si la persona lo pegó sin
+/// él («meet.google.com/abc…»), o `null` si no es un enlace.
+Uri? enlaceNormalizado(String texto) {
+  var t = texto.trim();
+  if (t.isEmpty) return null;
+  if (!RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*://').hasMatch(t)) t = 'https://$t';
+  final uri = Uri.tryParse(t);
+  if (uri == null ||
+      (uri.scheme != 'https' && uri.scheme != 'http') ||
+      !uri.host.contains('.') ||
+      uri.host.contains(' ')) {
+    return null;
+  }
+  return uri;
+}
+
+/// Si el enlace es de una videollamada de Google Meet o de Zoom: ahí el
+/// botón dice «Unirse a la reunión»; con cualquier otro, «Abrir enlace»
+/// (recomendaciones del 20 de noviembre).
+bool esEnlaceDeReunion(String texto) {
+  final host = enlaceNormalizado(texto)?.host.toLowerCase() ?? '';
+  return host == 'meet.google.com' ||
+      host == 'zoom.us' ||
+      host.endsWith('.zoom.us') ||
+      host == 'zoom.com' ||
+      host.endsWith('.zoom.com');
+}
+
+/// El botón del enlace de un evento: «Unirse a la reunión» con la cámara si
+/// es Meet o Zoom, «Abrir enlace» si es otra cosa, y nada si no hay enlace.
+class BotonDeEnlace extends StatelessWidget {
+  final String enlace;
+  const BotonDeEnlace({super.key, required this.enlace});
+
+  @override
+  Widget build(BuildContext context) {
+    final uri = enlaceNormalizado(enlace);
+    if (uri == null) return const SizedBox.shrink();
+    final reunion = esEnlaceDeReunion(enlace);
+    return ElevatedButton.icon(
+      key: const ValueKey('boton-del-enlace'),
+      icon: Icon(reunion ? Icons.videocam_outlined : Icons.open_in_new,
+          size: 16),
+      label: Text(reunion ? tr.calendarioUnirse : tr.calendarioAbrirEnlace),
+      // En la app de Meet o Zoom si está instalada, no en un navegador
+      // dentro de eduXaction.
+      onPressed: () => abrirReunion(context, uri.toString()),
+    );
+  }
 }

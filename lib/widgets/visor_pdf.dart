@@ -129,7 +129,7 @@ class _VisorPdfState extends State<VisorPdf> {
             child: Text(
               tr.visorNoAbre,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
         );

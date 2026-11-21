@@ -91,12 +91,12 @@ void main() {
     await _asentar(tester);
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, tr.comunNombre), 'Laura Gómez');
+        find.widgetWithText(TextFormField, '${tr.comunNombre} *'), 'Laura Gómez');
     await tester.enterText(
-        find.widgetWithText(TextFormField, tr.ingresoCorreo), 'laura@empresa.co');
+        find.widgetWithText(TextFormField, '${tr.ingresoCorreo} *'), 'laura@empresa.co');
     await tester.enterText(
         find.widgetWithText(TextFormField, tr.contactoEmpresa), 'Empresa Andina');
-    await tester.enterText(find.widgetWithText(TextFormField, tr.contactoMensaje),
+    await tester.enterText(find.widgetWithText(TextFormField, '${tr.contactoMensaje} *'),
         'Queremos capacitar al equipo de ventas.');
     await tester.tap(find.text(tr.contactoEnviar));
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
@@ -123,11 +123,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('portada-agendar')));
     await _asentar(tester);
     await tester.enterText(
-        find.widgetWithText(TextFormField, tr.comunNombre), 'Ana');
+        find.widgetWithText(TextFormField, '${tr.comunNombre} *'), 'Ana');
     await tester.enterText(
-        find.widgetWithText(TextFormField, tr.ingresoCorreo), 'ana@x.co');
+        find.widgetWithText(TextFormField, '${tr.ingresoCorreo} *'), 'ana@x.co');
     await tester.enterText(
-        find.widgetWithText(TextFormField, tr.contactoMensaje), 'Hola');
+        find.widgetWithText(TextFormField, '${tr.contactoMensaje} *'), 'Hola');
     await tester.tap(find.text(tr.contactoEnviar));
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await _asentar(tester);

@@ -38,7 +38,7 @@ class UserDetailView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          AppHeader(portalTitle: tr.tabPerfilCorto),
+          AppHeader(portalTitle: tr.tabPerfilCorto, conAtras: true),
           Expanded(
             child: data.userById(userId).when(
                   loading: () => const Center(child: BrandLoader()),
@@ -148,7 +148,7 @@ class _Header extends StatelessWidget {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(dato.$2,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary),
                               overflow: TextOverflow.ellipsis),
@@ -194,7 +194,7 @@ class _StudentBody extends StatelessWidget {
                       Text(
                         '${user.team!.groupName} · '
                         '${ProjectMemberRole.label(user.team!.roleInProject)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12.5, color: AppColors.textMuted),
                       ),
                     ],
@@ -250,7 +250,7 @@ class _StudentBody extends StatelessWidget {
                                 style: const TextStyle(fontSize: 13.5)),
                           ),
                           Text('${c.hours} h',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12, color: AppColors.textMuted)),
                         ],
                       ),
@@ -399,7 +399,7 @@ class _SimpleBody extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(l,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary)),
           ),
       ],
@@ -473,7 +473,7 @@ class _LxdBody extends StatelessWidget {
             if (user.canGradeOpenLearning) 'Open Learning',
             if (user.canGradeEnactus) 'eduXaction',
           ].join(', ').ifEmpty(tr.usuarioNingunContexto)),
-          style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 13, color: AppColors.textMuted),
         ),
       ],
     );
@@ -528,7 +528,7 @@ class _MentorBody extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(child: Text(lab.name)),
                           Text(tr.usuarioEstudiantes(lab.studentsAssigned),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12, color: AppColors.textMuted)),
                         ],
                       ),
@@ -541,7 +541,7 @@ class _MentorBody extends StatelessWidget {
         if (user.reviewsCount != null) ...[
           const SizedBox(height: 10),
           Text(tr.usuarioEntregasRevisadas(user.reviewsCount!),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13, color: AppColors.textMuted)),
         ],
       ],

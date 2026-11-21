@@ -33,3 +33,4 @@ export * from './progress';
 export * from './submissions';
 export * from './content';
 export * from './storage';
+export * from './papelera';

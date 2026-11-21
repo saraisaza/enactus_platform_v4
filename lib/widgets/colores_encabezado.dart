@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/marca.dart';
+import '../utils/tema.dart';
 
 /// Los colores de lo que va SOBRE el encabezado.
 ///
@@ -33,18 +34,25 @@ class ColoresEncabezado {
     required this.campo,
   });
 
-  /// El de siempre.
+  /// El de siempre: los grises del modo oscuro, FIJOS. No lee [AppColors]
+  /// porque el encabezado de un cliente con logo claro sigue oscuro también
+  /// en modo claro: su logo no se leería sobre blanco.
   static const oscuro = ColoresEncabezado._(
     claro: false,
-    fondo: AppColors.background,
-    borde: AppColors.border,
-    texto: AppColors.textPrimary,
-    textoSecundario: AppColors.textSecondary,
-    textoTenue: AppColors.textMuted,
-    campo: AppColors.surfaceAlt,
+    fondo: Color(0xFF35343A),
+    borde: Color(0x14FFFFFF),
+    texto: Color(0xFFF2F2F5),
+    textoSecundario: Color(0xFFAEABB0),
+    textoTenue: Color(0xFF8F8C92),
+    campo: Color(0xFF26262A),
   );
 
-  /// El de un cliente con logo oscuro. Los grises se eligieron por contraste
+  /// El que corresponde sin logo de cliente: el oscuro de siempre, o el
+  /// claro en modo claro.
+  static ColoresEncabezado get delTema =>
+      Tema.oscuro ? oscuro : claroDeMarca;
+
+  /// El de un cliente con logo oscuro, y el del modo claro. Los grises se eligieron por contraste
   /// sobre el blanco: el más tenue da 5.4:1.
   static const claroDeMarca = ColoresEncabezado._(
     claro: true,

@@ -84,9 +84,11 @@ void main() {
     expect(find.text('CONTENIDO DEL FORMULARIO'), findsNothing);
   });
 
-  testWidgets('con cambios, la X también pregunta', (tester) async {
+  // La flecha «Volver» del formulario (antes una X: recomendaciones del 20
+  // de noviembre) pregunta igual.
+  testWidgets('con cambios, la flecha de volver también pregunta', (tester) async {
     await _abrir(tester, dirty: true);
-    await tester.tap(find.byTooltip('Cerrar'));
+    await tester.tap(find.byTooltip('Volver'));
     await tester.pumpAndSettle();
     expect(find.text('Descartar cambios'), findsOneWidget);
   });

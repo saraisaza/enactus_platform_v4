@@ -72,7 +72,9 @@ class UniversityPicker extends StatelessWidget {
       // que ya llegaron.
       return InputDecorator(
         decoration: InputDecoration(
-            labelText: label ?? tr.universidadEtiqueta, helperText: helperText),
+            labelText: label ?? tr.universidadEtiqueta,
+            prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
+            helperText: helperText),
         child: Row(
           children: [
             const SizedBox(
@@ -105,14 +107,16 @@ class UniversityPicker extends StatelessWidget {
       initialValue: value == null || value!.isEmpty ? null : value,
       isExpanded: true,
       decoration: InputDecoration(
-          labelText: label ?? tr.universidadEtiqueta, helperText: helperText),
+          labelText: label ?? tr.universidadEtiqueta,
+            prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
+            helperText: helperText),
       onChanged: enabled ? onChanged : null,
       items: [
         if (allowEmpty)
           DropdownMenuItem<String?>(
             value: null,
             child: Text(emptyLabel ?? tr.universidadNinguna,
-                style: const TextStyle(color: AppColors.textSecondary)),
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
         if (seleccionadaFalta)
           DropdownMenuItem<String?>(

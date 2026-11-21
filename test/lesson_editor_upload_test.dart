@@ -208,7 +208,7 @@ void main() {
       (tester) async {
     final fake = _api();
     await _abrir(tester, fake);
-    await tester.enterText(find.widgetWithText(TextField, 'Título'), 'Clase');
+    await tester.enterText(find.widgetWithText(TextField, 'Título *'), 'Clase');
     await _elegirSubir(tester);
     dobles.siguiente = _hevc();
     await _elegirArchivo(tester);
@@ -225,7 +225,7 @@ void main() {
       (tester) async {
     final fake = _api();
     await _abrir(tester, fake);
-    await tester.enterText(find.widgetWithText(TextField, 'Título'), 'Clase grabada');
+    await tester.enterText(find.widgetWithText(TextField, 'Título *'), 'Clase grabada');
     await _elegirSubir(tester);
     dobles.siguiente = _bueno();
     await _elegirArchivo(tester);
@@ -266,7 +266,7 @@ void main() {
       (tester) async {
     final fake = _api();
     await _abrir(tester, fake);
-    await tester.enterText(find.widgetWithText(TextField, 'Título'), 'Clase');
+    await tester.enterText(find.widgetWithText(TextField, 'Título *'), 'Clase');
     await _elegirSubir(tester);
     dobles.siguiente = _bueno();
     await _elegirArchivo(tester);
@@ -300,7 +300,7 @@ void main() {
       },
     });
     await _abrir(tester, fake);
-    await tester.enterText(find.widgetWithText(TextField, 'Título'), 'Clase');
+    await tester.enterText(find.widgetWithText(TextField, 'Título *'), 'Clase');
     await _elegirSubir(tester);
     dobles.siguiente = _bueno();
     await _elegirArchivo(tester);

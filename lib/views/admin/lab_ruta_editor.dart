@@ -84,7 +84,7 @@ class _Body extends StatelessWidget {
                             fontWeight: FontWeight.w700, fontSize: 18),
                         overflow: TextOverflow.ellipsis),
                     Text(tr.rutaEditorVersion(lab.contentVersion),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: AppColors.textMuted)),
                   ],
                 ),
@@ -299,7 +299,7 @@ class _AssignDialogState extends State<_AssignDialog> {
                   const SizedBox(height: 12),
                 ],
                 Text(widget.ayuda,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12.5, color: AppColors.textMuted)),
                 const SizedBox(height: 12),
                 if (valores.$1.isEmpty)
@@ -375,7 +375,7 @@ class _PhaseCard extends StatelessWidget {
                       if (phase.deadline != null)
                         Text(
                           tr.labFechaLimite(fechaCorta(phase.deadlineDate!)),
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12, color: AppColors.textMuted),
                         ),
                     ],
@@ -394,12 +394,12 @@ class _PhaseCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Text(phase.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 13, color: AppColors.textSecondary)),
             ),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: AppColors.border),
           _ObjectivesSection(lab: lab, phase: phase),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: AppColors.border),
           _ModulesSection(lab: lab, phase: phase, data: data),
         ],
       ),
@@ -571,7 +571,11 @@ class _ObjectivesSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
+          SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 12,
@@ -589,7 +593,7 @@ class _ObjectivesSection extends StatelessWidget {
                 ),
               ),
             ],
-          ),
+          )),
           const SizedBox(height: 6),
           if (phase.objectives.isEmpty)
             Text(tr.rutaEditorSinObjetivos,
@@ -787,7 +791,7 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
             controller: _text,
             enabled: !_saving,
             maxLines: 2,
-            decoration: InputDecoration(labelText: tr.rutaEditorObjetivo),
+            decoration: InputDecoration(labelText: obligatorio(tr.rutaEditorObjetivo)),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
@@ -880,7 +884,7 @@ class _ObjectiveCoursesDialogState extends State<_ObjectiveCoursesDialog> {
             ],
             Text(
               tr.rutaEditorCumplido(widget.objective.text),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12.5, color: AppColors.textMuted),
             ),
             if (_seleccion.isEmpty)
@@ -939,7 +943,10 @@ class _ModulesSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
+          // A todo el ancho: el botón del módulo nuevo, a la derecha.
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 12,
@@ -967,6 +974,7 @@ class _ModulesSection extends StatelessWidget {
                 },
               ),
             ],
+          ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1031,7 +1039,7 @@ class _ModuleRow extends StatelessWidget {
             children: [
               ReorderableDragStartListener(
                 index: index,
-                child: const MouseRegion(
+                child: MouseRegion(
                   cursor: SystemMouseCursors.grab,
                   child: Padding(
                     padding: EdgeInsets.all(8),

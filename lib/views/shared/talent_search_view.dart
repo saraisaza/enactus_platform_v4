@@ -91,7 +91,7 @@ class _TalentCard extends StatelessWidget {
                         if (profile.university.isNotEmpty) profile.university,
                         if (profile.city.isNotEmpty) profile.city,
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -191,7 +191,7 @@ class _MiniStat extends StatelessWidget {
           child: Text(label,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, color: AppColors.textSecondary)),
         ),
       ],
@@ -278,7 +278,7 @@ class _ContactDialogState extends State<_ContactDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.talentoAsunto),
+            decoration: InputDecoration(labelText: obligatorio(tr.talentoAsunto)),
           ),
           const SizedBox(height: 12),
           TextField(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/textos.dart';
 import '../models/models.dart';
 import '../providers/data_provider.dart';
 import '../services/api_errors.dart';
@@ -14,7 +15,12 @@ import 'file_viewer.dart';
 /// calificar sin poder abrir el archivo entregado era calificar a ciegas.
 class SubmissionAttachmentRow extends StatelessWidget {
   final SubmissionFile file;
-  const SubmissionAttachmentRow({super.key, required this.file});
+
+  /// Si hay, al lado va una papelera para quitar el archivo de la entrega
+  /// (solo la de quien entregó, mientras nadie la haya revisado).
+  final VoidCallback? alQuitar;
+
+  const SubmissionAttachmentRow({super.key, required this.file, this.alQuitar});
 
   Future<void> _open(BuildContext context) async {
     final data = context.read<DataProvider>();
@@ -30,6 +36,24 @@ class SubmissionAttachmentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fila = _fila(context);
+    if (alQuitar == null) return fila;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: fila),
+        IconButton(
+          key: ValueKey('quitar-archivo-${file.id}'),
+          tooltip: tr.entregaQuitarArchivo,
+          icon: Icon(Icons.delete_outline,
+              size: 18, color: AppColors.statusCritical),
+          onPressed: alQuitar,
+        ),
+      ],
+    );
+  }
+
+  Widget _fila(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: InkWell(

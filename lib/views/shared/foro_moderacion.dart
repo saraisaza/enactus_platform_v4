@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -50,11 +51,22 @@ bool sePuedeBloquear({
   required String autorId,
   required String autorRol,
   required String miId,
+  String? miRol,
 }) =>
+    (miRol == null || veBloqueos(miRol)) &&
     autorId.isNotEmpty &&
     autorId != miId &&
     autorRol != Roles.admin &&
     autorRol != Roles.superAdmin;
+
+/// Si quien mira ve lo de bloquear personas.
+///
+/// Sara pidió (recomendaciones del 20 de noviembre) que el estudiante no vea
+/// «lo de bloqueados»: en la web no lo ve. En la app de teléfono sí queda:
+/// App Store (guía 1.2) exige que en una app donde la gente publica, cada
+/// persona pueda bloquear a quien la molesta, y quien revisa la app entra
+/// como estudiante. Reportar sí lo ven todos, siempre.
+bool veBloqueos(String rol) => !(kIsWeb && Roles.isStudentLike(rol));
 
 /// Reportar una publicación o, con [replyId], una respuesta.
 ///
@@ -131,6 +143,9 @@ class _ReportarDialogState extends State<_ReportarDialog> {
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,7 +215,7 @@ Future<void> confirmarBloqueo(
   }
   try {
     await data.blockForumUser(autorId);
-    if (context.mounted) showAppSnack(context, tr.bloqueoHecho(autorNombre));
+    if (context.mounted) showSuccessCheck(context, tr.bloqueoHecho(autorNombre));
   } on ApiException catch (e) {
     if (context.mounted) showAppSnack(context, e.message, error: true);
   }
@@ -226,6 +241,9 @@ Future<void> mostrarPersonasBloqueadas(BuildContext context) {
                 ? Text(tr.bloqueoNadie,
                     style: TextStyle(color: AppColors.textMuted))
                 : SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -393,7 +411,7 @@ class _TarjetaDeReporteState extends State<_TarjetaDeReporte> {
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           Text(tr.reporteReporto(r.reporterName, fecha),
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,

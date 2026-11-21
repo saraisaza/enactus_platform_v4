@@ -255,7 +255,7 @@ class _StudentCard extends StatelessWidget {
           ),
           if (student.university.isNotEmpty)
             Text(student.university,
-                style: const TextStyle(
+                style: TextStyle(
                     color: AppColors.textMuted, fontSize: 12)),
           const SizedBox(height: 10),
           ThinProgressBar(
@@ -272,7 +272,7 @@ class _StudentCard extends StatelessWidget {
                             ? '—'
                             : decimal(student.avgGrade!),
                         _lastActivity(student)),
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textMuted, fontSize: 12)),
               ),
               _NoteButton(courseId: courseId, student: student),

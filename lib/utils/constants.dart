@@ -123,6 +123,13 @@ class SocialLinks {
   // https y con www: la página se sirve por HTTPS y un enlace en claro
   // provoca un salto extra y una advertencia en algunos navegadores.
   static const linkedin = 'https://www.linkedin.com/company/enactuscolombia/';
+
+  /// El WhatsApp de contacto: +57 300 1956582. `wa.me` abre la conversación
+  /// en la app del teléfono o en WhatsApp Web, según dónde se toque.
+  static const whatsapp = 'https://wa.me/573001956582';
+
+  /// El número tal como se le muestra a la persona.
+  static const whatsappVisible = '+57 300 195 6582';
 }
 
 /// La web de la plataforma en ESTE entorno: los enlaces que salen de la app

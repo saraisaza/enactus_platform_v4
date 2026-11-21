@@ -11,6 +11,7 @@ import '../../widgets/async_states.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/calendar_view.dart'
     show
+        BotonDeEnlace,
         VistaCalendario,
         calendarEventIcon,
         calendarEventTypeLabel,
@@ -20,7 +21,6 @@ import '../../widgets/calendar_view.dart'
         leyendaDelCalendario;
 import '../../widgets/common.dart';
 import '../../widgets/portal_shell.dart';
-import '../../widgets/visor_pdf.dart';
 import 'course_detail_view.dart';
 
 bool _sameDay(DateTime a, DateTime b) =>
@@ -249,7 +249,8 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
+              LayoutBuilder(builder: (context, caja) {
+              final navegacion = Row(
                 children: [
                   IconButton(
                       icon: Icon(Icons.chevron_left, color: colors.text2),
@@ -274,9 +275,8 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                           : tr.calendarioSemanaSiguiente,
                       onPressed: () => _mover(1)),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
+              );
+              final controles = Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 8,
                 runSpacing: 8,
@@ -307,7 +307,22 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                   ),
                   OutlinedButton(onPressed: _irAHoy, child: Text(tr.calendarioHoy)),
                 ],
-              ),
+              );
+              // Como el del administrador: en una pantalla ancha, el mes a
+              // la izquierda y los botones a la derecha, en una sola fila.
+              if (caja.maxWidth < 640) {
+                return Column(children: [
+                  navegacion,
+                  const SizedBox(height: 8),
+                  controles,
+                ]);
+              }
+              return Row(children: [
+                Expanded(child: navegacion),
+                const SizedBox(width: 16),
+                controles,
+              ]);
+              }),
               const SizedBox(height: 14),
               if (_vista == VistaCalendario.mes)
                 _MonthGrid(visibleMonth: _visibleMonth, items: monthItems, colors: colors)
@@ -336,7 +351,12 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
                 Text(tr.calendarioSinProximos,
                     style: TextStyle(fontSize: 13.5, color: colors.text3))
               else
-                for (final i in upcoming) _UpcomingRow(item: i, colors: colors),
+                ListaConVerMas(
+                  color: colors.goldInk,
+                  children: [
+                    for (final i in upcoming) _UpcomingRow(item: i, colors: colors),
+                  ],
+                ),
             ],
           ),
         );
@@ -349,24 +369,18 @@ class _StudentCalendarViewState extends State<StudentCalendarView> {
             title: tr.calendarioAgendaDespejada,
             message: tr.calendarioAgendaDespejadaTexto,
             primaryLabel: tr.comunActualizar,
-            onPrimary: () => showAppSnack(context, tr.comunActualizado),
+            onPrimary: () => showSuccessCheck(context, tr.comunActualizado),
             colors: colors,
           );
         }
 
-        return LayoutBuilder(builder: (context, c) {
-          if (c.maxWidth > 800) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 210, child: month),
-                const SizedBox(width: 22),
-                Expanded(flex: 100, child: upcomingCard),
-              ],
-            );
-          }
-          return Column(children: [month, const SizedBox(height: 22), upcomingCard]);
-        });
+        // A todo el ancho, como el del administrador: el calendario ocupa la
+        // pantalla y lo que viene va debajo, no en una columna aparte que le
+        // quitaba un tercio.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [month, const SizedBox(height: 22), upcomingCard],
+        );
       },
     );
   }
@@ -466,8 +480,11 @@ class _WeekGrid extends StatelessWidget {
 
   Widget _columna(BuildContext context, DateTime dia, DateTime hoy) {
     final esHoy = _sameDay(dia, hoy);
-    return Container(
-      constraints: const BoxConstraints(minHeight: 280),
+    // Tan alto como ancho (un cuadrado) y no una franja de 280: crece solo
+    // si el día tiene muchas cosas.
+    return LayoutBuilder(builder: (context, caja) => Container(
+      constraints: BoxConstraints(
+          minHeight: caja.maxWidth.isFinite ? caja.maxWidth.clamp(110, 220) : 140),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: esHoy ? colors.goldSoft : colors.surface2,
@@ -490,7 +507,7 @@ class _WeekGrid extends StatelessWidget {
           for (final i in _delDia(items, dia)) _bloque(context, i),
         ],
       ),
-    );
+    ));
   }
 
   Widget _fila(BuildContext context, DateTime dia, DateTime hoy) {
@@ -688,11 +705,25 @@ class _DayCell extends StatelessWidget {
                     color: isToday ? colors.bg : colors.text3)),
           ),
           const SizedBox(height: 4),
-          for (final i in items.take(2)) _marca(i),
-          if (items.length > 2)
+          // Cada uno es un botón: abre su detalle, con el botón que lleva al
+          // curso, al laboratorio o a la reunión.
+          for (final i in items.take(3))
+            Tooltip(
+              message: i.titulo,
+              waitDuration: const Duration(milliseconds: 300),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _mostrarDia(context, [i], colors),
+                  child: _marca(i),
+                ),
+              ),
+            ),
+          if (items.length > 3)
             Padding(
               padding: const EdgeInsets.only(top: 3),
-              child: Text('+${items.length - 2}',
+              child: Text('+${items.length - 3}',
                   style: TextStyle(fontSize: 10.5, color: colors.text3)),
             ),
         ],
@@ -897,13 +928,7 @@ class _EventDetailTile extends StatelessWidget {
                     color: colors.text2, fontSize: 12, fontStyle: FontStyle.italic)),
           ],
           const SizedBox(height: 12),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.videocam_outlined, size: 16),
-            label: Text(tr.calendarioUnirse),
-            // En la app de Meet o Zoom si está instalada, no en un
-            // navegador dentro de eduXaction.
-            onPressed: hasLink ? () => abrirReunion(context, event.meetLink) : null,
-          ),
+          if (hasLink) BotonDeEnlace(enlace: event.meetLink),
         ],
       ),
     );

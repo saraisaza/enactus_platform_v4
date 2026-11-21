@@ -92,7 +92,7 @@ void main() {
     await _abrirEliminar(tester);
     expect(find.text('Esto es lo que pasa si elimina su cuenta:'),
         findsOneWidget);
-    await tester.tap(find.byTooltip('Cerrar'));
+    await tester.tap(find.byTooltip('Volver'));
     await _pasos(tester, 4);
 
     await tester.tap(find.byTooltip('Mi cuenta'));

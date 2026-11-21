@@ -213,6 +213,35 @@ describe('datos personales', () => {
   });
 });
 
+describe('búsqueda (recomendaciones del 20 de noviembre)', () => {
+  const EST1 = seedId('est1');
+
+  beforeAll(async () => {
+    await sql`update users set cedula = '1.010.101.010', phone = '+57 315 000 0000'
+              where id = ${EST1}`;
+  });
+
+  it('el admin encuentra por nombre, correo, cédula o teléfono', async () => {
+    for (const q of [
+      'Sara', // nombre
+      'estudiante1@uniandes', // correo
+      '1010101010', // cédula sin puntos
+      '315 000 0000', // teléfono con espacios
+      '3150000000',
+    ]) {
+      const page = await list(T.admin!, `&q=${encodeURIComponent(q)}`);
+      expect(page.data.map((u) => u.id), q).toContain(EST1);
+    }
+  });
+
+  it('quien no ve datos de contacto no puede buscar por ellos', async () => {
+    // El donante ve la ficha recortada: buscar por la cédula diría de quién
+    // es esa cédula.
+    const page = await list(T.donor!, `&q=${encodeURIComponent('1010101010')}`);
+    expect(page.data.map((u) => u.id)).not.toContain(EST1);
+  });
+});
+
 describe('GET /users/:id', () => {
   it('cualquiera puede pedirse a sí mismo', async () => {
     const res = await req(`/users/${seedId('est1')}`, T.student!);

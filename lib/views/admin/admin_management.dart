@@ -17,6 +17,8 @@ import '../../widgets/portal_shell.dart';
 import '../lxd/course_editor_view.dart';
 import '../shared/projects_directory_view.dart' show ProjectDetailView;
 import 'lab_ruta_editor.dart';
+import '../student/course_detail_view.dart';
+import '../../widgets/selector_ods.dart';
 
 /// Las pestañas de gestión del Admin: proyectos, equipos, laboratorios,
 /// cursos y evidencias.
@@ -135,7 +137,7 @@ class _ProjectCard extends StatelessWidget {
           if (project.description.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(project.description,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
@@ -301,7 +303,7 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             ErrorBanner(_error!),
             const SizedBox(height: 12),
           ],
-          _campo(_name, tr.comunNombre),
+          _campo(_name, obligatorio(tr.comunNombre)),
           const SizedBox(height: 12),
           UniversityPicker(
             value: _universityId,
@@ -390,25 +392,19 @@ class _OdsPicker extends StatelessWidget {
     return context.watch<DataProvider>().catalogs.when(
           loading: () => const CardListSkeleton(count: 1, height: 60),
           error: (e) => ErrorBanner(e),
-          data: (catalogs) => Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
+          // Los 17, en una cuadrícula pareja con su color oficial.
+          data: (catalogs) => SelectorDeOds(
+            opciones: [
               for (final o in catalogs.ods)
-                FilterChip(
-                  label: Text(tr.odsNumero(o.number),
-                      style: const TextStyle(fontSize: 12)),
-                  tooltip: o.title,
-                  selected: selected.contains(o.code),
-                  selectedColor: AppColors.gold.withValues(alpha: 0.25),
-                  onSelected: !enabled
-                      ? null
-                      : (sel) => onChanged({
-                            ...selected,
-                            if (sel) o.code,
-                          }..removeWhere((c) => !sel && c == o.code)),
-                ),
+                (codigo: o.code, numero: o.number, titulo: o.title),
             ],
+            elegidos: selected.toSet(),
+            alCambiar: !enabled
+                ? null
+                : (codigo, sel) => onChanged({
+                      ...selected,
+                      if (sel) codigo,
+                    }..removeWhere((c) => !sel && c == codigo)),
           ),
         );
   }
@@ -496,7 +492,7 @@ class _GroupCard extends StatelessWidget {
                     Text(
                       '$projectName'
                       '${group.university.isEmpty ? '' : ' · ${group.university}'}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -638,7 +634,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.gestionNombreEquipo),
+            decoration: InputDecoration(labelText: obligatorio(tr.gestionNombreEquipo)),
           ),
           const SizedBox(height: 12),
           data.projects.when(
@@ -1013,7 +1009,7 @@ class _LabCard extends StatelessWidget {
           if (lab.description.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(lab.description,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
@@ -1139,7 +1135,7 @@ class _LabFormDialogState extends State<_LabFormDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.comunNombre),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunNombre)),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -1261,7 +1257,18 @@ class _CourseCard extends StatelessWidget {
     final data = context.read<DataProvider>();
     final stats = course.stats;
 
+    // Tocar la tarjeta abre la vista previa: el curso como lo ve un
+    // estudiante, sin entrar al modo de edición.
+    void verPrevia() => Navigator.push(
+          context,
+          MaterialPageRoute(
+              settings:
+                  RouteSettings(name: '${AppRoutes.courses}/${course.id}'),
+              builder: (_) =>
+                  CourseDetailView(courseId: course.id, vistaPrevia: true)),
+        );
     return HoverCard(
+      onTap: verPrevia,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1292,7 +1299,7 @@ class _CourseCard extends StatelessWidget {
           Text(
             '${course.laboratoryName ?? 'Open Learning'} · '
             '${course.creatorName ?? 'sin autor'}',
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
           ),
           if (stats != null) ...[
             const SizedBox(height: 8),
@@ -1328,6 +1335,12 @@ class _CourseCard extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
+              OutlinedButton.icon(
+                key: ValueKey('vista-previa-${course.id}'),
+                icon: const Icon(Icons.visibility_outlined, size: 16),
+                label: Text(tr.cursoVistaPrevia),
+                onPressed: verPrevia,
+              ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: Text(tr.comunEditar),
@@ -1431,7 +1444,7 @@ class _EvidenceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 if (evidence.description.isNotEmpty)
                   Text(evidence.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12.5, color: AppColors.textMuted),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis),
@@ -1580,7 +1593,7 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.comunTitulo),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
           ),
           const SizedBox(height: 12),
           TextField(

@@ -604,7 +604,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 child: Row(
@@ -626,7 +626,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
       title: Text(title, style: const TextStyle(fontSize: 18)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
-        child: SingleChildScrollView(child: _form()),
+        child: SingleChildScrollView(
+          // Lugar para la etiqueta flotante del primer campo: sin él,
+          // el desplazamiento la recortaba («Rol» salía cortado).
+          padding: const EdgeInsets.only(top: 8),
+          child: _form()),
       ),
       actions: actions,
     );
@@ -662,7 +666,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         TextField(
           controller: _title,
           enabled: !_saving,
-          decoration: InputDecoration(labelText: tr.comunTitulo),
+          decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -815,7 +819,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             autocorrect: false,
             enabled: !_saving,
             decoration: const InputDecoration(
-                labelText: 'URL', hintText: 'https://…'),
+                labelText: 'URL *', hintText: 'https://…'),
           ),
         ];
       case LessonType.quiz:
@@ -839,7 +843,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
+        SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 12,
@@ -863,7 +871,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                       : QuizQuestionDraft(kind: 'multiple'))),
             ),
           ],
-        ),
+        )),
         const SizedBox(height: 8),
         if (_questions.isEmpty)
           Text(
@@ -1101,7 +1109,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             Row(
               key: ValueKey((q, o, _generacion[q] ?? 0)),
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(right: 10),
                   child: Icon(Icons.radio_button_unchecked,
                       size: 16, color: AppColors.textMuted),
@@ -1339,7 +1347,11 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
               _saving ? null : (v) => setState(() => a.gradingMode = v!),
         ),
         const SizedBox(height: 14),
-        Wrap(
+        SizedBox(
+  // A todo el ancho: un `Wrap` con `spaceBetween` mide lo que su
+  // contenido y deja todo amontonado a la izquierda.
+  width: double.infinity,
+  child: Wrap(
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 12,
@@ -1357,7 +1369,7 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
                       () => a.rubric.add(RubricDraft(points: 20))),
             ),
           ],
-        ),
+        )),
         const SizedBox(height: 6),
         for (var i = 0; i < a.rubric.length; i++)
           Padding(

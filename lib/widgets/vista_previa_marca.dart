@@ -97,7 +97,7 @@ class _Panel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(claro ? tr.clientesModoClaro : tr.clientesModoOscuro,
-            style: const TextStyle(
+            style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
                 fontWeight: AppWeights.uiSemibold)),
@@ -132,7 +132,7 @@ class _Panel extends StatelessWidget {
                             ? Text(nombre,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.textPrimary,
                                     fontWeight: AppWeights.uiSemibold))
                             : LogoDeCliente(
@@ -445,7 +445,7 @@ class InformeDeContraste extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(texto,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12.5,
                           height: 1.4)),

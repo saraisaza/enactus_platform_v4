@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
 import '../utils/formatos.dart';
+import '../l10n/textos.dart';
 
 /// Gráficos del dashboard sobre fl_chart, siguiendo el sistema de
 /// visualización: paleta categórica validada en orden fijo
@@ -13,12 +14,25 @@ class ChartCard extends StatelessWidget {
   final String title;
   final Widget child;
   final double height;
+
+  /// Si hay, al lado del título va un botón para bajar la gráfica.
+  final VoidCallback? alDescargar;
+
+  /// Envuelve la tarjeta en un [RepaintBoundary] con esta llave: así se
+  /// puede tomar como imagen para el reporte.
+  final GlobalKey? llaveDeCaptura;
+
   const ChartCard(
-      {super.key, required this.title, required this.child, this.height = 260});
+      {super.key,
+      required this.title,
+      required this.child,
+      this.height = 260,
+      this.alDescargar,
+      this.llaveDeCaptura});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final tarjeta = Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -28,16 +42,32 @@ class ChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(title,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
+              ),
+              if (alDescargar != null)
+                IconButton(
+                  tooltip: tr.reporteDescargarGrafica,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(Icons.download_outlined,
+                      size: 20, color: AppColors.textSecondary),
+                  onPressed: alDescargar,
+                ),
+            ],
+          ),
           const SizedBox(height: 16),
           SizedBox(height: height, child: child),
         ],
       ),
     );
+    if (llaveDeCaptura == null) return tarjeta;
+    return RepaintBoundary(key: llaveDeCaptura, child: tarjeta);
   }
 }
 
@@ -65,7 +95,7 @@ class SimpleBarChart extends StatelessWidget {
         gridData: FlGridData(
           drawVerticalLine: false,
           getDrawingHorizontalLine: (_) =>
-              const FlLine(color: AppColors.border, strokeWidth: 0.5),
+              FlLine(color: AppColors.border, strokeWidth: 0.5),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
@@ -78,7 +108,7 @@ class SimpleBarChart extends StatelessWidget {
               getTitlesWidget: (v, _) => Text(
                 valueFormat?.call(v) ?? v.toStringAsFixed(0),
                 style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                    TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
             ),
           ),
@@ -93,7 +123,7 @@ class SimpleBarChart extends StatelessWidget {
                   meta: meta,
                   child: Text(
                     data[i].label,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 11),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -109,7 +139,7 @@ class SimpleBarChart extends StatelessWidget {
             getTooltipItem: (group, _, rod, _) => BarTooltipItem(
               '${data[group.x].label}\n'
               '${valueFormat?.call(rod.toY) ?? decimal(rod.toY)}',
-              const TextStyle(
+              TextStyle(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                   fontSize: 12),
@@ -207,7 +237,7 @@ class _DonutChartState extends State<DonutChart> {
                     const SizedBox(width: 7),
                     Text(
                       '${widget.data[i].label} · ${widget.data[i].value.toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 12),
                     ),
                   ],
@@ -239,7 +269,7 @@ class SimpleLineChart extends StatelessWidget {
         gridData: FlGridData(
           drawVerticalLine: false,
           getDrawingHorizontalLine: (_) =>
-              const FlLine(color: AppColors.border, strokeWidth: 0.5),
+              FlLine(color: AppColors.border, strokeWidth: 0.5),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
@@ -250,7 +280,7 @@ class SimpleLineChart extends StatelessWidget {
               showTitles: true,
               reservedSize: 34,
               getTitlesWidget: (v, _) => Text(v.toStringAsFixed(0),
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.textMuted, fontSize: 11)),
             ),
           ),
@@ -267,7 +297,7 @@ class SimpleLineChart extends StatelessWidget {
                 return SideTitleWidget(
                   meta: meta,
                   child: Text(data[i].label,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 11)),
                 );
               },
@@ -280,7 +310,7 @@ class SimpleLineChart extends StatelessWidget {
             getTooltipItems: (spots) => spots
                 .map((s) => LineTooltipItem(
                       '${data[s.x.toInt()].label}: ${s.y.toStringAsFixed(0)}',
-                      const TextStyle(
+                      TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 12),

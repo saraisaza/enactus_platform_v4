@@ -1998,7 +1998,8 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   enabled: !_sending,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
-                      labelText: obligatorio(tr.actividadNombreTarea))),
+                      labelText: obligatorio(tr.actividadNombreTarea),
+                          prefixIcon: const Icon(Icons.assignment_outlined, size: 20))),
               const SizedBox(height: 12),
               TextField(
                   controller: _comment,
@@ -2006,7 +2007,8 @@ class _FreeSubmissionDialogState extends State<_FreeSubmissionDialog> {
                   maxLines: 3,
                   onChanged: (_) => setState(() {}),
                   decoration:
-                      InputDecoration(labelText: tr.comunComentario)),
+                      InputDecoration(labelText: tr.comunComentario,
+                          prefixIcon: const Icon(Icons.chat_bubble_outline, size: 20))),
               const SizedBox(height: 12),
               FileUploadField(
                 purpose: 'submission',

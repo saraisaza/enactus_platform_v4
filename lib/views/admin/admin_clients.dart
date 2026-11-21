@@ -452,6 +452,7 @@ class _EditorDeClienteState extends State<EditorDeCliente> {
           onChanged: (_) => _marcar(() => _errorNombre = null),
           decoration: InputDecoration(
             labelText: obligatorio(tr.clientesNombre),
+                prefixIcon: const Icon(Icons.business_outlined, size: 20),
             errorText: _errorNombre,
           ),
         ),

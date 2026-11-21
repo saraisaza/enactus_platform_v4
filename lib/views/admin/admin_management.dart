@@ -303,7 +303,8 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             ErrorBanner(_error!),
             const SizedBox(height: 12),
           ],
-          _campo(_name, obligatorio(tr.comunNombre)),
+          _campo(_name, obligatorio(tr.comunNombre),
+              icono: Icons.lightbulb_outline),
           const SizedBox(height: 12),
           UniversityPicker(
             value: _universityId,
@@ -318,20 +319,26 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
             helperText: tr.gestionIntegrantesUniversidad,
           ),
           const SizedBox(height: 12),
-          _campo(_description, tr.comunDescripcion, maxLines: 2),
+          _campo(_description, tr.comunDescripcion,
+              maxLines: 2, icono: Icons.notes),
           const SizedBox(height: 12),
-          _campo(_problem, tr.gestionProblema, maxLines: 2),
+          _campo(_problem, tr.gestionProblema,
+              maxLines: 2, icono: Icons.report_problem_outlined),
           const SizedBox(height: 12),
-          _campo(_solution, tr.gestionSolucion, maxLines: 2),
+          _campo(_solution, tr.gestionSolucion,
+              maxLines: 2, icono: Icons.tips_and_updates_outlined),
           const SizedBox(height: 12),
-          _campo(_community, tr.gestionComunidad),
+          _campo(_community, tr.gestionComunidad,
+              icono: Icons.location_on_outlined),
           const SizedBox(height: 12),
-          _campo(_indicators, tr.proyectosIndicadores),
+          _campo(_indicators, tr.proyectosIndicadores,
+              icono: Icons.insights_outlined),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _stage,
-            decoration: InputDecoration(labelText: tr.gestionEtapaActual),
+            decoration: InputDecoration(labelText: tr.gestionEtapaActual,
+                prefixIcon: const Icon(Icons.flag_outlined, size: 20)),
             items: [
               for (final s in ProjectStage.all)
                 DropdownMenuItem(value: s, child: Text(ProjectStage.label(s))),
@@ -362,12 +369,16 @@ class _ProjectFormDialogState extends State<_ProjectFormDialog> {
     );
   }
 
-  Widget _campo(TextEditingController c, String label, {int maxLines = 1}) =>
+  Widget _campo(TextEditingController c, String label,
+          {int maxLines = 1, IconData? icono}) =>
       TextField(
         controller: c,
         enabled: !_saving,
         maxLines: maxLines,
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: icono == null ? null : Icon(icono, size: 20),
+        ),
       );
 }
 
@@ -634,7 +645,8 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: obligatorio(tr.gestionNombreEquipo)),
+            decoration: InputDecoration(labelText: obligatorio(tr.gestionNombreEquipo),
+                prefixIcon: const Icon(Icons.groups_outlined, size: 20)),
           ),
           const SizedBox(height: 12),
           data.projects.when(
@@ -644,7 +656,8 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
               initialValue:
                   projects.any((p) => p.id == _projectId) ? _projectId : null,
               isExpanded: true,
-              decoration: InputDecoration(labelText: tr.busquedaTipoProyecto),
+              decoration: InputDecoration(labelText: tr.busquedaTipoProyecto,
+                  prefixIcon: const Icon(Icons.lightbulb_outline, size: 20)),
               items: [
                 for (final p in projects)
                   DropdownMenuItem(
@@ -673,6 +686,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
             return InputDecorator(
               decoration: InputDecoration(
                 labelText: tr.universidadEtiqueta,
+                    prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
                 helperText: tr.gestionUniversidadDelProyecto,
               ),
               child: Text(
@@ -699,6 +713,7 @@ class _GroupFormDialogState extends State<_GroupFormDialog> {
                   isExpanded: true,
                   decoration: InputDecoration(
                     labelText: tr.gestionAsesorOpcional,
+                        prefixIcon: const Icon(Icons.supervisor_account_outlined, size: 20),
                     helperText: tr.gestionAsesorAyuda,
                   ),
                   items: [
@@ -1135,21 +1150,24 @@ class _LabFormDialogState extends State<_LabFormDialog> {
           TextField(
             controller: _name,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: obligatorio(tr.comunNombre)),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunNombre),
+                prefixIcon: const Icon(Icons.badge_outlined, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 2,
-            decoration: InputDecoration(labelText: tr.comunDescripcion),
+            decoration: InputDecoration(labelText: tr.comunDescripcion,
+                prefixIcon: const Icon(Icons.notes, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _objectives,
             enabled: !_saving,
             maxLines: 3,
-            decoration: InputDecoration(labelText: tr.cursoObjetivos),
+            decoration: InputDecoration(labelText: tr.cursoObjetivos,
+                prefixIcon: const Icon(Icons.flag_outlined, size: 20)),
           ),
           const SizedBox(height: 12),
           data.users(role: Roles.company).when(
@@ -1161,7 +1179,8 @@ class _LabFormDialogState extends State<_LabFormDialog> {
                       : null,
                   isExpanded: true,
                   decoration: InputDecoration(
-                      labelText: tr.gestionEmpresaOpcional),
+                      labelText: tr.gestionEmpresaOpcional,
+                          prefixIcon: const Icon(Icons.business_outlined, size: 20)),
                   items: [
                     DropdownMenuItem<String?>(
                         value: null, child: Text(tr.constructorNinguna)),
@@ -1593,20 +1612,23 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo),
+                prefixIcon: const Icon(Icons.title, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 3,
-            decoration: InputDecoration(labelText: tr.comunDescripcion),
+            decoration: InputDecoration(labelText: tr.comunDescripcion,
+                prefixIcon: const Icon(Icons.notes, size: 20)),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _type,
-            decoration: InputDecoration(labelText: tr.gestionTipo),
+            decoration: InputDecoration(labelText: tr.gestionTipo,
+                prefixIcon: const Icon(Icons.category_outlined, size: 20)),
             items: [
               for (final t in const [
                 'photo',
@@ -1630,6 +1652,7 @@ class _EvidenceFormDialogState extends State<_EvidenceFormDialog> {
                   isExpanded: true,
                   decoration: InputDecoration(
                     labelText: tr.gestionDonanteRecibe,
+                        prefixIcon: const Icon(Icons.volunteer_activism_outlined, size: 20),
                     helperText: tr.gestionSoloEseDonante,
                   ),
                   items: [

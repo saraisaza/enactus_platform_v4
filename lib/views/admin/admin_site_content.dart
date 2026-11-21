@@ -219,6 +219,7 @@ class _FormState extends State<_Form> {
             enabled: !_saving,
             decoration: InputDecoration(
               labelText: tr.contenidoLinkVideollamada,
+                  prefixIcon: const Icon(Icons.videocam_outlined, size: 20),
               helperText: tr.contenidoLinkAyuda,
             ),
           ),
@@ -295,7 +296,10 @@ class _FormState extends State<_Form> {
         controller: c,
         enabled: !_saving,
         maxLines: maxLines,
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: const Icon(Icons.campaign_outlined, size: 20),
+        ),
       );
 
   Widget _numero(TextEditingController c, String label) => TextField(

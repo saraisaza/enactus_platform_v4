@@ -619,7 +619,8 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                 autofocus: true,
                 enabled: !_creating,
                 decoration:
-                    InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso)),
+                    InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso),
+                        prefixIcon: const Icon(Icons.school_outlined, size: 20)),
               ),
               const SizedBox(height: 14),
               if (empresa != null)
@@ -655,7 +656,8 @@ class _NewCourseDialogState extends State<_NewCourseDialog> {
                       isExpanded: true,
                       initialValue: _labId,
                       decoration: InputDecoration(
-                          labelText: tr.lxdLaboratorioOpcional),
+                          labelText: tr.lxdLaboratorioOpcional,
+                              prefixIcon: const Icon(Icons.science_outlined, size: 20)),
                       items: [
                         DropdownMenuItem(
                             value: null, child: Text(tr.lxdSinAsignarAun)),
@@ -1160,7 +1162,8 @@ class _GradeDialogState extends State<_GradeDialog> {
                   isExpanded: true,
                   initialValue: _mode,
                   decoration:
-                      InputDecoration(labelText: tr.calificarEscala),
+                      InputDecoration(labelText: tr.calificarEscala,
+                          prefixIcon: const Icon(Icons.grade_outlined, size: 20)),
                   items: [
                     for (final mode in [
                       GradingMode.points100,
@@ -1212,7 +1215,8 @@ class _GradeDialogState extends State<_GradeDialog> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration:
-                        InputDecoration(labelText: tr.calificarPuntaje),
+                        InputDecoration(labelText: tr.calificarPuntaje,
+                            prefixIcon: const Icon(Icons.star_outline, size: 20)),
                   ),
                 _ => TextField(
                     controller: _grade,
@@ -1222,7 +1226,8 @@ class _GradeDialogState extends State<_GradeDialog> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration:
-                        InputDecoration(labelText: tr.calificarNota),
+                        InputDecoration(labelText: tr.calificarNota,
+                            prefixIcon: const Icon(Icons.star_outline, size: 20)),
                   ),
               },
               const SizedBox(height: 12),
@@ -1231,7 +1236,8 @@ class _GradeDialogState extends State<_GradeDialog> {
                 enabled: !_saving,
                 maxLines: 3,
                 decoration:
-                    InputDecoration(labelText: tr.calificarRetroalimentacion),
+                    InputDecoration(labelText: tr.calificarRetroalimentacion,
+                        prefixIcon: const Icon(Icons.rate_review_outlined, size: 20)),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -1410,7 +1416,8 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                         isExpanded: true,
                         initialValue: _studentId,
                         decoration:
-                            InputDecoration(labelText: tr.comunEstudiante),
+                            InputDecoration(labelText: tr.comunEstudiante,
+                                prefixIcon: const Icon(Icons.person_outline, size: 20)),
                         items: [
                           for (final s in students)
                             DropdownMenuItem(
@@ -1425,7 +1432,8 @@ class _LxdCertificatesState extends State<_LxdCertificates> {
                         isExpanded: true,
                         initialValue: _labId,
                         decoration: InputDecoration(
-                            labelText: tr.certificacionesLabRuta),
+                            labelText: tr.certificacionesLabRuta,
+                                prefixIcon: const Icon(Icons.science_outlined, size: 20)),
                         items: [
                           for (final lab in _available)
                             DropdownMenuItem(

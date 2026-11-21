@@ -115,6 +115,7 @@ class _ContactDialogState extends State<_ContactDialog> {
                 maxLines: 4,
                 decoration: InputDecoration(
                     labelText: obligatorio(tr.contactoMensaje),
+                        prefixIcon: const Icon(Icons.chat_bubble_outline, size: 20),
                     hintText:
                         tr.contactoMensajePista),
                 validator: (v) =>

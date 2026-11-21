@@ -1280,6 +1280,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
             isExpanded: true,
             decoration: InputDecoration(
               labelText: tr.usuariosEmpresaAliada,
+                  prefixIcon: const Icon(Icons.business_outlined, size: 20),
               helperText: ayuda,
             ),
             items: [

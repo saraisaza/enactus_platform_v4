@@ -170,6 +170,7 @@ class _EliminarCuentaDialogState extends State<EliminarCuentaDialog> {
             onSubmitted: (_) => _eliminar(),
             decoration: InputDecoration(
               labelText: tr.ingresoContrasena,
+                  prefixIcon: const Icon(Icons.lock_outline, size: 20),
               helperText: tr.cuentaParaConfirmar,
               errorText: _error,
               suffixIcon: IconButton(

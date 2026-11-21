@@ -533,7 +533,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               textInputAction: TextInputAction.next,
               onChanged: (_) => setState(() => _wordServerError = null),
               decoration: InputDecoration(
-                labelText: obligatorio(tr.glosarioPalabraCampo),
+                labelText: tr.glosarioPalabraCampo,
+                    prefixIcon: const Icon(Icons.translate, size: 20),
                 errorText: _wordError,
                 errorMaxLines: 2,
               ),
@@ -548,7 +549,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 500,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                labelText: obligatorio(tr.glosarioDefinicionCorta),
+                labelText: tr.glosarioDefinicionCorta,
+                    prefixIcon: const Icon(Icons.notes, size: 20),
                 errorText: _intentado && _definition.text.trim().isEmpty
                     ? tr.glosarioDefinicionObligatoria
                     : null,
@@ -567,7 +569,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 5000,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                  labelText: tr.glosarioExplicacion),
+                  labelText: tr.glosarioExplicacion,
+                      prefixIcon: const Icon(Icons.menu_book_outlined, size: 20)),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -579,7 +582,8 @@ class _TermEditorDialogState extends State<_TermEditorDialog> {
               maxLength: 2000,
               onChanged: (_) => setState(() {}),
               decoration:
-                  InputDecoration(labelText: tr.glosarioEjemploOpcional),
+                  InputDecoration(labelText: tr.glosarioEjemploOpcional,
+                      prefixIcon: const Icon(Icons.lightbulb_outline, size: 20)),
             ),
             const SizedBox(height: 10),
             _titulo(tr.glosarioImagenOpcional),

@@ -513,14 +513,16 @@ class _PhaseFormDialogState extends State<_PhaseFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.comunTitulo),
+            decoration: InputDecoration(labelText: tr.comunTitulo,
+                prefixIcon: const Icon(Icons.title, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 3,
-            decoration: InputDecoration(labelText: tr.comunDescripcion),
+            decoration: InputDecoration(labelText: tr.comunDescripcion,
+                prefixIcon: const Icon(Icons.notes, size: 20)),
           ),
           const SizedBox(height: 12),
           HoverCard(
@@ -791,13 +793,15 @@ class _ObjectiveFormDialogState extends State<_ObjectiveFormDialog> {
             controller: _text,
             enabled: !_saving,
             maxLines: 2,
-            decoration: InputDecoration(labelText: obligatorio(tr.rutaEditorObjetivo)),
+            decoration: InputDecoration(labelText: obligatorio(tr.rutaEditorObjetivo),
+                prefixIcon: const Icon(Icons.flag_outlined, size: 20)),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             isExpanded: true,
             initialValue: _category,
-            decoration: InputDecoration(labelText: tr.rutaEditorCategoria),
+            decoration: InputDecoration(labelText: tr.rutaEditorCategoria,
+                prefixIcon: const Icon(Icons.category_outlined, size: 20)),
             items: [
               for (final c in ObjectiveCategory.all)
                 DropdownMenuItem(

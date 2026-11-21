@@ -1035,7 +1035,8 @@ Future<void> showCalendarEventDialog(
                   if (error != null) ErrorBanner(error!),
                   TextField(
                     controller: title,
-                    decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
+                    decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo),
+                        prefixIcon: const Icon(Icons.title, size: 20)),
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 16),
@@ -1207,6 +1208,7 @@ Future<void> showCalendarEventDialog(
                     controller: guests,
                     decoration: InputDecoration(
                         labelText: tr.calendarioInvitados,
+                            prefixIcon: const Icon(Icons.group_add_outlined, size: 20),
                         hintText: tr.calendarioInvitadosPista),
                   ),
                   const SizedBox(height: 14),
@@ -1214,7 +1216,8 @@ Future<void> showCalendarEventDialog(
                     controller: description,
                     maxLines: 2,
                     decoration: InputDecoration(
-                        labelText: tr.comunDescripcionOpcional),
+                        labelText: tr.comunDescripcionOpcional,
+                            prefixIcon: const Icon(Icons.notes, size: 20)),
                   ),
                   if (!isEditing) ...[
                     const SizedBox(height: 14),

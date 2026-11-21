@@ -330,26 +330,30 @@ class _GeneralSectionState extends State<_GeneralSection> {
             controller: _name,
             enabled: !_saving,
             decoration:
-                InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso))),
+                InputDecoration(labelText: obligatorio(tr.lxdNombreDelCurso),
+                    prefixIcon: const Icon(Icons.school_outlined, size: 20))),
         const SizedBox(height: 12),
         TextField(
             controller: _subtitle,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: tr.constructorSubtitulo)),
+            decoration: InputDecoration(labelText: tr.constructorSubtitulo,
+                prefixIcon: const Icon(Icons.subtitles_outlined, size: 20))),
         const SizedBox(height: 12),
         TextField(
             controller: _shortDesc,
             enabled: !_saving,
             maxLines: 2,
             decoration:
-                InputDecoration(labelText: tr.constructorDescCorta)),
+                InputDecoration(labelText: tr.constructorDescCorta,
+                    prefixIcon: const Icon(Icons.short_text, size: 20))),
         const SizedBox(height: 12),
         TextField(
             controller: _fullDesc,
             enabled: !_saving,
             maxLines: 4,
             decoration:
-                InputDecoration(labelText: tr.constructorDescCompleta)),
+                InputDecoration(labelText: tr.constructorDescCompleta,
+                    prefixIcon: const Icon(Icons.notes, size: 20))),
         const SizedBox(height: 16),
         Text(tr.constructorPortada,
             style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
@@ -374,7 +378,8 @@ class _GeneralSectionState extends State<_GeneralSection> {
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _level,
-                decoration: InputDecoration(labelText: tr.constructorNivel),
+                decoration: InputDecoration(labelText: tr.constructorNivel,
+                    prefixIcon: const Icon(Icons.signal_cellular_alt, size: 20)),
                 items: [
                   for (final l in CourseLevel.all)
                     DropdownMenuItem(
@@ -388,12 +393,14 @@ class _GeneralSectionState extends State<_GeneralSection> {
                 enabled: !_saving,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                    labelText: tr.constructorDuracion),
+                    labelText: tr.constructorDuracion,
+                        prefixIcon: const Icon(Icons.schedule, size: 20)),
               ),
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _language,
-                decoration: InputDecoration(labelText: tr.constructorIdioma),
+                decoration: InputDecoration(labelText: tr.constructorIdioma,
+                    prefixIcon: const Icon(Icons.language, size: 20)),
                 items: [
                   for (final l in CourseLanguage.all)
                     DropdownMenuItem(
@@ -1337,7 +1344,8 @@ class _CertificateSectionState extends State<_CertificateSection> {
               enabled: !_saving,
               keyboardType: TextInputType.number,
               decoration:
-                  InputDecoration(labelText: tr.constructorHorasCertificadas)),
+                  InputDecoration(labelText: tr.constructorHorasCertificadas,
+                      prefixIcon: const Icon(Icons.workspace_premium_outlined, size: 20))),
         ],
         const SizedBox(height: 20),
         _SaveButton(saving: _saving, onPressed: _save),
@@ -1517,7 +1525,8 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
           enabled: !_saving,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-              labelText: tr.constructorMaximo),
+              labelText: tr.constructorMaximo,
+                  prefixIcon: const Icon(Icons.groups_outlined, size: 20)),
         ),
         const SizedBox(height: 4),
         SwitchListTile(
@@ -1544,7 +1553,8 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
                 initialValue:
                     companies.any((c) => c.id == _sponsorId) ? _sponsorId : null,
                 decoration: InputDecoration(
-                    labelText: tr.constructorEmpresaPatrocinadora),
+                    labelText: tr.constructorEmpresaPatrocinadora,
+                        prefixIcon: const Icon(Icons.business_outlined, size: 20)),
                 items: [
                   DropdownMenuItem<String?>(
                       value: null, child: Text(tr.constructorNinguna)),
@@ -1583,7 +1593,8 @@ class _RestrictionsSectionState extends State<_RestrictionsSection> {
                 initialValue:
                     empresas.any((c) => c.id == _clientId) ? _clientId : null,
                 decoration:
-                    InputDecoration(labelText: tr.constructorExclusivoDe),
+                    InputDecoration(labelText: tr.constructorExclusivoDe,
+                        prefixIcon: const Icon(Icons.business_outlined, size: 20)),
                 items: [
                   DropdownMenuItem<String?>(
                       value: null,

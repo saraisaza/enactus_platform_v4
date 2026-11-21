@@ -371,6 +371,7 @@ class _NoteDialogState extends State<_NoteDialog> {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: tr.seguimientoRetroObservaciones,
+                    prefixIcon: const Icon(Icons.rate_review_outlined, size: 20),
                 // Es literal: no hay ningún endpoint que le devuelva esta
                 // nota a un estudiante.
                 hintText:

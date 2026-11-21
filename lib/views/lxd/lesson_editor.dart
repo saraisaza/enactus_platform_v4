@@ -666,14 +666,16 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         TextField(
           controller: _title,
           enabled: !_saving,
-          decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
+          decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo),
+              prefixIcon: const Icon(Icons.title, size: 20)),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _desc,
           enabled: !_saving,
           maxLines: 2,
-          decoration: InputDecoration(labelText: tr.comunDescripcion),
+          decoration: InputDecoration(labelText: tr.comunDescripcion,
+              prefixIcon: const Icon(Icons.notes, size: 20)),
         ),
         const SizedBox(height: 12),
         ..._typeFields(),
@@ -777,7 +779,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             enabled: !_saving,
             keyboardType: TextInputType.number,
             decoration:
-                InputDecoration(labelText: tr.leccionDuracionMinutos),
+                InputDecoration(labelText: tr.leccionDuracionMinutos,
+                    prefixIcon: const Icon(Icons.timer_outlined, size: 20)),
           ),
         ];
       case LessonType.pdf:
@@ -819,7 +822,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
             autocorrect: false,
             enabled: !_saving,
             decoration: const InputDecoration(
-                labelText: 'URL *', hintText: 'https://…'),
+                labelText: 'URL *',
+                    prefixIcon: Icon(Icons.link, size: 20), hintText: 'https://…'),
           ),
         ];
       case LessonType.quiz:
@@ -1220,7 +1224,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
           enabled: !_saving,
           maxLines: 3,
           decoration: InputDecoration(
-              labelText: tr.leccionInstrucciones),
+              labelText: tr.leccionInstrucciones,
+                  prefixIcon: const Icon(Icons.assignment_outlined, size: 20)),
           onChanged: (v) => a.description = v,
         ),
         const SizedBox(height: 12),
@@ -1333,7 +1338,8 @@ class _LessonEditorDialogState extends State<_LessonEditorDialog> {
         DropdownButtonFormField<String>(
           isExpanded: true,
           initialValue: a.gradingMode,
-          decoration: InputDecoration(labelText: tr.leccionCalificacion),
+          decoration: InputDecoration(labelText: tr.leccionCalificacion,
+              prefixIcon: const Icon(Icons.grade_outlined, size: 20)),
           items: [
             for (final mode in const [
               GradingMode.points100,

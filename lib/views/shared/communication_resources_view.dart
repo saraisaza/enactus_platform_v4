@@ -254,14 +254,16 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo)),
+            decoration: InputDecoration(labelText: obligatorio(tr.comunTitulo),
+                prefixIcon: const Icon(Icons.title, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _description,
             enabled: !_saving,
             maxLines: 2,
-            decoration: InputDecoration(labelText: tr.comunDescripcion),
+            decoration: InputDecoration(labelText: tr.comunDescripcion,
+                prefixIcon: const Icon(Icons.notes, size: 20)),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -295,7 +297,8 @@ class _ResourceFormDialogState extends State<_ResourceFormDialog> {
               autocorrect: false,
               enabled: !_saving,
               decoration: const InputDecoration(
-                  labelText: 'URL *', hintText: 'https://…'),
+                  labelText: 'URL *',
+                      prefixIcon: Icon(Icons.link, size: 20), hintText: 'https://…'),
             ),
         ],
       ),

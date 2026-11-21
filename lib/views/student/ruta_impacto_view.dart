@@ -2656,7 +2656,8 @@ class _OwnLessonSubmitDialogState extends State<_OwnLessonSubmitDialog> {
                   enabled: !_sending,
                   maxLines: 3,
                   onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(labelText: tr.comunComentario)),
+                  decoration: InputDecoration(labelText: tr.comunComentario,
+                      prefixIcon: const Icon(Icons.chat_bubble_outline, size: 20))),
               const SizedBox(height: 12),
               FileUploadField(
                 purpose: 'submission',

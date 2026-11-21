@@ -1183,6 +1183,7 @@ Future<bool> confirmDoubleDialog(
                 autofocus: true,
                 decoration: InputDecoration(
                   labelText: tr.comunEscribaParaConfirmar(keyword),
+                      prefixIcon: const Icon(Icons.warning_amber_rounded, size: 20),
                   hintText: keyword,
                 ),
                 onChanged: (_) => setState(() {}),

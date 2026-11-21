@@ -149,6 +149,7 @@ class UniversityPicker extends StatelessWidget {
           textCapitalization: TextCapitalization.words,
           decoration: InputDecoration(
             labelText: tr.universidadCual,
+                prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
             helperText: tr.universidadCualAyuda,
             helperMaxLines: 2,
           ),

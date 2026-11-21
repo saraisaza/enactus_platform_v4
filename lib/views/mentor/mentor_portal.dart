@@ -552,7 +552,8 @@ class _ReviewDialogState extends State<_ReviewDialog> {
             enabled: !_saving,
             maxLines: 5,
             decoration:
-                InputDecoration(labelText: obligatorio(tr.mentorSuRetro)),
+                InputDecoration(labelText: obligatorio(tr.mentorSuRetro),
+                    prefixIcon: const Icon(Icons.rate_review_outlined, size: 20)),
           ),
         ],
       ),

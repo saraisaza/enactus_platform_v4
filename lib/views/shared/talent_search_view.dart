@@ -278,14 +278,16 @@ class _ContactDialogState extends State<_ContactDialog> {
           TextField(
             controller: _title,
             enabled: !_saving,
-            decoration: InputDecoration(labelText: obligatorio(tr.talentoAsunto)),
+            decoration: InputDecoration(labelText: obligatorio(tr.talentoAsunto),
+                prefixIcon: const Icon(Icons.subject, size: 20)),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _body,
             enabled: !_saving,
             maxLines: 4,
-            decoration: InputDecoration(labelText: tr.contactoMensaje),
+            decoration: InputDecoration(labelText: tr.contactoMensaje,
+                prefixIcon: const Icon(Icons.chat_bubble_outline, size: 20)),
           ),
         ],
       ),

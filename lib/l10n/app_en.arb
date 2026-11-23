@@ -1407,7 +1407,7 @@
   "mentorSuRetro": "Your feedback",
   "mentorPerfilSubtitulo": "Your details and the material you share with students",
   "asesorPortal": "Academic Advisor Portal",
-  "tabDashboardUniversidad": "University Dashboard",
+  "tabDashboardUniversidad": "Home",
   "tabSeguimientoEstudiantes": "Student Tracking",
   "tabDirectorioCorto": "Directory",
   "asesorSuUniversidad": "Your university",
@@ -1931,5 +1931,18 @@
   "menuGrupoProyectos": "Projects and teams",
   "menuGrupoFormacion": "Learning",
   "menuGrupoComunicacion": "Communication",
-  "menuGrupoSistema": "System"
+  "menuGrupoSistema": "System",
+  "panelMenosAvance": "Students with the least progress",
+  "panelMenosAvanceVacio": "No students with courses yet.",
+  "panelSinRevisar": "Submissions to review",
+  "panelSinRevisarVacio": "No pending submissions.",
+  "panelAvancePorLab": "Progress by laboratory",
+  "panelAvancePorLabVacio": "You don't sponsor laboratories with students yet.",
+  "panelUltimosCertificados": "Latest certificates",
+  "panelUltimosCertificadosVacio": "No one has been certified yet.",
+  "panelSusLabs": "Your laboratories",
+  "panelSusLabsVacio": "You don't mentor any laboratory yet.",
+  "panelRevisadas": "Submissions you reviewed",
+  "panelRevisadasVacio": "You haven't reviewed any submissions yet.",
+  "panelEstudiantesN": "{n} students"
 }

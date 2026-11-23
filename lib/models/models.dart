@@ -102,6 +102,9 @@ class AppUser {
   /// es de eduXaction directamente.
   final String? clientId;
 
+  /// Sus laboratorios. Solo llega si se pidió `include=labs`.
+  final List<String> laboratoryIds;
+
   /// La marca de su cliente. Solo llega en `/auth/me` (y en el ingreso), para
   /// la cuenta de la sesión: nunca la de otra persona.
   final MarcaDeCliente? client;
@@ -139,6 +142,7 @@ class AppUser {
     this.team,
     this.sponsorName,
     this.clientId,
+    this.laboratoryIds = const [],
     this.client,
     this.overallProgress,
     this.reviewsCount,
@@ -181,6 +185,10 @@ class AppUser {
             : UserTeam.fromJson(Map<String, dynamic>.from(j['team'] as Map)),
         sponsorName: j['sponsorName'] as String?,
         clientId: j['clientId'] as String?,
+        laboratoryIds: [
+          for (final id in (j['laboratoryIds'] as List? ?? const []))
+            id as String
+        ],
         client: j['client'] == null
             ? null
             : MarcaDeCliente.fromJson(Map<String, dynamic>.from(j['client'] as Map)),

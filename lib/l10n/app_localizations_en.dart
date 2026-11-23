@@ -5060,7 +5060,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get asesorPortal => 'Academic Advisor Portal';
 
   @override
-  String get tabDashboardUniversidad => 'University Dashboard';
+  String get tabDashboardUniversidad => 'Home';
 
   @override
   String get tabSeguimientoEstudiantes => 'Student Tracking';
@@ -6976,4 +6976,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuGrupoSistema => 'System';
+
+  @override
+  String get panelMenosAvance => 'Students with the least progress';
+
+  @override
+  String get panelMenosAvanceVacio => 'No students with courses yet.';
+
+  @override
+  String get panelSinRevisar => 'Submissions to review';
+
+  @override
+  String get panelSinRevisarVacio => 'No pending submissions.';
+
+  @override
+  String get panelAvancePorLab => 'Progress by laboratory';
+
+  @override
+  String get panelAvancePorLabVacio =>
+      'You don\'t sponsor laboratories with students yet.';
+
+  @override
+  String get panelUltimosCertificados => 'Latest certificates';
+
+  @override
+  String get panelUltimosCertificadosVacio => 'No one has been certified yet.';
+
+  @override
+  String get panelSusLabs => 'Your laboratories';
+
+  @override
+  String get panelSusLabsVacio => 'You don\'t mentor any laboratory yet.';
+
+  @override
+  String get panelRevisadas => 'Submissions you reviewed';
+
+  @override
+  String get panelRevisadasVacio =>
+      'You haven\'t reviewed any submissions yet.';
+
+  @override
+  String panelEstudiantesN(int n) {
+    return '$n students';
+  }
 }

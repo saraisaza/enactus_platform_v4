@@ -17,6 +17,7 @@ import '../shared/communication_resources_view.dart';
 import '../shared/forum_view.dart';
 import '../shared/projects_directory_view.dart';
 import '../shared/user_detail_view.dart';
+import '../../utils/formatos.dart';
 
 /// Portal del Asesor académico: acompaña a los equipos de SU universidad.
 ///
@@ -126,10 +127,72 @@ class _AdvisorDashboard extends StatelessWidget {
                       label: tr.seguimientoAvancePromedio,
                       icon: Icons.trending_up),
                 ]),
+                const SizedBox(height: 16),
+                // Lo que un asesor viene a mirar: a quién acompañar primero y
+                // qué falta revisar (2026-11-23). Antes, debajo de las cifras
+                // no había nada.
+                RejillaDeTarjetas(
+                  anchoMinimo: 360,
+                  maxColumnas: 2,
+                  children: [
+                    _menosAvance(context, conAvance),
+                    _sinRevisar(data),
+                  ],
+                ),
               ],
             );
           },
         ),
+      ],
+    );
+  }
+
+  /// Los cinco con menos avance: los que más necesitan una llamada.
+  Widget _menosAvance(BuildContext context, List<AppUser> conAvance) {
+    final ordenados = [...conAvance]
+      ..sort((a, b) =>
+          a.overallProgress!.ratio.compareTo(b.overallProgress!.ratio));
+    return TarjetaDeResumen(
+      titulo: tr.panelMenosAvance,
+      icono: Icons.support_agent_outlined,
+      vacio: tr.panelMenosAvanceVacio,
+      filas: [
+        for (final e in ordenados.take(5))
+          FilaDeResumen(
+            titulo: e.name,
+            detalle: e.team?.projectName ?? e.career,
+            derecha: SizedBox(
+                width: 130,
+                child: ThinProgressBar(value: e.overallProgress!.ratio)),
+            alTocar: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => UserDetailView(userId: e.id)),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Las entregas de su gente que nadie calificó ni comentó todavía.
+  Widget _sinRevisar(DataProvider data) {
+    final pendientes = [
+      for (final s in data.submissions.valueOrNull ?? const <Submission>[])
+        if (!s.isGraded && s.feedback.isEmpty && s.reviewedBy == null) s
+    ]..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+    return TarjetaDeResumen(
+      titulo: '${tr.panelSinRevisar} (${pendientes.length})',
+      icono: Icons.pending_actions_outlined,
+      vacio: tr.panelSinRevisarVacio,
+      filas: [
+        for (final s in pendientes.take(5))
+          FilaDeResumen(
+            titulo: s.taskName,
+            detalle: [
+              if ((s.studentName ?? '').isNotEmpty) s.studentName!,
+              fechaCorta(s.submittedAt),
+            ].join(' · '),
+          ),
       ],
     );
   }

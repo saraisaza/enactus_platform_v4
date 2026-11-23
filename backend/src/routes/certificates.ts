@@ -98,6 +98,25 @@ certificateRoutes.get('/', async (c) => {
     return c.json(paginated(rows, rows.length, query));
   }
 
+  if (user.role === 'company') {
+    // Una empresa aliada: los certificados de los estudiantes de los
+    // laboratorios que patrocina — los mismos que ve en su directorio. Es lo
+    // que muestra su panel de impacto (recomendaciones del 20 de noviembre).
+    const rows = await db
+      .select()
+      .from(certificates)
+      .where(
+        sql`${certificates.studentId} in (
+              select sl.student_id from student_laboratories sl
+               where sl.laboratory_id in (
+                 select l.id from laboratories l
+                  where l.sponsor_company_id = ${user.id}))`,
+      )
+      .orderBy(desc(certificates.issuedAt))
+      .limit(query.pageSize);
+    return c.json(paginated(rows, rows.length, query));
+  }
+
   const rows =
     user.role === 'admin' || user.role === 'superadmin'
       ? await db

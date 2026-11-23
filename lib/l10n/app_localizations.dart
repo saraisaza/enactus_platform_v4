@@ -8513,7 +8513,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabDashboardUniversidad.
   ///
   /// In es, this message translates to:
-  /// **'Dashboard Universidad'**
+  /// **'Inicio'**
   String get tabDashboardUniversidad;
 
   /// No description provided for @tabSeguimientoEstudiantes.
@@ -11671,6 +11671,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sistema'**
   String get menuGrupoSistema;
+
+  /// No description provided for @panelMenosAvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudiantes con menos avance'**
+  String get panelMenosAvance;
+
+  /// No description provided for @panelMenosAvanceVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay estudiantes con cursos.'**
+  String get panelMenosAvanceVacio;
+
+  /// No description provided for @panelSinRevisar.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas sin revisar'**
+  String get panelSinRevisar;
+
+  /// No description provided for @panelSinRevisarVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay entregas pendientes.'**
+  String get panelSinRevisarVacio;
+
+  /// No description provided for @panelAvancePorLab.
+  ///
+  /// In es, this message translates to:
+  /// **'Avance por laboratorio'**
+  String get panelAvancePorLab;
+
+  /// No description provided for @panelAvancePorLabVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no patrocina laboratorios con estudiantes.'**
+  String get panelAvancePorLabVacio;
+
+  /// No description provided for @panelUltimosCertificados.
+  ///
+  /// In es, this message translates to:
+  /// **'Últimos certificados'**
+  String get panelUltimosCertificados;
+
+  /// No description provided for @panelUltimosCertificadosVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía nadie se certificó.'**
+  String get panelUltimosCertificadosVacio;
+
+  /// No description provided for @panelSusLabs.
+  ///
+  /// In es, this message translates to:
+  /// **'Sus laboratorios'**
+  String get panelSusLabs;
+
+  /// No description provided for @panelSusLabsVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no acompaña ningún laboratorio.'**
+  String get panelSusLabsVacio;
+
+  /// No description provided for @panelRevisadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregas que revisó'**
+  String get panelRevisadas;
+
+  /// No description provided for @panelRevisadasVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no revisó entregas.'**
+  String get panelRevisadasVacio;
+
+  /// No description provided for @panelEstudiantesN.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} estudiantes'**
+  String panelEstudiantesN(int n);
 }
 
 class _AppLocalizationsDelegate

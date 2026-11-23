@@ -17,6 +17,7 @@ import '../shared/projects_directory_view.dart' show ProjectsDirectoryView;
 import '../shared/students_map_view.dart';
 import '../shared/talent_search_view.dart';
 import '../shared/user_detail_view.dart';
+import '../../utils/formatos.dart';
 
 /// Portal de la Empresa aliada: su equipo formador, los laboratorios que
 /// patrocina y el impacto de su aporte.
@@ -91,7 +92,7 @@ class _CompanyDashboard extends StatelessWidget {
       subtitle: tr.empresaImpactoSubtitulo,
       children: [
         combine3(
-          data.users(include: 'progress'),
+          data.users(include: 'progress,labs'),
           data.laboratories,
           data.courses,
         ).when(
@@ -154,10 +155,74 @@ class _CompanyDashboard extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 16),
+                // Cómo va cada laboratorio que patrocina y quién ya se
+                // certificó (2026-11-23): antes, debajo de las cifras no
+                // había nada.
+                RejillaDeTarjetas(
+                  anchoMinimo: 360,
+                  maxColumnas: 2,
+                  children: [
+                    _avancePorLaboratorio(labs, estudiantes),
+                    _ultimosCertificados(data),
+                  ],
+                ),
               ],
             );
           },
         ),
+      ],
+    );
+  }
+
+  /// El avance promedio de los estudiantes de cada laboratorio.
+  Widget _avancePorLaboratorio(List<Laboratory> labs, List<AppUser> estudiantes) {
+    final filas = <(Laboratory, int, double)>[];
+    for (final lab in labs) {
+      final suyos = [
+        for (final e in estudiantes)
+          if (e.laboratoryIds.contains(lab.id)) e
+      ];
+      if (suyos.isEmpty) continue;
+      final promedio = suyos
+              .map((e) => e.overallProgress?.ratio ?? 0)
+              .reduce((a, b) => a + b) /
+          suyos.length;
+      filas.add((lab, suyos.length, promedio));
+    }
+    filas.sort((a, b) => b.$3.compareTo(a.$3));
+    return TarjetaDeResumen(
+      titulo: tr.panelAvancePorLab,
+      icono: Icons.science_outlined,
+      vacio: tr.panelAvancePorLabVacio,
+      filas: [
+        for (final (lab, n, promedio) in filas)
+          FilaDeResumen(
+            titulo: lab.name,
+            detalle: tr.panelEstudiantesN(n),
+            derecha: SizedBox(
+                width: 130, child: ThinProgressBar(value: promedio)),
+          ),
+      ],
+    );
+  }
+
+  /// Los cinco certificados más recientes de su gente.
+  Widget _ultimosCertificados(DataProvider data) {
+    final certs = [...data.certificates.valueOrNull ?? const <Certificate>[]]
+      ..sort((a, b) => b.issuedAt.compareTo(a.issuedAt));
+    return TarjetaDeResumen(
+      titulo: tr.panelUltimosCertificados,
+      icono: Icons.workspace_premium_outlined,
+      vacio: tr.panelUltimosCertificadosVacio,
+      filas: [
+        for (final c in certs.take(5))
+          FilaDeResumen(
+            titulo: c.studentName,
+            detalle: c.descripcion,
+            derecha: Text(fechaCorta(c.issuedAt),
+                style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+          ),
       ],
     );
   }

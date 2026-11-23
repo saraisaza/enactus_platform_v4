@@ -376,7 +376,8 @@ paths:
           in: query
           schema: { type: string }
           description: |
-            `team`, `progress` y/o `reviews`, separados por coma. Agregan el
+            `team`, `progress`, `reviews` y/o `labs`, separados por coma.
+            `labs` agrega `laboratoryIds`: los laboratorios de cada persona. Agregan el
             equipo con su proyecto y etapa, el patrocinador, el avance general
             (promedio de sus cursos) y cuántas entregas revisó cada mentor — en
             una consulta por `include` para TODA la página.
@@ -2192,6 +2193,11 @@ paths:
     get:
       tags: [certificates]
       summary: Certificados
+      description: >
+        Sin `studentId`, cada rol ve lo suyo: el estudiante los propios, quien
+        emite los que emitió, el supervisor los de su empresa, una empresa
+        aliada los de los estudiantes de los laboratorios que patrocina, y la
+        administración todos.
       parameters:
         - { $ref: '#/components/parameters/page' }
         - { $ref: '#/components/parameters/pageSize' }

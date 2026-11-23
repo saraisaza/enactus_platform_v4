@@ -2588,7 +2588,7 @@
   "mentorSuRetro": "Su retroalimentación",
   "mentorPerfilSubtitulo": "Sus datos y el material que comparte con los estudiantes",
   "asesorPortal": "Portal Asesor Académico",
-  "tabDashboardUniversidad": "Dashboard Universidad",
+  "tabDashboardUniversidad": "Inicio",
   "tabSeguimientoEstudiantes": "Seguimiento Estudiantes",
   "tabDirectorioCorto": "Directorio",
   "asesorSuUniversidad": "Su universidad",
@@ -3536,5 +3536,23 @@
   "menuGrupoProyectos": "Proyectos y equipos",
   "menuGrupoFormacion": "Formación",
   "menuGrupoComunicacion": "Comunicación",
-  "menuGrupoSistema": "Sistema"
+  "menuGrupoSistema": "Sistema",
+  "panelMenosAvance": "Estudiantes con menos avance",
+  "panelMenosAvanceVacio": "Todavía no hay estudiantes con cursos.",
+  "panelSinRevisar": "Entregas sin revisar",
+  "panelSinRevisarVacio": "No hay entregas pendientes.",
+  "panelAvancePorLab": "Avance por laboratorio",
+  "panelAvancePorLabVacio": "Todavía no patrocina laboratorios con estudiantes.",
+  "panelUltimosCertificados": "Últimos certificados",
+  "panelUltimosCertificadosVacio": "Todavía nadie se certificó.",
+  "panelSusLabs": "Sus laboratorios",
+  "panelSusLabsVacio": "Todavía no acompaña ningún laboratorio.",
+  "panelRevisadas": "Entregas que revisó",
+  "panelRevisadasVacio": "Todavía no revisó entregas.",
+  "panelEstudiantesN": "{n} estudiantes",
+  "@panelEstudiantesN": {
+    "placeholders": {
+      "n": {"type": "int"}
+    }
+  }
 }

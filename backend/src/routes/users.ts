@@ -294,7 +294,10 @@ userRoutes.get('/', async (c) => {
   const include = parseInclude(query.include);
   if (
     rows.length > 0 &&
-    (include.has('team') || include.has('progress') || include.has('reviews'))
+    (include.has('team') ||
+      include.has('progress') ||
+      include.has('reviews') ||
+      include.has('labs'))
   ) {
     const ids = rows.map((r) => r.id);
 
@@ -390,6 +393,25 @@ userRoutes.get('/', async (c) => {
       data = data.map((u) => ({
         ...u,
         reviewsCount: byMentor.get(u.id as string) ?? 0,
+      }));
+    }
+
+    if (include.has('labs')) {
+      // Los laboratorios de cada persona: para el avance por laboratorio del
+      // panel de una empresa (recomendaciones del 20 de noviembre). Solo los
+      // ids: los laboratorios mismos ya los ve por su cuenta.
+      const asignados = await db.execute<{ studentId: string; labs: string[] }>(sql`
+        select sl.student_id as "studentId",
+               array_agg(sl.laboratory_id::text order by sl.laboratory_id) as labs
+          from student_laboratories sl
+          join laboratories l on l.id = sl.laboratory_id and l.deleted_at is null
+         where sl.student_id = any(${sql.param(ids)}::uuid[])
+         group by sl.student_id
+      `);
+      const porPersona = new Map(asignados.map((a) => [a.studentId, a.labs]));
+      data = data.map((u) => ({
+        ...u,
+        laboratoryIds: porPersona.get(u.id as string) ?? [],
       }));
     }
   }

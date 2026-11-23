@@ -570,6 +570,7 @@ class _MentorProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
     if (user == null) return const SizedBox.shrink();
+    final data = context.watch<DataProvider>();
 
     return TabBody(
       title: tr.tabMiPerfil,
@@ -616,6 +617,55 @@ class _MentorProfile extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        // Sus laboratorios y lo que ya revisó (2026-11-23): el perfil era
+        // solo nombre y correo, con la pantalla vacía debajo.
+        RejillaDeTarjetas(
+          anchoMinimo: 360,
+          maxColumnas: 2,
+          children: [
+            _susLaboratorios(data),
+            _revisadas(data, user.id),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _susLaboratorios(DataProvider data) {
+    final labs = data.laboratories.valueOrNull ?? const <Laboratory>[];
+    return TarjetaDeResumen(
+      titulo: tr.panelSusLabs,
+      icono: Icons.science_outlined,
+      vacio: tr.panelSusLabsVacio,
+      filas: [
+        for (final lab in labs)
+          FilaDeResumen(
+            titulo: lab.name,
+            detalle: tr.panelEstudiantesN(lab.studentsAssigned),
+          ),
+      ],
+    );
+  }
+
+  Widget _revisadas(DataProvider data, String yo) {
+    final mias = [
+      for (final s in data.submissions.valueOrNull ?? const <Submission>[])
+        if (s.reviewedBy == yo) s
+    ]..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+    return TarjetaDeResumen(
+      titulo: '${tr.panelRevisadas} (${mias.length})',
+      icono: Icons.rate_review_outlined,
+      vacio: tr.panelRevisadasVacio,
+      filas: [
+        for (final s in mias.take(5))
+          FilaDeResumen(
+            titulo: s.taskName,
+            detalle: [
+              if ((s.studentName ?? '').isNotEmpty) s.studentName!,
+              fechaCorta(s.submittedAt),
+            ].join(' · '),
+          ),
       ],
     );
   }

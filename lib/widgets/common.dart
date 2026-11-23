@@ -1571,16 +1571,23 @@ class RenderFilaPareja extends RenderBox
       alto = math.max(alto, hijo.size.height);
       hijo = childAfter(hijo);
     }
-    // Segunda pasada: todas con el alto de la más alta.
+    // Segunda pasada: todas con el alto de la más alta. Como MÍNIMO, no
+    // exacto: con un alto exacto cada tarjeta queda aislada de la fila, y si
+    // después le llega contenido (una lista que termina de cargar) crece sin
+    // avisar y se desborda. Así, cualquier cambio vuelve a medir la fila.
     var x = 0.0;
+    var altoFinal = 0.0;
     hijo = firstChild;
     while (hijo != null) {
-      hijo.layout(BoxConstraints.tight(Size(casilla, alto)));
+      hijo.layout(
+          BoxConstraints(minWidth: casilla, maxWidth: casilla, minHeight: alto),
+          parentUsesSize: true);
+      altoFinal = math.max(altoFinal, hijo.size.height);
       (hijo.parentData! as _DatosDeFila).offset = Offset(x, 0);
       x += casilla + _separacion;
       hijo = childAfter(hijo);
     }
-    size = constraints.constrain(Size(ancho, alto));
+    size = constraints.constrain(Size(ancho, altoFinal));
   }
 
   @override
@@ -1855,5 +1862,117 @@ class TituloConAtras extends StatelessWidget {
         Expanded(child: Text(titulo, style: const TextStyle(fontSize: 18))),
       ],
     );
+  }
+}
+
+/// Una tarjeta de resumen de un panel: título con ícono, unas pocas filas y,
+/// si no hay nada, una frase. Para los paneles de asesor, empresa y mentor
+/// (2026-11-23): llenan lo que antes era pantalla vacía con lo que esa
+/// persona necesita mirar.
+class TarjetaDeResumen extends StatelessWidget {
+  final String titulo;
+  final IconData icono;
+  final List<Widget> filas;
+  final String vacio;
+
+  const TarjetaDeResumen({
+    super.key,
+    required this.titulo,
+    required this.icono,
+    required this.filas,
+    required this.vacio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(icono, size: 20, color: AppColors.gold),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(titulo,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (filas.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(vacio,
+                  style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+            )
+          else
+            ...filas,
+        ],
+      ),
+    );
+  }
+}
+
+/// Una fila de [TarjetaDeResumen]: lo principal, un detalle chico y, a la
+/// derecha, un valor o una barra.
+class FilaDeResumen extends StatelessWidget {
+  final String titulo;
+  final String? detalle;
+  final Widget? derecha;
+  final VoidCallback? alTocar;
+
+  const FilaDeResumen({
+    super.key,
+    required this.titulo,
+    this.detalle,
+    this.derecha,
+    this.alTocar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fila = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(titulo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary)),
+                if (detalle != null && detalle!.isNotEmpty)
+                  Text(detalle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+          if (derecha != null) ...[const SizedBox(width: 12), derecha!],
+        ],
+      ),
+    );
+    if (alTocar == null) return fila;
+    return InkWell(
+        borderRadius: BorderRadius.circular(8), onTap: alTocar, child: fila);
   }
 }

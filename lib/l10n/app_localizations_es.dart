@@ -5036,7 +5036,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get asesorPortal => 'Portal Asesor Académico';
 
   @override
-  String get tabDashboardUniversidad => 'Dashboard Universidad';
+  String get tabDashboardUniversidad => 'Inicio';
 
   @override
   String get tabSeguimientoEstudiantes => 'Seguimiento Estudiantes';
@@ -6960,4 +6960,46 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get menuGrupoSistema => 'Sistema';
+
+  @override
+  String get panelMenosAvance => 'Estudiantes con menos avance';
+
+  @override
+  String get panelMenosAvanceVacio => 'Todavía no hay estudiantes con cursos.';
+
+  @override
+  String get panelSinRevisar => 'Entregas sin revisar';
+
+  @override
+  String get panelSinRevisarVacio => 'No hay entregas pendientes.';
+
+  @override
+  String get panelAvancePorLab => 'Avance por laboratorio';
+
+  @override
+  String get panelAvancePorLabVacio =>
+      'Todavía no patrocina laboratorios con estudiantes.';
+
+  @override
+  String get panelUltimosCertificados => 'Últimos certificados';
+
+  @override
+  String get panelUltimosCertificadosVacio => 'Todavía nadie se certificó.';
+
+  @override
+  String get panelSusLabs => 'Sus laboratorios';
+
+  @override
+  String get panelSusLabsVacio => 'Todavía no acompaña ningún laboratorio.';
+
+  @override
+  String get panelRevisadas => 'Entregas que revisó';
+
+  @override
+  String get panelRevisadasVacio => 'Todavía no revisó entregas.';
+
+  @override
+  String panelEstudiantesN(int n) {
+    return '$n estudiantes';
+  }
 }

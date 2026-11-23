@@ -85,9 +85,15 @@ jobs:
       - run: bash infra/construir.sh
         working-directory: backend
 
+      # Versión FIJA, la misma con la que se prueba en local. Con `stable`
+      # a secas, Flutter 3.50 (2026-11-20) llegó solo y declaró obsoleto
+      # `package:flutter/material.dart`: `flutter analyze` falló con 134
+      # avisos y el despliegue se detuvo sin que el código cambiara. Subir
+      # de versión es una decisión aparte (migrar a `material_ui`).
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.44.3
           cache: true
       - run: flutter pub get
 

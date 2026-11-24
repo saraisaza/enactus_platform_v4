@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 
 import '../utils/app_theme.dart';
+import 'social_icons.dart' show trazoWhatsApp;
 
 /// Botón de red social en la **web**: un `<a>` HTML real, no un
 /// `GestureDetector` de Flutter.
@@ -105,7 +106,17 @@ void _asegurarEstilos() {
 /// El SVG de cada red, con el mismo trazo que las versiones dibujadas para
 /// las demás plataformas (`social_icons.dart`) — mismas proporciones, para
 /// que el pie se vea igual en web y en el resto.
+///
+/// El de WhatsApp se reconoce por el comienzo: su etiqueta lleva además el
+/// número («WhatsApp +57 …»). Antes caía en `default` y el botón salía vacío.
 String _svgDe(String label) {
+  if (label.startsWith('WhatsApp')) {
+    return '''
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path fill="currentColor" fill-rule="evenodd" d="$trazoWhatsApp"/>
+      </svg>
+    ''';
+  }
   switch (label) {
     case 'Facebook':
       return '''

@@ -133,6 +133,11 @@ class _WhatsAppPainter extends CustomPainter {
   bool shouldRepaint(_WhatsAppPainter viejo) => viejo.color != color;
 }
 
+/// El contorno oficial del logo de WhatsApp en una caja de 24×24, el mismo
+/// que dibuja [WhatsAppIcon]. Lo usa también el botón HTML del pie en la web
+/// (`social_button_web.dart`), que no pasa por Flutter.
+const String trazoWhatsApp = _WhatsAppPainter._trazo;
+
 /// Un trazo SVG (`d="..."`) como [Path]: M, L, H, V, C, S, Q, A y Z, en
 /// mayúscula (absoluto) o minúscula (relativo). Alcanza para logos de marca;
 /// no es un lector de SVG completo.

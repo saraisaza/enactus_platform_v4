@@ -25,6 +25,7 @@ import 'package:enactus_platform/widgets/calendar_view.dart';
 import 'package:enactus_platform/widgets/common.dart';
 import 'package:enactus_platform/widgets/interruptor_tema.dart';
 import 'package:enactus_platform/widgets/recorte_de_foto.dart';
+import 'package:enactus_platform/widgets/social_icons.dart';
 
 import 'helpers/portal_harness.dart';
 
@@ -229,5 +230,28 @@ void main() {
     await montar(tester, appDe(Roles.admin));
     expect(find.byKey(const ValueKey('descargar-reporte')), findsOneWidget);
     expect(find.byTooltip(tr.reporteDescargarGrafica), findsNWidgets(2));
+  });
+
+  test('el logo de WhatsApp se lee entero y llena su caja de 24×24', () {
+    // Un trazo mal leído (una bandera de arco pegada, «01») deja el dibujo
+    // cortado o corrido: el contorno debe ocupar casi toda la caja.
+    final caja = trazoSvg(
+            'M12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 '
+            '5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005'
+            'c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z')
+        .getBounds();
+    expect(caja.left, closeTo(0, 0.2));
+    expect(caja.top, closeTo(0, 0.2));
+    expect(caja.right, closeTo(24, 0.3));
+    expect(caja.bottom, closeTo(24, 0.3));
+  });
+
+  testWidgets('el botón de WhatsApp lleva el logo', (tester) async {
+    await tester.pumpWidget(const Directionality(
+      textDirection: TextDirection.ltr,
+      child: Center(child: WhatsAppIcon(size: 24, color: Color(0xFFFFFFFF))),
+    ));
+    expect(tester.takeException(), isNull);
+    expect(tester.getSize(find.byType(WhatsAppIcon)), const Size(24, 24));
   });
 }

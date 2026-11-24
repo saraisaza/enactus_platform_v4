@@ -254,4 +254,48 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(tester.getSize(find.byType(WhatsAppIcon)), const Size(24, 24));
   });
+
+  for (final ancho in [1440.0, 1280.0, 900.0, 390.0]) {
+    testWidgets('las cifras del panel del admin son 3 × 3 a $ancho px',
+        (tester) async {
+      // Antes eran dos filas de cuatro y, en una pantalla mediana, la cuarta
+      // de cada fila quedaba sola abajo (3, 1, 3, 1).
+      fijarTamano(tester, Size(ancho, 1000));
+      await montar(tester, appDe(Roles.admin));
+      final cifras = find.descendant(
+          of: find.byKey(const ValueKey('cifras-del-panel')),
+          matching: find.byType(StatTile));
+      expect(cifras, findsNWidgets(9));
+      final rects = [
+        for (var i = 0; i < 9; i++) tester.getRect(cifras.at(i)),
+      ];
+      // Agrupadas con medio píxel de tolerancia: 645,5 no es otra columna.
+      int grupos(Iterable<double> v) {
+        final orden = v.toList()..sort();
+        var n = 1;
+        for (var i = 1; i < orden.length; i++) {
+          if (orden[i] - orden[i - 1] > 1) n++;
+        }
+        return n;
+      }
+
+      expect(grupos(rects.map((r) => r.top)), 3);
+      expect(grupos(rects.map((r) => r.left)), 3);
+      // Todas del mismo tamaño.
+      expect(grupos(rects.map((r) => r.width)), 1);
+      expect(grupos(rects.map((r) => r.height)), 1);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  test('las filas de cifras se reparten parejas, sin una sola abajo', () {
+    // Pantalla mediana (entre 700 y 1100): antes 4 cifras eran 3 + 1.
+    expect(StatRow.columnasParejas(4, 900), 4);
+    expect(StatRow.columnasParejas(5, 900), 3); // 3 + 2
+    // Teléfono: 4 → 2 × 2; 3 → una fila de 3 (antes 2 + 1).
+    expect(StatRow.columnasParejas(4, 360), 2);
+    expect(StatRow.columnasParejas(3, 360), 3);
+    // Ancha: todo en una fila.
+    expect(StatRow.columnasParejas(5, 1300), 5);
+  });
 }

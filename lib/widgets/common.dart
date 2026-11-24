@@ -276,11 +276,11 @@ class StatTile extends StatelessWidget {
       ),
       child: Icon(icon, color: AppColors.gold, size: 22),
     );
-    List<Widget> textos(TextAlign alineado) => [
+    List<Widget> textos(TextAlign alineado, {double tamano = 12}) => [
           _AnimatedValue(value: value),
           Text(label,
               textAlign: alineado,
-              style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              style: TextStyle(fontSize: tamano, color: AppColors.textMuted)),
           if (trend != null)
             Text(trend!,
                 textAlign: alineado,
@@ -300,7 +300,9 @@ class StatTile extends StatelessWidget {
             children: [
               icono,
               const SizedBox(height: 8),
-              ...textos(TextAlign.center),
+              ...textos(TextAlign.center,
+                  tamano: _tamanoQueNoParte(
+                      context, label, caja.maxWidth)),
             ],
           );
         }
@@ -320,6 +322,32 @@ class StatTile extends StatelessWidget {
     );
     return detail == null ? tile : Tooltip(message: detail!, child: tile);
   }
+}
+
+/// El tamaño de letra (12 o menos, nunca bajo 9) con el que la palabra más
+/// larga de [texto] cabe entera en [ancho].
+///
+/// En un teléfono, con tres cifras por fila, «Universidades» y
+/// «Laboratorios» no cabían y se partían a mitad de palabra
+/// («Universidad / es»). Se achica la letra lo justo para que no pase.
+double _tamanoQueNoParte(BuildContext context, String texto, double ancho) {
+  if (!ancho.isFinite) return 12;
+  // Con la misma letra que se dibuja: sin la del tema, mide con otra.
+  final estilo =
+      DefaultTextStyle.of(context).style.merge(const TextStyle(fontSize: 12));
+  var mayor = 0.0;
+  for (final palabra in texto.split(RegExp(r'\s+'))) {
+    final medida = TextPainter(
+      text: TextSpan(text: palabra, style: estilo),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    mayor = math.max(mayor, medida.width);
+    medida.dispose();
+  }
+  if (mayor <= ancho) return 12;
+  return math.max(9, 12 * ancho / mayor - 0.1);
 }
 
 /// Anima el número inicial de un valor tipo "450", "68%" o "120 h".
@@ -352,20 +380,30 @@ class StatRow extends StatelessWidget {
   final List<StatTile> tiles;
   const StatRow({super.key, required this.tiles});
 
+  /// Cuántas columnas para [cantidad] cifras en [ancho], con las filas lo más
+  /// parejas posible.
+  ///
+  /// Antes se llenaban filas de 3 o 4 y lo que sobraba bajaba: con cuatro
+  /// cifras en una pantalla mediana quedaba una sola abajo (3 + 1). Ahora se
+  /// usa el menor número de filas que cabe y se reparte por igual: 4 → 4 o
+  /// 2 × 2, 5 → 3 + 2, 3 en un teléfono → una fila de 3.
+  static int columnasParejas(int cantidad, double ancho) {
+    if (cantidad <= 0) return 1;
+    final caben = ancho > 1100 ? 5 : (ancho > 700 ? 4 : 3);
+    final filas = (cantidad / caben).ceil();
+    return (cantidad / filas).ceil();
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, c) {
-      final perRow = c.maxWidth > 1100 ? 4 : (c.maxWidth > 700 ? 3 : 2);
-      final width = (c.maxWidth - (perRow - 1) * 12) / perRow;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
+      final columnas = columnasParejas(tiles.length, c.maxWidth);
+      return FilaPareja(
+        columnas: columnas,
+        separacion: 12,
         children: [
           for (var i = 0; i < tiles.length; i++)
-            SizedBox(
-              width: width,
-              child: Entrance(delayMs: 70 * i, child: tiles[i]),
-            ),
+            Entrance(delayMs: 70 * i, child: tiles[i]),
         ],
       );
     });
@@ -1462,12 +1500,18 @@ class RejillaDeTarjetas extends StatelessWidget {
   /// Tope de columnas, para listas que se ven mal muy angostas.
   final int? maxColumnas;
 
+  /// Todas las tarjetas con el alto de la más alta, no solo las de cada
+  /// fila. Para una rejilla de cifras (3 × 3) que tiene que verse simétrica:
+  /// sin esto, una fila con una etiqueta de dos líneas queda más alta.
+  final bool mismaAltura;
+
   const RejillaDeTarjetas({
     super.key,
     required this.children,
     this.anchoMinimo = 340,
     this.separacion = 20,
     this.maxColumnas,
+    this.mismaAltura = false,
   });
 
   /// Cuántas columnas caben en [ancho].
@@ -1485,6 +1529,13 @@ class RejillaDeTarjetas extends StatelessWidget {
           anchoMinimo: anchoMinimo,
           separacion: separacion,
           maxColumnas: maxColumnas);
+      if (mismaAltura) {
+        return FilaPareja(
+          columnas: columnas,
+          separacion: separacion,
+          children: children,
+        );
+      }
       final filas = <Widget>[];
       for (var i = 0; i < children.length; i += columnas) {
         if (filas.isNotEmpty) filas.add(SizedBox(height: separacion));
@@ -1506,7 +1557,8 @@ class RejillaDeTarjetas extends StatelessWidget {
 /// Una fila de [RejillaDeTarjetas]: [columnas] casillas del mismo ancho, y
 /// todos los hijos con el alto del más alto. Si hay menos hijos que
 /// columnas, las casillas sobrantes quedan vacías (la última fila no estira
-/// sus tarjetas a lo ancho).
+/// sus tarjetas a lo ancho). Con más hijos que columnas, sigue en filas
+/// nuevas, todas del mismo alto.
 class FilaPareja extends MultiChildRenderObjectWidget {
   final int columnas;
   final double separacion;
@@ -1575,7 +1627,6 @@ class RenderFilaPareja extends RenderBox
     // exacto: con un alto exacto cada tarjeta queda aislada de la fila, y si
     // después le llega contenido (una lista que termina de cargar) crece sin
     // avisar y se desborda. Así, cualquier cambio vuelve a medir la fila.
-    var x = 0.0;
     var altoFinal = 0.0;
     hijo = firstChild;
     while (hijo != null) {
@@ -1583,11 +1634,22 @@ class RenderFilaPareja extends RenderBox
           BoxConstraints(minWidth: casilla, maxWidth: casilla, minHeight: alto),
           parentUsesSize: true);
       altoFinal = math.max(altoFinal, hijo.size.height);
-      (hijo.parentData! as _DatosDeFila).offset = Offset(x, 0);
-      x += casilla + _separacion;
       hijo = childAfter(hijo);
     }
-    size = constraints.constrain(Size(ancho, altoFinal));
+    // En su lugar: de izquierda a derecha y, pasadas [_columnas], a la fila
+    // de abajo.
+    var i = 0;
+    hijo = firstChild;
+    while (hijo != null) {
+      final columna = i % _columnas, fila = i ~/ _columnas;
+      (hijo.parentData! as _DatosDeFila).offset = Offset(
+          columna * (casilla + _separacion), fila * (altoFinal + _separacion));
+      i++;
+      hijo = childAfter(hijo);
+    }
+    final filas = math.max(1, (i / _columnas).ceil());
+    size = constraints.constrain(Size(
+        ancho, i == 0 ? 0 : filas * altoFinal + (filas - 1) * _separacion));
   }
 
   @override

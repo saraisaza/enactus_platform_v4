@@ -4143,6 +4143,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEmpresas => 'Partners';
 
   @override
+  String get adminEmpresasAliadas => 'Partner companies';
+
+  @override
   String get adminDonantes => 'Donors';
 
   @override

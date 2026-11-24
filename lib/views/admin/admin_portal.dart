@@ -246,45 +246,57 @@ class _Kpis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    // Nueve cifras en una sola rejilla de tres columnas (3 × 3), en
+    // cualquier ancho. Antes eran dos filas de cuatro: en una pantalla
+    // mediana cada fila pasaba a tres por renglón y la cuarta quedaba sola
+    // abajo (3, 1, 3, 1).
+    final tarjetas = [
+      StatTile(
+          value: '${counts.allStudents}',
+          label: tr.tabEstudiantesCorto,
+          icon: Icons.school_outlined),
+      StatTile(
+          value: '${counts.projects}',
+          label: tr.tabProyectosCorto,
+          icon: Icons.lightbulb_outline),
+      StatTile(
+          value: '${counts.groups}',
+          label: tr.tabEquipos,
+          icon: Icons.groups_outlined),
+      StatTile(
+          value: '${counts.courses}',
+          label: tr.tabCursosCorto,
+          icon: Icons.video_library_outlined),
+      StatTile(
+          value: '${counts.certificates}',
+          label: tr.certificacionesEmitidos,
+          icon: Icons.workspace_premium_outlined),
+      StatTile(
+          value: '${counts.universities}',
+          label: tr.proyectosUniversidades,
+          icon: Icons.account_balance_outlined),
+      StatTile(
+          value: '${counts.mentors}',
+          label: tr.labMentores,
+          icon: Icons.psychology_outlined),
+      StatTile(
+          value: '${counts.laboratories}',
+          label: tr.tabLaboratorios,
+          icon: Icons.science_outlined),
+      StatTile(
+          value: '${counts.companies}',
+          label: tr.adminEmpresasAliadas,
+          icon: Icons.business_outlined),
+    ];
+    return RejillaDeTarjetas(
+      key: const ValueKey('cifras-del-panel'),
+      anchoMinimo: 0,
+      maxColumnas: 3,
+      separacion: 12,
+      mismaAltura: true,
       children: [
-        StatRow(tiles: [
-          StatTile(
-              value: '${counts.allStudents}',
-              label: tr.tabEstudiantesCorto,
-              icon: Icons.school_outlined),
-          StatTile(
-              value: '${counts.projects}',
-              label: tr.tabProyectosCorto,
-              icon: Icons.lightbulb_outline),
-          StatTile(
-              value: '${counts.groups}',
-              label: tr.tabEquipos,
-              icon: Icons.groups_outlined),
-          StatTile(
-              value: '${counts.courses}',
-              label: tr.tabCursosCorto,
-              icon: Icons.video_library_outlined),
-        ]),
-        const SizedBox(height: 12),
-        StatRow(tiles: [
-          StatTile(
-              value: '${counts.certificates}',
-              label: tr.certificacionesEmitidos,
-              icon: Icons.workspace_premium_outlined),
-          StatTile(
-              value: '${counts.universities}',
-              label: tr.proyectosUniversidades,
-              icon: Icons.account_balance_outlined),
-          StatTile(
-              value: '${counts.mentors}',
-              label: tr.labMentores,
-              icon: Icons.psychology_outlined),
-          StatTile(
-              value: '${counts.laboratories}',
-              label: tr.tabLaboratorios,
-              icon: Icons.science_outlined),
-        ]),
+        for (var i = 0; i < tarjetas.length; i++)
+          Entrance(delayMs: 70 * i, child: tarjetas[i]),
       ],
     );
   }

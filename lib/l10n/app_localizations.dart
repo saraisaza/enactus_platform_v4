@@ -7010,6 +7010,12 @@ abstract class AppLocalizations {
   /// **'Aliadas'**
   String get adminEmpresas;
 
+  /// No description provided for @adminEmpresasAliadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Empresas aliadas'**
+  String get adminEmpresasAliadas;
+
   /// No description provided for @adminDonantes.
   ///
   /// In es, this message translates to:

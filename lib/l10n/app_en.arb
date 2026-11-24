@@ -1157,6 +1157,7 @@
   "adminEstudAbrev": "Stud.",
   "adminAsesores": "Advisors",
   "adminEmpresas": "Partners",
+  "adminEmpresasAliadas": "Partner companies",
   "adminDonantes": "Donors",
   "adminProyectosPorEtapa": "Projects by phase",
   "adminConfigureMetricas": "Set up skills, SDGs and hours in the courses (LXD builder) to see training impact metrics.",

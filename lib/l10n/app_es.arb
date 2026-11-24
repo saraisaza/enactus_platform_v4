@@ -2127,6 +2127,7 @@
   "adminEstudAbrev": "Estud.",
   "adminAsesores": "Asesores",
   "adminEmpresas": "Aliadas",
+  "adminEmpresasAliadas": "Empresas aliadas",
   "adminDonantes": "Donantes",
   "adminProyectosPorEtapa": "Proyectos por fase",
   "adminConfigureMetricas": "Configure competencias, ODS y horas en los cursos (constructor del LXD) para ver métricas de impacto formativo.",
